@@ -29,7 +29,8 @@ Feature: Gateway REST API Invocation
     # node-customer-service" from "the gateway dispatched to the wrong operation".
     When I invoke the API at gateway context "{{apiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
-    And The response should contain "{\"id\":123,\"name\":\"John\"}"
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
 
     Examples:
       | actor             |
@@ -59,7 +60,8 @@ Feature: Gateway REST API Invocation
     Then The response status code should be 200
     When I invoke the API at gateway context "{{ieInvContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
-    And The response should contain "{\"id\":123,\"name\":\"John\"}"
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
 
     # Export → delete → re-import the archive. The subscription must be removed first — an API with an active
     # subscription cannot be deleted (409 "active subscriptions exist").
@@ -84,7 +86,8 @@ Feature: Gateway REST API Invocation
     Then The response status code should be 200
     When I invoke the API at gateway context "{{ieInvImportedContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
-    And The response should contain "{\"id\":123,\"name\":\"John\"}"
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
 
     Examples:
       | actor             |
@@ -145,7 +148,8 @@ Feature: Gateway REST API Invocation
     # here, so a 200 that never reached node-customer-service would be a vacuous pass.
     When I invoke the API at gateway context "{{vfContext}}/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
-    And The response should contain "{\"id\":123,\"name\":\"John\"}"
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
 
     Examples:
       | actor             |
@@ -173,7 +177,8 @@ Feature: Gateway REST API Invocation
     # As above: the mid-path {version} resolution is only proven if the call reaches the backend, so pin the body.
     When I invoke the API at gateway context "{{dcContext}}/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
-    And The response should contain "{\"id\":123,\"name\":\"John\"}"
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
 
     Examples:
       | actor             |
@@ -198,7 +203,8 @@ Feature: Gateway REST API Invocation
     # "some other operation on the same template matched".
     When I invoke the API at gateway context "{{resContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
-    And The response should contain "{\"id\":123,\"name\":\"John\"}"
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
     # POST to an as-yet-undefined resource is refused (405 — path matches GET /customers/{id}, POST not allowed).
     # Body pinned too: the gateway distinguishes "URI matched, verb did not" from "no URI matched" with two
     # different messages, so status alone cannot tell the two dispatch outcomes apart (CORSRequestHandler
@@ -568,13 +574,15 @@ Feature: Gateway REST API Invocation
     # WITHOUT a trailing slash → 200 carrying the backend payload.
     When I invoke the API at gateway context "{{tsContext}}/1.0.0/customers/123" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
-    And The response should contain "{\"id\":123,\"name\":\"John\"}"
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
     # WITH a trailing slash → routes to the SAME resource → the SAME backend payload. Equivalence is the subject,
     # so both forms must be shown to produce the same backend response; two bare 200s would not establish that
     # (the API's DELETE /customers/{id} also answers 200, with an empty body).
     When I invoke the API at gateway context "{{tsContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
-    And The response should contain "{\"id\":123,\"name\":\"John\"}"
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
 
     Examples:
       | actor             |

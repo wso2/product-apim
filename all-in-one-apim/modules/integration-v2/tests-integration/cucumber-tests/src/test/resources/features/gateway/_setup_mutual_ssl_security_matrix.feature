@@ -18,7 +18,7 @@ Feature: Setup mutual-SSL security-matrix APIs
   surfaces here rather than as a "No value found in context" cascade later. Resources are registered for the
   runner's AfterClass sweep (NOT per-scenario cleanup — the matrix scenarios consume this fixture).
 
-  Scenario Outline: Publish the three mutual-SSL security-scheme APIs and subscribe an application
+  Scenario Outline: Publish the three mutual-SSL security-scheme APIs and subscribe an application as <actor>
     Given The system is ready and I have valid publisher access tokens as "<actor>"
     # --- mutual SSL MANDATORY only: no application security, so the client certificate is the only credential.
     When I put JSON payload from file "artifacts/payloads/create_apim_mutualssl_api.json" in context as "mtlsOnlyPayload<suffix>"

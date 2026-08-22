@@ -20,7 +20,8 @@ Feature: External Key Manager OAuth Grant Types
     Then The response status code should be 200
     And I invoke the API at gateway context "{{apiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
-    And The response should contain "{\"id\":123,\"name\":\"John\"}"
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
 
     Examples:
       | actor             |
@@ -36,7 +37,8 @@ Feature: External Key Manager OAuth Grant Types
     Then The response status code should be 200
     And I invoke the API at gateway context "{{apiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
-    And The response should contain "{\"id\":123,\"name\":\"John\"}"
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
 
     Examples:
       | actor             |
@@ -52,7 +54,8 @@ Feature: External Key Manager OAuth Grant Types
     Then The response status code should be 200
     And I invoke the API at gateway context "{{apiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
-    And The response should contain "{\"id\":123,\"name\":\"John\"}"
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
 
     Examples:
       | actor             |
@@ -68,7 +71,8 @@ Feature: External Key Manager OAuth Grant Types
     Then The response status code should be 200
     And I invoke the API at gateway context "{{apiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
-    And The response should contain "{\"id\":123,\"name\":\"John\"}"
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
 
     Examples:
       | actor             |
@@ -89,7 +93,8 @@ Feature: External Key Manager OAuth Grant Types
     Then The response status code should be 200
     And I invoke the API at gateway context "{{apiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
-    And The response should contain "{\"id\":123,\"name\":\"John\"}"
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
 
     Examples:
       | actor             |
@@ -109,7 +114,8 @@ Feature: External Key Manager OAuth Grant Types
     Then The response status code should be 200
     And I invoke the API at gateway context "{{apiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
-    And The response should contain "{\"id\":123,\"name\":\"John\"}"
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
 
     Examples:
       | actor             |

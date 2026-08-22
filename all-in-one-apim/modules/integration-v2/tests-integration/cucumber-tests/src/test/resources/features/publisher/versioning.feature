@@ -63,7 +63,7 @@ Feature: Publisher API Versioning
       | SECONDARY.COM/publisherUser1  |
 
   @cap:publisher @feat:versioning @type:negative @legacy:APIVersioningTestCase
-  Scenario Outline: A subscriber-role user cannot create a new API version as <actor>
+  Scenario Outline: A subscriber-role user cannot create a new API version as <subscriber>
     # Create the base API as a publisher, then re-authenticate as a subscriber whose token lacks the
     # api_create scope and confirm the version-create is rejected (401), in both tenants.
     Given The system is ready and I have valid publisher access tokens as "<publisher>"

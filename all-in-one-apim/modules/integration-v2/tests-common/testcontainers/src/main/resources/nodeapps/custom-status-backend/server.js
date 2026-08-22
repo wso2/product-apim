@@ -32,8 +32,11 @@
 
 const net = require('net');
 
-const port = 3024;
+const port = process.env.PORT || 3024;
 const path = '/custom-status';
+
+// Cap on the request head we will buffer before giving up on a client that never terminates it.
+const MAX_HEAD_BYTES = 64 * 1024;
 
 const body = '<?xml version="1.0" encoding="UTF-8"?><test></test>';
 const response = [
@@ -48,11 +51,22 @@ const response = [
 
 const server = net.createServer((socket) => {
   let received = '';
+  let answered = false;
   socket.on('data', (chunk) => {
+    // One answer per connection: without this, a chunk arriving after end() still matches the buffered head
+    // and ends the socket a second time, and that write-after-end is swallowed by the error handler below.
+    if (answered) {
+      return;
+    }
     received += chunk.toString();
+    if (received.length > MAX_HEAD_BYTES) {
+      socket.destroy();
+      return;
+    }
     // Answer as soon as the request head is complete; the canned response is the same regardless of the
     // request, so there is no reason to read a body.
     if (received.includes('\r\n\r\n')) {
+      answered = true;
       console.log('----invoking custom-status backend, request line: ' + received.split('\r\n')[0]);
       socket.end(response);
     }

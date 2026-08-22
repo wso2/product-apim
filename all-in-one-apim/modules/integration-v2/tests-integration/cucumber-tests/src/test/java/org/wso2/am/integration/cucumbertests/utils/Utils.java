@@ -2234,6 +2234,32 @@ public class Utils {
     }
 
     /**
+     * The UTF-8 CONTENT of the first zip entry whose base file name equals any of {@code fileNames}, or null when
+     * no entry matches or the archive is unreadable. The counterpart of {@link #zipContainsEntryNamed} for the
+     * case where presence is not enough: that check returns true for a ZERO-BYTE entry, so an export that wrote
+     * the right file names with no content reads as complete. Callers assert the returned text is non-blank.
+     */
+    public static String zipEntryText(File zipFile, String... fileNames) {
+        try (ZipInputStream zis = new ZipInputStream(new BufferedInputStream(new FileInputStream(zipFile)))) {
+            ZipEntry entry;
+            while ((entry = zis.getNextEntry()) != null) {
+                String name = entry.getName();
+                int slash = name.lastIndexOf('/');
+                String base = slash < 0 ? name : name.substring(slash + 1);
+                for (String fn : fileNames) {
+                    if (base.equals(fn)) {
+                        return new String(zis.readAllBytes(), StandardCharsets.UTF_8);
+                    }
+                }
+                zis.closeEntry();
+            }
+        } catch (IOException corruptOrUnreadable) {
+            return null;
+        }
+        return null;
+    }
+
+    /**
      * Extracts a zip archive into {@code destDir} (creating parent directories). Used by the export-archive
      * content-assertion steps (operation policy / API export) to read files out of a downloaded zip. Guards
      * against zip-slip by rejecting entries that would escape {@code destDir}.

@@ -9,7 +9,7 @@ Feature: Publisher API Runtime & Common Configuration
   assignment is covered by publisher/scopes.
 
   @cap:publisher @feat:api-config @type:regression @rule:rest @legacy:APIRuntimeConfigurationsTestCase @legacy:APIOtherCommonConfigurationsTestCase
-  Scenario Outline: Update a REST API configuration field in <tenant>
+  Scenario Outline: Update the REST API configuration field <configType> in <tenant>
     Given I act as "admin<tenantSuffix>"
     When I update the "apis" resource "configApiId<tenantSuffix>" and "configApiPayload<tenantSuffix>" with configuration type "<configType>" and value:
       """
@@ -40,7 +40,7 @@ Feature: Publisher API Runtime & Common Configuration
       | tenant1.com | @tenant1.com | policies               | ["Bronze","Gold","Silver"]                                                                                                                                                                               |
 
   @cap:publisher @feat:api-config @type:regression @rule:soap @legacy:APIRuntimeConfigurationsTestCase @legacy:APIOtherCommonConfigurationsTestCase
-  Scenario Outline: Update a SOAP API configuration field in <tenant>
+  Scenario Outline: Update the SOAP API configuration field <configType> in <tenant>
     Given I act as "admin<tenantSuffix>"
     When I update the "apis" resource "configSoapApiId<tenantSuffix>" and "configSoapApiPayload<tenantSuffix>" with configuration type "<configType>" and value:
       """
@@ -71,7 +71,7 @@ Feature: Publisher API Runtime & Common Configuration
       | tenant1.com | @tenant1.com | policies               | ["Bronze","Gold","Silver"]                                                                                                                                                                               |
 
   @cap:publisher @feat:api-config @type:regression @rule:graphql @legacy:APIRuntimeConfigurationsTestCase @legacy:APIOtherCommonConfigurationsTestCase
-  Scenario Outline: Update a GraphQL API configuration field in <tenant>
+  Scenario Outline: Update the GraphQL API configuration field <configType> in <tenant>
     Given I act as "admin<tenantSuffix>"
     When I update the "apis" resource "configGraphqlApiId<tenantSuffix>" and "configGraphqlApiPayload<tenantSuffix>" with configuration type "<configType>" and value:
       """
@@ -104,7 +104,7 @@ Feature: Publisher API Runtime & Common Configuration
   # WebSocket/Async API — the legacy matrix exercised throttling policy (runtime) plus custom properties and
   # subscription policies (other-common) for this type; caching/transport/CORS do not apply.
   @cap:publisher @feat:api-config @type:regression @rule:streaming @legacy:APIRuntimeConfigurationsTestCase @legacy:APIOtherCommonConfigurationsTestCase
-  Scenario Outline: Update a WebSocket API configuration field in <tenant>
+  Scenario Outline: Update the WebSocket API configuration field <configType> in <tenant>
     Given I act as "admin<tenantSuffix>"
     When I update the "apis" resource "configWsApiId<tenantSuffix>" and "configWsApiPayload<tenantSuffix>" with configuration type "<configType>" and value:
       """

@@ -1470,9 +1470,9 @@ public class BaseSteps {
      */
     private void verifyConfigurationInResponse(HttpResponse response, String config, String configValue,
                 boolean unorderedArray) {
-        Assert.assertTrue(response != null && response.getData() != null && !response.getData().isEmpty(),
-                "No response with a body to verify configuration '" + config + "' in; got "
-                        + (response == null ? "no response" : response.getResponseCode()));
+        Assert.assertTrue(response != null && response.getData() != null && !response.getData().isBlank(),
+                "No response with a body to verify configuration '" + config + "' in; got="
+                        + (response == null ? "null" : response.getResponseCode() + "/" + response.getData()));
         JSONObject json = new JSONObject(response.getData());
         Assert.assertTrue(json.has(config), "Configuration '" + config + "' not found in response");
 

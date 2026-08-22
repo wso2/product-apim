@@ -81,6 +81,8 @@ Feature: Publisher API Provider Change
     Given The system is ready
     And I have valid access tokens as "admin<suffix>"
     And I provision user "arcNewProvider" with roles "Internal/creator,Internal/publisher" in tenant "<tenant>"
+    # Mint the new provider's publisher tokens up front so the post-transfer steps can run AS them.
+    And The system is ready and I have valid publisher access tokens as "arcNewProvider<suffix>"
     And I act as "admin<suffix>"
     And I have created an api from "artifacts/payloads/create_apim_test_api.json" as "arcApiId" and deployed it
     # Keep the deployed revision's id: it is undeployed and replaced AFTER the provider change.
@@ -109,6 +111,8 @@ Feature: Publisher API Provider Change
     When I change the provider of API "arcApiId" to "arcNewProvider<suffix>"
     Then The response status code should be 200
     And The provider of API "arcApiId" should match actor "arcNewProvider<suffix>"
+    # Everything below is asserted AS THE NEW PROVIDER — that is what "manageable by its new provider" means.
+    When I act as "arcNewProvider<suffix>"
 
     # 1. The description can still be updated -> re-read shows the new value.
     When I retrieve the "apis" resource with id "arcApiId"
@@ -255,6 +259,8 @@ Feature: Publisher API Provider Change
     Given The system is ready
     And I have valid access tokens as "admin<suffix>"
     And I provision user "s2rNewProvider" with roles "Internal/creator,Internal/publisher" in tenant "<tenant>"
+    # Mint the new provider's publisher tokens up front so the post-transfer steps can run AS them.
+    And The system is ready and I have valid publisher access tokens as "s2rNewProvider<suffix>"
     And I act as "admin<suffix>"
     And I generate a unique value and store it as "cpS2rName"
     And I generate a unique value and store it as "cpS2rCtx"
@@ -282,6 +288,8 @@ Feature: Publisher API Provider Change
     When I change the provider of API "cpS2rApiId" to "s2rNewProvider<suffix>"
     Then The response status code should be 200
     And The provider of API "cpS2rApiId" should match actor "s2rNewProvider<suffix>"
+    # The sequence updates below run AS THE NEW PROVIDER, matching the claim in the comment.
+    When I act as "s2rNewProvider<suffix>"
 
     # CORE: both sequence directions are byte-identical to the pre-change baseline.
     Then The "in" resource policies of API "cpS2rApiId" for resource "sayHello" verb "post" should be byte-identical to snapshot "cpS2rInBefore"

@@ -64,7 +64,8 @@ Feature: Gateway Subscriptionless Invocation (subscription-validation disabling)
     Then The response status code should be 200
     And I invoke the API at gateway context "{{subValApiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 90 seconds
     Then The response status code should be 200
-    And The response should contain "{\"id\":123,\"name\":\"John\"}"
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
     # Keep this token: it must still work AFTER validation is re-enabled (the internal subscription it was granted
     # survives), which the port previously only claimed in a comment.
     And I copy context value "generatedAccessToken" to "subValApp1Token"
@@ -92,7 +93,8 @@ Feature: Gateway Subscriptionless Invocation (subscription-validation disabling)
     And I extract response field "access_token" and store it as "subValExternalToken"
     When I invoke the API at gateway context "{{subValApiContext}}/1.0.0/customers/123/" with method "GET" using access token "subValExternalToken" and payload "" until response status code becomes 200 within 90 seconds
     Then The response status code should be 200
-    And The response should contain "{\"id\":123,\"name\":\"John\"}"
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
 
     # The external token did NOT create a subscription of its own — the count is unchanged at 1 (legacy asserts
     # exactly this, i.e. the internal subscription is per-application, not per-token).
@@ -136,7 +138,8 @@ Feature: Gateway Subscriptionless Invocation (subscription-validation disabling)
     # subscription, it did not just start rejecting everything).
     When I invoke the API at gateway context "{{subValApiContext}}/1.0.0/customers/123/" with method "GET" using access token "subValApp1Token" and payload "" until response status code becomes 200 within 120 seconds
     Then The response status code should be 200
-    And The response should contain "{\"id\":123,\"name\":\"John\"}"
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
 
     # The EXTERNAL non-APIM principal is now refused (403): it has no application, hence never an internal
     # subscription, so with validation back on it cannot pass. This is the legacy's final external-token assertion,

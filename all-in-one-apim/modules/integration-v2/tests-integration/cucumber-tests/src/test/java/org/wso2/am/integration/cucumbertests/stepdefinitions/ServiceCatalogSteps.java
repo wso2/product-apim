@@ -230,11 +230,17 @@ public class ServiceCatalogSteps {
         if (expectedStatus == 200) {
             Assert.assertTrue(result.getFile().length() > 0,
                     "Service catalog export of " + actualName + " returned 200 with an EMPTY archive");
-            Assert.assertTrue(Utils.zipContainsEntryNamed(result.getFile(), "metadata.yaml", "metadata.json"),
-                    "Exported service archive for " + actualName + " is not a readable zip carrying the service "
-                            + "metadata (size=" + result.getFile().length() + ")");
-            Assert.assertTrue(Utils.zipContainsEntryNamed(result.getFile(), "definition.yaml", "definition.json"),
-                    "Exported service archive for " + actualName + " carries no service definition (size="
+            // Content, not just the entry name: zipContainsEntryNamed is true for a ZERO-BYTE entry, so an
+            // export writing empty metadata/definition would read as a complete archive.
+            String metadata = Utils.zipEntryText(result.getFile(), "metadata.yaml", "metadata.json");
+            Assert.assertTrue(metadata != null && !metadata.isBlank(),
+                    "Exported service archive for " + actualName + " carries no readable service metadata "
+                            + "(entry " + (metadata == null ? "absent" : "present but empty") + ", archive size="
+                            + result.getFile().length() + ")");
+            String definition = Utils.zipEntryText(result.getFile(), "definition.yaml", "definition.json");
+            Assert.assertTrue(definition != null && !definition.isBlank(),
+                    "Exported service archive for " + actualName + " carries no readable service definition "
+                            + "(entry " + (definition == null ? "absent" : "present but empty") + ", archive size="
                             + result.getFile().length() + ")");
         }
     }

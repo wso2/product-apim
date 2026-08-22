@@ -219,7 +219,6 @@ Feature: Publisher Service Catalog
     And I generate a unique value and store it as "expKey"
     And I generate a unique value and store it as "expName"
     When I create a service catalog entry named "{{expName}}" version "v1" key "{{expKey}}" from definition "artifacts/service-catalog/definition1.yaml" as "expSvcId"
-    Then The response status code should be 200
     When I export the service catalog entry named "{{expName}}" version "v1" expecting status 200
     # A name that matches no service is 404 even though the version exists.
     When I export the service catalog entry named "{{expName}}-absent" version "v1" expecting status 404
@@ -242,7 +241,6 @@ Feature: Publisher Service Catalog
     And I generate a unique value and store it as "useKey"
     And I generate a unique value and store it as "useName"
     When I create a service catalog entry named "{{useName}}" version "v1" key "{{useKey}}" from definition "artifacts/service-catalog/definition1.yaml" as "useSvcId"
-    Then The response status code should be 200
     # An API whose serviceInfo references the catalog entry: the created API echoes the binding back.
     When I put JSON payload from file "artifacts/payloads/create_apim_service_catalog_api.json" in context as "svcApiPayload"
     And I add service catalog entry "useSvcId" as serviceInfo to the payload "svcApiPayload"

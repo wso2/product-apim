@@ -2699,6 +2699,7 @@ public class ApplicationBaseSteps {
         // Step 4: read the consent page the product would show the user, then approve it.
         TestContext.set("consentApplicationName", Utils.queryParam(afterResume, "application"));
         TestContext.set("consentPageBody", fetchConsentPage(http, base, afterResume));
+        TestContext.set("spOwnerName", serviceProviderOwnerName());
         String consentForm = "consent=approve&hasApprovedAlways=false&sessionDataKeyConsent="
                 + Utils.urlEncode(consentKey);
         return redirectLocation(http, "POST", base + "oauth2/authorize", consentForm);
@@ -2752,6 +2753,28 @@ public class ApplicationBaseSteps {
         return http.send(b.build(), java.net.http.HttpResponse.BodyHandlers.ofString());
     }
 
+    /**
+     * The owner prefix APIM builds a service-provider name from, for the ACTING actor — published as
+     * {@code spOwnerName} so a consent-page assertion never hardcodes it.
+     *
+     * <p>Derived, not literal, because it varies along two axes a feature cannot see: the TENANT suffix is
+     * dropped (a {@code tenant1.com} admin still owns SPs as plain {@code admin}), and in email-username mode
+     * the physical name carries an {@code @email.com} local part which the registry encodes as {@code -AT-}
+     * (the same encoding as {@code apiProviderEncoded}). A static value is therefore right in at most one
+     * block: {@code admin} normally, {@code admin-AT-email.com} under {@code emailUserMode}.
+     */
+    private static String serviceProviderOwnerName() {
+
+        User actor = Identity.actingActor();
+        String userName = actor.getUserName();
+        String tenantSuffix = "@" + actor.getUserDomain();
+        if (userName != null && userName.toLowerCase(java.util.Locale.ROOT)
+                .endsWith(tenantSuffix.toLowerCase(java.util.Locale.ROOT))) {
+            userName = userName.substring(0, userName.length() - tenantSuffix.length());
+        }
+        return userName == null ? null : userName.replace("@", "-AT-");
+    }
+
     /** Returns a no-redirect response's Location header, asserting the response actually was a redirect. */
     private String locationHeader(java.net.http.HttpResponse<String> resp, String url) {
         java.util.Optional<String> loc = resp.headers().firstValue("Location");
@@ -2762,10 +2785,22 @@ public class ApplicationBaseSteps {
 
     /** Builds an HttpClient that trusts IS's self-signed cert, keeps a cookie jar, and never auto-redirects. */
     private java.net.http.HttpClient trustAllHttpClientWithCookies() throws Exception {
+        // X509ExtendedTrustManager, not X509TrustManager: the JDK performs HOSTNAME verification inside the
+        // extended check, so a plain trust-all manager still rejects a host the certificate does not name (e.g.
+        // an IP, as when TESTCONTAINERS_HOST_OVERRIDE hands out the VM address). Supplying SSLParameters with a
+        // null endpoint-identification algorithm does NOT work — HttpClient overrides it.
         javax.net.ssl.TrustManager[] trustAll = new javax.net.ssl.TrustManager[]{
-                new javax.net.ssl.X509TrustManager() {
+                new javax.net.ssl.X509ExtendedTrustManager() {
                     public void checkClientTrusted(java.security.cert.X509Certificate[] c, String a) { }
                     public void checkServerTrusted(java.security.cert.X509Certificate[] c, String a) { }
+                    public void checkClientTrusted(java.security.cert.X509Certificate[] c, String a,
+                            java.net.Socket s) { }
+                    public void checkServerTrusted(java.security.cert.X509Certificate[] c, String a,
+                            java.net.Socket s) { }
+                    public void checkClientTrusted(java.security.cert.X509Certificate[] c, String a,
+                            javax.net.ssl.SSLEngine e) { }
+                    public void checkServerTrusted(java.security.cert.X509Certificate[] c, String a,
+                            javax.net.ssl.SSLEngine e) { }
                     public java.security.cert.X509Certificate[] getAcceptedIssuers() {
                         return new java.security.cert.X509Certificate[0];
                     }

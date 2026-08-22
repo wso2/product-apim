@@ -67,6 +67,9 @@ Feature: Key Manager Token Issuance
     Given The system is ready
     And I have valid access tokens as "<actor>"
     And I have created an api from "artifacts/payloads/create_apim_test_api.json" as "createdApiId" and deployed it
+    # Deploy-readiness gate (self-healing): the JMS deploy event is at-most-once — if the gateway dropped
+    # it, polling can never recover, so this re-deploys the revision after an exhausted window.
+    And the "apis" resource "createdApiId" should be live on the gateway, redeploying if propagation is lost
     When I publish the "apis" resource with id "createdApiId"
     Then The lifecycle status of API "createdApiId" should be "Published"
     When I retrieve the "apis" resource with id "createdApiId"
@@ -94,7 +97,8 @@ Feature: Key Manager Token Issuance
     # newly-minted token carried the call through to the upstream rather than merely producing a 200.
     And I invoke the API at gateway context "{{apiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
-    And The response should contain "{\"id\":123,\"name\":\"John\"}"
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
 
     Examples:
       | actor             |
@@ -109,6 +113,9 @@ Feature: Key Manager Token Issuance
     Given The system is ready
     And I have valid access tokens as "<actor>"
     And I have created an api from "artifacts/payloads/create_apim_test_api.json" as "createdApiId" and deployed it
+    # Deploy-readiness gate (self-healing): the JMS deploy event is at-most-once — if the gateway dropped
+    # it, polling can never recover, so this re-deploys the revision after an exhausted window.
+    And the "apis" resource "createdApiId" should be live on the gateway, redeploying if propagation is lost
     When I publish the "apis" resource with id "createdApiId"
     Then The lifecycle status of API "createdApiId" should be "Published"
     When I retrieve the "apis" resource with id "createdApiId"
@@ -136,7 +143,8 @@ Feature: Key Manager Token Issuance
     # endpoint-routing scenario, which uses two path-echoing endpoints.)
     And I invoke the API at gateway context "{{apiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
-    And The response should contain "{\"id\":123,\"name\":\"John\"}"
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
 
     Examples:
       | actor             |
@@ -156,6 +164,9 @@ Feature: Key Manager Token Issuance
     Given The system is ready
     And I have valid access tokens as "<actor>"
     And I have created an api from "artifacts/payloads/create_apim_test_api.json" as "infTokenApiId" and deployed it
+    # Deploy-readiness gate (self-healing): the JMS deploy event is at-most-once — if the gateway dropped
+    # it, polling can never recover, so this re-deploys the revision after an exhausted window.
+    And the "apis" resource "infTokenApiId" should be live on the gateway, redeploying if propagation is lost
     When I publish the "apis" resource with id "infTokenApiId"
     Then The lifecycle status of API "infTokenApiId" should be "Published"
     When I retrieve the "apis" resource with id "infTokenApiId"
@@ -190,7 +201,8 @@ Feature: Key Manager Token Issuance
     And I extract response field "token.accessToken" and store it as "infiniteSandboxToken"
     When I invoke the API at gateway context "{{infTokenApiContext}}/1.0.0/customers/123/" with method "GET" using access token "infiniteSandboxToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
-    And The response should contain "{\"id\":123,\"name\":\"John\"}"
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
 
     # ...and likewise for the PRODUCTION key — legacy asserts both key types independently.
     When I put the following JSON payload in context as "infiniteProductionKeysPayload"
@@ -202,7 +214,8 @@ Feature: Key Manager Token Issuance
     And I extract response field "token.accessToken" and store it as "infiniteProductionToken"
     When I invoke the API at gateway context "{{infTokenApiContext}}/1.0.0/customers/123/" with method "GET" using access token "infiniteProductionToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
-    And The response should contain "{\"id\":123,\"name\":\"John\"}"
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
 
     Examples:
       | actor             |
@@ -311,6 +324,9 @@ Feature: Key Manager Token Issuance
     Given The system is ready
     And I have valid access tokens as "<actor>"
     And I have created an api from "artifacts/payloads/create_apim_test_api.json" as "createdApiId" and deployed it
+    # Deploy-readiness gate (self-healing): the JMS deploy event is at-most-once — if the gateway dropped
+    # it, polling can never recover, so this re-deploys the revision after an exhausted window.
+    And the "apis" resource "createdApiId" should be live on the gateway, redeploying if propagation is lost
     When I publish the "apis" resource with id "createdApiId"
     Then The lifecycle status of API "createdApiId" should be "Published"
     When I retrieve the "apis" resource with id "createdApiId"
@@ -339,17 +355,17 @@ Feature: Key Manager Token Issuance
     # Pinned live: this response carries that cookie alone — it does NOT set a JSESSIONID.
     And The stored value "authorizeSetCookies" should contain "sessionNonceCookie-"
     # The consent page the user would have been shown names THIS application.
-    And The stored value "consentApplicationName" should be "<spOwner>_{{createdAppId}}_PRODUCTION"
-    And The stored value "consentPageBody" should contain "<spOwner>_{{createdAppId}}_PRODUCTION"
+    And The stored value "consentApplicationName" should be "{{spOwnerName}}_{{createdAppId}}_PRODUCTION"
+    And The stored value "consentPageBody" should contain "{{spOwnerName}}_{{createdAppId}}_PRODUCTION"
     # The authorization_code token is a real gateway credential, not just a well-formed JWT.
     When I invoke the API at gateway context "{{apiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
     And The response should contain "\"name\":\"John\""
 
     Examples:
-      | actor             | spOwner              |
-      | admin             | admin                |
-      | admin@tenant1.com | admin                |
+      | actor             |
+      | admin             |
+      | admin@tenant1.com |
 
   # Ports GrantTypeTokenGenerateTestCase#testImplicit — v2 had NO implicit-grant coverage at all. The implicit
   # grant returns its token in the redirect FRAGMENT with no token-endpoint exchange, so the token itself is the
@@ -359,6 +375,9 @@ Feature: Key Manager Token Issuance
     Given The system is ready
     And I have valid access tokens as "<actor>"
     And I have created an api from "artifacts/payloads/create_apim_test_api.json" as "createdApiId" and deployed it
+    # Deploy-readiness gate (self-healing): the JMS deploy event is at-most-once — if the gateway dropped
+    # it, polling can never recover, so this re-deploys the revision after an exhausted window.
+    And the "apis" resource "createdApiId" should be live on the gateway, redeploying if propagation is lost
     When I publish the "apis" resource with id "createdApiId"
     Then The lifecycle status of API "createdApiId" should be "Published"
     When I retrieve the "apis" resource with id "createdApiId"

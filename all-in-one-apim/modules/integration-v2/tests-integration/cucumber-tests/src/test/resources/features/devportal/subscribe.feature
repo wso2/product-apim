@@ -122,7 +122,7 @@ Feature: DevPortal Subscribe
     # false failure here. Verified live.
     When I retrieve all subscriptions of application "depSubApp2Id"
     Then The response status code should be 200
-    And The response should contain "\"count\":0"
+    And The value of response field "count" should be "0"
 
     # VISIBILITY — deprecation splits the devportal's two read paths, and BOTH halves are pinned here. This is the
     # facet legacy left entirely commented out.
@@ -149,7 +149,7 @@ Feature: DevPortal Subscribe
       | tenant1.com  | @tenant1.com |
 
   @cap:devportal @feat:subscribe @type:negative @legacy:SubscriptionTestCase
-  Scenario Outline: A publisher-role user without subscribe scope cannot subscribe as <actor>
+  Scenario Outline: A publisher-role user without subscribe scope cannot subscribe as publisherUser<tenantSuffix>
     # Create the application as the consumer, then re-authenticate as a publisher-role user whose token lacks
     # the apim:subscribe scope and confirm the subscribe is rejected.
     Given The system is ready and I have valid devportal access token as "subscriberUser<tenantSuffix>"

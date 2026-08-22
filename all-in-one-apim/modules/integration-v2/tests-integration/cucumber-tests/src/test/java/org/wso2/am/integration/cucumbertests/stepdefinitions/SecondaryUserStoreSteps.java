@@ -23,6 +23,11 @@ import org.testng.Assert;
 import org.wso2.am.integration.cucumbertests.utils.TenantUserProvisioner;
 import org.wso2.am.integration.cucumbertests.utils.Utils;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 /**
  * Step definitions for the secondary user store (port of SecondaryUserStoreCaseInsensitiveTestCase). The JDBC
  * secondary user store (domain {@code SECONDARY.COM}, case-insensitive usernames) is stood up entirely at RUNTIME by
@@ -105,7 +110,9 @@ public class SecondaryUserStoreSteps {
         String body = TenantUserProvisioner.getRoleListOfUser(tenantDomain,
                 Utils.resolveContextPlaceholders(userName));
         String expected = Utils.resolveContextPlaceholders(expectedRole);
-        Assert.assertTrue(body.contains(expected),
+        // Exact role VALUE, case-sensitively (see the negative twin's javadoc): a substring check would accept
+        // `SECONDARY.COM/userrole10` as proof that `SECONDARY.COM/userrole1` is assigned.
+        Assert.assertTrue(assignedRoles(body).contains(expected),
                 "Role list of '" + userName + "' did not contain '" + expected + "' (case-insensitive lookup); "
                         + "response: " + body);
     }
@@ -126,10 +133,27 @@ public class SecondaryUserStoreSteps {
         String body = TenantUserProvisioner.getRoleListOfUser(tenantDomain,
                 Utils.resolveContextPlaceholders(userName));
         String unexpected = Utils.resolveContextPlaceholders(unexpectedRole);
-        Assert.assertFalse(body.toLowerCase(java.util.Locale.ROOT).contains(unexpected.toLowerCase(java.util.Locale.ROOT)),
+        // Compared per role VALUE, not as a substring of the envelope: `SECONDARY.COM/userrole1` is a substring
+        // of `SECONDARY.COM/userrole10`, so a substring check would report a still-assigned role that is not.
+        boolean stillAssigned = assignedRoles(body).stream().anyMatch(role -> role.equalsIgnoreCase(unexpected));
+        Assert.assertFalse(stillAssigned,
                 "Role list of '" + userName + "' still contained '" + unexpected + "' in some casing; "
                         + "response: " + body);
     }
+
+    /** The role values a {@code getRoleListOfUser} response assigns — one per {@code <ns:return>} element. */
+    private static List<String> assignedRoles(String soapBody) {
+
+        List<String> roles = new ArrayList<>();
+        Matcher matcher = ROLE_RETURN_PATTERN.matcher(soapBody == null ? "" : soapBody);
+        while (matcher.find()) {
+            roles.add(matcher.group(1).trim());
+        }
+        return roles;
+    }
+
+    private static final Pattern ROLE_RETURN_PATTERN =
+            Pattern.compile("<\\w+:return\\b[^>]*>(.*?)</\\w+:return>", Pattern.DOTALL);
 
     /**
      * Deletes a store ROLE only, leaving the users that carried it in place — so a scenario can assert what the

@@ -189,8 +189,9 @@
          stays a separate suite until IS aliases/payload endpoints are parameterized. -->
 
     <!-- API Governance plane (rulesets / policies / compliance) — its own product API (/api/am/governance/v1)
-         with its own apim:gov_* token scopes. Default config (compliance evaluates API definitions, not runtime,
-         so no gateway backend needed). Concurrent block. -->
+         with its own apim:gov_* token scopes. Default config. Compliance evaluates API definitions rather than
+         runtime traffic, but the block still needs the node backend: the MCP-proxy scenarios are validated
+         against the live MCP server at create time — see initBackend below. Concurrent block. -->
     <test name="IntegrationV2-Governance" parallel="classes" thread-count="2">
         <parameter name="blockLabel" value="governance"/>
         <parameter name="initTenantUsers" value="true"/>
@@ -588,8 +589,9 @@
          neither is co-hostable with a runner that expects the plain actor usernames. The parameter and the overlay
          must be set TOGETHER: the overlay alone breaks the framework's own boot provisioning (a plain,
          single-'@' tenant actor resolves to a non-existent super-tenant user), and the parameter alone provisions
-         email usernames the product then refuses to resolve. No backend needed — the scenarios exercise the
-         management planes only, with no gateway invocation.
+         email usernames the product then refuses to resolve. The block spans BOTH planes — management-plane
+         runners and gateway runners (basic-auth, throttling, deny-enforcement) — so it REQUIRES the node
+         backend; see the initBackend parameter below for what breaks without it.
 
          MODE FAN-OUT, added alongside the dedicated runners above. Those cover the email dimension with
          purpose-written features; these re-run EXISTING runners under the mode instead, which is how legacy
@@ -656,10 +658,12 @@
          and restores it per scenario, while the UnlimitedTierDisabled runner asserts the EXACT fall-through tier
          that those same keys override. Sequential classes make the two safe in either order; at thread-count=2
          they would interleave and a configured default would silently replace the fall-through the sibling pins.
-         No gateway backend and no external IS — both features assert the management planes only. -->
+         No external IS. The two throttling runners assert the management planes only, but the Gemini runner
+         invokes the gateway, so the block needs the node backend — see initBackend below. -->
     <test name="IntegrationV2-UnlimitedTierDisabled" parallel="classes" thread-count="1">
         <parameter name="blockLabel" value="unlimited-tier-disabled"/>
         <parameter name="initTenantUsers" value="true"/>
+        <!-- initBackend: GatewayGeminiUnlimitedTier invokes the gateway; without it the endpoint is SUSPENDED (500). -->
         <parameter name="initBackend" value="true"/>
         <parameter name="tomlExtraOverlayPath" value="src/test/resources/artifacts/configFiles/unlimitedTierDisabled/deployment.toml"/>
         <classes>

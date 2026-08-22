@@ -68,7 +68,8 @@ Feature: Gateway Allowed-Scopes Enforcement
     And I copy context value "generatedAccessToken" to "scope1Token"
     And I invoke the API at gateway context "{{apiContext}}/1.0.0/customers/123/" with method "GET" using access token "scope1Token" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
-    And The response should contain "{\"id\":123,\"name\":\"John\"}"
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
 
     # scope2 — whitelisted AND satisfies the operation binding → 200.
     When I request an OAuth access token for the current user using password grant with scope "scope2"
@@ -77,7 +78,8 @@ Feature: Gateway Allowed-Scopes Enforcement
     And The value of response field "expires_in" should be "86400"
     And I invoke the API at gateway context "{{apiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
-    And The response should contain "{\"id\":123,\"name\":\"John\"}"
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
 
     # The scope1 token STILL works after the scope2 token was issued — issuing a second, differently-scoped token
     # on the same client credentials must not invalidate the first (legacy's "check if scope1 token is valid" leg).
@@ -85,7 +87,8 @@ Feature: Gateway Allowed-Scopes Enforcement
     # assertion here.
     When I invoke the API at gateway context "{{apiContext}}/1.0.0/customers/123/" with method "GET" using access token "scope1Token" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
-    And The response should contain "{\"id\":123,\"name\":\"John\"}"
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
 
     # scope3 — granted in the token (it is not role-restricted) but does NOT satisfy the operation binding
     # (scope1/scope2) → refused at the gateway (403).

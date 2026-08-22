@@ -54,7 +54,8 @@ Feature: Key Manager API Key
     # node-customer-service (the API's other operation, DELETE /customers/{id}, answers 200 with an empty body).
     When I invoke the API at gateway context "{{apiContext}}/1.0.0/customers/123/" with method "GET" using api key "apiKey" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
-    And The response should contain "{\"id\":123,\"name\":\"John\"}"
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
 
     Examples:
       | actor             |
@@ -138,7 +139,8 @@ Feature: Key Manager API Key
     # A matching X-Forwarded-For is authorised (200)
     When I invoke the API at gateway context "{{apiContext}}/1.0.0/customers/123/" with method "GET" using api key "apiKey" and forwarded-for "1.2.3.4" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
-    And The response should contain "{\"id\":123,\"name\":\"John\"}"
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
     # A non-matching X-Forwarded-For is forbidden (403)
     When I invoke the API at gateway context "{{apiContext}}/1.0.0/customers/123/" with method "GET" using api key "apiKey" and forwarded-for "5.6.7.8" until response status code becomes 403 within 60 seconds
     Then The response status code should be 403
@@ -232,7 +234,8 @@ Feature: Key Manager API Key
     # A matching exact referer path is authorised (200)
     When I invoke the API at gateway context "{{apiContext}}/1.0.0/customers/123/" with method "GET" using api key "apiKey" and referer "www.abc.com/path" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
-    And The response should contain "{\"id\":123,\"name\":\"John\"}"
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
     # A non-matching referer is forbidden (403)
     When I invoke the API at gateway context "{{apiContext}}/1.0.0/customers/123/" with method "GET" using api key "apiKey" and referer "www.abc.com/path2" until response status code becomes 403 within 60 seconds
     Then The response status code should be 403
@@ -243,7 +246,8 @@ Feature: Key Manager API Key
     # A wildcard subdomain pattern matches (200)
     When I invoke the API at gateway context "{{apiContext}}/1.0.0/customers/123/" with method "GET" using api key "apiKey" and referer "example.gef.com/path1" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
-    And The response should contain "{\"id\":123,\"name\":\"John\"}"
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
 
     Examples:
       | actor             |
@@ -290,7 +294,8 @@ Feature: Key Manager API Key
     # The key works first (positive control)
     When I invoke the API at gateway context "{{apiContext}}/1.0.0/customers/123/" with method "GET" using api key "apiKey" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
-    And The response should contain "{\"id\":123,\"name\":\"John\"}"
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
     # Revoke the (opaque) key by its keyUUID
     When I retrieve the api key UUID for application id "createdAppId" as "revokeKeyUuid"
     Then The response status code should be 200
@@ -358,7 +363,8 @@ Feature: Key Manager API Key
     # The key in the API's configured custom header -> accepted (200).
     When I invoke the API at gateway context "{{apiContext}}/1.0.0/customers/123/" with method "GET" using api key "apiKey" in header "Custom-ApiKey-Header" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
-    And The response should contain "{\"id\":123,\"name\":\"John\"}"
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
     # The same key in the default ApiKey header -> rejected (401).
     When I invoke the API at gateway context "{{apiContext}}/1.0.0/customers/123/" with method "GET" using api key "apiKey" in header "ApiKey" until response status code becomes 401 within 60 seconds
     Then The response status code should be 401
@@ -424,7 +430,8 @@ Feature: Key Manager API Key
     # The API key invokes the subscriptionless API with NO subscription -> 200 (gateway checks key->API, not a sub).
     When I invoke the API at gateway context "{{slApiContext}}/1.0.0/customers/123/" with method "GET" using api key "apiKey" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
-    And The response should contain "{\"id\":123,\"name\":\"John\"}"
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
 
     Examples:
       | actor             |
@@ -481,7 +488,8 @@ Feature: Key Manager API Key
     # Positive control: WITH the subscription the key invokes successfully.
     When I invoke the API at gateway context "{{nsApiContext}}/1.0.0/customers/123/" with method "GET" using api key "apiKey" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
-    And The response should contain "{\"id\":123,\"name\":\"John\"}"
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
 
     # Remove the subscription — the key itself is untouched and still valid.
     When I delete the subscription with id "nsSubscriptionId"

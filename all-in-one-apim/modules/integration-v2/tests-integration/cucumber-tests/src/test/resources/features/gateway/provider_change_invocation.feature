@@ -11,10 +11,12 @@ Feature: Gateway Invocation After An API Provider Change
 
   # Runs x2 tenants to prove the provider-change invocation arc remains tenant-scoped.
   @cap:gateway @feat:rest-invocation @rule:provider-change @type:regression @dep:publisher @dep:admin @legacy:ChangeApiProviderTestCase
-  Scenario Outline: A REST API stays invocable after its provider changes and a new revision is deployed
+  Scenario Outline: A REST API stays invocable after its provider changes and a new revision is deployed as <actor>
     Given The system is ready
     And I have valid access tokens as "<actor>"
     And I provision user "pciNewProvider" with roles "Internal/creator,Internal/publisher" in tenant "<tenant>"
+    # Mint the new provider's publisher tokens so the post-transfer revision legs can run AS them.
+    And The system is ready and I have valid publisher access tokens as "pciNewProvider<suffix>"
     And I act as "<actor>"
     And I have created an api from "artifacts/payloads/create_apim_test_api.json" as "pciApiId" and deployed it
     # Keep the deployed revision's id: it is undeployed and replaced AFTER the provider change.
@@ -29,12 +31,15 @@ Feature: Gateway Invocation After An API Provider Change
     Then The response status code should be 200
     When I invoke the API at gateway context "{{pciApiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
-    And The response should contain "{\"id\":123,\"name\":\"John\"}"
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
 
     # Transfer ownership.
     When I change the provider of API "pciApiId" to "pciNewProvider<suffix>"
     Then The response status code should be 200
     And The provider of API "pciApiId" should match actor "pciNewProvider<suffix>"
+    # The undeploy/revision/deploy legs below run AS THE NEW PROVIDER — the feature header's claim.
+    When I act as "pciNewProvider<suffix>"
 
     # Undeploy the pre-change revision and deploy a NEW revision created after the change.
     When I undeploy revision "pciRevision1" of "apis" resource "pciApiId"
@@ -53,22 +58,24 @@ Feature: Gateway Invocation After An API Provider Change
     # The re-owned API is invocable again through the gateway with the SAME application token.
     When I invoke the API at gateway context "{{pciApiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
-    And The response should contain "{\"id\":123,\"name\":\"John\"}"
-
-  # GraphQL counterpart. Uses the SELF-HEALING deploy gate ("should be live on the gateway, redeploying if
-  # propagation is lost", §15) rather than a plain retry, as the other GraphQL gateway features do — a dropped
-  # at-most-once deploy event can only be fixed by re-emitting it. Runs x2 tenants like the REST counterpart.
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
 
     Examples:
       | actor | tenant | suffix |
       | admin | carbon.super |  |
       | admin@tenant1.com | tenant1.com | @tenant1.com |
 
+  # GraphQL counterpart. Uses the SELF-HEALING deploy gate ("should be live on the gateway, redeploying if
+  # propagation is lost", §15) rather than a plain retry, as the other GraphQL gateway features do — a dropped
+  # at-most-once deploy event can only be fixed by re-emitting it. Runs x2 tenants like the REST counterpart.
   @cap:gateway @feat:graphql-invocation @rule:provider-change @type:regression @dep:publisher @dep:admin @legacy:ChangeApiProviderTestCase
-  Scenario Outline: A GraphQL API stays invocable after its provider changes and a new revision is deployed
+  Scenario Outline: A GraphQL API stays invocable after its provider changes and a new revision is deployed as <actor>
     Given The system is ready
     And I have valid access tokens as "<actor>"
     And I provision user "gciNewProvider" with roles "Internal/creator,Internal/publisher" in tenant "<tenant>"
+    # Mint the new provider's publisher tokens so the post-transfer revision legs can run AS them.
+    And The system is ready and I have valid publisher access tokens as "gciNewProvider<suffix>"
     And I act as "<actor>"
     And I put JSON payload from file "artifacts/payloads/create_apim_test_graphql_api.json" in context as "gciApiPayload"
     And I create a GraphQL API with schema file "artifacts/payloads/graphql_schema.graphql" and additional properties "gciApiPayload" as "gciApiId"
@@ -106,6 +113,8 @@ Feature: Gateway Invocation After An API Provider Change
     When I change the provider of API "gciApiId" to "gciNewProvider<suffix>"
     Then The response status code should be 200
     And The provider of API "gciApiId" should match actor "gciNewProvider<suffix>"
+    # The undeploy/revision/deploy legs below run AS THE NEW PROVIDER — the feature header's claim.
+    When I act as "gciNewProvider<suffix>"
 
     # Undeploy the pre-change revision and deploy a NEW revision created after the change.
     When I undeploy revision "gciRevision1" of "apis" resource "gciApiId"

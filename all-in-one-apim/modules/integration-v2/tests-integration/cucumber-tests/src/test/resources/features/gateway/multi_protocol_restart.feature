@@ -25,7 +25,8 @@ Feature: Gateway Multi-Protocol Invocation Across Restart
     And I copy context value "generatedAccessToken" to "restToken"
     And I invoke the API at gateway context "{{restContext}}/1.0.0/customers/123/" with method "GET" using access token "restToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
-    And The response should contain "{\"id\":123,\"name\":\"John\"}"
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
 
     # --- GraphQL API: deploy, subscribe, invoke a query, preserve its token/context ---
     When I put JSON payload from file "artifacts/payloads/create_apim_test_graphql_api.json" in context as "gqlRsPayload"
@@ -62,7 +63,8 @@ Feature: Gateway Multi-Protocol Invocation Across Restart
     When I gracefully restart the API Manager server
     And I invoke the API at gateway context "{{restContext}}/1.0.0/customers/123/" with method "GET" using access token "restToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
-    And The response should contain "{\"id\":123,\"name\":\"John\"}"
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
     When I invoke the API at gateway context "{{gqlRsContext}}/1.0.0" with method "POST" using access token "gqlToken" and payload "gqlRsQuery" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
     And The response should contain "Afrikaans"

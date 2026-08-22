@@ -163,7 +163,7 @@ Feature: Admin Secondary User Store (case-insensitive)
   # SUPER_TENANT_ADMIN). Each scenario provisions and removes its OWN store user so a failure cannot strand a shared name. This
   # block has no initBackend, so — as with the REST scenario above — these assert the publisher plane only.
   @cap:publisher @feat:api-lifecycle @rule:secondary-userstore @dep:admin @type:regression @legacy:ChangeApiProviderSecondaryUserStoreTestCase
-  Scenario Outline: A SOAP API's provider can be changed to a secondary-user-store user
+  Scenario Outline: A SOAP API's provider can be changed to a secondary-user-store user as <actor>
     Given The system is ready
     And I have valid access tokens as "<actor>"
     When I provision store user "SECONDARY.COM/soapProvUser" with password "password123" and roles "Internal/subscriber,Internal/publisher,Internal/creator" in tenant "<tenant>"
@@ -194,7 +194,7 @@ Feature: Admin Secondary User Store (case-insensitive)
       | admin@tenant1.com | tenant1.com | @tenant1.com |
 
   @cap:publisher @feat:api-lifecycle @rule:secondary-userstore @dep:admin @type:regression @legacy:ChangeApiProviderSecondaryUserStoreTestCase
-  Scenario Outline: A SOAP-to-REST API's provider can be changed to a secondary-user-store user
+  Scenario Outline: A SOAP-to-REST API's provider can be changed to a secondary-user-store user as <actor>
     Given The system is ready
     And I have valid access tokens as "<actor>"
     When I provision store user "SECONDARY.COM/s2rProvUser" with password "password123" and roles "Internal/subscriber,Internal/publisher,Internal/creator" in tenant "<tenant>"
@@ -228,7 +228,7 @@ Feature: Admin Secondary User Store (case-insensitive)
       | admin@tenant1.com | tenant1.com | @tenant1.com |
 
   @cap:publisher @feat:api-lifecycle @rule:secondary-userstore @dep:admin @type:regression @legacy:ChangeApiProviderSecondaryUserStoreTestCase
-  Scenario Outline: A GraphQL API's provider can be changed to a secondary-user-store user
+  Scenario Outline: A GraphQL API's provider can be changed to a secondary-user-store user as <actor>
     Given The system is ready
     And I have valid access tokens as "<actor>"
     When I provision store user "SECONDARY.COM/gqlProvUser" with password "password123" and roles "Internal/subscriber,Internal/publisher,Internal/creator" in tenant "<tenant>"
@@ -249,16 +249,15 @@ Feature: Admin Secondary User Store (case-insensitive)
 
     When I remove the secondary user store user "SECONDARY.COM/gqlProvUser" in tenant "<tenant>"
 
-  # PROBE (shared-DB isolation): the SECONDARY.COM store is registered for BOTH tenants against ONE shared H2 DB.
-  # A user seeded into one tenant's store must be invisible to the other tenant's store — the usermgt UM_* tables
-  # carry UM_TENANT_ID, so identical (domain, username) rows in different tenants are distinct users. This is the
-  # empirical proof of the architecture's shared-DB claim (docs/devs/secondary-userstore-framework-architecture.md).
-
     Examples:
       | actor | tenant | suffix |
       | admin | carbon.super |  |
       | admin@tenant1.com | tenant1.com | @tenant1.com |
 
+  # PROBE (shared-DB isolation): the SECONDARY.COM store is registered for BOTH tenants against ONE shared H2 DB.
+  # A user seeded into one tenant's store must be invisible to the other tenant's store — the usermgt UM_* tables
+  # carry UM_TENANT_ID, so identical (domain, username) rows in different tenants are distinct users. This is the
+  # empirical proof of the architecture's shared-DB claim (docs/devs/secondary-userstore-framework-architecture.md).
   @cap:admin @feat:tenants-orgs @rule:secondary-userstore @type:regression
   Scenario: The shared secondary-store DB isolates users by tenant (UM_TENANT_ID)
     Given The system is ready
@@ -278,7 +277,7 @@ Feature: Admin Secondary User Store (case-insensitive)
   # by the framework (publisherUser1) — can DCR + obtain tokens (password grant) and drive the publisher plane.
   # Runs in BOTH tenants (×2). Its created API is torn down as that store user by the @cleanup hook.
   @cap:publisher @feat:api-lifecycle @rule:secondary-userstore @dep:admin @type:regression
-  Scenario Outline: A secondary-store publisher user can authenticate and create+publish an API
+  Scenario Outline: A secondary-store publisher user can authenticate and create+publish an API as <actor>
     Given The system is ready and I have valid publisher access tokens as "<actor>"
     When I have created an api from "artifacts/payloads/create_apim_test_api.json" as "storeActorApiId" and deployed it
     And I publish the "apis" resource with id "storeActorApiId"
@@ -296,7 +295,7 @@ Feature: Admin Secondary User Store (case-insensitive)
   # {carbon.super, tenant1.com}. A single <tenantSuffix> column drives BOTH principals (primary publisher and the
   # store subscriber are the same tenant), so no redundant per-actor column is needed.
   @cap:devportal @feat:subscribe @rule:secondary-userstore @dep:publisher @dep:admin @type:regression
-  Scenario Outline: A secondary-store subscriber can subscribe an application to a published API
+  Scenario Outline: A secondary-store subscriber can subscribe an application to a published API as SECONDARY.COM/subscriberUser1<tenantSuffix>
     Given The system is ready and I have valid publisher access tokens as "publisherUser<tenantSuffix>"
     When I have created an api from "artifacts/payloads/create_apim_test_api.json" as "storeSubApiId" and deployed it
     And I publish the "apis" resource with id "storeSubApiId"

@@ -96,9 +96,11 @@ Feature: Gateway Application Tier Change Enforcement
     Then The response status code should be 200
     When I invoke the API at gateway context "{{tierApiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 90 seconds
     Then The response status code should be 200
-    And The response should contain "{\"id\":123,\"name\":\"John\"}"
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
     When I invoke the API at gateway context "{{tierApiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" 15 times expecting status 200
-    And The response should contain "{\"id\":123,\"name\":\"John\"}"
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
     # And it still trips 429 at the higher limit, with the same throttled-out fault payload.
     When I invoke the API at gateway context "{{tierApiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 429 within 60 seconds
     Then The response status code should be 429
@@ -115,7 +117,8 @@ Feature: Gateway Application Tier Change Enforcement
     Then The response status code should be 200
     When I invoke the API at gateway context "{{tierApiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 90 seconds
     Then The response status code should be 200
-    And The response should contain "{\"id\":123,\"name\":\"John\"}"
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
     When I invoke the API at gateway context "{{tierApiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 429 within 60 seconds
     Then The response status code should be 429
     And The response should contain "900803"

@@ -344,6 +344,8 @@ public class APIInvocationSteps {
      * <p>Used by the endpoint-certificate arc after the certificate is deleted: legacy re-probed 3 times, 2s apart,
      * to be sure the post-delete 500 was enforcement and not a transient. Paces with {@link Utils#pollPause} (never
      * a bare {@code Thread.sleep} — §4/§15) and publishes each response, so the feature may also assert on the last.
+     * Probes at both ENDS of the window inclusive (t=0 and t={@code seconds}), so the asserted span is the full
+     * window the step name promises rather than one pause-interval short of it.
      */
     @When("I invoke the API at gateway context {string} with method {string} using access token {string} and the response status code should remain {int} for {int} seconds")
     public void invokeApiByContextStatusShouldRemain(String context, String httpMethod, String accessToken,
@@ -353,7 +355,7 @@ public class APIInvocationSteps {
         long pollStart = System.currentTimeMillis();
         long end = pollStart + seconds * 1000L;
         int probe = 0;
-        do {
+        while (true) {
             probe++;
             // A transient connectivity blip during the window is not a status deviation, so each probe is retried
             // only until it COMPLETES (any status) — the same warm-up guard the burst steps use.
@@ -366,8 +368,14 @@ public class APIInvocationSteps {
                     + seconds + "s settle window returned " + response.getResponseCode() + " instead of "
                     + expectedStatus + " — the status is NOT the enforced steady state; body: "
                     + response.getData());
+            // Deadline checked BEFORE pausing, so the pause only ever precedes a probe that will actually run.
+            // Pausing first (a do/while on the same deadline) both idled out the tail of the window and left the
+            // LAST probe one interval short of it — a "remains for 10s" claim verified only to t=8s.
+            if (System.currentTimeMillis() >= end) {
+                break;
+            }
             Utils.pollPause(pollStart, Constants.RETRY_INTERVAL_TIME);
-        } while (System.currentTimeMillis() < end);
+        }
     }
 
     /**
