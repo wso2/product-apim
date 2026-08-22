@@ -45,7 +45,7 @@ Feature: Gateway Throttle Isolation Across Email-Form And Plain Usernames
   #
   # Add the tenant row only if either account form becomes able to authenticate.
 
-  @cap:gateway @feat:throttling @rule:email-username @type:regression @dep:admin @dep:devportal
+  @cap:gateway @feat:throttling-enforcement @rule:email-username @type:regression @dep:admin @dep:devportal
   Scenario: An email-form principal does not share an application throttle bucket with the plain user of the same name
     Given The system is ready
     And I have valid access tokens as "admin"

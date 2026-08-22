@@ -81,7 +81,11 @@ def scan_features(root):
     scenarios = []
     if not os.path.isdir(root):
         return scenarios
-    for dirpath, _, files in os.walk(root):
+    # dirnames is sorted IN PLACE so os.walk descends in name order. Without it the traversal follows
+    # filesystem order, which differs between a contributor's machine and the CI runner, so the rendered
+    # tree's within-bucket ordering was not reproducible.
+    for dirpath, dirnames, files in os.walk(root):
+        dirnames.sort()
         for fn in sorted(files):
             if not fn.endswith(".feature"):
                 continue
