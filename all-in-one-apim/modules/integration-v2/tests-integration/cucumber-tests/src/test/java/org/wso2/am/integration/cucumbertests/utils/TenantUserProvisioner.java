@@ -124,21 +124,26 @@ public final class TenantUserProvisioner {
     }
 
     /**
-     * Adds the adpsample tenant (a pre-migrated tenant that already exists in the server's migration
-     * dataset) to shared scope. Copied from the {@code "I add adpsample tenant to context"} step - it
-     * only builds the bean, with no SOAP creation, because the tenant ships with the migration DB.
+     * FAULT INJECTOR — registers a tenant bean for a domain that was deliberately never created on this
+     * container, WITHOUT any SOAP creation. The next {@link #addUser} into that domain therefore
+     * authenticates as an admin the server does not know, gets a non-200 from the user-admin service and
+     * fails, so provisioning throws inside {@code onStart}.
+     *
+     * <p>This exists solely so the framework-verification blocks can prove that a boot-time provisioning
+     * failure is surfaced (recorded as {@code bootError} and rethrown) rather than leaving a block green and
+     * empty — see {@code BlockLifecycleListener.PARAM_INJECT_PROVISIONING_FAILURE}. It is NOT a fixture: no
+     * product test should ever call it.
      */
-    public static void addAdpsampleTenant() {
+    public static void addUnprovisionedTenant(String tenantDomain) {
 
-        Tenant adpTenant = new Tenant();
-        adpTenant.setDomain(Constants.ADPSAMPLE_TENANT_DOMAIN);
-        //  tenant admin
+        Tenant tenant = new Tenant();
+        tenant.setDomain(tenantDomain);
         User admin = new User();
-        admin.setKey(Constants.ADPSAMPLE_USER_KEY);
-        admin.setUserName(Constants.ADPSAMPLE_TENANT_ADMIN_USERNAME);
-        admin.setPassword(Constants.ADPSAMPLE_TENANT_ADMIN_PASSWORD);
-        adpTenant.setTenantAdmin(admin);
-        TestContext.setShared(Constants.ADPSAMPLE_TENANT_DOMAIN, adpTenant);
+        admin.setKey("unprovisionedTenantAdmin");
+        admin.setUserName("admin" + Constants.CHAR_AT + tenantDomain);
+        admin.setPassword("admin");
+        tenant.setTenantAdmin(admin);
+        TestContext.setShared(tenantDomain, tenant);
     }
 
     /**

@@ -83,9 +83,26 @@ public class BlockLifecycleListener implements ITestListener {
     static final String PARAM_TOML_EXTRA_OVERLAY = "tomlExtraOverlayPath";
     /** When {@code true}, onStart provisions tenants/users into the block's own container after readiness. */
     static final String PARAM_INIT_TENANT_USERS = "initTenantUsers";
-    /** Selects which tenant/user set to provision: {@code default} (the else branch) or {@code adpsample}. */
-    static final String PARAM_TENANT_SET = "tenantSet";
-    static final String TENANT_SET_ADPSAMPLE = "adpsample";
+    /**
+     * FRAMEWORK VERIFICATION ONLY. When {@code true}, provisioning deliberately fails: it targets a tenant
+     * domain that was never created on this container, so the user-admin SOAP call is refused and the
+     * exception propagates out of {@code onStart}.
+     *
+     * <p>The failure is REAL rather than a synthetic {@code throw}, so the blocks below exercise the same path
+     * a genuine misconfiguration would. Two guarantees depend on it, and both are what make every OTHER
+     * block's boot failure visible instead of a silent pass:
+     * <ul>
+     *   <li>{@code Phase5.5-ProvisioningFailure} — a provisioning failure in {@code onStart} turns the build
+     *       RED (recorded as {@code bootError}, rethrown by {@code BaseBlockRunner}'s {@code @BeforeClass})
+     *       rather than leaving the block green and empty;</li>
+     *   <li>{@code Phase6.1-BrokenBlock} — a broken block fails in ISOLATION while its siblings pass, and its
+     *       container is still released by {@code onFinish}.</li>
+     * </ul>
+     * Never set this on a product block.
+     */
+    static final String PARAM_INJECT_PROVISIONING_FAILURE = "injectProvisioningFailure";
+    /** The domain {@link #PARAM_INJECT_PROVISIONING_FAILURE} targets — never created, hence the failure. */
+    static final String UNPROVISIONED_TENANT_DOMAIN = "never-created.invalid";
     /**
      * When {@code true}, every user provisioned by {@link #PARAM_INIT_TENANT_USERS} (except the super-tenant
      * {@code admin}) gets an EMAIL-FORM physical username — {@code <base>@email.com} instead of {@code <base>} —
@@ -118,10 +135,7 @@ public class BlockLifecycleListener implements ITestListener {
      *
      * <p>The username regexes are deliberately NOT touched: this build's {@code database_unique_id} defaults are
      * {@code UsernameJavaRegEx}/{@code UsernameJavaScriptRegEx} = {@code ^[\S]{3,30}$}, which already admit
-     * {@code @}, so both the plain and the email form validate. Usable with the {@code default} tenant set ONLY:
-     * the {@code adpsample} set's users ship fixed inside the migration dataset and cannot carry the email form, so
-     * pairing this flag with {@code tenantSet=adpsample} is REJECTED at boot (see {@code provisionTenantUsers})
-     * rather than quietly provisioning an identity the dataset does not contain.
+     * {@code @}, so both the plain and the email form validate.
      *
      * <p>The flag is published into the block's shared scope under
      * {@link TenantUserProvisioner#EMAIL_USER_MODE_KEY} BEFORE any provisioning, and the mail-domain transform
@@ -353,7 +367,8 @@ public class BlockLifecycleListener implements ITestListener {
                     + " baseGatewayUrl=" + gatewayUrl);
 
             if (Boolean.parseBoolean(param(context, PARAM_INIT_TENANT_USERS))) {
-                provisionTenantUsers(label, param(context, PARAM_TENANT_SET),
+                provisionTenantUsers(label,
+                        Boolean.parseBoolean(param(context, PARAM_INJECT_PROVISIONING_FAILURE)),
                         Boolean.parseBoolean(param(context, PARAM_EMAIL_USER_MODE)));
             }
             // Runtime secondary user store (replaces the seeded .mv.db fixture). After tenant provisioning so the
@@ -454,46 +469,40 @@ public class BlockLifecycleListener implements ITestListener {
     }
 
     /**
-     * Provisions the selected tenant/user set against the block's OWN booted container. {@code baseUrl} is
-     * already published into the block's shared scope, so {@link TenantUserProvisioner} (which reads it from
-     * there) targets this container's mapped port. Mirrors the legacy init features: the {@code default} set
-     * matches {@code tenant_users_initialisation.feature}; {@code adpsample} matches
-     * {@code migrated_tenant_user_initialization.feature}. Called inside onStart's try, so a provisioning
-     * failure becomes {@code bootError} and the block is skipped cleanly rather than NPE-ing mid-scenario.
+     * Provisions the tenant/user set against the block's OWN booted container. {@code baseUrl} is already
+     * published into the block's shared scope, so {@link TenantUserProvisioner} (which reads it from there)
+     * targets this container's mapped port. Mirrors the legacy {@code tenant_users_initialisation.feature}.
+     * Called inside onStart's try, so a provisioning failure becomes {@code bootError} and the block is skipped
+     * cleanly rather than NPE-ing mid-scenario.
      *
-     * @param emailUserMode see {@link #PARAM_EMAIL_USER_MODE} — provisions every user of the {@code default} set
-     *                      (bar the super-tenant admin) with an email-form physical username
+     * @param injectProvisioningFailure see {@link #PARAM_INJECT_PROVISIONING_FAILURE} — framework verification
+     *                                  only; makes this method fail on purpose
+     * @param emailUserMode             see {@link #PARAM_EMAIL_USER_MODE} — provisions every user (bar the
+     *                                  super-tenant admin) with an email-form physical username
      */
-    private void provisionTenantUsers(String label, String tenantSet, boolean emailUserMode)
+    private void provisionTenantUsers(String label, boolean injectProvisioningFailure, boolean emailUserMode)
             throws java.io.IOException, JaxenException {
-
-        // The adpsample set's identities ship FIXED inside the migration dataset, so the mail-domain transform must
-        // never reach them: it would provision `testTenantUser11@email.com` while the dataset only ever contains
-        // `testTenantUser11`, and every login as the migrated user would then fail against a user that does not
-        // exist. The two parameters are therefore incoherent together — reject the combination at boot rather than
-        // silently ignoring whichever one loses, so a misconfigured block fails with this message instead of an
-        // unexplained authentication failure deep inside a migration scenario.
-        if (TENANT_SET_ADPSAMPLE.equalsIgnoreCase(tenantSet) && emailUserMode) {
-            throw new IllegalArgumentException("Block '" + label + "' sets tenantSet=" + TENANT_SET_ADPSAMPLE
-                    + " together with " + PARAM_EMAIL_USER_MODE + "=true, which cannot be honoured: the adpsample "
-                    + "users are fixed in the migration dataset and cannot carry the email-form username. Drop "
-                    + PARAM_EMAIL_USER_MODE + " from this block, or use the default tenant set.");
-        }
 
         // Published BEFORE the first addUser so the provisioner's physicalUserName transform is in force for the
         // boot-time set, and stays in shared scope so a scenario's own `I provision user …` gets the same form.
-        // For adpsample this is necessarily false (guarded above), so the fixed migration identities are
-        // provisioned verbatim — matching the per-call-site transform this flag replaced.
         TestContext.setShared(TenantUserProvisioner.EMAIL_USER_MODE_KEY, emailUserMode);
 
         // Gateway readiness can pass before the SOAP admin services finish deploying; gate on the Tenant Mgt
         // service being live so provisioning never fires into a transient 404 (a race parallel boots widen).
         TenantUserProvisioner.awaitTenantMgtServiceReady();
 
-        if (TENANT_SET_ADPSAMPLE.equalsIgnoreCase(tenantSet)) {
-            TenantUserProvisioner.addAdpsampleTenant();
-            TenantUserProvisioner.addUser(Constants.ADPSAMPLE_TENANT_DOMAIN, "userKey1",
-                    "testTenantUser11", "testTenantUser11", "ADP_CREATOR, ADP_PUBLISHER, ADP_SUBSCRIBER");
+        if (injectProvisioningFailure) {
+            // Deliberate failure for the framework-verification blocks. Placed AFTER the readiness gate so the
+            // cause is unambiguously "this tenant does not exist" and not "the admin service was not up yet".
+            logger.info("Block '" + label + "' sets " + PARAM_INJECT_PROVISIONING_FAILURE
+                    + "=true; provisioning into the never-created tenant '" + UNPROVISIONED_TENANT_DOMAIN
+                    + "' so boot fails on purpose.");
+            TenantUserProvisioner.addUnprovisionedTenant(UNPROVISIONED_TENANT_DOMAIN);
+            TenantUserProvisioner.addUser(UNPROVISIONED_TENANT_DOMAIN, "unprovisionedUserKey",
+                    "unprovisionedUser", "unprovisionedUser", "Internal/subscriber");
+            throw new IllegalStateException("Provisioning into '" + UNPROVISIONED_TENANT_DOMAIN
+                    + "' was expected to fail for block '" + label + "' but succeeded — the "
+                    + PARAM_INJECT_PROVISIONING_FAILURE + " fault injector is no longer injecting a fault.");
         } else {
             String allRoles = "Internal/creator, Internal/publisher, Internal/subscriber";
             String publisherRoles = "Internal/creator, Internal/publisher";
@@ -529,8 +538,7 @@ public class BlockLifecycleListener implements ITestListener {
             TenantUserProvisioner.addUser("tenant1.com", Constants.SUBSCRIBER_USER_KEY,
                     "subscriberUser11", "subscriberUser11", subscriberRoles);
         }
-        logger.info("Block '" + label + "' provisioned tenant set '"
-                + (tenantSet == null || tenantSet.isBlank() ? "default" : tenantSet) + "'"
+        logger.info("Block '" + label + "' provisioned tenant users"
                 + (emailUserMode ? " with email-form usernames (e.g. "
                         + TenantUserProvisioner.physicalUserName("publisherUser1") + ")" : ""));
     }

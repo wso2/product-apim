@@ -3,10 +3,9 @@
 # Phase 5.5 verification — a provisioning failure in onStart FAILS the block (build red).
 #
 # testng-fv-5.5.xml boots ONE REAL APIM block (block=fv-5.5) with initTenantUsers=true and
-# tenantSet=adpsample. adpsample is the pre-migrated profile: addAdpsampleTenant only builds a context bean
-# (no SOAP create), so on this FRESH (non-migrated) container adpsample.com does not exist server-side. The
-# follow-up addUser SOAP authenticates as admin@adpsample.com and gets a non-200, so TenantUserProvisioner
-# throws. Because provisioning runs inside BlockLifecycleListener.onStart's try, the throw is recorded as the
+# injectProvisioningFailure=true. Provisioning then targets a tenant domain that was never created on the
+# container, so the addUser SOAP call authenticates as an admin the server does not know, gets a non-200 and
+# TenantUserProvisioner throws — a REAL provisioning failure rather than a synthetic one. Because provisioning runs inside BlockLifecycleListener.onStart's try, the throw is recorded as the
 # bootError attribute (NOT surfaced mid-scenario), and BaseBlockRunner's @BeforeClass rethrows it as a hard
 # IllegalStateException - the probe class FAILS (a @BeforeClass config FAILURE) with the provisioning failure
 # as root cause.
