@@ -123,6 +123,12 @@ Feature: DevPortal Subscribe
     When I retrieve all subscriptions of application "depSubApp2Id"
     Then The response status code should be 200
     And The value of response field "count" should be "0"
+    # ...while the FIRST application's subscription, taken while the API was still PUBLISHED, SURVIVES the
+    # deprecation. Deprecation closes the API to NEW subscribers only; revoking existing ones would be a
+    # serious regression, and it is what the visibility half below assumes without asserting.
+    When I retrieve all subscriptions of application "depSubApp1Id"
+    Then The response status code should be 200
+    And The value of response field "count" should be "1"
 
     # VISIBILITY — deprecation splits the devportal's two read paths, and BOTH halves are pinned here. This is the
     # facet legacy left entirely commented out.

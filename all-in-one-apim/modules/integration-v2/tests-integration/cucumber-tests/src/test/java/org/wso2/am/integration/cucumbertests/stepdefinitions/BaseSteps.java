@@ -56,6 +56,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class BaseSteps {
 
@@ -827,6 +829,126 @@ public class BaseSteps {
     }
 
     /**
+     * GATEWAY fault envelope with a DYNAMIC description (one the product formats per request, e.g. the throttle
+     * fault's " .You can access API after ..." suffix or the missing-credentials header name). {@code code} and
+     * {@code type} are still exact; only the description is a fragment, because an exact match would be asserting
+     * a value the product legitimately varies.
+     */
+    @Then("The fault response should have code {string} type {string} and description containing {string}")
+    public void theFaultResponseShouldHaveDescriptionContaining(String expectedCode, String expectedType,
+                                                                String descriptionFragment) {
+
+        JSONObject fault = faultEnvelope();
+        Assert.assertEquals(String.valueOf(fault.opt("code")), Utils.resolveContextPlaceholders(expectedCode), "Fault 'code' mismatch: " + fault);
+        Assert.assertEquals(String.valueOf(fault.opt("type")), Utils.resolveContextPlaceholders(expectedType), "Fault 'type' mismatch: " + fault);
+        String description = String.valueOf(fault.opt("description"));
+        descriptionFragment = Utils.resolveContextPlaceholders(descriptionFragment);
+        Assert.assertTrue(description.contains(descriptionFragment),
+                "Fault 'description' [" + description + "] does not contain '" + descriptionFragment + "'");
+    }
+
+    /**
+     * GATEWAY fault envelope where the product's description is entirely dynamic, so only {@code code} and
+     * {@code type} are assertable — both exactly. Still strictly stronger than a substring search for the code,
+     * which passes if the number appears anywhere in the body.
+     */
+    @Then("The fault response should have code {string} and type {string}")
+    public void theFaultResponseShouldHaveCodeAndType(String expectedCode, String expectedType) {
+
+        JSONObject fault = faultEnvelope();
+        Assert.assertEquals(String.valueOf(fault.opt("code")), Utils.resolveContextPlaceholders(expectedCode), "Fault 'code' mismatch: " + fault);
+        Assert.assertEquals(String.valueOf(fault.opt("type")), Utils.resolveContextPlaceholders(expectedType), "Fault 'type' mismatch: " + fault);
+    }
+
+    /**
+     * MANAGEMENT error envelope where the description is a per-request {@code %s} format (e.g. the governance
+     * compliance fault, whose description IS the violation list) — {@code code} and {@code message} exactly.
+     */
+    @Then("The error response should have code {string} and message {string}")
+    public void theErrorResponseShouldHaveCodeAndMessage(String expectedCode, String expectedMessage) {
+
+        JSONObject error = faultEnvelope();
+        Assert.assertEquals(String.valueOf(error.opt("code")), Utils.resolveContextPlaceholders(expectedCode), "Error 'code' mismatch: " + error);
+        Assert.assertEquals(String.valueOf(error.opt("message")), Utils.resolveContextPlaceholders(expectedMessage),
+                "Error 'message' mismatch: " + error);
+    }
+
+    /** One fault element, namespace-prefixed or not (the gateway emits {@code am:code}, plain {@code code}). */
+    private static final String FAULT_ELEMENT = "<(?:\\w+:)?%1$s>(.*?)</(?:\\w+:)?%1$s>";
+
+    /**
+     * The published response parsed as a fault/error envelope, guarded for a body on ANY status (§7).
+     *
+     * <p>The body is NOT always a bare JSON document. When the request body itself failed to build (the
+     * malformed-XML scenario), the gateway echoes the unparseable request bytes and appends the fault, so the
+     * response reads {@code <request>Request<request></request></request>{"code":"601000",...}}. Scanning for
+     * the embedded object rather than parsing from offset zero is what makes that case assertable instead of
+     * dying on {@code JSONException: A JSONObject text must begin with '{'}. The {@code <am:fault>} XML form is
+     * handled as a fallback for faults rendered as a Synapse document.
+     */
+    private JSONObject faultEnvelope() {
+
+        HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
+        Assert.assertTrue(response != null && response.getData() != null && !response.getData().isBlank(),
+                "No response body to assert a fault envelope on, got="
+                        + (response == null ? "null" : response.getResponseCode() + "/" + response.getData()));
+        String body = response.getData().trim();
+        int start = body.indexOf('{');
+        int end = body.lastIndexOf('}');
+        if (start >= 0 && end > start) {
+            try {
+                JSONObject candidate = new JSONObject(body.substring(start, end + 1));
+                if (candidate.has("code")) {
+                    return candidate;
+                }
+            } catch (JSONException notJson) {
+                // Not a JSON envelope after all -- fall through to the XML form below.
+            }
+        }
+        JSONObject fault = new JSONObject();
+        for (String field : new String[] {"code", "type", "message", "description"}) {
+            Matcher m = Pattern.compile(String.format(FAULT_ELEMENT, field), Pattern.DOTALL).matcher(body);
+            if (m.find()) {
+                fault.put(field, unescapeXml(m.group(1).trim()));
+            }
+        }
+        Assert.assertTrue(fault.has("code"),
+                "Response body carries no fault envelope in either form (no embedded JSON object with a "
+                        + "'code', no <code> element), got=" + response.getResponseCode() + "/" + body);
+        return fault;
+    }
+
+    /** The five predefined XML entities, so a description carrying markup compares as its literal text. */
+    private static String unescapeXml(String value) {
+
+        return value.replace("&lt;", "<").replace("&gt;", ">").replace("&quot;", "\"")
+                .replace("&apos;", "'").replace("&amp;", "&");
+    }
+
+    /**
+     * GATEWAY fault envelope, asserted exactly. The gateway emits {@code code}/{@code type}/{@code description}
+     * — {@code type}, NOT the {@code message} the management-API envelope uses — and it does so on a NON-2xx
+     * status, so neither {@code The error response should have code ... message ...} (wrong field) nor
+     * {@code The value of response field ...} (refuses a non-2xx) can express it. Without this step a gateway
+     * fault can only be checked by substring, which passes if the code appears anywhere in the body.
+     *
+     * @param expectedCode        exact {@code code} value
+     * @param expectedType        exact {@code type} value
+     * @param expectedDescription exact {@code description} value
+     */
+    @Then("The fault response should have code {string} type {string} and description {string}")
+    public void theFaultResponseShouldHave(String expectedCode, String expectedType, String expectedDescription) {
+
+        JSONObject fault = faultEnvelope();
+        Assert.assertEquals(String.valueOf(fault.opt("code")), Utils.resolveContextPlaceholders(expectedCode),
+                "Fault 'code' mismatch: " + fault);
+        Assert.assertEquals(String.valueOf(fault.opt("type")), Utils.resolveContextPlaceholders(expectedType),
+                "Fault 'type' mismatch: " + fault);
+        Assert.assertEquals(String.valueOf(fault.opt("description")), Utils.resolveContextPlaceholders(expectedDescription),
+                "Fault 'description' mismatch: " + fault);
+    }
+
+    /**
      * Asserts the standard product ERROR envelope of a non-2xx response: {@code code} and {@code message} EXACTLY,
      * and {@code description} by substring (descriptions embed request-specific text). The counterpart of
      * {@code The value of response field ... should be ...}, which deliberately requires a 2xx and so cannot
@@ -846,16 +968,13 @@ public class BaseSteps {
     @Then("The error response should have code {string} message {string} and description containing {string}")
     public void theErrorResponseShouldHave(String expectedCode, String expectedMessage, String descriptionFragment) {
 
-        HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
-        Assert.assertTrue(response != null && response.getData() != null && !response.getData().isBlank(),
-                "No response body to assert the error envelope on, got="
-                        + (response == null ? "null" : response.getResponseCode() + "/" + response.getData()));
-        JSONObject error = new JSONObject(response.getData());
-        Assert.assertEquals(String.valueOf(error.opt("code")), expectedCode,
-                "Error 'code' mismatch: " + response.getData());
-        Assert.assertEquals(String.valueOf(error.opt("message")), expectedMessage,
-                "Error 'message' mismatch: " + response.getData());
+        JSONObject error = faultEnvelope();
+        Assert.assertEquals(String.valueOf(error.opt("code")), Utils.resolveContextPlaceholders(expectedCode),
+                "Error 'code' mismatch: " + error);
+        Assert.assertEquals(String.valueOf(error.opt("message")), Utils.resolveContextPlaceholders(expectedMessage),
+                "Error 'message' mismatch: " + error);
         String description = String.valueOf(error.opt("description"));
+        descriptionFragment = Utils.resolveContextPlaceholders(descriptionFragment);
         Assert.assertTrue(description.contains(descriptionFragment),
                 "Error 'description' [" + description + "] does not contain '" + descriptionFragment + "'");
     }

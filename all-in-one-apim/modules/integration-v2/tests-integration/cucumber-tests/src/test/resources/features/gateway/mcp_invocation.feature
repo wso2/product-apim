@@ -35,7 +35,7 @@ Feature: MCP tool invocation through the gateway
       """
     # Full MCP handshake through the gateway: initialize (session) → notifications/initialized → tools/list
     # (must advertise echo) → tools/call echo — the stateful round-trip to the real SDK-backed MCP server.
-    When I invoke the MCP tool "echo" with arguments "{\"message\":\"hello mcp\"}" at gateway context "{{mcpContext}}" version "1.0.0" using access token "generatedAccessToken" expecting result containing "hello mcp" within 90 seconds
+    When I invoke the MCP tool "echo" with arguments "{\"message\":\"hello mcp\"}" at gateway context "{{mcpContext}}" version "1.0.0" using access token "generatedAccessToken" expecting exact result text "hello mcp" within 90 seconds
     # …and the WHOLE JSON-RPC result, exactly: the proxy subtype relays the upstream MCP server's result verbatim,
     # so there is exactly ONE text content block and NO isError field (the DirectBackend subtype adds one).
     Then the MCP tool "echo" with arguments "{\"message\":\"hello mcp\"}" at gateway context "{{mcpContext}}" version "1.0.0" using access token "generatedAccessToken" should return exactly this result within 90 seconds:
@@ -44,8 +44,8 @@ Feature: MCP tool invocation through the gateway
       """
     # Value-add 1 — REAL tool execution (legacy asserted only canned echoes): args are forwarded and the real
     # result is computed/returned by the SDK server (add 2+3=5; get_pets returns actual pet data).
-    When I invoke the MCP tool "add" with arguments "{\"a\":2,\"b\":3}" at gateway context "{{mcpContext}}" version "1.0.0" using access token "generatedAccessToken" expecting result containing "5" within 90 seconds
-    When I invoke the MCP tool "get_pets" with arguments "{}" at gateway context "{{mcpContext}}" version "1.0.0" using access token "generatedAccessToken" expecting result containing "max" within 90 seconds
+    When I invoke the MCP tool "add" with arguments "{\"a\":2,\"b\":3}" at gateway context "{{mcpContext}}" version "1.0.0" using access token "generatedAccessToken" expecting exact result text "5" within 90 seconds
+    When I invoke the MCP tool "get_pets" with arguments "{}" at gateway context "{{mcpContext}}" version "1.0.0" using access token "generatedAccessToken" expecting exact result text "[{\"id\":1,\"name\":\"max\"}]" within 90 seconds
     # Value-add 2 — multi-call SESSION CONTINUITY: one initialize, then several tools/call on the SAME
     # Mcp-Session-Id (proves the gateway persists MCP session state across calls).
     When I invoke MCP tools in one session at gateway context "{{mcpContext}}" version "1.0.0" using access token "generatedAccessToken" with calls "echo|{\"message\":\"multi\"}|multi ; add|{\"a\":10,\"b\":20}|30" within 90 seconds
@@ -131,7 +131,7 @@ Feature: MCP tool invocation through the gateway
     # A token WITH the scope calls the gated tool (200).
     When I request an OAuth access token for the current user using password grant with scope "mcpScopeEnf"
     Then The response status code should be 200
-    When I invoke the MCP tool "echo" with arguments "{\"message\":\"scoped\"}" at gateway context "{{mcpContext}}" version "1.0.0" using access token "generatedAccessToken" expecting result containing "scoped" within 90 seconds
+    When I invoke the MCP tool "echo" with arguments "{\"message\":\"scoped\"}" at gateway context "{{mcpContext}}" version "1.0.0" using access token "generatedAccessToken" expecting exact result text "scoped" within 90 seconds
     # A token WITHOUT the scope is refused at the tool call (403).
     When I request an OAuth access token for the current user using password grant with scope "openid"
     Then The response status code should be 200
@@ -276,14 +276,14 @@ Feature: MCP tool invocation through the gateway
        "serverInfo":{"name":"{{mcpName}}","version":"1.0.0","description":"This is an MCP Server"}}
       """
     # Value-add — real MCP↔HTTP: tools/call get_pets → gateway calls the REST backend → returns real pet data.
-    When I invoke the MCP tool "get_pets" with arguments "{}" at gateway context "{{mcpContext}}" version "1.0.0" using access token "generatedAccessToken" expecting result containing "max" within 90 seconds
+    When I invoke the MCP tool "get_pets" with arguments "{}" at gateway context "{{mcpContext}}" version "1.0.0" using access token "generatedAccessToken" expecting exact result text "[{\"id\":1,\"name\":\"max\"}]" within 90 seconds
     # …and the WHOLE result, exactly: one text content block carrying the backend's body verbatim, isError false.
     Then the MCP tool "get_pets" with arguments "{}" at gateway context "{{mcpContext}}" version "1.0.0" using access token "generatedAccessToken" should return exactly this result within 90 seconds:
       """
       {"content":[{"type":"text","text":"[{\"id\":1,\"name\":\"max\"}]"}],"isError":false}
       """
     # Value-add — path-param tool: get_pets_by_petId {petId:123} → gateway maps to GET /pets/123 on the backend.
-    When I invoke the MCP tool "get_pets_by_petId" with arguments "{\"petId\":\"123\"}" at gateway context "{{mcpContext}}" version "1.0.0" using access token "generatedAccessToken" expecting result containing "max" within 90 seconds
+    When I invoke the MCP tool "get_pets_by_petId" with arguments "{\"petId\":\"123\"}" at gateway context "{{mcpContext}}" version "1.0.0" using access token "generatedAccessToken" expecting exact result text "{\"name\":\"max\"}" within 90 seconds
     # Exactly: the single pet, so the path argument really reached the backend as /pets/123 (a whole-list result
     # would satisfy a contains-"max" check while proving the path param was dropped).
     Then the MCP tool "get_pets_by_petId" with arguments "{\"petId\":\"123\"}" at gateway context "{{mcpContext}}" version "1.0.0" using access token "generatedAccessToken" should return exactly this result within 90 seconds:
@@ -352,7 +352,7 @@ Feature: MCP tool invocation through the gateway
     Then The response status code should be 201
     When I request an OAuth access token for the current user using password grant with scope "mcpOasScopeEnf"
     Then The response status code should be 200
-    When I invoke the MCP tool "get_pets" with arguments "{}" at gateway context "{{mcpContext}}" version "1.0.0" using access token "generatedAccessToken" expecting result containing "max" within 90 seconds
+    When I invoke the MCP tool "get_pets" with arguments "{}" at gateway context "{{mcpContext}}" version "1.0.0" using access token "generatedAccessToken" expecting exact result text "[{\"id\":1,\"name\":\"max\"}]" within 90 seconds
     When I request an OAuth access token for the current user using password grant with scope "openid"
     Then The response status code should be 200
     When I invoke the MCP tool "get_pets" with arguments "{}" at gateway context "{{mcpContext}}" version "1.0.0" using access token "generatedAccessToken" expecting status 403 within 90 seconds
@@ -428,9 +428,9 @@ Feature: MCP tool invocation through the gateway
     When I have set up application with keys, subscribed to API "mcpId" with plan "Unlimited", and obtained access token for "mcpSubId"
     Then The response status code should be 200
     # Value-add — real routing through the underlying API to its backend → real pet data.
-    When I invoke the MCP tool "get_pets" with arguments "{}" at gateway context "{{mcpContext}}" version "1.0.0" using access token "generatedAccessToken" expecting result containing "max" within 90 seconds
+    When I invoke the MCP tool "get_pets" with arguments "{}" at gateway context "{{mcpContext}}" version "1.0.0" using access token "generatedAccessToken" expecting exact result text "[{\"id\":1,\"name\":\"max\"}]" within 90 seconds
     # Value-add — path-param tool routed to GET /pets/123 through the API.
-    When I invoke the MCP tool "get_pets_by_petId" with arguments "{\"petId\":\"123\"}" at gateway context "{{mcpContext}}" version "1.0.0" using access token "generatedAccessToken" expecting result containing "max" within 90 seconds
+    When I invoke the MCP tool "get_pets_by_petId" with arguments "{\"petId\":\"123\"}" at gateway context "{{mcpContext}}" version "1.0.0" using access token "generatedAccessToken" expecting exact result text "{\"name\":\"max\"}" within 90 seconds
     # Value-add — error passthrough + negative auth.
     When I invoke the MCP tool "nosuchtool" with arguments "{}" at gateway context "{{mcpContext}}" version "1.0.0" using access token "generatedAccessToken" expecting an error within 90 seconds
     When I invoke the MCP server at gateway context "{{mcpContext}}" version "1.0.0" with an invalid token expecting status 403 within 60 seconds
@@ -482,7 +482,7 @@ Feature: MCP tool invocation through the gateway
     Then The response status code should be 201
     When I request an OAuth access token for the current user using password grant with scope "mcpApiScopeEnf"
     Then The response status code should be 200
-    When I invoke the MCP tool "get_pets" with arguments "{}" at gateway context "{{mcpContext}}" version "1.0.0" using access token "generatedAccessToken" expecting result containing "max" within 90 seconds
+    When I invoke the MCP tool "get_pets" with arguments "{}" at gateway context "{{mcpContext}}" version "1.0.0" using access token "generatedAccessToken" expecting exact result text "[{\"id\":1,\"name\":\"max\"}]" within 90 seconds
     When I request an OAuth access token for the current user using password grant with scope "openid"
     Then The response status code should be 200
     When I invoke the MCP tool "get_pets" with arguments "{}" at gateway context "{{mcpContext}}" version "1.0.0" using access token "generatedAccessToken" expecting status 403 within 90 seconds

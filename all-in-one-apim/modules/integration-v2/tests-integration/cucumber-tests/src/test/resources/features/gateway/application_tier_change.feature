@@ -70,9 +70,7 @@ Feature: Gateway Application Tier Change Enforcement
     # asserts the body (MESSAGE_THROTTLED_OUT), not just the status, and 429 alone cannot say WHICH limit fired.
     When I invoke the API at gateway context "{{tierApiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 429 within 60 seconds
     Then The response status code should be 429
-    And The response should contain "900803"
-    And The response should contain "Message throttled out"
-    And The response should contain "You have exceeded your quota"
+    And The error response should have code "900803" message "Message throttled out" and description containing "You have exceeded your quota"
 
     # Switch the application to the HIGH (20/min) policy. The gateway's per-minute throttle window must roll over
     # before the new limit is observed (a counter reset only clears the persisted count, not the in-flight window),
@@ -104,8 +102,7 @@ Feature: Gateway Application Tier Change Enforcement
     # And it still trips 429 at the higher limit, with the same throttled-out fault payload.
     When I invoke the API at gateway context "{{tierApiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 429 within 60 seconds
     Then The response status code should be 429
-    And The response should contain "900803"
-    And The response should contain "Message throttled out"
+    And The error response should have code "900803" message "Message throttled out" and description containing "You have exceeded your quota"
 
     # Switch the application BACK to the LOW (3/min) policy — the low limit is re-imposed. Wait out the current
     # window (poll until 200), then a fresh burn trips 429 again quickly, proving the change back took effect.
@@ -121,8 +118,7 @@ Feature: Gateway Application Tier Change Enforcement
     And The value of response field "name" should be "John"
     When I invoke the API at gateway context "{{tierApiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 429 within 60 seconds
     Then The response status code should be 429
-    And The response should contain "900803"
-    And The response should contain "Message throttled out"
+    And The error response should have code "900803" message "Message throttled out" and description containing "You have exceeded your quota"
 
     Examples:
       | actor             |

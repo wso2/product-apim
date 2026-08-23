@@ -375,8 +375,7 @@ Feature: Gateway REST API Invocation
     Then The response status code should be 200
     When I invoke the API at gateway context "{{poContext}}/1.0.0/x" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 403 within 60 seconds
     Then The response status code should be 403
-    And The response should contain "900901"
-    And The response should contain "no sandbox endpoint"
+    And The error response should have code "900901" message "Runtime Error" and description containing "Sandbox key offered to the API with no sandbox endpoint"
 
     Examples:
       | actor             |
@@ -416,8 +415,7 @@ Feature: Gateway REST API Invocation
     Then The response status code should be 200
     When I invoke the API at gateway context "{{soContext}}/1.0.0/x" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 403 within 60 seconds
     Then The response status code should be 403
-    And The response should contain "900901"
-    And The response should contain "no production endpoint"
+    And The error response should have code "900901" message "Runtime Error" and description containing "Production key offered to the API with no production endpoint"
 
     Examples:
       | actor             |

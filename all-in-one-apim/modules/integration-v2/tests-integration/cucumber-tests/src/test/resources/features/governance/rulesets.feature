@@ -53,7 +53,7 @@ Feature: API Governance Rulesets
     And I have a valid Governance access token as "<actor>"
     When I attempt to create a governance ruleset "${UNIQUE:BadRuleset}" from content file "artifacts/apim-governance/invalid-spectral-ruleset.yaml"
     Then The response status code should be 400
-    And The response should contain "990120"
+    And The error response should have code "990120" and message "Invalid ruleset content"
 
     Examples:
       | actor            |
@@ -69,7 +69,7 @@ Feature: API Governance Rulesets
     Then The response status code should be 201
     When I update the governance ruleset "rulesetId" with name "${UNIQUE:Ruleset}" content file "artifacts/apim-governance/invalid-spectral-ruleset.yaml" description "Attempted invalid update" and documentation link "https://wso2.com"
     Then The response status code should be 400
-    And The response should contain "990120"
+    And The error response should have code "990120" and message "Invalid ruleset content"
 
     Examples:
       | actor            |

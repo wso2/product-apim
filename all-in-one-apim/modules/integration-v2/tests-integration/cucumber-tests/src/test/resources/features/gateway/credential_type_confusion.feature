@@ -81,7 +81,7 @@ Feature: Gateway Credential-Type Confusion
   @cap:gateway @feat:security-enforcement @rule:scheme-mismatch @type:negative @dep:publisher @legacy:APISecurityTestCase
   Scenario Outline: Valid HTTP Basic credentials are refused on an oauth2 + api_key API that does not declare basic_auth as <actor>
     Given The system is ready and I have valid publisher access tokens as "<actor>"
-    When I invoke the API at gateway context "{{ctcContext<suffix>}}/1.0.0/customers/123/" with method "GET" using basic auth for actor "admin" until response status code becomes 401 within 60 seconds
+    When I invoke the API at gateway context "{{ctcContext<suffix>}}/1.0.0/customers/123/" with method "GET" using basic auth for actor "<actor>" until response status code becomes 401 within 60 seconds
     Then The response status code should be 401
 
     Examples:
@@ -99,7 +99,7 @@ Feature: Gateway Credential-Type Confusion
     Then The response status code should be 200
     And The value of response field "id" should be "123"
     And The value of response field "name" should be "John"
-    When I invoke the API at gateway context "{{ctcKeyOnlyContext<suffix>}}/1.0.0/customers/123/" with method "GET" using basic auth for actor "admin" until response status code becomes 401 within 60 seconds
+    When I invoke the API at gateway context "{{ctcKeyOnlyContext<suffix>}}/1.0.0/customers/123/" with method "GET" using basic auth for actor "<actor>" until response status code becomes 401 within 60 seconds
     Then The response status code should be 401
 
     Examples:

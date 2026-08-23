@@ -43,12 +43,49 @@ SCENARIO_RE = re.compile(r"^\s*(Scenario Outline|Scenario):\s*(.*)$")
 FEATURE_RE = re.compile(r"^\s*Feature:\s*(.*)$")
 CLASS_RE = re.compile(r'<class\s+name="([^"]+)"')
 XML_COMMENT_RE = re.compile(r"<!--.*?-->", re.S)
-JAVA_BLOCK_COMMENT_RE = re.compile(r"/\*.*?\*/", re.S)
-JAVA_LINE_COMMENT_RE = re.compile(r"//[^\n]*")
+# Comment stripping is a hand-rolled scan, NOT a regex, because a regex cannot tell a comment from a `//`
+# inside a string literal. `features = "http://x/a.feature"` would lose everything from the `//` on, the
+# features option would then not match, and the runner would silently map to [] -- reported as NOT EXECUTED,
+# which is the exact false signal this tool exists to eliminate. Nothing trips it today; the point is that
+# it would fail SILENTLY when something does.
+def strip_java_comments(src):
+    """Java source with comments removed, leaving string and char literals intact."""
+    out, i, n = [], 0, len(src)
+    while i < n:
+        c = src[i]
+        if c in '"\'':                                   # literal: copy verbatim, honouring escapes
+            quote = c
+            out.append(c)
+            i += 1
+            while i < n:
+                out.append(src[i])
+                if src[i] == "\\":                       # escaped char: consume the pair
+                    if i + 1 < n:
+                        out.append(src[i + 1])
+                        i += 2
+                        continue
+                elif src[i] == quote:
+                    i += 1
+                    break
+                i += 1
+            continue
+        if c == "/" and i + 1 < n:
+            if src[i + 1] == "/":
+                while i < n and src[i] != "\n":
+                    i += 1
+                continue
+            if src[i + 1] == "*":
+                end = src.find("*/", i + 2)
+                i = n if end < 0 else end + 2
+                continue
+        out.append(c)
+        i += 1
+    return "".join(out)
 # Both @CucumberOptions forms: the braced array `features = {"a", "b"}` AND the single-value
 # `features = "a"` (42 runners use the latter -- requiring braces silently dropped every one of them).
 FEATURES_OPT_RE = re.compile(r"features\s*=\s*(\{.*?\}|\"[^\"]*\")", re.S)
 FEATURE_PATH_RE = re.compile(r'"([^"]*?\.feature)"')
+ABSTRACT_CLASS_RE = re.compile(r"\babstract\s+class\b")
 
 
 def parse_capability_map(path):
@@ -126,8 +163,14 @@ def parse_runner_features(root):
             if not fn.endswith("Runner.java"):
                 continue
             with open(os.path.join(dirpath, fn), encoding="utf-8") as fh:
-                text = JAVA_LINE_COMMENT_RE.sub("", JAVA_BLOCK_COMMENT_RE.sub("", fh.read()))
+                text = strip_java_comments(fh.read())
             m = FEATURES_OPT_RE.search(text)
+            # A CONCRETE runner with no resolvable features option is a parse failure, not a runner that
+            # declares none -- say so loudly rather than letting it read as a genuine coverage gap. The
+            # abstract base carries no @CucumberOptions by design, so it is not a finding.
+            if not m and not ABSTRACT_CLASS_RE.search(text):
+                print("WARNING: %s declares no parseable `features = ...` option; "
+                      "its scenarios will read as NOT EXECUTED" % fn, file=sys.stderr)
             mapping[fn[:-len(".java")]] = FEATURE_PATH_RE.findall(m.group(1)) if m else []
     return mapping
 

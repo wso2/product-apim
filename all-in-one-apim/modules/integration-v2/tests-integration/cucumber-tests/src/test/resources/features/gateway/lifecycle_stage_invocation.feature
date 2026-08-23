@@ -55,9 +55,10 @@ Feature: Gateway Lifecycle-Stage Invocation
     Then The response status code should be 200
     When I invoke the API at gateway context "{{revContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 503 within 60 seconds
     Then The response status code should be 503
-    And The response should contain "700700"
-    And The response should contain "API blocked"
-    And The response should contain "This API has been blocked temporarily. Please try again later or contact the system administrators."
+    # Exact fields, not substrings. The gateway fault envelope is code/type/description on a NON-2xx status, so
+    # neither the management-envelope step (which reads `message`) nor the response-field step (which requires
+    # 2xx) fits — hence the dedicated fault step.
+    And The fault response should have code "700700" type "API blocked" and description "This API has been blocked temporarily. Please try again later or contact the system administrators."
 
     # DEPRECATED: still invocable (200).
     When I change the lifecycle of API "revApiId" with action "Deprecate"

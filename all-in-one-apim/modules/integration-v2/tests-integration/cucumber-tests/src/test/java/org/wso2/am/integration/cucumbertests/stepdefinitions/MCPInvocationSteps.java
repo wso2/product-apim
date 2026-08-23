@@ -42,6 +42,7 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
@@ -77,6 +78,52 @@ public class MCPInvocationSteps {
     @When("I invoke the MCP tool {string} with arguments {string} at gateway context {string} version {string} using access token {string} expecting result containing {string} within {int} seconds")
     public void invokeMcpTool(String toolName, String argsJson, String context, String version, String accessToken,
                               String expected, int timeoutSeconds) throws Exception {
+
+        callMcpToolUntil(toolName, argsJson, context, version, accessToken, timeoutSeconds,
+                body -> body.contains(expected), "a result containing '" + expected + "'");
+    }
+
+    /**
+     * The EXACT-result counterpart of the {@code containing} variant. Asserts the tool's result is exactly one
+     * {@code text} content item carrying exactly {@code expectedText} — the whole result, not a fragment of it.
+     *
+     * <p>Why this exists: {@code containing "max"} passes on any body that mentions the string anywhere, so it
+     * survives a truncated array, a duplicated item, an extra content block, or the text landing in an error
+     * payload rather than the result. Pinning the content CARDINALITY alongside the value is the §12 rule — a
+     * bare value check over a list cannot see an extra entry.
+     *
+     * @param expectedText exact {@code result.content[0].text} value
+     */
+    @When("I invoke the MCP tool {string} with arguments {string} at gateway context {string} version {string} using access token {string} expecting exact result text {string} within {int} seconds")
+    public void invokeMcpToolExpectingExactResult(String toolName, String argsJson, String context, String version,
+                                                  String accessToken, String expectedText, int timeoutSeconds)
+            throws Exception {
+
+        // Accept any well-formed result and assert AFTER the loop (§7), so a WRONG-but-stable result fails as a
+        // mismatch naming both sides instead of silently retrying to the deadline and reporting only a timeout.
+        String body = callMcpToolUntil(toolName, argsJson, context, version, accessToken, timeoutSeconds,
+                candidate -> new JSONObject(candidate).optJSONObject("result") != null, "a result object");
+        JSONObject result = new JSONObject(body).getJSONObject("result");
+        Assert.assertFalse(result.optBoolean("isError", false),
+                "MCP tool '" + toolName + "' returned an error result: " + result);
+        JSONArray content = result.optJSONArray("content");
+        Assert.assertNotNull(content, "MCP result carries no 'content' array: " + result);
+        Assert.assertEquals(content.length(), 1,
+                "MCP result must carry exactly one content item: " + result);
+        JSONObject item = content.getJSONObject(0);
+        Assert.assertEquals(item.optString("type"), "text", "MCP content item type mismatch: " + result);
+        Assert.assertEquals(item.optString("text"), Utils.resolveContextPlaceholders(expectedText),
+                "MCP result text mismatch: " + result);
+    }
+
+    /**
+     * ONE MCP round-trip retried to a deadline: initialize (capture Mcp-Session-Id) → tools/list (must advertise
+     * the tool) → tools/call. Returns the tools/call body once {@code accept} is satisfied; fails with the
+     * auth-rejection diagnostic on exhaustion. Shared so the containing- and exact-result steps cannot drift.
+     */
+    private String callMcpToolUntil(String toolName, String argsJson, String context, String version,
+                                    String accessToken, int timeoutSeconds,
+                                    java.util.function.Predicate<String> accept, String what) throws Exception {
 
         String resolvedContext = Utils.resolveContextPlaceholders(context);
         String token = TestContext.resolve(accessToken).toString();
@@ -119,7 +166,7 @@ public class MCPInvocationSteps {
                 HttpResponse<String> callResp = post(client, mcpUrl, token, sessionId, callPayload);
                 lastStatus.set(callResp.statusCode());
                 String body = sseOrJson(callResp.body());
-                if (callResp.statusCode() == 200 && body.contains(expected)) {
+                if (callResp.statusCode() == 200 && accept.test(body)) {
                     return body;
                 }
                 lastError.set("tools/call status=" + callResp.statusCode() + " body=" + body);
@@ -130,11 +177,12 @@ public class MCPInvocationSteps {
             }
         }, result -> true);
         if (callResult == null) {
-            Assert.fail("MCP tool call did not return a result containing '" + expected + "' within the deadline; "
+            Assert.fail("MCP tool call did not return " + what + " within the deadline; "
                     + "last: " + lastError.get()
                     + authRejectionDetail(mcpUrl, accessToken, token, lastStatus.get(), lastError.get(),
                             startedMillis));
         }
+        return callResult;
     }
 
     /**
@@ -173,9 +221,14 @@ public class MCPInvocationSteps {
                     HttpResponse<String> callResp = post(client, mcpUrl, token, sessionId, payload);
                     lastStatus.set(callResp.statusCode());
                     String body = sseOrJson(callResp.body());
-                    if (!body.contains(p[2].trim())) {
+                    // EXACT result text, not a substring: the per-call expectations here are deterministic
+                    // ("multi", "30"), and a contains-check on the whole body would also pass on the echoed
+                    // request arguments or on a digit appearing in an id.
+                    String actualText = resultText(body);
+                    if (!p[2].trim().equals(actualText)) {
                         allOk = false;
-                        detail = "call " + p[0].trim() + " missing '" + p[2].trim() + "': " + body;
+                        detail = "call " + p[0].trim() + " expected result text '" + p[2].trim() + "' but got '"
+                                + actualText + "': " + body;
                         break;
                     }
                 }
@@ -779,15 +832,25 @@ public class MCPInvocationSteps {
         assertObjectSchema(tool.getJSONObject("inputSchema"), "city", "string", "inputSchema", tool);
     }
 
-    /** Asserts a complete object schema: {@code type} object, {@code prop} present with {@code propType}, and required. */
+    /**
+     * Asserts a complete object schema: {@code type} object, {@code properties} EXACTLY {@code prop} with
+     * {@code propType}, and {@code required} exactly that one entry. Exact sets rather than contains-checks
+     * because the mock keeps these schemas clean (no {@code $schema}/{@code additionalProperties}), so an
+     * extra property or a duplicated required entry injected in transit is a regression, not noise.
+     */
     private void assertObjectSchema(JSONObject schema, String prop, String propType, String label, Object ctx) {
         Assert.assertEquals(schema.optString("type"), "object", label + ".type must be object: " + ctx);
         JSONObject props = schema.getJSONObject("properties");
+        Assert.assertEquals(props.keySet(), Set.of(prop),
+                label + ".properties must be exactly [" + prop + "]: " + ctx);
         Assert.assertEquals(props.getJSONObject(prop).optString("type"), propType,
                 label + ".properties." + prop + ".type mismatch: " + ctx);
         JSONArray required = schema.optJSONArray("required");
-        Assert.assertTrue(required != null && required.toList().contains(prop),
-                label + ".required must contain " + prop + ": " + ctx);
+        Assert.assertNotNull(required, label + ".required missing: " + ctx);
+        Assert.assertEquals(required.length(), 1,
+                label + ".required must have exactly one entry: " + ctx);
+        Assert.assertEquals(required.optString(0), prop,
+                label + ".required must be [" + prop + "]: " + ctx);
     }
 
     /** Builds the gateway MCP endpoint URL: {@code <gatewayWs-less base>/<context>/<version>/mcp}. */
@@ -829,6 +892,21 @@ public class MCPInvocationSteps {
             // instead of letting it be mistaken for a completed attempt.
             Thread.currentThread().interrupt();
             throw new IOException("Interrupted while posting to " + url, interrupted);
+        }
+    }
+
+    /**
+     * {@code result.content[0].text} of a tools/call body, or null when the body carries no such result.
+     * Lenient by design: callers that need the STRUCTURE pinned (content cardinality, item type) assert that
+     * themselves; this is the value-only accessor for comparing a call's text.
+     */
+    private String resultText(String body) {
+
+        try {
+            JSONArray content = new JSONObject(body).getJSONObject("result").optJSONArray("content");
+            return content == null || content.isEmpty() ? null : content.getJSONObject(0).optString("text", null);
+        } catch (JSONException noResult) {
+            return null;
         }
     }
 

@@ -382,8 +382,7 @@ Feature: Publisher API Provider Change
     # Attempt to change the provider to an admin in the OTHER tenant -> 400 + 901409 + "Tenant mismatch".
     When I change the provider of API "ctpApiId" to "admin<otherSuffix>"
     Then The response status code should be 400
-    And The response should contain "901409"
-    And The response should contain "Tenant mismatch"
+    And The error response should have code "901409" and message "Tenant mismatch"
 
     Examples:
       | tenant       | suffix       | otherSuffix  |

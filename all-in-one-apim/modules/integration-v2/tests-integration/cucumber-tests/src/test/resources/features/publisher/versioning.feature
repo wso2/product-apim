@@ -90,7 +90,7 @@ Feature: Publisher API Versioning
     And I have created an api from "artifacts/payloads/create_apim_test_api.json" as "sameVerApiId" and deployed it
     When I attempt to create a new version "1.0.0" of "apis" resource "sameVerApiId" with default version "false"
     Then The response status code should be 409
-    And The response should contain "900252"
+    And The error response should have code "900252" and message "The API version already exists."
 
     Examples:
       | actor                     |

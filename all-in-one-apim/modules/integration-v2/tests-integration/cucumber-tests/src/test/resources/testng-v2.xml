@@ -328,7 +328,7 @@
          the 8243 HTTPS passthrough), and the two mutual-SSL runners each own their own APIs and upload the shared
          client certificate under a uniquely generated alias (the alias is unique per TENANT), so they don't
          interfere. -->
-    <test name="IntegrationV2-MutualSslWsCors" parallel="classes" thread-count="3">
+    <test name="IntegrationV2-MutualSslWsCors" parallel="classes" thread-count="2">
         <parameter name="blockLabel" value="mtls-ws-cors"/>
         <parameter name="initTenantUsers" value="true"/>
         <parameter name="initBackend" value="true"/>
@@ -583,25 +583,17 @@
             <class name="org.wso2.am.integration.cucumbertests.runners.block.DevPortalDeprecatedApiDiscoverabilityRunner"/>
         </classes>
     </test>
-    <!-- Email as username. MUST stay its own block, and it is the only block that may set emailUserMode: the mode
-         changes the PHYSICAL username of every provisioned user (see BlockLifecycleListener.PARAM_EMAIL_USER_MODE)
-         and the overlay's enable_email_domain changes how the whole container resolves an '@' in ANY username, so
-         neither is co-hostable with a runner that expects the plain actor usernames. The parameter and the overlay
-         must be set TOGETHER: the overlay alone breaks the framework's own boot provisioning (a plain,
-         single-'@' tenant actor resolves to a non-existent super-tenant user), and the parameter alone provisions
-         email usernames the product then refuses to resolve. The block spans BOTH planes — management-plane
-         runners and gateway runners (basic-auth, throttling, deny-enforcement) — so it REQUIRES the node
-         backend; see the initBackend parameter below for what breaks without it.
-
-         MODE FAN-OUT, added alongside the dedicated runners above. Those cover the email dimension with
-         purpose-written features; these re-run EXISTING runners under the mode instead, which is how legacy
-         obtained SUPER_TENANT_EMAIL_USER / TENANT_EMAIL_USER coverage — by re-running whole classes under a
-         different automation-context user. A feature is listed here only where the PHYSICAL username is
-         load-bearing for an assertion it already makes (stored-owner comparison, tenant derivation from the
-         caller, emission into an asserted artifact, or the user-to-role join); everything whose assertions never
-         name or resolve a user is deliberately excluded, since re-running it would re-execute identical
-         assertions against an untouched code path for a whole container's time. -->
-    <test name="IntegrationV2-EmailUserName" parallel="classes" thread-count="1">
+    <!-- Email as username: its own block, and the only one that may set emailUserMode. The parameter and the
+         overlay must be set TOGETHER — the overlay alone breaks boot provisioning (a plain tenant actor resolves
+         to a non-existent super-tenant user), the parameter alone provisions usernames the product then refuses
+         to resolve. Neither is co-hostable with runners that expect the plain actor usernames.
+         The runners after the dedicated email ones are MODE FAN-OUT: existing classes re-run under the mode,
+         which is how legacy obtained SUPER_TENANT_EMAIL_USER / TENANT_EMAIL_USER coverage. A class is listed
+         only where the PHYSICAL username is load-bearing for an assertion it already makes.
+         thread-count=2 is measured, not assumed: 13 runners / 100 scenarios pass at both tc=2 and tc=3 with no
+         cross-class interference. Not higher — the block is propagation-bound, so tc=3 bought 4% wall-clock
+         while pushing gateway deploy waits from 131s to 150s against the 180s RUNTIME_PROPAGATION_TIMEOUT. -->
+    <test name="IntegrationV2-EmailUserName" parallel="classes" thread-count="2">
         <parameter name="blockLabel" value="email-username"/>
         <parameter name="initTenantUsers" value="true"/>
         <parameter name="emailUserMode" value="true"/>

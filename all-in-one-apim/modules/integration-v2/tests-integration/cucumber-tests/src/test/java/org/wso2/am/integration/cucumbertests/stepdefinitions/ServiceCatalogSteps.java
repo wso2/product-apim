@@ -89,7 +89,12 @@ public class ServiceCatalogSteps {
             json.put("scope", "service_catalog:service_write service_catalog:service_view");
             HttpResponse response = SimpleHTTPClient.getInstance().doPost(Utils.getAPIMTokenEndpointURL(Utils.getBaseUrl()),
                     headers, json.toString(), Constants.CONTENT_TYPES.APPLICATION_JSON);
-            Assert.assertEquals(response.getResponseCode(), 200, response.getData());
+            // PINNED AS OBSERVED, not as specified: service-catalog-api.yaml declares 201 for POST /services,
+        // but the product answers 200. Asserting 201 here would fail every create; the day the product
+        // matches its own contract this line fails and is updated deliberately. Legacy could not settle this
+        // — ServiceCatalogRestAPITestCase asserts only the returned DTO's fields and no status at all for
+        // create (it does pin SC_NO_CONTENT for delete), so this status check is coverage the port adds.
+        Assert.assertEquals(response.getResponseCode(), 200, response.getData());
             String token = Utils.extractValueFromPayload(response.getData(), "access_token").toString();
             TestContext.set(cacheKey, token);
             return token;

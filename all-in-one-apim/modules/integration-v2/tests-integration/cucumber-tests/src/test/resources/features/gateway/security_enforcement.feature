@@ -252,14 +252,12 @@ Feature: Gateway Security Enforcement
     # A valid user with the WRONG password → 401 / 900901.
     When I invoke the API at gateway context "{{apiContext}}/1.0.0/customers/123/" with method "GET" using basic auth for actor "<actor>" with password "totallyWrongPassword" until response status code becomes 401 within 60 seconds
     Then The response status code should be 401
-    And The response should contain "900901"
-    And The response should contain "Invalid Credentials"
+    And The error response should have code "900901" message "Invalid Credentials" and description containing "Make sure you have provided the correct security credentials"
     # An entirely UNKNOWN user (no such account in the tenant) → also 401 / 900901. Fully qualified with the tenant
     # domain: a domainless made-up name resolves against the super tenant and answers 403 on a tenant API instead.
     When I invoke the API at gateway context "{{apiContext}}/1.0.0/customers/123/" with method "GET" using basic auth username "noSuchUser@<domain>" password "randomPassword" until response status code becomes 401 within 60 seconds
     Then The response status code should be 401
-    And The response should contain "900901"
-    And The response should contain "Invalid Credentials"
+    And The error response should have code "900901" message "Invalid Credentials" and description containing "Make sure you have provided the correct security credentials"
 
     Examples:
       | actor             | domain       |
@@ -329,8 +327,7 @@ Feature: Gateway Security Enforcement
     Then The response status code should be 500
     # Pin the ROOT CAUSE, not just the status: the fault body carries Synapse error code 601000 and the exact
     # Woodstox parser message, proving the 500 is the malformed-XML build failure (not some incidental 500).
-    And The response should contain "601000"
-    And The response should contain "Unexpected EOF; was expecting a close tag for element <request>"
+    And The error response should have code "601000" message "Runtime Error" and description containing "Unexpected EOF; was expecting a close tag for element <request>"
 
     Examples:
       | actor             |
@@ -1260,28 +1257,28 @@ Feature: Gateway Security Enforcement
     # The OAuth2 access token in the api-key header -> refused.
     When I invoke the API at gateway context "{{xcContext}}/1.0.0/customers/123/" with method "GET" presenting credential "generatedAccessToken" verbatim in header "apikey" until response status code becomes 401 within 60 seconds
     Then The response status code should be 401
-    And The response should contain "900901"
+    And The error response should have code "900901" message "Invalid Credentials" and description containing "Make sure you have provided the correct security credentials"
     # The publisher internal key in the api-key header -> refused.
     When I invoke the API at gateway context "{{xcContext}}/1.0.0/customers/123/" with method "GET" presenting credential "xcInternalKey" verbatim in header "apikey" until response status code becomes 401 within 60 seconds
     Then The response status code should be 401
-    And The response should contain "900901"
+    And The error response should have code "900901" message "Invalid Credentials" and description containing "Make sure you have provided the correct security credentials"
     # The devportal api key as an Authorization bearer -> refused (testInvokeApiKeyAsJWTNegative). Uses the same
     # bearer step as the token control above, so the ONLY difference from that passing case is the credential kind.
     When I invoke the API at gateway context "{{xcContext}}/1.0.0/customers/123/" with method "GET" using access token "apiKey" and payload "" until response status code becomes 401 within 60 seconds
     Then The response status code should be 401
-    And The response should contain "900901"
+    And The error response should have code "900901" message "Invalid Credentials" and description containing "Make sure you have provided the correct security credentials"
     # The publisher internal key as an Authorization bearer -> refused.
     When I invoke the API at gateway context "{{xcContext}}/1.0.0/customers/123/" with method "GET" using access token "xcInternalKey" and payload "" until response status code becomes 401 within 60 seconds
     Then The response status code should be 401
-    And The response should contain "900901"
+    And The error response should have code "900901" message "Invalid Credentials" and description containing "Make sure you have provided the correct security credentials"
     # The OAuth2 access token in the Internal-Key header -> refused.
     When I invoke the API at gateway context "{{xcContext}}/1.0.0/customers/123/" with method "GET" presenting credential "generatedAccessToken" verbatim in header "Internal-Key" until response status code becomes 401 within 60 seconds
     Then The response status code should be 401
-    And The response should contain "900901"
+    And The error response should have code "900901" message "Invalid Credentials" and description containing "Make sure you have provided the correct security credentials"
     # The devportal api key in the Internal-Key header -> refused.
     When I invoke the API at gateway context "{{xcContext}}/1.0.0/customers/123/" with method "GET" presenting credential "apiKey" verbatim in header "Internal-Key" until response status code becomes 401 within 60 seconds
     Then The response status code should be 401
-    And The response should contain "900901"
+    And The error response should have code "900901" message "Invalid Credentials" and description containing "Make sure you have provided the correct security credentials"
 
     Examples:
       | actor             |
@@ -1327,8 +1324,7 @@ Feature: Gateway Security Enforcement
     # A WELL-FORMED Basic credential for a real user, on an API that does not permit basic_auth -> refused (401).
     When I invoke the API at gateway context "{{boContext}}/1.0.0/customers/123/" with method "GET" using basic auth for actor "<actor>" until response status code becomes 401 within 60 seconds
     Then The response status code should be 401
-    And The response should contain "900902"
-    And The response should contain "Missing Credentials"
+    And The error response should have code "900902" message "Missing Credentials" and description containing "Make sure your API invocation call has a header"
 
     Examples:
       | actor             |
@@ -1374,13 +1370,11 @@ Feature: Gateway Security Enforcement
     # A VALID OAuth2 bearer token on a basic_auth-only API -> refused (401).
     When I invoke the API at gateway context "{{baContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 401 within 60 seconds
     Then The response status code should be 401
-    And The response should contain "900902"
-    And The response should contain "Missing Credentials"
+    And The error response should have code "900902" message "Missing Credentials" and description containing "Make sure your API invocation call has a header"
     # A VALID api key on a basic_auth-only API -> refused (401).
     When I invoke the API at gateway context "{{baContext}}/1.0.0/customers/123/" with method "GET" using api key "apiKey" until response status code becomes 401 within 60 seconds
     Then The response status code should be 401
-    And The response should contain "900902"
-    And The response should contain "Missing Credentials"
+    And The error response should have code "900902" message "Missing Credentials" and description containing "Make sure your API invocation call has a header"
     # The publisher internal key BYPASSES the declared scheme -> 200 from the backend. The payload matters here
     # more than anywhere else in this scenario: the claim is that a credential the API's declared scheme does NOT
     # permit still reaches the upstream, and only the backend body shows that it did.
@@ -1519,12 +1513,12 @@ Feature: Gateway Security Enforcement
     # it. This is the assertion the whole arc exists for; it is NOT a re-run of the token grant.
     When I invoke the API at gateway context "{{pcContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 401 within 60 seconds
     Then The response status code should be 401
-    And The response should contain "900901"
+    And The error response should have code "900901" message "Invalid Credentials" and description containing "Make sure you have provided the correct security credentials"
     # Basic with the OLD password is refused (401) and Basic with the NEW password is accepted (200) — proof the
     # reset landed in the user store, so the token rejection above is credential invalidation.
     When I invoke the API at gateway context "{{pcContext}}/1.0.0/customers/123/" with method "GET" using basic auth username "{{pcUsernameLoginName}}" password "Password@123" until response status code becomes 401 within 60 seconds
     Then The response status code should be 401
-    And The response should contain "900901"
+    And The error response should have code "900901" message "Invalid Credentials" and description containing "Make sure you have provided the correct security credentials"
     When I invoke the API at gateway context "{{pcContext}}/1.0.0/customers/123/" with method "GET" using basic auth username "{{pcUsernameLoginName}}" password "Changed@456" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
 

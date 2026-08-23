@@ -238,7 +238,8 @@ Feature: API Comment Threads — Edit, Cascade Delete and Moderation Across Both
   # place for it: every moderation decision in this file turns on the stored comment owner being compared to the
   # caller, so createdBy is the field that must carry a store-qualified username verbatim. The row is a real probe
   # rather than a repeat because it also proves a store user can obtain a DCR application and a comment-scoped
-  # token at all. The outline's LAST row still ends acting as "admin", which the next scenario relies on.
+  # token at all. The outline's LAST row ends acting as "admin@tenant1.com"; the scenarios below open with
+  # their own auth composite rather than inheriting that actor (CLAUDE.md §12).
   @cap:devportal @feat:comments @type:regression @rule:moderation @dep:publisher @legacy:PublisherCommentTest
   Scenario Outline: A non-admin creator can add a publisher-plane comment and the admin can reply to it as <creator>
     Given The system is ready and I have valid publisher access tokens as "<actor>"

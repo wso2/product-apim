@@ -100,7 +100,7 @@ Feature: Gateway Basic Authentication With Email-Form Usernames
     # Exactly 403/900908, never widened: a different 4xx here would be a real change in the auth surface.
     When I invoke the API at gateway context "{{btContext}}/1.0.0/customers/123/" with method "GET" using basic auth username "{{btWso2}}" password "Password@123" until response status code becomes 403 within 60 seconds
     Then The response status code should be 403
-    And The response should contain "900908"
+    And The error response should have code "900908" message "Resource forbidden " and description containing "Resource forbidden "
 
   # An email-form principal as the OAuth RESOURCE OWNER, invoked TWICE. The second call is the point: the
   # analogous DOTTED-username defect (key-manager/backend_jwt.feature) reproduced only on the second invocation,
@@ -185,7 +185,7 @@ Feature: Gateway Basic Authentication With Email-Form Usernames
     # The OLD credential is now refused as invalid — 900901, distinct from the 900908 tenant-mismatch refusal.
     When I invoke the API at gateway context "{{bpContext}}/1.0.0/customers/123/" with method "GET" using basic auth username "{{bpUserLoginName}}" password "Password@123" until response status code becomes 401 within 60 seconds
     Then The response status code should be 401
-    And The response should contain "900901"
+    And The error response should have code "900901" message "Invalid Credentials" and description containing "Make sure you have provided the correct security credentials"
     # The NEW credential works, proving the account was re-credentialed rather than disabled.
     When I invoke the API at gateway context "{{bpContext}}/1.0.0/customers/123/" with method "GET" using basic auth username "{{bpUserLoginName}}" password "Changed@456" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200

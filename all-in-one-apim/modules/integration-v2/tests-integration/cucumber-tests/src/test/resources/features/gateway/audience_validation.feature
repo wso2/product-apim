@@ -40,7 +40,7 @@ Feature: Gateway Audience Validation
     Then The response status code should be 201
     When I invoke the API at gateway context "{{audApiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 403 within 60 seconds
     Then The response status code should be 403
-    And The response should contain "900914"
+    And The error response should have code "900914" message "Access Denied" and description containing "The access token does not allow you to access the requested resource"
 
     # Configure audiences to include the token's consumer key -> access is restored (200).
     When I retrieve the "apis" resource with id "audApiId"
@@ -125,7 +125,7 @@ Feature: Gateway Audience Validation
     Then The response status code should be 201
     When I invoke the API at gateway context "{{audProductContext}}/1.0.0/customers/123/" with method "GET" using access token "audProdSandboxToken" and payload "" until response status code becomes 403 within 60 seconds
     Then The response status code should be 403
-    And The response should contain "900914"
+    And The error response should have code "900914" message "Access Denied" and description containing "The access token does not allow you to access the requested resource"
 
     # Audiences CONTAINING the sandbox consumer key (alongside the non-matching entry) -> access is restored (200).
     When I retrieve the "api-products" resource with id "audProductId"

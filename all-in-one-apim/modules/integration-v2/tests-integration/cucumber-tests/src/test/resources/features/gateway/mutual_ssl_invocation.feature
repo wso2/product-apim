@@ -101,7 +101,7 @@ Feature: Gateway Mutual-SSL (mTLS) API Invocation
     # The SAME token on the mutualssl-ONLY API → refused. Status AND body error code both pinned.
     When I invoke the API at gateway context "{{moContext}}/1.0.0/customers/123" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 401 within 60 seconds
     Then The response status code should be 401
-    And The response should contain "900901"
+    And The error response should have code "900901" message "Invalid Credentials" and description containing "Make sure you have provided the correct security credentials"
 
     Examples:
       | actor             |

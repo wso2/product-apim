@@ -29,7 +29,7 @@ Feature: API Governance Artifact Compliance
     """
     And I attempt to create a revision for "apis" resource "govApiId" with payload "govRevPayload"
     Then The response status code should be 400
-    And The response should contain "903300"
+    And The error response should have code "903300" and message "Request does not adhere to governance standards"
 
     Examples:
       | actor            |

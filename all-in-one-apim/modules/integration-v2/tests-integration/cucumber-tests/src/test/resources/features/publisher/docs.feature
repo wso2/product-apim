@@ -53,7 +53,6 @@ Feature: Publisher API Documentation
     And The response should contain "SAMPLES"
     And The response should not contain "HOWTO"
 
-    # Delete the document
     # Delete the document, then RE-LIST to confirm the deletion actually took effect — the documents list must be
     # empty. Ports the second half of APIM627.testRemoveDocumentationOtherTheAPI; without this re-read a delete
     # that answered 200 while leaving the document in place would pass unnoticed.
@@ -63,11 +62,6 @@ Feature: Publisher API Documentation
     Then The response status code should be 200
     And The value of response field "count" should be "0"
     And The response field "list[*].documentId" should be exactly the list ""
-
-    # The listing is empty after the delete — the counterpart of the count-1 pin above.
-    When I retrieve all available documents for "docApiId"
-    Then The response status code should be 200
-    And The response should contain "\"count\":0"
 
     Examples:
       | label     | payloadFile                                            | actor                     |

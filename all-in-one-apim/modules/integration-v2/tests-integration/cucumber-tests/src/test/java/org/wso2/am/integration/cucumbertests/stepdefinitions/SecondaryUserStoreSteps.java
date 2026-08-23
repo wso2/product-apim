@@ -113,8 +113,9 @@ public class SecondaryUserStoreSteps {
         // Exact role VALUE, case-sensitively (see the negative twin's javadoc): a substring check would accept
         // `SECONDARY.COM/userrole10` as proof that `SECONDARY.COM/userrole1` is assigned.
         Assert.assertTrue(assignedRoles(body).contains(expected),
-                "Role list of '" + userName + "' did not contain '" + expected + "' (case-insensitive lookup); "
-                        + "response: " + body);
+                "Role list of '" + userName + "' did not contain '" + expected + "' (roles are matched "
+                        + "case-SENSITIVELY; it is the username that resolves case-insensitively, which is what "
+                        + "this step proves); response: " + body);
     }
 
     /**

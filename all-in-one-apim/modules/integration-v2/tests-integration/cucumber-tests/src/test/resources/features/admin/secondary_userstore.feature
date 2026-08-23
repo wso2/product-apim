@@ -150,6 +150,7 @@ Feature: Admin Secondary User Store (case-insensitive)
     # Teardown: remove the secondary-store user (only Internal/ hybrid roles were assigned — those are global and
     # must not be deleted, so this is a user-only removal).
     When I remove the secondary user store user "SECONDARY.COM/testUser1" in tenant "<tenant>"
+    Then the user "SECONDARY.COM/testUser1" in tenant "<tenant>" should not exist
 
     Examples:
       | tenant       | provider                            |
@@ -175,6 +176,11 @@ Feature: Admin Secondary User Store (case-insensitive)
     """
     And I import a WSDL API from file "artifacts/wsdl/hello.wsdl" with additional properties "secSoapProps" and implementation type "SOAP" as "secSoapApiId"
     Then The response status code should be 201
+    # Baseline: the WSDL served BEFORE the transfer, captured verbatim (same shape as the SOAP-to-REST scenario's
+    # policy snapshot below) so the post-transfer check can be byte-exact rather than merely "still retrievable".
+    When I retrieve the WSDL definition of API "secSoapApiId"
+    Then The response status code should be 200
+    And I put the response payload in context as "secSoapWsdlBefore"
 
     When I change the provider of API "secSoapApiId" to "SECONDARY.COM/soapProvUser<suffix>"
     Then The response status code should be 200
@@ -182,11 +188,16 @@ Feature: Admin Secondary User Store (case-insensitive)
     Then The response status code should be 200
     And The value of response field "provider" should be "SECONDARY.COM/soapProvUser<suffix>"
     And The value of response field "type" should be "SOAP"
-    # The WSDL binding survived the transfer to a store-resident owner.
+    # The WSDL binding survived the transfer to a store-resident owner — byte-identical, not merely retrievable.
     When I retrieve the WSDL definition of API "secSoapApiId"
     Then The response status code should be 200
+    And I put the response payload in context as "secSoapWsdlAfter"
+    And The stored value "secSoapWsdlAfter" should equal "secSoapWsdlBefore"
 
+    # Teardown, verified: the removal step is best-effort and asserts nothing, so a delete that faulted
+    # would leave this fixed username in the store and only surface as a confusing collision later.
     When I remove the secondary user store user "SECONDARY.COM/soapProvUser" in tenant "<tenant>"
+    Then the user "SECONDARY.COM/soapProvUser" in tenant "<tenant>" should not exist
 
     Examples:
       | actor | tenant | suffix |
@@ -220,7 +231,10 @@ Feature: Admin Secondary User Store (case-insensitive)
     Then The "in" resource policies of API "secS2rApiId" for resource "sayHello" verb "post" should be byte-identical to snapshot "secS2rInBefore"
     And The "out" resource policies of API "secS2rApiId" for resource "sayHello" verb "post" should be byte-identical to snapshot "secS2rOutBefore"
 
+    # Teardown, verified: the removal step is best-effort and asserts nothing, so a delete that faulted
+    # would leave this fixed username in the store and only surface as a confusing collision later.
     When I remove the secondary user store user "SECONDARY.COM/s2rProvUser" in tenant "<tenant>"
+    Then the user "SECONDARY.COM/s2rProvUser" in tenant "<tenant>" should not exist
 
     Examples:
       | actor | tenant | suffix |
@@ -235,6 +249,11 @@ Feature: Admin Secondary User Store (case-insensitive)
     And I put JSON payload from file "artifacts/payloads/create_apim_test_graphql_api.json" in context as "secGqlPayload"
     And I create a GraphQL API with schema file "artifacts/payloads/graphql_schema.graphql" and additional properties "secGqlPayload" as "secGqlApiId"
     Then The response status code should be 201
+    # Baseline: the SDL served BEFORE the transfer. Only schemaDefinition is captured — the envelope's `name`
+    # embeds the provider (admin--<api>.graphql), so it changes BY DESIGN on transfer and would mask the SDL.
+    When I retrieve the GraphQL schema of API "secGqlApiId"
+    Then The response status code should be 200
+    And I extract response field "schemaDefinition" and store it as "secGqlSchemaBefore"
 
     When I change the provider of API "secGqlApiId" to "SECONDARY.COM/gqlProvUser<suffix>"
     Then The response status code should be 200
@@ -242,12 +261,17 @@ Feature: Admin Secondary User Store (case-insensitive)
     Then The response status code should be 200
     And The value of response field "provider" should be "SECONDARY.COM/gqlProvUser<suffix>"
     And The value of response field "type" should be "GRAPHQL"
-    # The schema definition survived the transfer to a store-resident owner.
+    # The schema definition survived the transfer to a store-resident owner — byte-identical, not merely present.
     When I retrieve the GraphQL schema of API "secGqlApiId"
     Then The response status code should be 200
+    And I extract response field "schemaDefinition" and store it as "secGqlSchemaAfter"
+    And The stored value "secGqlSchemaAfter" should equal "secGqlSchemaBefore"
     And The response should contain "type Query"
 
+    # Teardown, verified: the removal step is best-effort and asserts nothing, so a delete that faulted
+    # would leave this fixed username in the store and only surface as a confusing collision later.
     When I remove the secondary user store user "SECONDARY.COM/gqlProvUser" in tenant "<tenant>"
+    Then the user "SECONDARY.COM/gqlProvUser" in tenant "<tenant>" should not exist
 
     Examples:
       | actor | tenant | suffix |
@@ -272,6 +296,7 @@ Feature: Admin Secondary User Store (case-insensitive)
     # carries a SECONDARY.COM/admin row). Every store user is one the framework explicitly seeds.
     And the user "SECONDARY.COM/admin" in tenant "carbon.super" should not exist
     When I remove the secondary user store user "SECONDARY.COM/isoUser1" and role "SECONDARY.COM/isoRole1" in tenant "carbon.super"
+    Then the user "SECONDARY.COM/isoUser1" in tenant "carbon.super" should not exist
 
   # PROBE (store user as actor): a least-privilege publisher living in the SECONDARY.COM store — seeded as an ACTOR
   # by the framework (publisherUser1) — can DCR + obtain tokens (password grant) and drive the publisher plane.

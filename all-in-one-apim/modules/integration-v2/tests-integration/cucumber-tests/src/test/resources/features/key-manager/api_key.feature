@@ -554,8 +554,7 @@ Feature: Key Manager API Key
     # A WELL-FORMED Basic credential for a real user, on an API that does not permit basic_auth → refused (401).
     When I invoke the API at gateway context "{{koContext}}/1.0.0/customers/123/" with method "GET" using basic auth for actor "<actor>" until response status code becomes 401 within 60 seconds
     Then The response status code should be 401
-    And The response should contain "900902"
-    And The response should contain "Missing Credentials"
+    And The error response should have code "900902" message "Missing Credentials" and description containing "Make sure your API invocation call has a header"
 
     Examples:
       | actor             |

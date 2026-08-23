@@ -5171,20 +5171,14 @@ public class ApplicationBaseSteps {
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
         String resolvedName = Utils.resolveContextPlaceholders(apiName);
         String resolvedVersion = Utils.resolveContextPlaceholders(expectedVersion);
-        long endTimeStart = System.currentTimeMillis();
-        long endTime = endTimeStart + seconds * 1000L;
-        List<String> matchedVersions = new ArrayList<>();
-        while (true) {
-            List<String> thisSweep = versionsListedForName(headers, resolvedName);
-            if (thisSweep != null) {
-                matchedVersions = thisSweep;
-            }
-            if ((thisSweep != null && thisSweep.size() == expectedOccurrences)
-                    || System.currentTimeMillis() >= endTime) {
-                break;
-            }
-            Utils.pollPause(endTimeStart, 2000);
-        }
+        // Funnelled through Utils.retryUntil rather than a hand-rolled deadline loop (§7/§15): the envelope owns
+        // the max(timeout, RUNTIME_PROPAGATION_TIMEOUT) ceiling so this call site cannot silently cap itself, and
+        // retries ONLY IOException. versionsListedForName returns null for an unreadable/malformed page, so the
+        // accept predicate treats null as not-ready and an exhausted window defaults to an empty listing.
+        List<String> lastSweep = Utils.retryUntil(seconds * 1000L,
+                () -> versionsListedForName(headers, resolvedName),
+                sweep -> sweep != null && sweep.size() == expectedOccurrences);
+        List<String> matchedVersions = lastSweep == null ? new ArrayList<>() : lastSweep;
         Assert.assertEquals(matchedVersions.size(), expectedOccurrences,
                 "The unfiltered devportal listing carried " + matchedVersions.size() + " entr(ies) for API '"
                         + resolvedName + "' (versions " + matchedVersions + ") but exactly " + expectedOccurrences
