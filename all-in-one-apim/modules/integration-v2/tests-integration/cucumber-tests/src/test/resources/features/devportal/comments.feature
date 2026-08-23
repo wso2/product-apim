@@ -52,14 +52,14 @@ Feature: DevPortal API Comments
     # All root comments: exactly the two roots (count 2).
     When I retrieve all "devportal" comments of API "cmApiId" with limit 5 offset 0
     Then The response status code should be 200
-    And The response should contain "\"count\":2"
+    And The value of response field "count" should be "2"
     And The response should contain "This is root comment 1"
     And The response should contain "This is root comment 2"
 
     # Replies list of the root: count 3.
     When I retrieve the "devportal" replies of comment "root1" of API "cmApiId" with limit 5 offset 0
     Then The response status code should be 200
-    And The response should contain "\"count\":3"
+    And The value of response field "count" should be "3"
 
     # A publisher-plane read sees the same devportal comments (cross-plane visibility).
     When I retrieve all "publisher" comments of API "cmApiId" with limit 5 offset 0

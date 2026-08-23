@@ -65,6 +65,28 @@ public final class Requests {
     }
 
     /**
+     * Re-publishes a POLL's final response as the step's assertion target.
+     *
+     * <p>Needed because the clear-before-call contract above interacts badly with a retry loop: a polling step
+     * calls a funnel method repeatedly, and if a LATE attempt throws {@link IOException} the key was already
+     * cleared and never re-set — yet {@code Utils.retryUntil} still holds the previous successful response
+     * (it records the last result only on an attempt that RETURNS). The following
+     * {@code The response status code should be N} would then report "no response" instead of the real body:
+     * a spurious failure caused purely by a transient blip on the final poll.
+     *
+     * <p>Call this with whatever {@code retryUntil} returned. A null (every attempt threw) clears the key, which
+     * preserves the no-stale-response guarantee.
+     */
+    public static void publishPollResult(HttpResponse response) {
+
+        if (response == null) {
+            TestContext.remove(HTTP_RESPONSE_KEY);
+        } else {
+            TestContext.set(HTTP_RESPONSE_KEY, response);
+        }
+    }
+
+    /**
      * Binary GET whose response bytes are written to a temp file (for archive/zip downloads a String
      * {@code doGet} would corrupt). Clears {@code httpResponse} BEFORE the call like every other funnel method,
      * so a throw leaves no stale response behind; nothing is PUBLISHED to {@code httpResponse} because the status

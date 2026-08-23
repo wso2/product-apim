@@ -353,7 +353,7 @@ Feature: Publisher API Runtime & Common Configuration
     And I create an "apis" resource with payload "valApiPayload" as "valApiId"
     When I validate the endpoint "https://localhost:9443/services/Version" for API "valApiId"
     Then The response status code should be 200
-    And The response should contain "\"statusCode\":202"
+    And The value of response field "statusCode" should be "202"
     And The response should contain "Accepted"
 
     Examples:

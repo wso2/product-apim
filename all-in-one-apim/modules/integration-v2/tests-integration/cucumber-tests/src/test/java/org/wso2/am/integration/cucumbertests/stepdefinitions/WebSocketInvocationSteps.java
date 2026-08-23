@@ -27,18 +27,12 @@ import org.wso2.am.integration.cucumbertests.utils.Utils;
 import org.wso2.am.integration.test.utils.Constants;
 
 import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLEngine;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509ExtendedTrustManager;
-import java.net.Socket;
 import java.net.URI;
 import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.WebSocket;
 import java.net.http.WebSocketHandshakeException;
 import java.nio.charset.StandardCharsets;
-import java.security.SecureRandom;
-import java.security.cert.X509Certificate;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -1290,21 +1284,7 @@ public class WebSocketInvocationSteps {
      * an explicit context sidesteps that (the suite already trusts APIM's self-signed cert for https).
      */
     private SSLContext trustAllSslContext() throws Exception {
-        SSLContext sslContext = SSLContext.getInstance("TLS");
-        // X509ExtendedTrustManager, not X509TrustManager: the JDK performs HOSTNAME verification inside the
-        // extended check, so a plain trust-all manager still rejects a host the certificate does not name (e.g.
-        // an IP, as when TESTCONTAINERS_HOST_OVERRIDE hands out the VM address). Supplying SSLParameters with a
-        // null endpoint-identification algorithm does NOT work — HttpClient overrides it.
-        sslContext.init(null, new TrustManager[]{new X509ExtendedTrustManager() {
-            public void checkClientTrusted(X509Certificate[] chain, String authType) { }
-            public void checkServerTrusted(X509Certificate[] chain, String authType) { }
-            public void checkClientTrusted(X509Certificate[] chain, String authType, Socket socket) { }
-            public void checkServerTrusted(X509Certificate[] chain, String authType, Socket socket) { }
-            public void checkClientTrusted(X509Certificate[] chain, String authType, SSLEngine engine) { }
-            public void checkServerTrusted(X509Certificate[] chain, String authType, SSLEngine engine) { }
-            public X509Certificate[] getAcceptedIssuers() { return new X509Certificate[0]; }
-        }}, new SecureRandom());
-        return sslContext;
+        return Utils.trustAllSslContext();
     }
 
     /** Token (Authorization: Bearer) convenience overload. */

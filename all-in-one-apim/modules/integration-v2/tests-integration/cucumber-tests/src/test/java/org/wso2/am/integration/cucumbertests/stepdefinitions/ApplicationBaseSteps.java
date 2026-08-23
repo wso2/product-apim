@@ -1659,10 +1659,11 @@ public class ApplicationBaseSteps {
         // Cross-tenant API visibility propagates ASYNCHRONOUSLY (the legacy test polled 15×5s for the API to
         // appear in the other tenant's listing). Poll until the listing is non-empty; the funnel's last response
         // is left as httpResponse for the following assertion (which checks the specific API id).
-        Utils.retryUntil(Constants.RUNTIME_PROPAGATION_TIMEOUT,
+        HttpResponse lastPoll = Utils.retryUntil(Constants.RUNTIME_PROPAGATION_TIMEOUT,
                 () -> Requests.get(url, headers),
                 resp -> resp != null && resp.getResponseCode() == 200 && resp.getData() != null
                         && resp.getData().contains("\"count\":") && !resp.getData().contains("\"count\":0"));
+        Requests.publishPollResult(lastPoll);
     }
 
     /**
@@ -2070,9 +2071,10 @@ public class ApplicationBaseSteps {
     public void iMapOAuthClientOnceKeyManagerOperational(String idKey, String appId, String keyManager)
             throws Exception {
 
-        Utils.retryUntil(60_000L,
+        HttpResponse lastPoll = Utils.retryUntil(60_000L,
                 () -> postMapKeys(idKey, appId, keyManager),
                 resp -> resp != null && resp.getResponseCode() >= 200 && resp.getResponseCode() < 300);
+        Requests.publishPollResult(lastPoll);
     }
 
     /**
@@ -2785,29 +2787,7 @@ public class ApplicationBaseSteps {
 
     /** Builds an HttpClient that trusts IS's self-signed cert, keeps a cookie jar, and never auto-redirects. */
     private java.net.http.HttpClient trustAllHttpClientWithCookies() throws Exception {
-        // X509ExtendedTrustManager, not X509TrustManager: the JDK performs HOSTNAME verification inside the
-        // extended check, so a plain trust-all manager still rejects a host the certificate does not name (e.g.
-        // an IP, as when TESTCONTAINERS_HOST_OVERRIDE hands out the VM address). Supplying SSLParameters with a
-        // null endpoint-identification algorithm does NOT work — HttpClient overrides it.
-        javax.net.ssl.TrustManager[] trustAll = new javax.net.ssl.TrustManager[]{
-                new javax.net.ssl.X509ExtendedTrustManager() {
-                    public void checkClientTrusted(java.security.cert.X509Certificate[] c, String a) { }
-                    public void checkServerTrusted(java.security.cert.X509Certificate[] c, String a) { }
-                    public void checkClientTrusted(java.security.cert.X509Certificate[] c, String a,
-                            java.net.Socket s) { }
-                    public void checkServerTrusted(java.security.cert.X509Certificate[] c, String a,
-                            java.net.Socket s) { }
-                    public void checkClientTrusted(java.security.cert.X509Certificate[] c, String a,
-                            javax.net.ssl.SSLEngine e) { }
-                    public void checkServerTrusted(java.security.cert.X509Certificate[] c, String a,
-                            javax.net.ssl.SSLEngine e) { }
-                    public java.security.cert.X509Certificate[] getAcceptedIssuers() {
-                        return new java.security.cert.X509Certificate[0];
-                    }
-                }
-        };
-        javax.net.ssl.SSLContext ssl = javax.net.ssl.SSLContext.getInstance("TLS");
-        ssl.init(null, trustAll, new java.security.SecureRandom());
+        javax.net.ssl.SSLContext ssl = Utils.trustAllSslContext();
         return java.net.http.HttpClient.newBuilder()
                 .sslContext(ssl)
                 .cookieHandler(new java.net.CookieManager())
@@ -4997,28 +4977,19 @@ public class ApplicationBaseSteps {
         String resolvedQuery = Utils.resolveContextPlaceholders(query);
         String resolvedExpected = Utils.resolveContextPlaceholders(expected);
         String url = Utils.getApiSearchURL(Utils.getBaseUrl(), resolvedQuery);
-        long endTimeStart = System.currentTimeMillis();
-        long endTime = endTimeStart + seconds * 1000L;
-        HttpResponse response = null;
-        boolean found = false;
-        while (true) {
-            try {
-                response = Requests.get(url, headers);
-                found = response.getResponseCode() == 200
-                        && response.getData() != null && response.getData().contains(resolvedExpected);
-            } catch (IOException transientFailure) {
-                // transient network failure — keep polling; the previous response (if any) is retained
-            }
-            if (found || System.currentTimeMillis() >= endTime) {
-                break;
-            }
-            Utils.pollPause(endTimeStart, 2000);
-        }
+        // Via retryUntil so the deadline cannot drop below RUNTIME_PROPAGATION_TIMEOUT (§7/§15).
+        HttpResponse response = Utils.retryUntil(seconds * 1000L,
+                () -> Requests.get(url, headers),
+                r -> r != null && r.getResponseCode() == 200 && r.getData() != null
+                        && r.getData().contains(resolvedExpected));
+        Requests.publishPollResult(response);
         Assert.assertNotNull(response, "DevPortal search '" + resolvedQuery + "' returned no response (every poll "
                 + "attempt failed)");
-        Assert.assertTrue(found, "DevPortal search '" + resolvedQuery + "' did not contain '" + resolvedExpected
-                + "' within " + seconds + "s; last response: " + response.getResponseCode()
-                + " / " + response.getData());
+        Assert.assertTrue(response.getResponseCode() == 200 && response.getData() != null
+                        && response.getData().contains(resolvedExpected),
+                "DevPortal search '" + resolvedQuery + "' did not contain '" + resolvedExpected
+                        + "' within the deadline; last response: " + response.getResponseCode()
+                        + " / " + response.getData());
     }
 
     /**
@@ -5037,28 +5008,19 @@ public class ApplicationBaseSteps {
         String resolvedQuery = Utils.resolveContextPlaceholders(query);
         String resolvedUnexpected = Utils.resolveContextPlaceholders(unexpected);
         String url = Utils.getApiSearchURL(Utils.getBaseUrl(), resolvedQuery);
-        long endTimeStart = System.currentTimeMillis();
-        long endTime = endTimeStart + seconds * 1000L;
-        HttpResponse response = null;
-        boolean absent = false;
-        while (true) {
-            try {
-                response = Requests.get(url, headers);
-                absent = response.getResponseCode() == 200
-                        && response.getData() != null && !response.getData().contains(resolvedUnexpected);
-            } catch (IOException transientFailure) {
-                // transient network failure — keep polling; the previous response (if any) is retained
-            }
-            if (absent || System.currentTimeMillis() >= endTime) {
-                break;
-            }
-            Utils.pollPause(endTimeStart, 2000);
-        }
+        // Via retryUntil so the deadline cannot drop below RUNTIME_PROPAGATION_TIMEOUT (§7/§15).
+        HttpResponse response = Utils.retryUntil(seconds * 1000L,
+                () -> Requests.get(url, headers),
+                r -> r != null && r.getResponseCode() == 200 && r.getData() != null
+                        && !r.getData().contains(resolvedUnexpected));
+        Requests.publishPollResult(response);
         Assert.assertNotNull(response, "DevPortal search '" + resolvedQuery + "' returned no response (every poll "
                 + "attempt failed)");
-        Assert.assertTrue(absent, "DevPortal search '" + resolvedQuery + "' still contained '" + resolvedUnexpected
-                + "' after " + seconds + "s; last response: " + response.getResponseCode()
-                + " / " + response.getData());
+        Assert.assertTrue(response.getResponseCode() == 200 && response.getData() != null
+                        && !response.getData().contains(resolvedUnexpected),
+                "DevPortal search '" + resolvedQuery + "' still contained '" + resolvedUnexpected
+                        + "' after the deadline; last response: " + response.getResponseCode()
+                        + " / " + response.getData());
     }
 
     /**
@@ -5079,9 +5041,10 @@ public class ApplicationBaseSteps {
         // retries ONLY IOException. Requests.get publishes each attempt, so the last one is the assertion target.
         HttpResponse response = Utils.retryUntil(seconds * 1000L,
                 () -> Requests.get(url, headers),
-                result -> pageCountOf(result) == expectedCount);
+                result -> Utils.listCountOf(result) == expectedCount);
+        Requests.publishPollResult(response);
         Assert.assertNotNull(response, "No paginated search response");
-        Assert.assertEquals(pageCountOf(response), expectedCount,
+        Assert.assertEquals(Utils.listCountOf(response), expectedCount,
                 "DevPortal paginated page count did not reach the expected value");
     }
 
@@ -5103,9 +5066,9 @@ public class ApplicationBaseSteps {
                 ? Identity.publisherHeaders() : Identity.devportalHeaders();
         HttpResponse response = Utils.retryUntil(seconds * 1000L,
                 () -> Requests.get(url, headers),
-                result -> pageCountOf(result) == expectedCount);
+                result -> Utils.listCountOf(result) == expectedCount);
         Assert.assertNotNull(response, "No unified-search response from the " + plane + " plane");
-        Assert.assertEquals(pageCountOf(response), expectedCount,
+        Assert.assertEquals(Utils.listCountOf(response), expectedCount,
                 "Unified search on the " + plane + " plane for '" + query
                         + "' did not reach the expected count; last body: " + response.getData());
     }
@@ -5128,14 +5091,6 @@ public class ApplicationBaseSteps {
      * non-2xx or empty answer can never be mistaken for a real count (in particular never for an expected 0,
      * which would let a failed request satisfy a count-0 assertion). Guards before parsing, per §7.
      */
-    private static int pageCountOf(HttpResponse response) {
-
-        if (response == null || response.getResponseCode() != 200
-                || response.getData() == null || response.getData().isBlank()) {
-            return -1;
-        }
-        return new JSONObject(response.getData()).optInt("count", -1);
-    }
 
     /**
      * Asserts the DevPortal's UNFILTERED API listing ({@code GET /apis} with an EMPTY query) lists an API name
@@ -5256,26 +5211,17 @@ public class ApplicationBaseSteps {
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
         String resolvedExpected = Utils.resolveContextPlaceholders(expected);
         String url = Utils.getTagsURL(Utils.getBaseUrl());
-        long endTimeStart = System.currentTimeMillis();
-        long endTime = endTimeStart + seconds * 1000L;
-        HttpResponse response = null;
-        boolean found = false;
-        while (true) {
-            try {
-                response = Requests.get(url, headers);
-                found = response.getResponseCode() == 200
-                        && response.getData() != null && response.getData().contains(resolvedExpected);
-            } catch (IOException transientFailure) {
-                // transient network failure — keep polling; the previous response (if any) is retained
-            }
-            if (found || System.currentTimeMillis() >= endTime) {
-                break;
-            }
-            Utils.pollPause(endTimeStart, 2000);
-        }
+        // Via retryUntil so the deadline cannot drop below RUNTIME_PROPAGATION_TIMEOUT (§7/§15).
+        HttpResponse response = Utils.retryUntil(seconds * 1000L,
+                () -> Requests.get(url, headers),
+                r -> r != null && r.getResponseCode() == 200 && r.getData() != null
+                        && r.getData().contains(resolvedExpected));
+        Requests.publishPollResult(response);
         Assert.assertNotNull(response, "DevPortal tag cloud returned no response (every poll attempt failed)");
-        Assert.assertTrue(found, "DevPortal tag cloud did not contain '" + resolvedExpected + "' within "
-                + seconds + "s; last response: " + response.getResponseCode() + " / " + response.getData());
+        Assert.assertTrue(response.getResponseCode() == 200 && response.getData() != null
+                        && response.getData().contains(resolvedExpected),
+                "DevPortal tag cloud did not contain '" + resolvedExpected + "' within the deadline; "
+                        + "last response: " + response.getResponseCode() + " / " + response.getData());
     }
 
     /**
@@ -5293,27 +5239,18 @@ public class ApplicationBaseSteps {
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
         String resolved = Utils.resolveContextPlaceholders(unexpected);
         String url = Utils.getTagsURL(Utils.getBaseUrl());
-        long endTimeStart = System.currentTimeMillis();
-        long endTime = endTimeStart + seconds * 1000L;
-        HttpResponse response = null;
-        boolean absent = false;
-        while (true) {
-            try {
-                response = Requests.get(url, headers);
-                absent = response.getResponseCode() == 200
-                        && response.getData() != null && !response.getData().contains(resolved);
-            } catch (IOException transientFailure) {
-                // transient network failure — keep polling; the previous response (if any) is retained
-            }
-            if (absent || System.currentTimeMillis() >= endTime) {
-                break;
-            }
-            Utils.pollPause(endTimeStart, 2000);
-        }
+        // Via retryUntil so the deadline cannot drop below RUNTIME_PROPAGATION_TIMEOUT (§7/§15).
+        HttpResponse response = Utils.retryUntil(seconds * 1000L,
+                () -> Requests.get(url, headers),
+                r -> r != null && r.getResponseCode() == 200 && r.getData() != null
+                        && !r.getData().contains(resolved));
+        Requests.publishPollResult(response);
         Assert.assertNotNull(response, "DevPortal tag cloud returned no response (every poll attempt failed)");
-        Assert.assertTrue(absent, "DevPortal tag cloud still contained '" + resolved + "' after " + seconds
-                + "s (a restricted tag leaking persistently, not a transient index window); last response: "
-                + response.getResponseCode() + " / " + response.getData());
+        Assert.assertTrue(response.getResponseCode() == 200 && response.getData() != null
+                        && !response.getData().contains(resolved),
+                "DevPortal tag cloud still contained '" + resolved + "' after the deadline (a restricted tag "
+                        + "leaking persistently, not a transient index window); last response: "
+                        + response.getResponseCode() + " / " + response.getData());
     }
 
     /**

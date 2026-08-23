@@ -27,17 +27,11 @@ import org.wso2.am.integration.cucumbertests.utils.TestContext;
 import org.wso2.am.integration.cucumbertests.utils.Utils;
 
 import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLEngine;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509ExtendedTrustManager;
 import java.io.IOException;
-import java.net.Socket;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.security.SecureRandom;
-import java.security.cert.X509Certificate;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -173,6 +167,10 @@ public class MCPInvocationSteps {
                 return null;
             } catch (IOException transientDuringWarmup) {
                 lastError.set(transientDuringWarmup.getMessage());
+                return null;
+            } catch (JSONException malformedDuringWarmup) {
+                // retryUntil retries only IOException, so a parsing accept predicate would escape it. Not-yet.
+                lastError.set("malformed tools/call body: " + malformedDuringWarmup.getMessage());
                 return null;
             }
         }, result -> true);
@@ -925,20 +923,6 @@ public class MCPInvocationSteps {
     }
 
     private SSLContext trustAll() throws Exception {
-        SSLContext sslContext = SSLContext.getInstance("TLS");
-        // X509ExtendedTrustManager, not X509TrustManager: the JDK performs HOSTNAME verification inside the
-        // extended check, so a plain trust-all manager still rejects a host the certificate does not name (e.g.
-        // an IP, as when TESTCONTAINERS_HOST_OVERRIDE hands out the VM address). Supplying SSLParameters with a
-        // null endpoint-identification algorithm does NOT work — HttpClient overrides it.
-        sslContext.init(null, new TrustManager[]{new X509ExtendedTrustManager() {
-            public void checkClientTrusted(X509Certificate[] chain, String authType) { }
-            public void checkServerTrusted(X509Certificate[] chain, String authType) { }
-            public void checkClientTrusted(X509Certificate[] chain, String authType, Socket socket) { }
-            public void checkServerTrusted(X509Certificate[] chain, String authType, Socket socket) { }
-            public void checkClientTrusted(X509Certificate[] chain, String authType, SSLEngine engine) { }
-            public void checkServerTrusted(X509Certificate[] chain, String authType, SSLEngine engine) { }
-            public X509Certificate[] getAcceptedIssuers() { return new X509Certificate[0]; }
-        }}, new SecureRandom());
-        return sslContext;
+        return Utils.trustAllSslContext();
     }
 }

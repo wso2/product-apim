@@ -26,6 +26,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.testng.Assert;
 import org.wso2.am.integration.cucumbertests.utils.Identity;
+import org.wso2.am.integration.cucumbertests.utils.Requests;
 import org.wso2.am.integration.cucumbertests.utils.TestContext;
 import org.wso2.am.integration.cucumbertests.utils.Utils;
 import org.wso2.am.integration.cucumbertests.utils.clients.SimpleHTTPClient;
@@ -240,6 +241,7 @@ public class APIInvocationSteps {
             HttpResponse response = Utils.retryUntil(Constants.RUNTIME_PROPAGATION_TIMEOUT,
                     () -> invokeApiByContext(resolvedContext, httpMethod, accessToken, payload),
                     completed -> true);
+            Requests.publishPollResult(response);
             Assert.assertNotNull(response, "Invocation " + i + " of " + times + " never completed (gateway "
                     + "unreachable within the warmup window).");
             Assert.assertEquals(response.getResponseCode(), 200, "Invocation " + i + " of " + times
@@ -472,6 +474,7 @@ public class APIInvocationSteps {
                 () -> execute(CurlOption.HttpMethod.OPTIONS, endpointUrl, new HashMap<>(headers), ""),
                 response -> response.getResponseCode() == 200
                         && expected.equals(headerValueIgnoringCase(response, headerName)));
+        Requests.publishPollResult(last);
         assertReachedExpectedStatus(last, 200);
         Assert.assertEquals(headerValueIgnoringCase(last, headerName), expected,
                 "Pre-flight response header '" + headerName + "' never became '" + expected
@@ -640,6 +643,7 @@ public class APIInvocationSteps {
                 () -> invokeApiByContext(resolvedContext, httpMethod, accessToken, payload),
                 response -> response.getResponseCode() == 200 && response.getData() != null
                         && response.getData().contains(marker));
+        Requests.publishPollResult(last);
         if (last != null && last.getResponseCode() == 401) {
             Utils.logAuthRejection(resolvedContext, accessToken, credentialForDiagnostic(accessToken),
                     last.getResponseCode(), last.getData(), System.currentTimeMillis() - started);
@@ -679,6 +683,7 @@ public class APIInvocationSteps {
                     actualPayload, contentType);
         }, response -> response.getResponseCode() == 200 && response.getData() != null
                 && response.getData().contains(marker));
+        Requests.publishPollResult(last);
         if (last != null && last.getResponseCode() == 401) {
             Utils.logAuthRejection(resolvedContext, accessToken, credentialForDiagnostic(accessToken),
                     last.getResponseCode(), last.getData(), System.currentTimeMillis() - started);

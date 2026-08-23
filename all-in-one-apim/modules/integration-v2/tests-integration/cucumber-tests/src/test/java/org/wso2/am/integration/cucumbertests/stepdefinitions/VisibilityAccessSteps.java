@@ -495,22 +495,16 @@ public class VisibilityAccessSteps {
             throws InterruptedException {
         HttpResponse response = Utils.retryUntil(timeoutSeconds * 1000L,
                 () -> Requests.get(url, headers),
-                resp -> countOf(resp) == expectedCount);
+                resp -> Utils.listCountOf(resp) == expectedCount);
+        Requests.publishPollResult(response);
         Assert.assertNotNull(response, "No content-search response for " + url);
-        Assert.assertEquals(countOf(response), expectedCount,
+        Assert.assertEquals(Utils.listCountOf(response), expectedCount,
                 "Content search result count did not reach " + expectedCount + " within the retryUntil window "
                         + "(max(" + timeoutSeconds + "s, the shared propagation ceiling)) for " + url
                         + "; last response: " + response.getResponseCode() + " / " + response.getData());
     }
 
     /** The {@code count} of a search response, or -1 when the response is not a 200 with a body. */
-    private int countOf(HttpResponse response) {
-        if (response == null || response.getResponseCode() != 200
-                || response.getData() == null || response.getData().isBlank()) {
-            return -1;
-        }
-        return new JSONObject(response.getData()).optInt("count", -1);
-    }
 
     // ---- DevPortal tag cloud presence / absence of a specific tag ----------------------------------------
 

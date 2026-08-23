@@ -23,7 +23,7 @@ Feature: DevPortal API Ratings
     # Set the user rating to 4 → the stored value is returned.
     When I set my rating of API "rtApiId" to 4
     Then The response status code should be 200
-    And The response should contain "\"rating\":4"
+    And The value of response field "rating" should be "4"
 
     # Remove the rating.
     When I delete my rating of API "rtApiId"

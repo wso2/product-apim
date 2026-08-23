@@ -67,7 +67,7 @@ public class SubscriptionListingSteps {
     @When("I retrieve all subscriptions of api {string} until the list contains {int} subscriptions within {int} seconds")
     public void iRetrieveAllSubscriptionsOfApiUntilCount(String apiIdKey, int expectedCount, int timeoutSeconds)
             throws InterruptedException {
-        Utils.retryUntil(timeoutSeconds * 1000L,
+        HttpResponse lastPoll = Utils.retryUntil(timeoutSeconds * 1000L,
                 () -> listSubscriptionsOfApi(apiIdKey),
                 response -> {
                     if (response == null || response.getResponseCode() != 200
@@ -84,6 +84,7 @@ public class SubscriptionListingSteps {
                         return false;
                     }
                 });
+        Requests.publishPollResult(lastPoll);
     }
 
     private HttpResponse listSubscriptionsOfApi(String apiIdKey) throws IOException {

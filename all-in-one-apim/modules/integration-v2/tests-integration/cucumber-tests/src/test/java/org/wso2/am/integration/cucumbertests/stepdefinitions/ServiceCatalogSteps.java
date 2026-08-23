@@ -89,12 +89,8 @@ public class ServiceCatalogSteps {
             json.put("scope", "service_catalog:service_write service_catalog:service_view");
             HttpResponse response = SimpleHTTPClient.getInstance().doPost(Utils.getAPIMTokenEndpointURL(Utils.getBaseUrl()),
                     headers, json.toString(), Constants.CONTENT_TYPES.APPLICATION_JSON);
-            // PINNED AS OBSERVED, not as specified: service-catalog-api.yaml declares 201 for POST /services,
-        // but the product answers 200. Asserting 201 here would fail every create; the day the product
-        // matches its own contract this line fails and is updated deliberately. Legacy could not settle this
-        // — ServiceCatalogRestAPITestCase asserts only the returned DTO's fields and no status at all for
-        // create (it does pin SC_NO_CONTENT for delete), so this status check is coverage the port adds.
-        Assert.assertEquals(response.getResponseCode(), 200, response.getData());
+            // The OAuth2 token endpoint's own 200 (RFC 6749 §5.1) -- unrelated to the service-catalog contract.
+            Assert.assertEquals(response.getResponseCode(), 200, response.getData());
             String token = Utils.extractValueFromPayload(response.getData(), "access_token").toString();
             TestContext.set(cacheKey, token);
             return token;
@@ -153,6 +149,8 @@ public class ServiceCatalogSteps {
     public void iCreateService(String name, String version, String key, String definitionResource, String idKey)
             throws IOException {
         HttpResponse response = createService(buildMetadata(name, version, key, "Catalog entry"), definitionResource);
+        // Pinned to the product's actual 200; the contract declares 201 (wso2/api-manager#5195).
+        // Change to 201 once that is fixed.
         Assert.assertEquals(response.getResponseCode(), 200, response.getData());
         Object id = Utils.extractValueFromPayload(response.getData(), "id");
         TestContext.set(idKey, id);

@@ -130,7 +130,7 @@ Feature: Publisher Service Catalog
   #   * identical content  -> 200, ZERO imported (idempotent no-op), regardless of the flag.
   #   * changed content, overwrite=false -> 400 "Cannot update existing services when overwrite is false".
   #   * changed content, overwrite=true  -> 200, ONE imported (the stored service is overwritten).
-  # service2.zip is Pizzashack-Endpoint 1.0.0 (distinct from service1.zip's v2) and service2_modified.zip is the
+  # service2.zip is Pizzashack-Endpoint v1 (distinct from service1.zip's v2) and service2_modified.zip is the
   # SAME serviceKey with a changed description/serviceUrl/definition. The scenario is self-contained: the first
   # import creates the service and every later step operates on that one service (registered for teardown).
   # Runs x2-tenant (super + tenant1): the catalog is tenant-scoped, so the fixed serviceKey lives in each
@@ -146,7 +146,8 @@ Feature: Publisher Service Catalog
     # First import creates the service.
     When I import a service catalog archive "artifacts/service-catalog/service2.zip" with overwrite "true" as "conflictSvcId"
     Then The response status code should be 200
-    And The response should contain "Pizzashack-Endpoint"
+    # JSONPath == is an exact match, so this cannot be satisfied by the sibling Pizzashack-Endpoint-v2.
+    And The response field "list[?(@.name=='Pizzashack-Endpoint')].version" should be exactly the list "v1"
     # Re-import of the IDENTICAL archive is a 200 no-op regardless of the flag: nothing changed, nothing imported,
     # no duplicate created.
     When I attempt to import a service catalog archive "artifacts/service-catalog/service2.zip" with overwrite "false"

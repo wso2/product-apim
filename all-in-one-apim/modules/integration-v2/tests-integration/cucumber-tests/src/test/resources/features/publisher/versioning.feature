@@ -162,7 +162,7 @@ Feature: Publisher API Versioning
     When I search DevPortal APIs with query "{{verUpdName}}" until it contains "2.0.0" within 60 seconds
     Then The response should contain "1.0.0"
     And The response should contain "2.0.0"
-    And The response should contain "\"count\":2"
+    And The value of response field "count" should be "2"
 
     # The UNFILTERED devportal listing — the one read path that applies the DisplayMultipleVersions grouping —
     # carries this API exactly ONCE, at its latest version (2.0.0). The count-2 search above is the control: it

@@ -177,13 +177,9 @@ Feature: Publisher API Lifecycle
     And The response field "policies[*]" should be exactly the list ""
     # The PUBLISH is what fails, and it fails as a proper validation response naming the missing tiers.
     When I attempt to change the lifecycle of API "noTierApiId" with action "Publish"
-    # The error body is asserted with `should contain`, not the field-value step: that step deliberately refuses
-    # to read fields off a non-2xx body (so a success-shaped assertion can never be satisfied by an error
-    # payload), which is exactly the guard that makes it unusable for pinning an error DTO. Same approach as the
-    # deny-policy negatives, which likewise pin the exact status and body the product returns.
+    # Error envelope, not the field-value step: that one refuses a non-2xx body by design.
     Then The response status code should be 400
-    And The response should contain "\"code\":903224"
-    And The response should contain "\"message\":\"Failed to publish service to API store. No Tiers selected\""
+    And The error response should have code "903224" and message "Failed to publish service to API store. No Tiers selected"
     And The response should contain "No Tiers selected for API with UUID"
     # A rejected transition must not half-apply — the API stays in its pre-publish state.
     And The lifecycle status of API "noTierApiId" should be "Created"

@@ -25,7 +25,7 @@ Feature: Publisher API Documentation
     # size (its assertion is list.size() == 1, not a bare 200), so a stray/duplicated document fails here.
     When I retrieve all available documents for "docApiId"
     Then The response status code should be 200
-    And The response should contain "\"count\":1"
+    And The value of response field "count" should be "1"
 
     # Retrieve the specific document
     When I retrieve document with "documentID" for "docApiId"
@@ -49,7 +49,7 @@ Feature: Publisher API Documentation
     # while every individual call still returned its happy-path status.
     When I retrieve all available documents for "docApiId"
     Then The response status code should be 200
-    And The response should contain "\"count\":1"
+    And The value of response field "count" should be "1"
     And The response should contain "SAMPLES"
     And The response should not contain "HOWTO"
 
@@ -253,7 +253,7 @@ Feature: Publisher API Documentation
     When I store the username of actor "<actor>" as "ovSubscriber1Name"
     And I retrieve the subscriptions of API "ovApiId"
     Then The response status code should be 200
-    And The response should contain "\"count\":1"
+    And The value of response field "count" should be "1"
     And The value of response field "list[0].applicationInfo.subscriber" should be "{{ovSubscriber1Name}}"
 
     # Second subscriber (a different consumer): switch actor, register its DCR client, mint its devportal token,
@@ -279,7 +279,7 @@ Feature: Publisher API Documentation
     When I store the username of actor "<subscriber>" as "ovSubscriber2Name"
     And I retrieve the subscriptions of API "ovApiId"
     Then The response status code should be 200
-    And The response should contain "\"count\":2"
+    And The value of response field "count" should be "2"
     And The response should contain "\"subscriber\":\"{{ovSubscriber1Name}}\""
     And The response should contain "\"subscriber\":\"{{ovSubscriber2Name}}\""
 
@@ -292,7 +292,7 @@ Feature: Publisher API Documentation
     Then The response status code should be 201
     When I retrieve all available documents for "ovApiId"
     Then The response status code should be 200
-    And The response should contain "\"count\":2"
+    And The value of response field "count" should be "2"
 
     Examples:
       | actor             | subscriber                     |

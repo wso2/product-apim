@@ -2310,4 +2310,61 @@ public class Utils {
             }
         }
     }
+
+    /**
+     * A trust-all {@link javax.net.ssl.SSLContext} for talking to the suite's self-signed containers.
+     *
+     * <p>{@link javax.net.ssl.X509ExtendedTrustManager}, NOT {@code X509TrustManager}: the JDK performs HOSTNAME
+     * verification inside the extended check, so a plain trust-all manager still rejects a host the certificate
+     * does not name (e.g. an IP, as when {@code TESTCONTAINERS_HOST_OVERRIDE} hands out the VM address).
+     * Supplying {@code SSLParameters} with a null endpoint-identification algorithm does NOT work --
+     * {@code HttpClient} overrides it.
+     *
+     * <p>TEST-ONLY, and the reason it is centralised: three step classes had hand-rolled copies of this, so a
+     * correction to the hostname-verification subtlety above had to be made in three places or not at all.
+     */
+    public static javax.net.ssl.SSLContext trustAllSslContext() throws java.security.NoSuchAlgorithmException,
+            java.security.KeyManagementException {
+
+        javax.net.ssl.SSLContext sslContext = javax.net.ssl.SSLContext.getInstance("TLS");
+        sslContext.init(null, new javax.net.ssl.TrustManager[]{new javax.net.ssl.X509ExtendedTrustManager() {
+            public void checkClientTrusted(java.security.cert.X509Certificate[] chain, String authType) { }
+
+            public void checkServerTrusted(java.security.cert.X509Certificate[] chain, String authType) { }
+
+            public void checkClientTrusted(java.security.cert.X509Certificate[] chain, String authType,
+                                           java.net.Socket socket) { }
+
+            public void checkServerTrusted(java.security.cert.X509Certificate[] chain, String authType,
+                                           java.net.Socket socket) { }
+
+            public void checkClientTrusted(java.security.cert.X509Certificate[] chain, String authType,
+                                           javax.net.ssl.SSLEngine engine) { }
+
+            public void checkServerTrusted(java.security.cert.X509Certificate[] chain, String authType,
+                                           javax.net.ssl.SSLEngine engine) { }
+
+            public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+                return new java.security.cert.X509Certificate[0];
+            }
+        }}, new java.security.SecureRandom());
+        return sslContext;
+    }
+
+
+    /**
+     * The {@code count} of a paginated/list response, or -1 when it is not a 200 with a body.
+     *
+     * <p>-1 rather than 0 or an exception on purpose: a poll comparing against an expected count must be able to
+     * tell "not a readable listing yet" from "a readable listing that genuinely reports zero".
+     */
+    public static int listCountOf(HttpResponse response) {
+
+        if (response == null || response.getResponseCode() != 200
+                || response.getData() == null || response.getData().isBlank()) {
+            return -1;
+        }
+        return new JSONObject(response.getData()).optInt("count", -1);
+    }
+
 }

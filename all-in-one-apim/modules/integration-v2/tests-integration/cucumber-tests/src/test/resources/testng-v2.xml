@@ -320,14 +320,10 @@
         </classes>
     </test>
 
-    <!-- Mutual-SSL invocation + the mutual-SSL x application-security matrix + WebSocket CORS share ONE block:
-         their overlays are orthogonal (mTLS shrinks the SSL-profile read interval with client auth still
-         "optional"; WS-CORS enables the WS origin allow-list — different TOML tables, neither breaks the other's
-         flows), so they co-locate on one container instead of three. Needs the node backend. Runs the three
-         runners as parallel classes (thread-count=3): WS-CORS uses a different data plane (the ws:// inbound vs
-         the 8243 HTTPS passthrough), and the two mutual-SSL runners each own their own APIs and upload the shared
-         client certificate under a uniquely generated alias (the alias is unique per TENANT), so they don't
-         interfere. -->
+    <!-- Three features on one container: their overlays touch different TOML tables (mTLS shortens the
+         SSL-profile read interval, WS-CORS enables the WS origin allow-list), so neither changes the other's
+         behaviour (§13). Parallel-safe: WS-CORS is on the ws:// inbound rather than the 8243 passthrough, and
+         each mutual-SSL runner owns its APIs and a per-tenant-unique certificate alias. -->
     <test name="IntegrationV2-MutualSslWsCors" parallel="classes" thread-count="2">
         <parameter name="blockLabel" value="mtls-ws-cors"/>
         <parameter name="initTenantUsers" value="true"/>

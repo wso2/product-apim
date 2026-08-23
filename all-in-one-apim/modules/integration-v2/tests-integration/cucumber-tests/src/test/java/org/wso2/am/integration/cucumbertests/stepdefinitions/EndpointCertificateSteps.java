@@ -195,22 +195,15 @@ public class EndpointCertificateSteps {
                 limit, offset);
         HttpResponse last = Utils.retryUntil(timeoutSeconds * 1000L,
                 () -> Requests.get(url, publisherAuthHeaders()),
-                response -> usageCount(response) == expectedCount);
+                response -> Utils.listCountOf(response) == expectedCount);
         Assert.assertNotNull(last, "No endpoint-certificate usage response was captured within " + timeoutSeconds
                 + "s — every attempt threw.");
-        Assert.assertEquals(usageCount(last), expectedCount,
+        Assert.assertEquals(Utils.listCountOf(last), expectedCount,
                 "Endpoint-certificate usage did not list " + expectedCount + " APIs within " + timeoutSeconds
                         + "s; last response: " + last.getResponseCode() + " / " + last.getData());
     }
 
     /** The {@code count} of a usage/search response, or -1 when the response carried no usable 2xx body. */
-    private static int usageCount(HttpResponse response) {
-        if (response == null || response.getResponseCode() != 200
-                || response.getData() == null || response.getData().isBlank()) {
-            return -1;
-        }
-        return new JSONObject(response.getData()).optInt("count", -1);
-    }
 
     /**
      * Asserts the number of certificates in the last search response ({@code count} field of the CertificatesDTO).
