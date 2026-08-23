@@ -382,12 +382,11 @@ public class OrganizationSteps {
         // Cleared first so a throw leaves httpResponse ABSENT rather than stale (§7 stale-response trap).
         TestContext.remove("httpResponse");
         HttpResponse last = Utils.retryUntil(timeoutSeconds * 1000L,
-                () -> SimpleHTTPClient.getInstance()
-                        .doGet(Utils.getDevportalApiDetailURL(Utils.getBaseUrl(), apiId), headers),
+                () -> Requests.get(Utils.getDevportalApiDetailURL(Utils.getBaseUrl(), apiId), headers),
                 // A 200 with no body counts as still-pending, not a match.
                 response -> response.getResponseCode() == 200 && response.getData() != null
                         && response.getData().contains(expected));
-        TestContext.set("httpResponse", last);
+        Requests.publishPollResult(last);
         Assert.assertNotNull(last, "No devportal response received for API " + apiId);
         Assert.assertTrue(last.getResponseCode() == 200 && last.getData() != null,
                 "DevPortal API " + apiId + " did not return a 200 with a body within " + timeoutSeconds
@@ -536,11 +535,11 @@ public class OrganizationSteps {
         // Cleared first so a throw leaves httpResponse ABSENT rather than stale (the §7 stale-response trap).
         TestContext.remove("httpResponse");
         HttpResponse last = Utils.retryUntil(timeoutSeconds * 1000L,
-                () -> SimpleHTTPClient.getInstance().doGet(Utils.getDevportalApisURL(Utils.getBaseUrl()), headers),
+                () -> Requests.get(Utils.getDevportalApisURL(Utils.getBaseUrl()), headers),
                 // A 200 with no body counts as still-pending, not a match.
                 response -> response.getResponseCode() == 200 && response.getData() != null
                         && response.getData().contains(apiId) == shouldContain);
-        TestContext.set("httpResponse", last);
+        Requests.publishPollResult(last);
         Assert.assertNotNull(last, "No devportal API-list response received");
         Assert.assertTrue(last.getResponseCode() == 200 && last.getData() != null,
                 "DevPortal API listing did not return a 200 with a body within " + timeoutSeconds + "s; got "
@@ -621,12 +620,11 @@ public class OrganizationSteps {
         // Cleared first so a throw leaves httpResponse ABSENT rather than stale (§7 stale-response trap).
         TestContext.remove("httpResponse");
         HttpResponse last = Utils.retryUntil(timeoutSeconds * 1000L,
-                () -> SimpleHTTPClient.getInstance()
-                        .doGet(Utils.getDevportalKeyManagersURL(Utils.getBaseUrl()), headers),
+                () -> Requests.get(Utils.getDevportalKeyManagersURL(Utils.getBaseUrl()), headers),
                 // A 200 with no body counts as still-pending, not a match.
                 response -> response.getResponseCode() == 200 && response.getData() != null
                         && response.getData().contains(kmId) == shouldContain);
-        TestContext.set("httpResponse", last);
+        Requests.publishPollResult(last);
         Assert.assertNotNull(last, "No devportal key-manager response received");
         Assert.assertTrue(last.getResponseCode() == 200 && last.getData() != null,
                 "DevPortal key-manager listing did not return a 200 with a body within " + timeoutSeconds
@@ -644,10 +642,9 @@ public class OrganizationSteps {
         // Cleared first so a throw leaves httpResponse ABSENT rather than stale (§7 stale-response trap).
         TestContext.remove("httpResponse");
         HttpResponse last = Utils.retryUntil(timeoutSeconds * 1000L,
-                () -> SimpleHTTPClient.getInstance()
-                        .doGet(Utils.getDevportalApiDetailURL(Utils.getBaseUrl(), apiId), headers),
+                () -> Requests.get(Utils.getDevportalApiDetailURL(Utils.getBaseUrl(), apiId), headers),
                 response -> response.getResponseCode() == expectedStatus);
-        TestContext.set("httpResponse", last);
+        Requests.publishPollResult(last);
         Assert.assertNotNull(last, "No devportal response received for API " + apiId);
         Assert.assertEquals(last.getResponseCode(), expectedStatus,
                 "DevPortal API visibility did not reach " + expectedStatus + " within " + timeoutSeconds

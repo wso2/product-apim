@@ -1032,6 +1032,10 @@ public class PublisherBaseSteps {
         for (String e : expectedEventsCsv.split(",")) {
             expected.add(e.trim());
         }
+        // Cardinality before the set compare (§12): transition events are distinct by nature, so a repeated
+        // entry is a defect -- and a Set would collapse it and still match.
+        Assert.assertEquals(transitions == null ? 0 : transitions.length(), expected.size(),
+                "Available lifecycle transitions count mismatch for api=" + actualApiId + " (got " + actual + ")");
         Assert.assertEquals(actual, expected,
                 "Available lifecycle transitions mismatch for api=" + actualApiId + " (got " + actual + ")");
     }

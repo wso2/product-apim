@@ -31,10 +31,9 @@ Feature: Publisher API Lifecycle
     Then The response status code should be 200
     When I retrieve the "apis" resource with id "createdApiId"
     Then The response status code should be 200
-    And The response should contain "Updated description for the created API"
-    And The response should contain "Gold"
-    And The response should contain "Bronze"
-    And The response should contain "Silver"
+    And The value of response field "description" should be "Updated description for the created API"
+    And The response array field "policies" should have exactly 3 entries
+    And The response field "policies[*]" should be exactly the list "Gold,Bronze,Silver"
 
     # Updating must not rename the API
     When I put JSON payload from file "artifacts/payloads/rename_apim_test_api.json" in context as "apiRenamePayload"

@@ -61,6 +61,7 @@ Feature: Publisher API Documentation
     When I retrieve all available documents for "docApiId"
     Then The response status code should be 200
     And The value of response field "count" should be "0"
+    And The response array field "list" should have exactly 0 entries
     And The response field "list[*].documentId" should be exactly the list ""
 
     Examples:
@@ -105,6 +106,7 @@ Feature: Publisher API Documentation
     When I retrieve all available documents for "docApiId"
     Then The response status code should be 200
     And The value of response field "count" should be "0"
+    And The response array field "list" should have exactly 0 entries
     And The response field "list[*].documentId" should be exactly the list ""
 
     Examples:
@@ -170,11 +172,8 @@ Feature: Publisher API Documentation
     Then The response status code should be 201
     When I retrieve all available documents for "docTypeApiId"
     Then The response status code should be 200
-    And The response should contain "HOWTO"
-    And The response should contain "SAMPLES"
-    And The response should contain "PUBLIC_FORUM"
-    And The response should contain "SUPPORT_FORUM"
-    And The response should contain "OTHER"
+    And The response array field "list" should have exactly 5 entries
+    And The response field "list[*].type" should be exactly the list "HOWTO,SAMPLES,PUBLIC_FORUM,SUPPORT_FORUM,OTHER"
 
     Examples:
       | actor                     |
@@ -202,9 +201,8 @@ Feature: Publisher API Documentation
     Then The response status code should be 201
     When I retrieve all available documents for "docSrcApiId"
     Then The response status code should be 200
-    And The response should contain "INLINE"
-    And The response should contain "URL"
-    And The response should contain "FILE"
+    And The response array field "list" should have exactly 3 entries
+    And The response field "list[*].sourceType" should be exactly the list "INLINE,URL,FILE"
 
     Examples:
       | actor                     |

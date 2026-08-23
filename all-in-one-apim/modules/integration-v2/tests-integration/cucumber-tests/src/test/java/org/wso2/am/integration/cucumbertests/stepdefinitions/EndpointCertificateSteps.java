@@ -239,6 +239,11 @@ public class EndpointCertificateSteps {
         Set<String> expected = new HashSet<>(Arrays.asList(
                 TestContext.resolve(expectedIdsKey).toString().split("\\s*,\\s*")));
         JSONArray list = lastResponseBody().getJSONArray("list");
+        // Cardinality before the set compare (§12): a Set collapses duplicates, so a list carrying an entry
+        // twice would still equal the expected set.
+        Assert.assertEquals(list.length(), expected.size(),
+                "Endpoint-certificate usage returned " + list.length() + " entries but expected "
+                        + expected.size() + "; list: " + list);
         Set<String> actual = new HashSet<>();
         for (int i = 0; i < list.length(); i++) {
             actual.add(list.getJSONObject(i).getString("id"));

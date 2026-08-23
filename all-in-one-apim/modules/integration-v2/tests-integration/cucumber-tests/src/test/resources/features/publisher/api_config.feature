@@ -439,18 +439,17 @@ Feature: Publisher API Runtime & Common Configuration
     And I have created an api from "artifacts/payloads/create_apim_endpoint_listing_api.json" as "lbApiId" and deployed it
     When I publish the "apis" resource with id "lbApiId"
     Then The lifecycle status of API "lbApiId" should be "Published"
-    # Publisher reflects the load-balanced endpoint config: type, algorithm and all four production/sandbox
-    # endpoints. The COUNTS are pinned exactly (legacy asserts 4 production + 4 sandbox): a substring check for
-    # prod0/prod3 cannot notice a dropped middle member or a fifth entry appearing.
+    # Publisher reflects the load-balanced endpoint config: type, algorithm and every production/sandbox URL.
+    # Counts AND exact URLs (legacy asserts 4 + 4): a substring check for prod0/prod3 could not notice a
+    # dropped middle member, a fifth entry, or a rewritten host.
     When I retrieve the "apis" resource with id "lbApiId"
     Then The response status code should be 200
     And The value of response field "endpointConfig.endpoint_type" should be "load_balance"
     And The response should contain "org.apache.synapse.endpoints.algorithms.RoundRobin"
     And The response array field "endpointConfig.production_endpoints" should have exactly 4 entries
     And The response array field "endpointConfig.sandbox_endpoints" should have exactly 4 entries
-    And The response should contain "prod0"
-    And The response should contain "prod3"
-    And The response should contain "sand3"
+    And The response field "endpointConfig.production_endpoints[*].url" should be exactly the list "http://nodebackend:3001/prod0,http://nodebackend:3001/prod1,http://nodebackend:3001/prod2,http://nodebackend:3001/prod3"
+    And The response field "endpointConfig.sandbox_endpoints[*].url" should be exactly the list "http://nodebackend:3001/sand0,http://nodebackend:3001/sand1,http://nodebackend:3001/sand2,http://nodebackend:3001/sand3"
     # The DevPortal exposes the API's gateway endpoint URLs once it is deployed: ONE entry for the single
     # environment the API is deployed to (Default), typed hybrid, whose http/https URLs are exactly
     # <scheme>://<Default vhost>:<vhost port>/<context>/<version>. The host and ports come from the Default gateway

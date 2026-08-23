@@ -208,6 +208,9 @@ public class MutualSslSteps {
             TestContext.set("httpResponse", response);
             return response;
         }, response -> response.getResponseCode() == expectedStatus);
+        // The lambda cannot use the Requests funnel (doMutualSSLGet is not wrapped), so re-publish the poll's
+        // own last response -- a throwing final attempt would otherwise leave the key cleared.
+        Requests.publishPollResult(last);
 
         assertNotNull(last, "No response received from the mutual-SSL gateway invocation within the timeout");
         assertEquals(last.getResponseCode(), expectedStatus,

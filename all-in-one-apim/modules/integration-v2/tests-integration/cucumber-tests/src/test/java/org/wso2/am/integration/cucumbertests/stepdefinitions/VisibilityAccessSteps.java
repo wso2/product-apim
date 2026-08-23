@@ -386,24 +386,15 @@ public class VisibilityAccessSteps {
     }
 
     /**
-     * Polls the devportal read path until it answers {@code expectedStatus}, publishes the LAST response as the
+     * Polls the devportal read path until it answers {@code expectedStatus}, republishes the LAST response as the
      * step's assertion target and asserts the exact status itself (§7/§12).
-     *
-     * <p>Funnelled through {@link Utils#retryUntil} rather than a hand-rolled deadline loop (§7/§15): the
-     * envelope owns the {@code max(timeout, RUNTIME_PROPAGATION_TIMEOUT)} ceiling, so this call site cannot
-     * drift below it, and it retries ONLY {@code IOException} — a bad context key still fails fast instead of
-     * being masked as a timeout. Behaviourally identical to the loop it replaces, which already used the same
-     * ceiling and the same {@code pollPause} cadence.
      */
     private void pollUntilStatus(String url, Map<String, String> headers, int expectedStatus, int timeoutSeconds)
             throws InterruptedException {
-        // Cleared BEFORE the call so a throw leaves httpResponse ABSENT rather than stale — otherwise a
-        // following assertion could pass against the previous step's response (§7's stale-response trap).
-        TestContext.remove("httpResponse");
         HttpResponse last = Utils.retryUntil(timeoutSeconds * 1000L,
-                () -> SimpleHTTPClient.getInstance().doGet(url, headers),
+                () -> Requests.get(url, headers),
                 response -> response.getResponseCode() == expectedStatus);
-        TestContext.set("httpResponse", last);
+        Requests.publishPollResult(last);
         Assert.assertNotNull(last, "No devportal response received for " + url);
         Assert.assertEquals(last.getResponseCode(), expectedStatus,
                 "DevPortal visibility did not reach " + expectedStatus + " within " + timeoutSeconds
@@ -503,8 +494,6 @@ public class VisibilityAccessSteps {
                         + "(max(" + timeoutSeconds + "s, the shared propagation ceiling)) for " + url
                         + "; last response: " + response.getResponseCode() + " / " + response.getData());
     }
-
-    /** The {@code count} of a search response, or -1 when the response is not a 200 with a body. */
 
     // ---- DevPortal tag cloud presence / absence of a specific tag ----------------------------------------
 

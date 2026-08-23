@@ -2364,7 +2364,13 @@ public class Utils {
                 || response.getData() == null || response.getData().isBlank()) {
             return -1;
         }
-        return new JSONObject(response.getData()).optInt("count", -1);
+        try {
+            return new JSONObject(response.getData()).optInt("count", -1);
+        } catch (JSONException malformedDuringWarmup) {
+            // Callers use this inside a retryUntil predicate, which retries only IOException -- an unchecked
+            // JSONException would escape and kill the poll on the first malformed 200. -1 = not readable yet.
+            return -1;
+        }
     }
 
 }

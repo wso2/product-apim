@@ -18,9 +18,10 @@ Feature: API Governance Rulesets
     And I have a valid Governance access token as "<actor>"
     When I retrieve all governance rulesets
     Then The response status code should be 200
-    And The response should contain "WSO2 API Management Guidelines"
-    And The response should contain "WSO2 REST API Design Guidelines"
-    And The response should contain "OWASP Top 10"
+    # Scoped to the three defaults by name (§12): this listing is tenant-global and sibling scenarios in this
+    # same file create rulesets, so an unfiltered exact assertion would be racy.
+    And The response array field "list[?(@.name in ['WSO2 API Management Guidelines','WSO2 REST API Design Guidelines','OWASP Top 10'])].name" should have exactly 3 entries
+    And The response field "list[?(@.name in ['WSO2 API Management Guidelines','WSO2 REST API Design Guidelines','OWASP Top 10'])].name" should be exactly the list "WSO2 API Management Guidelines,WSO2 REST API Design Guidelines,OWASP Top 10"
 
     Examples:
       | actor            |

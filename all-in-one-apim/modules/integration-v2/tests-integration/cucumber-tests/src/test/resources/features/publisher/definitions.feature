@@ -443,12 +443,10 @@ Feature: Publisher API Definition Import
     When I retrieve the "apis" resource with id "ieImportedApiId"
     Then The response status code should be 200
     # Metadata is preserved through the round-trip (testAPIState parity).
-    And The response should contain "tag18-1"
-    And The response should contain "tag18-2"
-    And The response should contain "tag18-3"
-    And The response should contain "Gold"
-    And The response should contain "Bronze"
-    And The response should contain "Unlimited"
+    And The response array field "tags" should have exactly 3 entries
+    And The response field "tags[*]" should be exactly the list "tag18-1,tag18-2,tag18-3"
+    And The response array field "policies" should have exactly 3 entries
+    And The response field "policies[*]" should be exactly the list "Gold,Bronze,Unlimited"
     And The response field "transport[*]" should be exactly the list "http,https"
     And The response should contain "\"visibility\":\"PUBLIC\""
     And The response should contain "\"verb\":\"GET\""
