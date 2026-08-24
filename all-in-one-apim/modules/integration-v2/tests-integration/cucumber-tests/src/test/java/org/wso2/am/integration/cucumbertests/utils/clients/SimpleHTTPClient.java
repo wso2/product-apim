@@ -24,6 +24,7 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpDelete;
+import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpHead;
 import org.apache.http.client.methods.HttpOptions;
@@ -597,41 +598,65 @@ public class SimpleHTTPClient {
             String url, final Map<String, String> headers, final Map<String, File> files,
             final Map<String, String> textFields, final Map<String, String> jsonFields) throws IOException {
 
-        return withGeneralErrorRetry(() -> {
-            HttpPost request = new HttpPost(url);
-            setHeaders(headers, request);
-            request.removeHeaders("Content-Type");
+        return withGeneralErrorRetry(() -> sendMultipartWithJsonFields(new HttpPost(url), headers, files, textFields,
+                jsonFields));
+    }
 
-            MultipartEntityBuilder builder = MultipartEntityBuilder.create();
-            builder.setMode(HttpMultipartMode.STRICT);
+    /**
+     * PUT counterpart of {@link #doPostMultipartWithJsonFields} — the Service Catalog update endpoint takes the
+     * same multipart shape as its create (a {@code serviceMetadata} application/json part plus a binary
+     * {@code definitionFile}), and a text/plain metadata part is rejected there too.
+     */
+    public org.wso2.carbon.automation.test.utils.http.client.HttpResponse doPutMultipartWithJsonFields(
+            String url, final Map<String, String> headers, final Map<String, File> files,
+            final Map<String, String> textFields, final Map<String, String> jsonFields) throws IOException {
 
-            if (files != null) {
-                for (Map.Entry<String, File> fileEntry : files.entrySet()) {
-                    File file = fileEntry.getValue();
-                    if (file != null) {
-                        builder.addBinaryBody(fileEntry.getKey(), file, ContentType.APPLICATION_OCTET_STREAM,
-                                file.getName());
-                    }
+        return withGeneralErrorRetry(() -> sendMultipartWithJsonFields(new HttpPut(url), headers, files, textFields,
+                jsonFields));
+    }
+
+    /**
+     * Builds and sends the mixed-content-type multipart body shared by the POST/PUT json-fields variants:
+     * {@code files} as binary parts, {@code textFields} as text/plain, {@code jsonFields} as application/json.
+     * Kept as one method so the two verbs cannot drift in how a part's Content-Type is set.
+     */
+    private org.wso2.carbon.automation.test.utils.http.client.HttpResponse sendMultipartWithJsonFields(
+            HttpEntityEnclosingRequestBase request, Map<String, String> headers, Map<String, File> files,
+            Map<String, String> textFields, Map<String, String> jsonFields) throws IOException {
+
+        setHeaders(headers, request);
+        // Remove Content-Type header - let MultipartEntityBuilder set it with boundary
+        request.removeHeaders("Content-Type");
+
+        MultipartEntityBuilder builder = MultipartEntityBuilder.create();
+        builder.setMode(HttpMultipartMode.STRICT);
+
+        if (files != null) {
+            for (Map.Entry<String, File> fileEntry : files.entrySet()) {
+                File file = fileEntry.getValue();
+                if (file != null) {
+                    builder.addBinaryBody(fileEntry.getKey(), file, ContentType.APPLICATION_OCTET_STREAM,
+                            file.getName());
                 }
             }
-            if (textFields != null) {
-                for (Map.Entry<String, String> field : textFields.entrySet()) {
-                    builder.addTextBody(field.getKey(), field.getValue(),
-                            ContentType.TEXT_PLAIN.withCharset(StandardCharsets.UTF_8));
-                }
+        }
+        if (textFields != null) {
+            for (Map.Entry<String, String> field : textFields.entrySet()) {
+                builder.addTextBody(field.getKey(), field.getValue(),
+                        ContentType.TEXT_PLAIN.withCharset(StandardCharsets.UTF_8));
             }
-            if (jsonFields != null) {
-                for (Map.Entry<String, String> field : jsonFields.entrySet()) {
-                    builder.addTextBody(field.getKey(), field.getValue(),
-                            ContentType.APPLICATION_JSON.withCharset(StandardCharsets.UTF_8));
-                }
+        }
+        if (jsonFields != null) {
+            for (Map.Entry<String, String> field : jsonFields.entrySet()) {
+                builder.addTextBody(field.getKey(), field.getValue(),
+                        ContentType.APPLICATION_JSON.withCharset(StandardCharsets.UTF_8));
             }
+        }
 
-            request.setEntity(builder.build());
-            try (CloseableHttpResponse response = client.execute(request)) {
-                return constructResponse(response);
-            }
-        });
+        request.setEntity(builder.build());
+        try (CloseableHttpResponse response = client.execute(request)) {
+            return constructResponse(response);
+        }
     }
 
     /**
@@ -812,6 +837,12 @@ public class SimpleHTTPClient {
     /**
      * Construct the org.wso2.carbon.automation.test.utils.http.client.HttpResponse
      *
+     * <p>The status line's REASON PHRASE is carried across into the response's {@code responseMessage}. Only the
+     * status CODE is normally consumed, but a backend may answer with a non-standard reason phrase that the
+     * gateway must pass through verbatim (the custom-status backend on {@code :3024} emits
+     * {@code HTTP/1.1 400 Custom response}), and that is asserted on the phrase, not the code. Capturing it here
+     * — the single raw-HTTP chokepoint — keeps it available on every response without a side channel.
+     *
      * @param response org.apache.http.HttpResponse
      * @return org.wso2.carbon.automation.test.utils.http.client.HttpResponse
      * @throws IOException if any exception occurred when reading payload
@@ -826,8 +857,10 @@ public class SimpleHTTPClient {
         for (Header header : headers) {
             heads.put(header.getName(), header.getValue());
         }
-        return new org.wso2.carbon.automation.test.utils.http.client.HttpResponse(
-                body, code, heads);
+        org.wso2.carbon.automation.test.utils.http.client.HttpResponse constructed =
+                new org.wso2.carbon.automation.test.utils.http.client.HttpResponse(body, code, heads);
+        constructed.setResponseMessage(response.getStatusLine().getReasonPhrase());
+        return constructed;
     }
 
     /**

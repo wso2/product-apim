@@ -41,12 +41,12 @@ Feature: MCP Server authoring (publisher plane)
     # schema would advertise a contract its own backend rejects, and the presence checks above would not notice.
     Then the MCP server "mcpId" tool "echo" should have schema definition:
       """
-      {"type":"object","properties":{"message":{"type":"string"}},"required":["message"]}
+      {"inputSchema":{"type":"object","properties":{"message":{"type":"string"}},"required":["message"]}}
       """
     And the MCP server "mcpId" tool "echo" should have description "Echoes the provided message"
     And the MCP server "mcpId" tool "add" should have schema definition:
       """
-      {"type":"object","properties":{"a":{"type":"number"},"b":{"type":"number"}},"required":["a","b"]}
+      {"inputSchema":{"type":"object","properties":{"a":{"type":"number"},"b":{"type":"number"}},"required":["a","b"]}}
       """
     And the MCP server "mcpId" tool "add" should have description "Adds two numbers"
     # UPDATE (REMOVE) — narrow back to echo,add; get_pets is dropped

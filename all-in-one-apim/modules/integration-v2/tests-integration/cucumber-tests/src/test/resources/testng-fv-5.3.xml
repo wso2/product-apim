@@ -2,8 +2,8 @@
 <!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
 <!--
   Isolated verification lane (Phase 5.3): lifecycle provisioning lands in the freshly booted container.
-  One block (Phase5.3-Provisioning) sets blockLabel=fv-5.3 and initTenantUsers=true with no tenantSet, so
-  BlockLifecycleListener boots its DynamicApimContainer, gates on readiness, then provisions the DEFAULT
+  One block (Phase5.3-Provisioning) sets blockLabel=fv-5.3 and initTenantUsers=true, so
+  BlockLifecycleListener boots its DynamicApimContainer, gates on readiness, then provisions the
   tenant set (super tenant + tenant1.com + users testUser1/testUser11) into THIS block's own container
   during onStart. BlockProvisioningProbeRunner then asserts the provisioned beans are readable from the
   block's shared scope under the tenant-domain key, that CURRENT_TENANT resolves off them, and that the

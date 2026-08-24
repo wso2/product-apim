@@ -1,0 +1,12 @@
+{
+  "name": "tls-backend",
+  "version": "1.0.0",
+  "description": "HTTPS backend with a self-signed certificate, for the endpoint-certificate invocation tests",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}

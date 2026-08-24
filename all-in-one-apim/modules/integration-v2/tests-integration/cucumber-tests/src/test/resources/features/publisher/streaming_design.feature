@@ -114,7 +114,7 @@ Feature: Publisher Streaming API Design
     # the same code the Solace work pinned for an advertised API.
     And I attempt to create a revision for "apis" resource "asyncRevApiId" with payload "asyncRevPayload"
     Then The response status code should be 400
-    And The response should contain "903225"
+    And The error response should have code "903225" and message "Creating API Revisions is not supported for third party APIs"
 
     Examples:
       | actor                     | def                                      |

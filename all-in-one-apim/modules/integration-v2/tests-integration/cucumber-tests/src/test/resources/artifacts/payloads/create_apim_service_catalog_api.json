@@ -1,0 +1,29 @@
+{
+  "name": "${UNIQUE:ServiceCatalogAPI}",
+  "context": "${UNIQUE:serviceCatalogApiContext}",
+  "version": "1.0.0",
+  "description": "API created FROM a Service Catalog entry: its serviceInfo block (injected by the step) binds it to the catalog entry, so no endpointConfig is given — the endpoint comes from the service's serviceUrl.",
+  "type": "HTTP",
+  "audience": "PUBLIC",
+  "lifeCycleStatus": "CREATED",
+  "isDefaultVersion": false,
+  "accessControl": "NONE",
+  "policies": ["Unlimited"],
+  "operations": [
+    {
+      "verb": "GET",
+      "target": "/",
+      "authType": "Application & Application User",
+      "throttlingPolicy": "Unlimited",
+      "scopes": []
+    }
+  ],
+  "businessInformation": {
+    "businessOwner": "businessowner",
+    "businessOwnerEmail": "businessowner@wso2.com",
+    "technicalOwner": "technicalowner",
+    "technicalOwnerEmail": "technicalowner@wso2.com"
+  },
+  "additionalProperties": [],
+  "additionalPropertiesMap": {}
+}

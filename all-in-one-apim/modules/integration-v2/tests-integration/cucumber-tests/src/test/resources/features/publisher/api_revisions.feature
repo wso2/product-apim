@@ -202,8 +202,7 @@ Feature: Publisher API Revisions
     And I generate a random UUID and store it as "noSuchApiId"
     When I delete revision "revisionId" of "apis" resource "noSuchApiId"
     Then The response status code should be 404
-    And The response should contain "900308"
-    And The response should contain "Requested API with id '{{noSuchApiId}}' not found"
+    And The error response should have code "900308" message "API Not Found" and description containing "Requested API with id '{{noSuchApiId}}' not found"
 
     Examples:
       | actor                     |
@@ -219,8 +218,7 @@ Feature: Publisher API Revisions
     And I generate a random UUID and store it as "noSuchRevisionId"
     When I delete revision "noSuchRevisionId" of "apis" resource "delRevNegApiId"
     Then The response status code should be 404
-    And The response should contain "900347"
-    And The response should contain "Requested API Revision with id {{noSuchRevisionId}} not found"
+    And The error response should have code "900347" message "API Revision Not Found" and description containing "Requested API Revision with id {{noSuchRevisionId}} not found"
 
     Examples:
       | actor                     |
@@ -246,8 +244,7 @@ Feature: Publisher API Revisions
     """
     And I make a request to deploy revision "revisionId" of "apis" resource "noSuchApiId" with payload "depNegDeployPayload"
     Then The response status code should be 404
-    And The response should contain "900308"
-    And The response should contain "Requested API with id '{{noSuchApiId}}' not found"
+    And The error response should have code "900308" message "API Not Found" and description containing "Requested API with id '{{noSuchApiId}}' not found"
 
     Examples:
       | actor                     |
@@ -267,8 +264,7 @@ Feature: Publisher API Revisions
     """
     And I make a request to deploy revision "noSuchRevisionId" of "apis" resource "depRevNegApiId" with payload "depRevNegDeployPayload"
     Then The response status code should be 404
-    And The response should contain "900347"
-    And The response should contain "Requested API Revision with id {{noSuchRevisionId}} not found"
+    And The error response should have code "900347" message "API Revision Not Found" and description containing "Requested API Revision with id {{noSuchRevisionId}} not found"
 
     Examples:
       | actor                     |
@@ -290,8 +286,7 @@ Feature: Publisher API Revisions
     And I generate a random UUID and store it as "noSuchApiId"
     When I restore revision "revisionId" of "apis" resource "noSuchApiId"
     Then The response status code should be 404
-    And The response should contain "900308"
-    And The response should contain "Requested API with id '{{noSuchApiId}}' not found"
+    And The error response should have code "900308" message "API Not Found" and description containing "Requested API with id '{{noSuchApiId}}' not found"
 
     Examples:
       | actor                     |
@@ -307,8 +302,7 @@ Feature: Publisher API Revisions
     And I generate a random UUID and store it as "noSuchRevisionId"
     When I restore revision "noSuchRevisionId" of "apis" resource "resRevNegApiId"
     Then The response status code should be 404
-    And The response should contain "900347"
-    And The response should contain "Requested API Revision with id {{noSuchRevisionId}} not found"
+    And The error response should have code "900347" message "API Revision Not Found" and description containing "Requested API Revision with id {{noSuchRevisionId}} not found"
 
     Examples:
       | actor                     |
@@ -330,8 +324,7 @@ Feature: Publisher API Revisions
     And I generate a random UUID and store it as "noSuchApiId"
     When I undeploy revision "revisionId" of "apis" resource "noSuchApiId"
     Then The response status code should be 404
-    And The response should contain "900308"
-    And The response should contain "Requested API with id '{{noSuchApiId}}' not found"
+    And The error response should have code "900308" message "API Not Found" and description containing "Requested API with id '{{noSuchApiId}}' not found"
 
     Examples:
       | actor                     |
@@ -347,8 +340,7 @@ Feature: Publisher API Revisions
     And I generate a random UUID and store it as "noSuchRevisionId"
     When I undeploy revision "noSuchRevisionId" of "apis" resource "undRevNegApiId"
     Then The response status code should be 404
-    And The response should contain "900347"
-    And The response should contain "Requested API Revision with id {{noSuchRevisionId}} not found"
+    And The error response should have code "900347" message "API Revision Not Found" and description containing "Requested API Revision with id {{noSuchRevisionId}} not found"
 
     Examples:
       | actor                     |
@@ -377,7 +369,7 @@ Feature: Publisher API Revisions
     """
     And I make a request to deploy revision "revisionId" of "apis" resource "badEnvApiId" with payload "badEnvDeployPayload"
     Then The response status code should be 400
-    And The response should contain "900504"
+    And The error response should have code "900504" and message "Invalid Gateway Environment"
     # The message double-quotes the environment name ('name 'us-region''): the product interpolates an
     # already-quoted "name 'us-region'" fragment into a template that quotes it again. Pinned verbatim so a
     # tidy-up of the message is noticed rather than silently changing what callers see.
@@ -405,7 +397,7 @@ Feature: Publisher API Revisions
     """
     And I undeploy revision "revisionId" of "apis" resource "badEnvUndApiId" with payload "badEnvUndeployPayload"
     Then The response status code should be 400
-    And The response should contain "900504"
+    And The error response should have code "900504" and message "Invalid Gateway Environment"
     # The message double-quotes the environment name ('name 'us-region''): the product interpolates an
     # already-quoted "name 'us-region'" fragment into a template that quotes it again. Pinned verbatim so a
     # tidy-up of the message is noticed rather than silently changing what callers see.

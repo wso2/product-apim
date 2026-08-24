@@ -17,7 +17,10 @@
 
 package org.wso2.am.integration.cucumbertests.stepdefinitions;
 
+import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.testng.Assert;
 import org.wso2.am.integration.cucumbertests.utils.Identity;
 import org.wso2.am.integration.cucumbertests.utils.Requests;
@@ -29,9 +32,13 @@ import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Step definitions for the gateway internal REST API artifact surface (port of GatewayRestAPITestCase). Retrieves a
@@ -104,4 +111,57 @@ public class GatewayRestArtifactsSteps {
                 "Gateway artifact '" + kind + "' for " + resolvedName + " did not become available within "
                         + timeoutSeconds + "s; last: " + response.getData());
     }
+
+    /**
+     * Asserts that EXACTLY ONE of the retrieved synapse sequences belongs to the named flow ({@code In} /
+     * {@code Out} / {@code Fault}) and that that sequence carries {@code expectedContent}. The flow is identified
+     * by the sequence's own synapse name ending in {@code --<flow>} (e.g. {@code admin--MyAPI:v1.0.0--Out}).
+     *
+     * <p>Why a dedicated step rather than a substring check on the whole response: the mediation sequences all
+     * arrive in ONE {@code sequences} array, so {@code The response should contain "<header>"} is satisfied by ANY
+     * of them — a port that injects one header into all three flows cannot tell a missing Out or Fault sequence from
+     * a present one. Legacy GatewayRestAPITestCase had the same hole in reverse: its per-flow checks sat inside an
+     * unguarded {@code if (sequence.contains("--Out"))}, so the whole block passed silently when no sequence matched.
+     * Asserting exactly-one match per flow closes both.
+     *
+     * @param flow            flow discriminator — {@code In}, {@code Out} or {@code Fault}
+     * @param expectedContent text the matching flow's sequence XML must contain (resolves {@code {{...}}})
+     */
+    @Then("The gateway sequence for flow {string} should contain {string}")
+    public void theGatewaySequenceForFlowShouldContain(String flow, String expectedContent) {
+        HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
+        Assert.assertTrue(response != null && response.getResponseCode() == 200
+                        && response.getData() != null && !response.getData().isBlank(),
+                "Expected a 200 sequences response to inspect flow '" + flow + "', but got: "
+                        + (response == null ? "null" : response.getResponseCode() + " / " + response.getData()));
+        String expected = Utils.resolveContextPlaceholders(expectedContent);
+        JSONArray sequences = new JSONObject(response.getData()).getJSONArray("sequences");
+        String flowMarker = "--" + flow;
+        List<String> matches = new ArrayList<>();
+        List<String> allNames = new ArrayList<>();
+        for (int i = 0; i < sequences.length(); i++) {
+            String sequenceXml = sequences.getString(i);
+            String sequenceName = synapseSequenceName(sequenceXml);
+            allNames.add(String.valueOf(sequenceName));
+            // endsWith, not contains: `--` also precedes the API name, so contains("--In") would match an API
+            // whose name merely starts with "In" (admin--Invoice:v1.0.0--Out).
+            if (sequenceName != null && sequenceName.endsWith(flowMarker)) {
+                matches.add(sequenceXml);
+            }
+        }
+        Assert.assertEquals(matches.size(), 1, "Expected exactly ONE deployed sequence for flow '" + flow
+                + "' (synapse name ending with '" + flowMarker + "') but found " + matches.size()
+                + ". Sequence names: " + allNames);
+        Assert.assertTrue(matches.get(0).contains(expected), "The '" + flow + "' flow sequence did not contain '"
+                + expected + "': " + matches.get(0));
+    }
+
+    /** The {@code name} attribute of a synapse {@code <sequence …>} document, or {@code null} if absent. */
+    private static String synapseSequenceName(String sequenceXml) {
+        Matcher matcher = SEQUENCE_NAME_PATTERN.matcher(sequenceXml);
+        return matcher.find() ? matcher.group(1) : null;
+    }
+
+    private static final Pattern SEQUENCE_NAME_PATTERN =
+            Pattern.compile("<sequence[^>]*\\sname=\"([^\"]+)\"");
 }

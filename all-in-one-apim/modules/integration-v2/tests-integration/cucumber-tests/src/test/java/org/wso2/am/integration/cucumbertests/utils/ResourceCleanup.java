@@ -93,7 +93,8 @@ public final class ResourceCleanup {
      * Teardown list for Service Catalog entries created via {@code /api/am/service-catalog/v1/services}, holding
      * each service's id. A catalog service is admin-plane tenant config that nothing else removes; a service still
      * referenced by an API 409s on delete, so it is swept AFTER the APIs. Deleted via the generic bearer-token
-     * {@link #deleteResources} with the owner's admin token.
+     * {@link #deleteResources} with the owner's SERVICE CATALOG token
+     * ({@link Identity#serviceCatalogTokenKey}) — NOT the admin token, which that plane rejects with 401.
      */
     public static final String CREATED_SERVICE_CATALOG_IDS = "createdServiceCatalogIds";
 
@@ -165,7 +166,18 @@ public final class ResourceCleanup {
      * {@code TestContext.addToList(...)} for anything that must be torn down.
      */
     public static void register(String listKey, Object id) {
-        TestContext.addToList(listKey, new OwnedResource(String.valueOf(id), Identity.actingActorRef()));
+        registerFor(listKey, id, Identity.actingActorRef());
+    }
+
+    /**
+     * As {@link #register} but tagging an EXPLICIT owner reference instead of whoever happens to be acting. For a
+     * resource whose OWNERSHIP CHANGES mid-scenario: after a successful admin change-owner the application belongs
+     * to the new owner, so the creating actor's token can no longer delete it and the sweep would log a misleading
+     * failure while the application leaked. The change-owner step therefore re-registers it under the new owner.
+     * Pass {@code null} for the super-tenant admin default.
+     */
+    public static void registerFor(String listKey, Object id, String actorRef) {
+        TestContext.addToList(listKey, new OwnedResource(String.valueOf(id), actorRef));
     }
 
     /**
@@ -365,9 +377,11 @@ public final class ResourceCleanup {
             // Deleted by alias with the owner's publisher token.
             deleteResources(CREATED_ENDPOINT_CERTIFICATE_ALIASES, Identity::publisherTokenKey,
                     alias -> Utils.getEndpointCertificateByAliasURL(baseUrl, alias));
-            // Service Catalog entries (admin) AFTER the APIs — a service still referenced by an API 409s on
-            // delete, so the APIs (swept above) must go first. Deleted by id with the owner's admin token.
-            deleteResources(CREATED_SERVICE_CATALOG_IDS, Identity::adminTokenKey,
+            // Service Catalog entries AFTER the APIs — a service still referenced by an API 409s on delete, so the
+            // APIs (swept above) must go first. Deleted by id with the owner's SERVICE CATALOG token: this plane is
+            // gated by the service_catalog:service_* scopes, so the admin token used here originally was rejected
+            // 401 on every entry and the whole list leaked (proved against a container; see the key's javadoc).
+            deleteResources(CREATED_SERVICE_CATALOG_IDS, Identity::serviceCatalogTokenKey,
                     id -> Utils.getServiceCatalogByIdURL(baseUrl, id));
             // BYO OAuth clients registered via DCR: swept separately because they authenticate with the owner's
             // Basic credentials (not a bearer token) and are not removed by the DevPortal application's deletion.
@@ -633,10 +647,28 @@ public final class ResourceCleanup {
     }
 
     /**
-     * Deregisters DCR-registered ("bring your own") OAuth clients. These are NOT deleted with a bearer token:
-     * the DCR endpoint authenticates with the OWNER's Basic credentials (the same way {@code iRegisterOAuthClient}
-     * created them), and a DCR client is a standalone service provider that the DevPortal application's deletion
-     * does not remove — so it must be swept explicitly or it leaks. Best-effort: a 404 (already gone) is fine.
+     * Deregisters DCR-registered ("bring your own") OAuth clients. These are NOT deleted with a bearer token: a DCR
+     * client is a standalone service provider that the DevPortal application's deletion does not remove, and the DCR
+     * REST endpoint's own {@code DELETE} is a STUB on this build — it answers "Dynamic Client Registration Service's
+     * resource deletion not implemented" (verified by decompiling {@code RegistrationServiceImpl.unRegister} in the
+     * shipped {@code client-registration#v0.17.war}). So the only working removal is the {@code OAuthAdminService}
+     * SOAP admin service. Best-effort: a 404 (already gone) is fine.
+     *
+     * <p>Authenticated as the OWNER'S TENANT ADMIN, not as the owner. {@code OAuthAdminService} is a Carbon admin
+     * service, so a non-admin principal is rejected with a SOAP fault ({@code faultcode 50978},
+     * {@code "Access Denied."}) carried on an HTTP 500 — and DCR registration deliberately succeeds for a non-admin
+     * (the endpoint self-registers with the caller's own Basic credentials), so an owner who cannot delete their own
+     * client is the NORMAL case, not an edge one. Sweeping as the owner therefore leaked every client created by a
+     * least-privilege actor: observed as 8 {@code may leak} WARNs from the two OAUTH endpoint-security outlines in
+     * {@code gateway/security_enforcement.feature}, whose Examples include {@code publisherUser} and
+     * {@code publisherUser@tenant1.com} creator rows (2 outlines x 2 non-admin rows x 2 clients).
+     *
+     * <p>The tenant admin is the right principal rather than a widening of the rule: the client lives in the owner's
+     * TENANT, and the admin service is tenant-scoped, so each client is still removed by a principal with authority
+     * over exactly that tenant — {@code publisherUser} -> {@code admin}, {@code publisherUser@tenant1.com} ->
+     * {@code admin@tenant1.com}. For an admin-owned client this resolves to the owner itself, so the path that
+     * already worked is unchanged. Same rationale as {@link Identity#actingTenantAdmin()}, but keyed off the
+     * RECORDED OWNER rather than whoever happens to be acting when teardown runs.
      */
     private static void deleteDcrClients(String baseUrl) {
         String serviceUrl = baseUrl + "services/OAuthAdminService";
@@ -648,17 +680,20 @@ public final class ResourceCleanup {
             }
             try {
                 User owner = Identity.resolveActor(res.actorRef());
+                User tenantAdmin = Identity.tenantOf(owner).getTenantAdmin();
                 String removeEnvelope = "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" "
                         + "xmlns:xsd=\"" + ns + "\"><soapenv:Header/><soapenv:Body>"
                         + "<xsd:removeOAuthApplicationData><xsd:consumerKey>" + Utils.escapeXml(res.id())
                         + "</xsd:consumerKey></xsd:removeOAuthApplicationData></soapenv:Body></soapenv:Envelope>";
                 HttpResponse resp = SimpleHTTPClient.getInstance().sendSoapRequest(serviceUrl, removeEnvelope,
-                        "urn:removeOAuthApplicationData", owner.getUserName(), owner.getPassword());
+                        "urn:removeOAuthApplicationData", tenantAdmin.getUserName(), tenantAdmin.getPassword());
                 int code = resp.getResponseCode();
                 if (code >= 200 && code < 300) {
-                    logger.info("Cleanup: deregistered DCR client " + res.id() + " (HTTP " + code + ").");
+                    logger.info("Cleanup: deregistered DCR client " + res.id() + " owned by '" + res.actorRef()
+                            + "' as tenant admin '" + tenantAdmin.getUserName() + "' (HTTP " + code + ").");
                 } else {
-                    logger.warn("Cleanup: deregister of DCR client " + res.id() + " returned HTTP " + code
+                    logger.warn("Cleanup: deregister of DCR client " + res.id() + " (owner '" + res.actorRef()
+                            + "', as tenant admin '" + tenantAdmin.getUserName() + "') returned HTTP " + code
                             + " — it may leak: " + trunc(resp.getData()));
                 }
             } catch (Exception | AssertionError e) {

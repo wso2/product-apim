@@ -168,6 +168,7 @@ Feature: Admin Deny (Blocking Condition) Policies
     # since the deeper context contains the shallower one.
     When I search deny policies of type "API" with value "{{nestCtx1}}"
     Then The response status code should be 200
+    And The response array field "list" should have exactly 2 entries
     And The response field "list[*].conditionValue" should be exactly the list "{{nestCtx1}}/1.0.0,{{nestCtx2}}/1.0.0"
     # Pick the deeper condition out of those two hits by JSONPath predicate and check it carries the id returned
     # when it was created. The predicate deliberately carries a {{...}} placeholder in the PATH: that shape used to
@@ -183,6 +184,7 @@ Feature: Admin Deny (Blocking Condition) Policies
     # test on the stored value, not a path-prefix test.
     When I search deny policies of type "API" with value "dn{{nestBase}}"
     Then The response status code should be 200
+    And The response array field "list" should have exactly 2 entries
     And The response field "list[*].conditionValue" should be exactly the list "{{nestCtx1}}/1.0.0,{{nestCtx2}}/1.0.0"
 
     Examples:
@@ -217,6 +219,7 @@ Feature: Admin Deny (Blocking Condition) Policies
     # Quoted + partial (no version suffix) → NO results, for either context.
     When I search deny policies of type "API" with value "\"{{exactCtx1}}\""
     Then The response status code should be 200
+    And The response array field "list" should have exactly 0 entries
     And The response field "list[*].conditionValue" should be exactly the list ""
     When I search deny policies of type "API" with value "\"{{exactCtx2}}\""
     Then The response status code should be 200

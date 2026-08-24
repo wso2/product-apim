@@ -1,0 +1,30 @@
+{
+  "name": "${UNIQUE:mutualSslMandatoryOauthAPI}",
+  "context": "${UNIQUE:mutualSslMandatoryOauthContext}",
+  "version": "1.0.0",
+  "transport": ["https"],
+  "securityScheme": ["mutualssl", "mutualssl_mandatory", "oauth2", "api_key", "oauth_basic_auth_api_key_mandatory"],
+  "endpointConfig": {
+    "endpoint_type": "http",
+    "production_endpoints": {
+      "url": "http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/"
+    },
+    "sandbox_endpoints": {
+      "url": "http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/"
+    }
+  },
+  "description": "Mutual-SSL MANDATORY + application security MANDATORY API for integration tests",
+  "policies": ["Unlimited", "Bronze"],
+  "operations": [
+    {
+      "verb": "GET",
+      "target": "/customers/{id}",
+      "authType": "Application & Application User",
+      "throttlingPolicy": "Unlimited",
+      "scopes": []
+    }
+  ],
+  "isDefaultVersion": true,
+  "additionalProperties": [],
+  "additionalPropertiesMap": {}
+}

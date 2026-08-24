@@ -44,10 +44,16 @@ router.get('/customers/:id', (req, res) => {
 });
 
 // GET /sec/
+// Echoes the Authorization header the gateway forwarded, so an endpoint-security test can assert on the
+// credential the backend actually received. When NO header arrives, emit an explicit marker rather than an
+// empty body: the "no credential was injected" direction is otherwise unassertable, because a
+// should-not-contain check against an empty body passes even when the request never reached this route at
+// all (wrong endpoint, suspended endpoint, 404 body). The marker makes absence a POSITIVE observation.
+// Keep it free of the substring "Basic" and of any base64 the tests assert on.
 router.get('/sec', (req, res) => {
   const authHeader = req.header('Authorization');
   console.log(`----invoking getSec: ${authHeader}`);
-  res.type('text/plain').send(authHeader || '');
+  res.type('text/plain').send(authHeader || 'no-authorization-header-received');
 });
 
 // GET /check-header/

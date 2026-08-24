@@ -19,6 +19,7 @@ package org.wso2.am.integration.cucumbertests.stepdefinitions;
 
 import io.cucumber.java.en.When;
 import org.wso2.am.integration.cucumbertests.utils.Identity;
+import org.wso2.am.integration.cucumbertests.utils.JwtTestUtils;
 import org.wso2.am.integration.cucumbertests.utils.Requests;
 import org.wso2.am.integration.cucumbertests.utils.TestContext;
 import org.wso2.am.integration.cucumbertests.utils.Utils;
@@ -34,13 +35,15 @@ import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
 
 /**
- * Mutual-SSL (mTLS) API-security glue (ports APISecurityMutualSSLCertificateChainValidationTestCase). An API
- * whose securityScheme is {@code mutualssl}/{@code mutualssl_mandatory} authenticates the CLIENT by its TLS
- * certificate: the publisher uploads the accepted certificate to the API, and a client presenting the matching
- * cert on the gateway HTTPS handshake is authorised (200) while a client with no / a wrong cert is rejected
- * (401). The gateway HTTPS listener already ships {@code SSLVerifyClient=optional} (default 4.7.0 pack) and the
- * container exposes port 8243, so no config overlay is needed — {@code baseGatewayUrl} is the HTTPS gateway URL.
- * Client keystores are on the classpath; they are copied to a temp file because the SSL layer needs a real path.
+ * Mutual-SSL (mTLS) API-security glue (ports APISecurityMutualSSLCertificateChainValidationTestCase and the
+ * mutual-SSL half of APISecurityTestCase). An API whose securityScheme is {@code mutualssl}/
+ * {@code mutualssl_mandatory} authenticates the CLIENT by its TLS certificate: the publisher uploads the accepted
+ * certificate to the API, and a client presenting the matching cert on the gateway HTTPS handshake is authorised
+ * (200) while a client with no / a wrong cert is rejected (401). When the API ALSO declares application security
+ * mandatory, the certificate and the bearer token are separate gates — hence the cert-plus-token variant. The
+ * gateway HTTPS listener already ships {@code SSLVerifyClient=optional} (default 4.7.0 pack) and the container
+ * exposes port 8243, so no config overlay is needed — {@code baseGatewayUrl} is the HTTPS gateway URL. Client
+ * keystores are on the classpath; they are copied to a temp file because the SSL layer needs a real path.
  */
 public class MutualSslSteps {
 
@@ -49,7 +52,9 @@ public class MutualSslSteps {
     /**
      * Uploads a client certificate to an API (multipart {@code POST /apis/{apiId}/client-certificates}): the
      * public certificate file + an {@code alias} + a {@code tier}. Publisher-plane. Non-asserting; stores the
-     * response so the feature asserts the status.
+     * response so the feature asserts the status. {@code {{contextKey}}} placeholders in the alias are resolved,
+     * so a scenario can upload under a uniquely-generated alias — the alias is unique per TENANT, so two
+     * scenarios in the same tenant uploading the same certificate must not share a hardcoded one (409).
      */
     @When("I upload client certificate {string} with alias {string} to API {string} for tier {string}")
     public void iUploadClientCertificate(String certPath, String alias, String apiId, String tier) throws Exception {
@@ -83,16 +88,29 @@ public class MutualSslSteps {
         Map<String, File> files = new HashMap<>();
         files.put("certificate", certFile);
         Map<String, String> formFields = new HashMap<>();
-        formFields.put("alias", alias);
+        formFields.put("alias", Utils.resolveContextPlaceholders(alias));
         formFields.put("tier", tier);
 
         Requests.postMultipart(url, headers, files, formFields);
     }
 
     /**
-     * Invokes an mTLS API at the gateway PRESENTING a client certificate (from the given classpath keystore),
-     * retrying until the expected status (uploaded certs take a moment to propagate to the gateway — the legacy
-     * test slept 120s; here we poll). Stores the last response for a following assertion.
+     * Base64url-encodes a PEM certificate from the classpath and stores it under a context key, so a scenario can
+     * send it in the gateway's client-certificate header ({@code X-WSO2-CLIENT-CERTIFICATE}, the shipped
+     * {@code apimgt.mutual_ssl.certificate_header} default) and prove that header does NOT substitute for a real
+     * TLS handshake. Mirrors the legacy encoding exactly (base64URL-safe of the PEM TEXT, header lines included).
+     */
+    @When("I store the base64-encoded certificate {string} in context as {string}")
+    public void iStoreBase64EncodedCertificate(String certPath, String contextKey) throws Exception {
+        TestContext.set(Utils.normalizeContextKey(contextKey),
+                JwtTestUtils.base64Url(Utils.readClasspathResource(certPath)));
+    }
+
+    /**
+     * Invokes an mTLS API at the gateway PRESENTING a client certificate (from the given classpath keystore) and
+     * NO application-security credential, retrying until the expected status (uploaded certs take a moment to
+     * propagate to the gateway — the legacy test slept 120s; here we poll). Stores the last response for a
+     * following assertion.
      */
     @When("I invoke the API at gateway context {string} presenting client certificate {string} until response status code becomes {int} within {int} seconds")
     public void iInvokeWithClientCert(String context, String keystorePath, int expectedStatus, int timeoutSeconds)
@@ -190,11 +208,15 @@ public class MutualSslSteps {
             TestContext.set("httpResponse", response);
             return response;
         }, response -> response.getResponseCode() == expectedStatus);
+        // The lambda cannot use the Requests funnel (doMutualSSLGet is not wrapped), so re-publish the poll's
+        // own last response -- a throwing final attempt would otherwise leave the key cleared.
+        Requests.publishPollResult(last);
 
         assertNotNull(last, "No response received from the mutual-SSL gateway invocation within the timeout");
         assertEquals(last.getResponseCode(), expectedStatus,
                 "Mutual-SSL invocation did not reach the expected status. Body: " + last.getData());
     }
+
 
     private String buildUrl(String context) {
         String resolvedContext = Utils.resolveContextPlaceholders(context);
