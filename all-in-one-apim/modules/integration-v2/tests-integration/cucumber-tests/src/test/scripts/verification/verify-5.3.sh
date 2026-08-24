@@ -9,8 +9,8 @@ exit 0
 #
 # Phase 5.3 verification — lifecycle provisioning lands in the freshly booted container.
 #
-# testng-fv-5.3.xml runs ONE REAL APIM block (block=fv-5.3) with initTenantUsers=true and no tenantSet, so
-# BlockLifecycleListener boots its DynamicApimContainer, gates on readiness, then provisions the DEFAULT
+# testng-fv-5.3.xml runs ONE REAL APIM block (block=fv-5.3) with initTenantUsers=true, so
+# BlockLifecycleListener boots its DynamicApimContainer, gates on readiness, then provisions the
 # tenant set (super tenant + tenant1.com + users testUser1/testUser11) into THIS block's own container
 # during onStart. BlockProvisioningProbeRunner asserts three things in one scenario:
 #   - the provisioned tenant/user beans are readable from the block's shared scope under the tenant-domain

@@ -48,6 +48,48 @@ Feature: Publisher Access Control & Store Visibility
       | carbon.super |              |
       | tenant1.com  | @tenant1.com |
 
+  # Publisher CONTENT SEARCH is filtered by accessControl roles: two APIs sharing one scenario-unique description
+  # word, both access-restricted to the same role, are counted (exactly 2) for a creator carrying that role and not
+  # counted at all (exactly 0) for one who does not. Ports ContentSearchTestCase testContentSearchWithAccessControl.
+  # This is a DIFFERENT observable from the by-id 403 above — a 403 on one id does not prove the API is absent from
+  # the searcher's result SET. The fixture deliberately carries TWO matching APIs: it reproduces legacy's exact
+  # count of 2 with a count this fixture actually justifies (legacy's 2 came from one API plus its definition
+  # document, an index shape this build no longer produces — the description search here counts one hit per API), and
+  # it stops the filter passing by merely capping at a single hit. The count-2 leg runs FIRST so the count-0 leg
+  # cannot pass against an index that never saw the APIs.
+  @cap:publisher @feat:visibility @rule:content-search @type:regression @legacy:ContentSearchTestCase
+  Scenario Outline: Publisher content search counts an access-restricted API only for creators carrying the role in <tenant>
+    Given The system is ready
+    And I have valid access tokens as "admin<suffix>"
+    And I generate a unique value and store it as "acsrole"
+    And I generate a unique value and store it as "acsDesc"
+    And I provision role "{{acsrole}}" in tenant "<tenant>"
+    And I provision user "acsIn" with roles "Internal/creator,Internal/publisher,{{acsrole}}" in tenant "<tenant>"
+    And I provision user "acsOut" with roles "Internal/creator,Internal/publisher" in tenant "<tenant>"
+    And The system is ready and I have valid publisher access tokens as "acsIn<suffix>"
+    And The system is ready and I have valid publisher access tokens as "acsOut<suffix>"
+
+    # Two APIs carrying the same unique description word, both restricted to the same access role.
+    Given I act as "admin<suffix>"
+    And I put JSON payload from file "artifacts/payloads/create_apim_test_api.json" in context as "acsPayload1"
+    And I set the description of context payload "acsPayload1" to "Access filtered search {{acsDesc}}"
+    When I have created an api from context payload "acsPayload1" with restricted access control for roles "{{acsrole}}" as "acsApi1" and deployed it
+    And I put JSON payload from file "artifacts/payloads/create_apim_test_api.json" in context as "acsPayload2"
+    And I set the description of context payload "acsPayload2" to "Access filtered search {{acsDesc}}"
+    When I have created an api from context payload "acsPayload2" with restricted access control for roles "{{acsrole}}" as "acsApi2" and deployed it
+
+    # The creator carrying the access role is served both.
+    When I act as "acsIn<suffix>"
+    And I search Publisher APIs with content query "description:{{acsDesc}}" until the result count is 2 within 60 seconds
+    # The creator without it is served neither.
+    When I act as "acsOut<suffix>"
+    And I search Publisher APIs with content query "description:{{acsDesc}}" until the result count is 0 within 60 seconds
+
+    Examples:
+      | tenant       | suffix       |
+      | carbon.super |              |
+      | tenant1.com  | @tenant1.com |
+
   # No access control: every creator/publisher can view it (200). Ports
   # testAPIAdditionWithoutAccessControlRestriction.
   @cap:publisher @feat:visibility @type:regression @legacy:PublisherAccessControlTestCase

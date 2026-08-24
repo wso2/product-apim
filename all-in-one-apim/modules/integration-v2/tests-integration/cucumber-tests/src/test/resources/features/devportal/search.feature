@@ -244,13 +244,27 @@ Feature: DevPortal Search & Discovery
       | tenant1.com  | @tenant1.com |
 
   # Content search by description — a unique word planted in the API's description surfaces the API in both the
-  # publisher and the store content search. Ports the description half of ContentSearchTestCase
-  # testBasicContentSearch. A published API matching the description word returns exactly one result (pinned live:
-  # a bare word query matches the API's description; the count is 1, not the definition-inflated 2 an older build
-  # returned). Document-content search is intentionally omitted here — its indexing is minutes-slow and unreliable
-  # to pin as an exact count (legacy retried it for ~5 minutes); description search covers the content-search arc.
+  # publisher and the store content search, and a DEMOTE to CREATED withdraws it from the store. Ports all three
+  # legs of ContentSearchTestCase testBasicContentSearch. The count is exactly 1, not the definition-inflated 2 an
+  # older build returned.
+  #
+  # The query must name the description FIELD, and the reason is measured, not stylistic: on this build a FIELDLESS
+  # query is a NAME search, not a content search. Pinned live — a bare query for a token that appears ONLY in an
+  # API's description returns count 0 on both planes after 60s, while description:<sameToken> returns 1 within
+  # ~20ms. (A bare query for an API's full NAME does match: see the search-exactness scenario below.) The earlier
+  # note here claiming a bare word query matches the description was wrong.
+  #
+  # Document-content search (legacy testDocumentContentSearch) is NOT ported, because that observable has no
+  # working query form on this build — measured on a published API carrying an INLINE document whose content held a
+  # unique lowercase separator-free token (legacy's own github4156 shape):
+  #   bare <docToken>    -> count 0 on publisher and store after 195s, legacy's own full retry budget
+  #   content:<docToken> -> count 0 on both planes
+  #   doc:<docToken>     -> HTTP 500 "Error while retrieving APIs" on both planes (filed as a product defect)
+  # A same-scenario control proved the fixture was sound: description:<descToken> on the same API returned 1. So
+  # this is a broken/absent surface, not a slow one — the earlier note blaming minutes-slow, unreliable indexing
+  # was wrong. Asserting it would mean asserting a defect.
   @cap:devportal @feat:discovery @rule:content-search @type:regression @dep:publisher @legacy:ContentSearchTestCase
-  Scenario Outline: An API is found by its description in content search as <actor>
+  Scenario Outline: An API is found by its description in content search and withdrawn when demoted as <actor>
     Given The system is ready and I have valid publisher access tokens as "<actor>"
     And I generate a unique value and store it as "csDesc"
     And I put JSON payload from file "artifacts/payloads/create_apim_test_api.json" in context as "csApiPayload"
@@ -261,10 +275,19 @@ Feature: DevPortal Search & Discovery
     When I publish the "apis" resource with id "csApiId"
     Then The lifecycle status of API "csApiId" should be "Published"
 
-    # Search by description in the publisher and the store. The description: field query matches the unique word
-    # exactly (pinned live: a bare content query does not match an underscore-joined token, but description: does).
+    # Search by description in the publisher and the store: the description: field query matches the unique word.
     When I search Publisher APIs with content query "description:{{csDesc}}" until the result count is 1 within 60 seconds
     When I search DevPortal APIs with content query "description:{{csDesc}}" until the result count is 1 within 60 seconds
+
+    # Third leg: demoting to CREATED withdraws the API from the STORE, so the same store query settles to 0
+    # (measured: ~3s). Asserted only AFTER the count-1 legs above, so the zero cannot pass against an index that
+    # never saw the API. The publisher count staying 1 is what makes the zero specifically a lifecycle filter
+    # rather than the API having dropped out of the index altogether.
+    When I change the lifecycle of API "csApiId" with action "Demote to Created"
+    Then The response status code should be 200
+    And The lifecycle status of API "csApiId" should be "Created"
+    When I search DevPortal APIs with content query "description:{{csDesc}}" until the result count is 0 within 60 seconds
+    And I search Publisher APIs with content query "description:{{csDesc}}" until the result count is 1 within 60 seconds
 
     Examples:
       | actor                     |
@@ -388,6 +411,71 @@ Feature: DevPortal Search & Discovery
     # Sanity: the kept tag still finds it.
     When I search DevPortal APIs with query "tags:{{catKeepTag}}" until it contains "{{catApiName}}" within 60 seconds
     Then The response should contain "{{catApiName}}"
+
+    Examples:
+      | actor                     |
+      | publisherUser             |
+      | publisherUser@tenant1.com |
+
+  # DevPortal search EXACTNESS: the tag/syntax scenarios above assert contains/not-contains, where legacy
+  # DevPortalSearchTest pinned an exact COUNT for each query shape. This scenario pins the counts. Legacy's two
+  # methods (testDevPortalAPISearch via searchPaginatedAPIs, testDevPortalSubscriptionManagementAPISearch via
+  # getAPIs) issue the same product query against the same DevPortal /apis?query= endpoint and differ only in the
+  # SDK wrapper, so the matrix is ported ONCE.
+  #
+  # Every count below was pinned live. The semantics they encode: terms of the same field OR together, different
+  # fields AND together, a bare term matches an API's NAME (but never a tag), and a tag match is CASE-SENSITIVE.
+  # The count-3 tag-OR row runs FIRST as the index gate — it cannot pass until all
+  # three APIs are indexed, which is what makes every later exact count (especially the zeros) non-vacuous; on top
+  # of that each zero row is preceded by the SAME query shape in its matching state (row "bare + tag" before
+  # "bare + name-as-tag", "tags:pizza" before "tags:piZza"), so a zero can never pass against a stale index.
+  #
+  # Isolation: the tags and the not-a-name term all embed one scenario-unique token, so no sibling scenario or
+  # parallel runner can contribute a hit and the counts are exact by construction.
+  @cap:devportal @feat:discovery @rule:search-exactness @type:regression @dep:publisher @legacy:DevPortalSearchTest
+  Scenario Outline: DevPortal search returns an exact count for each Solr query shape as <actor>
+    Given The system is ready and I have valid publisher access tokens as "<actor>"
+    And I generate a unique value and store it as "sxu"
+    And I have created an api from "artifacts/payloads/create_apim_test_api.json" with tags "Sample APIs - New {{sxu}}" as "sxApiA" and deployed it
+    When I publish the "apis" resource with id "sxApiA"
+    Then The lifecycle status of API "sxApiA" should be "Published"
+    And I have created an api from "artifacts/payloads/create_apim_test_api.json" with tags "pizza{{sxu}}" as "sxApiB" and deployed it
+    When I publish the "apis" resource with id "sxApiB"
+    Then The lifecycle status of API "sxApiB" should be "Published"
+    And I have created an api from "artifacts/payloads/create_apim_test_api.json" with tags "other{{sxu}}" as "sxApiC" and deployed it
+    When I publish the "apis" resource with id "sxApiC"
+    Then The lifecycle status of API "sxApiC" should be "Published"
+    When I retrieve the "apis" resource with id "sxApiA"
+    And I extract response field "name" and store it as "sxNameA"
+    When I retrieve the "apis" resource with id "sxApiB"
+    And I extract response field "name" and store it as "sxNameB"
+    When I retrieve the "apis" resource with id "sxApiC"
+    And I extract response field "name" and store it as "sxNameC"
+
+    # Index gate + tag OR: the three distinct tags in one query return all three APIs.
+    When I search DevPortal APIs with content query "tags:Sample APIs - New {{sxu}} tags:pizza{{sxu}} tags:other{{sxu}}" until the result count is 3 within 120 seconds
+
+    # A multi-word tag carrying BOTH a space and a hyphen matches exactly its one API.
+    When I search DevPortal APIs with content query "tags:Sample APIs - New {{sxu}}" until the result count is 1 within 60 seconds
+    # Tag AND name, both of api A.
+    When I search DevPortal APIs with content query "tags:Sample APIs - New {{sxu}} name:{{sxNameA}}" until the result count is 1 within 60 seconds
+    # A BARE term matches api A by name, ANDed with api A's tag.
+    When I search DevPortal APIs with content query "{{sxNameA}} tags:Sample APIs - New {{sxu}}" until the result count is 1 within 60 seconds
+    # The bare name ANDed with a two-tag OR still yields only api A (api B carries pizza but not the name).
+    When I search DevPortal APIs with content query "{{sxNameA}} tags:Sample APIs - New {{sxu}} tags:pizza{{sxu}}" until the result count is 1 within 60 seconds
+
+    # Tag case sensitivity — the discriminating negative. The exact-case tag matches (1); the same tag with one
+    # letter upper-cased matches nothing (0). Without the pair, a case-insensitivity regression is invisible.
+    When I search DevPortal APIs with content query "tags:pizza{{sxu}}" until the result count is 1 within 60 seconds
+    When I search DevPortal APIs with content query "tags:piZza{{sxu}}" until the result count is 0 within 60 seconds
+
+    # An existing API NAME used as a TAG matches nothing, so the AND with the (matching) bare name is empty. The
+    # bare-name-plus-tag row above proves the bare half does match, so this 0 is the tag half failing, not a miss.
+    When I search DevPortal APIs with content query "{{sxNameA}} tags:{{sxNameA}}" until the result count is 0 within 60 seconds
+
+    # Name OR: all three names return all three APIs; an unmatched name among them still returns the matching two.
+    When I search DevPortal APIs with content query "name:{{sxNameA}} name:{{sxNameB}} name:{{sxNameC}}" until the result count is 3 within 90 seconds
+    When I search DevPortal APIs with content query "name:{{sxNameA}} name:{{sxNameB}} name:nosuchapi{{sxu}}" until the result count is 2 within 60 seconds
 
     Examples:
       | actor                     |

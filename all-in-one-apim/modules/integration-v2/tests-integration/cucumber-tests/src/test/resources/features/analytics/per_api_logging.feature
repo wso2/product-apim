@@ -142,5 +142,4 @@ Feature: Per-API Logging Configuration
     And I have valid access tokens as "admin@tenant1.com"
     When I retrieve the per-API log levels for tenant "tenant1.com"
     Then The response status code should be 403
-    And The response should contain "900915"
-    And The response should contain "Invalid Permission"
+    And The error response should have code "900915" and message "Invalid Permission"

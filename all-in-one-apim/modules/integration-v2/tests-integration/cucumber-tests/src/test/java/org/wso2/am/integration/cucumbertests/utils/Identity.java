@@ -147,6 +147,18 @@ public final class Identity {
         return qualify("governanceAccessToken", actor);
     }
 
+    /**
+     * Cache key for an actor's SERVICE CATALOG token. The Service Catalog REST API is gated by the
+     * {@code service_catalog:service_*} scopes, which neither the admin nor the publisher token carries — either
+     * one is rejected there with 401 "Unauthenticated request" — so that plane needs its own token. The key lives
+     * here rather than in the step class because {@code ResourceCleanup} must resolve it too: its sweep of
+     * registered service-catalog entries previously ran with the ADMIN token and therefore 401'd on EVERY entry,
+     * leaking all of them (visible only as a cleanup WARN, which is exactly the silent-leak mode this key closes).
+     */
+    public static String serviceCatalogTokenKey(User actor) {
+        return qualify("serviceCatalogAccessToken", actor);
+    }
+
     /** Reads the cached Publisher token for the default actor (super-tenant admin). */
     public static String publisherToken() {
         return publisherToken(actingActor());

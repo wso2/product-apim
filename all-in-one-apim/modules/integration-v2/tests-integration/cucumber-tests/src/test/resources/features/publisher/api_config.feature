@@ -9,7 +9,7 @@ Feature: Publisher API Runtime & Common Configuration
   assignment is covered by publisher/scopes.
 
   @cap:publisher @feat:api-config @type:regression @rule:rest @legacy:APIRuntimeConfigurationsTestCase @legacy:APIOtherCommonConfigurationsTestCase
-  Scenario Outline: Update a REST API configuration field in <tenant>
+  Scenario Outline: Update the REST API configuration field <configType> in <tenant>
     Given I act as "admin<tenantSuffix>"
     When I update the "apis" resource "configApiId<tenantSuffix>" and "configApiPayload<tenantSuffix>" with configuration type "<configType>" and value:
       """
@@ -40,7 +40,7 @@ Feature: Publisher API Runtime & Common Configuration
       | tenant1.com | @tenant1.com | policies               | ["Bronze","Gold","Silver"]                                                                                                                                                                               |
 
   @cap:publisher @feat:api-config @type:regression @rule:soap @legacy:APIRuntimeConfigurationsTestCase @legacy:APIOtherCommonConfigurationsTestCase
-  Scenario Outline: Update a SOAP API configuration field in <tenant>
+  Scenario Outline: Update the SOAP API configuration field <configType> in <tenant>
     Given I act as "admin<tenantSuffix>"
     When I update the "apis" resource "configSoapApiId<tenantSuffix>" and "configSoapApiPayload<tenantSuffix>" with configuration type "<configType>" and value:
       """
@@ -71,7 +71,7 @@ Feature: Publisher API Runtime & Common Configuration
       | tenant1.com | @tenant1.com | policies               | ["Bronze","Gold","Silver"]                                                                                                                                                                               |
 
   @cap:publisher @feat:api-config @type:regression @rule:graphql @legacy:APIRuntimeConfigurationsTestCase @legacy:APIOtherCommonConfigurationsTestCase
-  Scenario Outline: Update a GraphQL API configuration field in <tenant>
+  Scenario Outline: Update the GraphQL API configuration field <configType> in <tenant>
     Given I act as "admin<tenantSuffix>"
     When I update the "apis" resource "configGraphqlApiId<tenantSuffix>" and "configGraphqlApiPayload<tenantSuffix>" with configuration type "<configType>" and value:
       """
@@ -104,7 +104,7 @@ Feature: Publisher API Runtime & Common Configuration
   # WebSocket/Async API — the legacy matrix exercised throttling policy (runtime) plus custom properties and
   # subscription policies (other-common) for this type; caching/transport/CORS do not apply.
   @cap:publisher @feat:api-config @type:regression @rule:streaming @legacy:APIRuntimeConfigurationsTestCase @legacy:APIOtherCommonConfigurationsTestCase
-  Scenario Outline: Update a WebSocket API configuration field in <tenant>
+  Scenario Outline: Update the WebSocket API configuration field <configType> in <tenant>
     Given I act as "admin<tenantSuffix>"
     When I update the "apis" resource "configWsApiId<tenantSuffix>" and "configWsApiPayload<tenantSuffix>" with configuration type "<configType>" and value:
       """
@@ -353,7 +353,7 @@ Feature: Publisher API Runtime & Common Configuration
     And I create an "apis" resource with payload "valApiPayload" as "valApiId"
     When I validate the endpoint "https://localhost:9443/services/Version" for API "valApiId"
     Then The response status code should be 200
-    And The response should contain "\"statusCode\":202"
+    And The value of response field "statusCode" should be "202"
     And The response should contain "Accepted"
 
     Examples:
@@ -439,18 +439,67 @@ Feature: Publisher API Runtime & Common Configuration
     And I have created an api from "artifacts/payloads/create_apim_endpoint_listing_api.json" as "lbApiId" and deployed it
     When I publish the "apis" resource with id "lbApiId"
     Then The lifecycle status of API "lbApiId" should be "Published"
-    # Publisher reflects the load-balanced endpoint config: type, algorithm and all four production/sandbox endpoints.
+    # Publisher reflects the load-balanced endpoint config: type, algorithm and every production/sandbox URL.
+    # Counts AND exact URLs (legacy asserts 4 + 4): a substring check for prod0/prod3 could not notice a
+    # dropped middle member, a fifth entry, or a rewritten host.
     When I retrieve the "apis" resource with id "lbApiId"
     Then The response status code should be 200
-    And The response should contain "load_balance"
+    And The value of response field "endpointConfig.endpoint_type" should be "load_balance"
     And The response should contain "org.apache.synapse.endpoints.algorithms.RoundRobin"
-    And The response should contain "prod0"
-    And The response should contain "prod3"
-    And The response should contain "sand3"
-    # The DevPortal exposes the API's gateway endpoint URLs once it is deployed.
+    And The response array field "endpointConfig.production_endpoints" should have exactly 4 entries
+    And The response array field "endpointConfig.sandbox_endpoints" should have exactly 4 entries
+    And The response field "endpointConfig.production_endpoints[*].url" should be exactly the list "http://nodebackend:3001/prod0,http://nodebackend:3001/prod1,http://nodebackend:3001/prod2,http://nodebackend:3001/prod3"
+    And The response field "endpointConfig.sandbox_endpoints[*].url" should be exactly the list "http://nodebackend:3001/sand0,http://nodebackend:3001/sand1,http://nodebackend:3001/sand2,http://nodebackend:3001/sand3"
+    # The DevPortal exposes the API's gateway endpoint URLs once it is deployed: ONE entry for the single
+    # environment the API is deployed to (Default), typed hybrid, whose http/https URLs are exactly
+    # <scheme>://<Default vhost>:<vhost port>/<context>/<version>. The host and ports come from the Default gateway
+    # environment's vhost (localhost:8280 / localhost:8243) — the server's own view, NOT the container's mapped
+    # ports — so they are deterministic. The captured context already carries the /t/<tenant> prefix for a tenant
+    # API, which is why the tenant row needs no separate expected-URL column.
     When I extract response field "context" and store it as "lbApiContext"
     Then I retrieve the devportal API "lbApiId" until it contains "{{lbApiContext}}/1.0.0" within 60 seconds
-    And The response should contain "endpointURLs"
+    And The response array field "endpointURLs" should have exactly 1 entries
+    And The value of response field "endpointURLs[0].environmentName" should be "Default"
+    And The value of response field "endpointURLs[0].environmentType" should be "hybrid"
+    And The value of response field "endpointURLs[0].URLs.http" should be "http://localhost:8280{{lbApiContext}}/1.0.0"
+    And The value of response field "endpointURLs[0].URLs.https" should be "https://localhost:8243{{lbApiContext}}/1.0.0"
+
+    Examples:
+      | actor                     |
+      | publisherUser             |
+      | publisherUser@tenant1.com |
+
+  # A publisher search for an API's RAW authored context TEMPLATE — the literal "<ctx>/developer/{version}", braces
+  # included, not the version-resolved literal the gateway routes on — returns exactly that one API, and the single
+  # hit is that API by name. Ports DynamicAPIContextTestCase.testAPISearchUsingTemplatedContext; the same class's
+  # invocation half is ported in gateway/rest_invocation, and the DevPortal search by a resolved literal context in
+  # devportal/search is a different observable that does not cover this.
+  #
+  # Two things measured live make this worth pinning rather than assuming. First, the API is authored with context
+  # "<uniq>/developer/{version}" but the publisher STORES and returns "/<uniq>/developer" — the trailing /{version}
+  # is stripped — so the template is NOT persisted verbatim, and yet a publisher search for the raw template form
+  # still matches (count 1, ~15ms). Second, the identical raw-template query on the DEVPORTAL returns 0 while the
+  # stored form returns 1, so matching the template form is specifically publisher-plane behaviour. That asymmetry
+  # is why the raw form is the assertion here: querying the stored form instead would pass on either plane and so
+  # would not cover the legacy observable at all.
+  #
+  # Tagged api-config because the subject is context-field fidelity (what the publisher persists and matches for
+  # the field as authored), not versioning behaviour. The payload's context is uniquely generated, so the count of 1
+  # is exact by construction under parallel execution.
+  @cap:publisher @feat:api-config @rule:context-template @type:regression @legacy:DynamicAPIContextTestCase
+  Scenario Outline: A templated-context API is found in the publisher by its raw context template as <actor>
+    Given The system is ready and I have valid publisher access tokens as "<actor>"
+    And I have created an api from "artifacts/payloads/create_apim_templated_context_search_api.json" as "tcApiId" and deployed it
+    When I publish the "apis" resource with id "tcApiId"
+    Then The lifecycle status of API "tcApiId" should be "Published"
+    When I retrieve the "apis" resource with id "tcApiId"
+    Then The response status code should be 200
+    And I extract response field "name" and store it as "tcApiName"
+    # The stored context (trailing /{version} already stripped by the publisher) — re-templated below to rebuild
+    # the raw form the API was authored with.
+    And I extract response field "context" and store it as "tcApiContext"
+    When I search Publisher APIs with content query "context:{{tcApiContext}}/{version}" until the result count is 1 within 60 seconds
+    Then The response should contain "{{tcApiName}}"
 
     Examples:
       | actor                     |

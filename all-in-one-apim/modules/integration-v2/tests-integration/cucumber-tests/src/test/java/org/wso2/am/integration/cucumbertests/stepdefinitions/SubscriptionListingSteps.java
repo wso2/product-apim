@@ -19,6 +19,7 @@ package org.wso2.am.integration.cucumbertests.stepdefinitions;
 
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.testng.Assert;
 import org.wso2.am.integration.cucumbertests.utils.Identity;
@@ -51,10 +52,46 @@ public class SubscriptionListingSteps {
      */
     @When("I retrieve all subscriptions of api {string}")
     public void iRetrieveAllSubscriptionsOfApi(String apiIdKey) throws IOException {
+        listSubscriptionsOfApi(apiIdKey);
+    }
+
+    /**
+     * As the by-API-id listing, but POLLS until the list reports the expected number of entries. Needed for the
+     * subscription that the product creates for ITSELF: a subscriptionless invocation makes the gateway publish an
+     * internal {@code DefaultSubscriptionless} subscription asynchronously, so the devportal listing can still be
+     * empty immediately after the invocation returned 200 (observed: the read raced and returned
+     * {@code {"count":0,"list":[]}} on one tenant row while the other row saw it in time). Polling replaces the
+     * single read; the exact count is still asserted by the separate assertion step, so a genuine absence still
+     * fails with the real body rather than being hidden by the poll.
+     */
+    @When("I retrieve all subscriptions of api {string} until the list contains {int} subscriptions within {int} seconds")
+    public void iRetrieveAllSubscriptionsOfApiUntilCount(String apiIdKey, int expectedCount, int timeoutSeconds)
+            throws InterruptedException {
+        HttpResponse lastPoll = Utils.retryUntil(timeoutSeconds * 1000L,
+                () -> listSubscriptionsOfApi(apiIdKey),
+                response -> {
+                    if (response == null || response.getResponseCode() != 200
+                            || response.getData() == null || response.getData().isBlank()) {
+                        return false;
+                    }
+                    try {
+                        return new JSONObject(response.getData()).getJSONArray("list").length() == expectedCount;
+                    } catch (JSONException malformedDuringWarmup) {
+                        // Only IOException is retried by retryUntil, so a truncated/non-JSON 2xx body would
+                        // otherwise escape the loop on the FIRST attempt as an opaque parse error and defeat the
+                        // polling entirely. Reading it as "not yet" keeps polling; a genuine mismatch still fails
+                        // in the assertion step with the real body.
+                        return false;
+                    }
+                });
+        Requests.publishPollResult(lastPoll);
+    }
+
+    private HttpResponse listSubscriptionsOfApi(String apiIdKey) throws IOException {
         String apiId = TestContext.resolve(apiIdKey).toString();
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
-        Requests.get(Utils.getAllSubscriptionsURL(Utils.getBaseUrl(), apiId, null, null, null, null), headers);
+        return Requests.get(Utils.getAllSubscriptionsURL(Utils.getBaseUrl(), apiId, null, null, null, null), headers);
     }
 
     /**

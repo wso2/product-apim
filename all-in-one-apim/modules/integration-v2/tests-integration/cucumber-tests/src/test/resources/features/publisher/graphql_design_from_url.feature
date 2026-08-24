@@ -25,6 +25,7 @@ Feature: Publisher GraphQL API Creation from a URL
     # The schema was derived from the endpoint via introspection — every type and field must have come across.
     When I retrieve the publisher GraphQL schema type list of API "gqlUrlApiId"
     Then The response status code should be 200
+    And The response array field "typeList" should have exactly 2 entries
     And The response field "typeList[*].type" should be exactly the list "Language,Query"
     And The response field "typeList[?(@.type=='Language')].fieldList[*]" should be exactly the list "code,name"
     And The response field "typeList[?(@.type=='Query')].fieldList[*]" should be exactly the list "languages,language"
@@ -44,6 +45,7 @@ Feature: Publisher GraphQL API Creation from a URL
     Then The response status code should be 201
     When I retrieve the publisher GraphQL schema type list of API "gqlSdlApiId"
     Then The response status code should be 200
+    And The response array field "typeList" should have exactly 2 entries
     And The response field "typeList[*].type" should be exactly the list "Language,Query"
     And The response field "typeList[?(@.type=='Language')].fieldList[*]" should be exactly the list "code,name"
     And The response field "typeList[?(@.type=='Query')].fieldList[*]" should be exactly the list "languages,language"

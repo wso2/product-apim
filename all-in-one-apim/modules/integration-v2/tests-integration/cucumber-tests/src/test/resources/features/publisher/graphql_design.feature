@@ -115,6 +115,7 @@ Feature: Publisher GraphQL API Design
     # (graphql_schema.graphql declares nothing but Language and Query, so the expected set is unambiguous.)
     When I retrieve the publisher GraphQL schema type list of API "gqlCxApiId"
     Then The response status code should be 200
+    And The response array field "typeList" should have exactly 2 entries
     And The response field "typeList[*].type" should be exactly the list "Language,Query"
     And The response field "typeList[?(@.type=='Language')].fieldList[*]" should be exactly the list "code,name"
     And The response field "typeList[?(@.type=='Query')].fieldList[*]" should be exactly the list "languages,language"
@@ -125,6 +126,7 @@ Feature: Publisher GraphQL API Design
     Then The response status code should be 200
     When I retrieve the publisher GraphQL complexity of API "gqlCxApiId"
     Then The response status code should be 200
+    And The response array field "list" should have exactly 4 entries
     And The response field "list[*].field" should be exactly the list "languages,language,code,name"
     And The response field "list[?(@.type=='Query' && @.field=='languages')].complexityValue" should be exactly the list "2"
     And The response field "list[?(@.type=='Query' && @.field=='language')].complexityValue" should be exactly the list "3"

@@ -214,5 +214,4 @@ Feature: Correlation Logging Configuration
     Then The response status code should be 200
     When I enable only the correlation logging components ""
     Then The response status code should be 403
-    And The response should contain "900915"
-    And The response should contain "Invalid Permission"
+    And The error response should have code "900915" and message "Invalid Permission"

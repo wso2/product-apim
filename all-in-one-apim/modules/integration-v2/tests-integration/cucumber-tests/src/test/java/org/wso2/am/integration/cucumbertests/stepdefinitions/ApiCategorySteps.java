@@ -101,6 +101,9 @@ public class ApiCategorySteps {
         String categoryId = TestContext.resolve(categoryIdKey).toString();
         HttpResponse response = Requests.delete(Utils.getApiCategoryByIdURL(Utils.getBaseUrl(), categoryId),
                 adminHeaders());
+        // Deregister on a confirmed 2xx, so teardown does not re-delete an already-gone category and report a
+        // spurious leak (see the same fix in the MCP-server and resource delete steps). Only a SUCCESSFUL delete
+        // deregisters — a failed one means the category still exists and must stay queued.
         if (response != null && response.getResponseCode() >= 200 && response.getResponseCode() < 300) {
             ResourceCleanup.deregister(Constants.CREATED_API_CATEGORY_IDS, categoryId);
         }

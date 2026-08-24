@@ -40,6 +40,7 @@ Feature: Gateway Schema Validation
     # validation → 200.
     When I invoke the API at gateway context "{{svContext}}/1.0.0/pets" with method "GET" using access token "generatedAccessToken" and payload "" with request header "x-request-id" set to "787878" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
+    And The response should contain "[{\"id\":1,\"name\":\"max\"}]"
 
     # 4. Backend returns a body missing the required "id" → the gateway's RESPONSE schema validation fails.
     When I invoke the API at gateway context "{{svContext}}/1.0.0/pets/123" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 500 within 60 seconds
@@ -52,10 +53,12 @@ Feature: Gateway Schema Validation
       """
     When I invoke the API at gateway context "{{svContext}}/1.0.0/pets" with method "POST" using access token "generatedAccessToken" and payload "validPetBody" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
+    And The response should contain "{\"id\":1,\"name\":\"max\"}"
 
     # 6. Backend returns a schema-valid Pet (isAvailable branch) → response validation passes → 200.
     When I invoke the API at gateway context "{{svContext}}/1.0.0/pets/123?isAvailable=false" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
+    And The response should contain "{\"id\":123,\"name\":\"max\"}"
 
     # 7. Unsecured resource (x-auth-type None) invoked WITHOUT the required "status" query → request validation
     # fails even without a token.

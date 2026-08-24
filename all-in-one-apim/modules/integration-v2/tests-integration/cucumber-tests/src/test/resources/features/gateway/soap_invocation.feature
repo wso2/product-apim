@@ -24,6 +24,7 @@ Feature: Gateway SOAP API Invocation
     # Warm-up: wait for the gateway route to come up (full context path, no tenant re-prefix)
     When I invoke the API at gateway context "{{soapApiContext}}/1.0.0" with method "POST" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
+    And The response should contain "CheckPhoneNumberResponse"
 
     # Invoke the SOAP operation with a SOAP envelope
     When I put the following JSON payload in context as "soapRequest"

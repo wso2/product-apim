@@ -112,7 +112,7 @@ Feature: Gateway GraphQL API Invocation
     And I invoke the API at gateway context "{{graphqlApiContext}}/1.0.0" with method "POST" using access token "generatedAccessToken" and payload "graphqlUndefinedFieldQuery" until response status code becomes 422 within 60 seconds
     Then The response status code should be 422
     And The response should contain "INVALID QUERY"
-    And The response should contain "900422"
+    And The error response should have code "900422" and message "INVALID QUERY"
 
     Examples:
       | tokenType |

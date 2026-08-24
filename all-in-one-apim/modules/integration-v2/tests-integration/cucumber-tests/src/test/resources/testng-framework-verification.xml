@@ -16,9 +16,10 @@
                          A & B provision the SAME tenant set into their OWN containers in parallel; the gate
                          asserts two distinct container ids and two distinct baseUrls => no cross-block
                          shared-var override.
-    * Phase6.1-BrokenBlock - initTenantUsers=true, tenantSet=adpsample. On a FRESH (non-migrated) container
-                         adpsample.com does not exist server-side, so provisioning throws inside onStart and
-                         is recorded as bootError; BaseBlockRunner rethrows that as a hard IllegalStateException
+    * Phase6.1-BrokenBlock - initTenantUsers=true, injectProvisioningFailure=true. Provisioning targets a
+                         tenant domain never created on the container, so the addUser SOAP call is refused,
+                         provisioning throws inside onStart and is recorded as bootError; BaseBlockRunner
+                         rethrows that as a hard IllegalStateException
                          (a @BeforeClass config FAILURE). The gate asserts this block FAILS the build (red) in
                          isolation - recorded as an abortIfBlockBootFailed config FAILURE - while A & B PASS,
                          and that its container is still released by onFinish (no leak).
@@ -49,7 +50,7 @@
     <test name="Phase6.1-BrokenBlock" parallel="classes" thread-count="2">
         <parameter name="blockLabel" value="fv-6.1"/>
         <parameter name="initTenantUsers" value="true"/>
-        <parameter name="tenantSet" value="adpsample"/>
+        <parameter name="injectProvisioningFailure" value="true"/>
         <classes>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.BlockProbeRunnerThree"/>
         </classes>

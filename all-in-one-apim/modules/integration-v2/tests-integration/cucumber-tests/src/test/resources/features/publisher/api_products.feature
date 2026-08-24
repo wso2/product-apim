@@ -26,6 +26,7 @@ Feature: Publisher API Products
     # A freshly created product sits in CREATED (it is published by a separate lifecycle transition).
     And The value of response field "state" should be "CREATED"
     # Both member APIs are aggregated, each contributing its own resource set.
+    And The response array field "apis" should have exactly 2 entries
     And The response field "apis[*].apiId" should be exactly the list "{{prodApiId}},{{prodApiTwoId}}"
     # The product retrieve echoes both aggregated API ids, and its swagger carries both resource paths.
     When I retrieve the "api-products" resource with id "productId"

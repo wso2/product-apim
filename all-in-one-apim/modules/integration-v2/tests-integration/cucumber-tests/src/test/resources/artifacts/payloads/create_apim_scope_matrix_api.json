@@ -15,7 +15,7 @@
       "template_not_supported": false
     }
   },
-  "description": "Per-resource scope binding with wildcard-precedence (ScopeA exact, ScopeC segment-wildcard, ScopeE global-wildcard) \u2014 ports the discriminating subset of AllowedScopesTestCase ExampleAPI. Resources route to the node backend /echo/* which 200s for any subpath, so only the gateway scope check distinguishes 200 from 403.",
+  "description": "Per-resource scope binding with wildcard precedence — the five ScopeA-E resources of AllowedScopesTestCase's ExampleAPI (ScopeA/B/D exact, ScopeC segment-wildcard, ScopeE global-wildcard). Every resource routes to the node backend /echo/* which 200s for any subpath, so ONLY the gateway's per-resource scope check distinguishes 200 from 403 across the full 5x5 token-by-path matrix.",
   "policies": [
     "Unlimited"
   ],
@@ -24,7 +24,18 @@
       "scope": {
         "name": "ScopeA",
         "displayName": "ScopeA",
-        "description": "exact-path scope",
+        "description": "exact-path scope (/echo/products/catalog/{categoryId})",
+        "bindings": [
+          "admin"
+        ]
+      },
+      "shared": false
+    },
+    {
+      "scope": {
+        "name": "ScopeB",
+        "displayName": "ScopeB",
+        "description": "exact-path scope (/echo/products/popular)",
         "bindings": [
           "admin"
         ]
@@ -35,7 +46,18 @@
       "scope": {
         "name": "ScopeC",
         "displayName": "ScopeC",
-        "description": "segment-wildcard scope",
+        "description": "segment-wildcard scope (/echo/products/*)",
+        "bindings": [
+          "admin"
+        ]
+      },
+      "shared": false
+    },
+    {
+      "scope": {
+        "name": "ScopeD",
+        "displayName": "ScopeD",
+        "description": "exact-path scope (/echo/orders)",
         "bindings": [
           "admin"
         ]
@@ -46,7 +68,7 @@
       "scope": {
         "name": "ScopeE",
         "displayName": "ScopeE",
-        "description": "global-wildcard scope",
+        "description": "global-wildcard scope (/echo/*)",
         "bindings": [
           "admin"
         ]
@@ -66,11 +88,29 @@
     },
     {
       "verb": "GET",
+      "target": "/echo/products/popular",
+      "authType": "Application & Application User",
+      "throttlingPolicy": "Unlimited",
+      "scopes": [
+        "ScopeB"
+      ]
+    },
+    {
+      "verb": "GET",
       "target": "/echo/products/*",
       "authType": "Application & Application User",
       "throttlingPolicy": "Unlimited",
       "scopes": [
         "ScopeC"
+      ]
+    },
+    {
+      "verb": "GET",
+      "target": "/echo/orders",
+      "authType": "Application & Application User",
+      "throttlingPolicy": "Unlimited",
+      "scopes": [
+        "ScopeD"
       ]
     },
     {

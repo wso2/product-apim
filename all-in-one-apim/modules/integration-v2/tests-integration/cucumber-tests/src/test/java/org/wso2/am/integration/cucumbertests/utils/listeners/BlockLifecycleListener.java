@@ -83,15 +83,37 @@ public class BlockLifecycleListener implements ITestListener {
     static final String PARAM_TOML_EXTRA_OVERLAY = "tomlExtraOverlayPath";
     /** When {@code true}, onStart provisions tenants/users into the block's own container after readiness. */
     static final String PARAM_INIT_TENANT_USERS = "initTenantUsers";
-    /** Selects which tenant/user set to provision: {@code default} (the else branch) or {@code adpsample}. */
-    static final String PARAM_TENANT_SET = "tenantSet";
-    static final String TENANT_SET_ADPSAMPLE = "adpsample";
+    /**
+     * FRAMEWORK VERIFICATION ONLY. When {@code true}, provisioning deliberately fails: it targets a tenant
+     * domain that was never created on this container, so the user-admin SOAP call is refused and the
+     * exception propagates out of {@code onStart}.
+     *
+     * <p>The failure is REAL rather than a synthetic {@code throw}, so the blocks below exercise the same path
+     * a genuine misconfiguration would. Two guarantees depend on it, and both are what make every OTHER
+     * block's boot failure visible instead of a silent pass:
+     * <ul>
+     *   <li>{@code Phase5.5-ProvisioningFailure} — a provisioning failure in {@code onStart} turns the build
+     *       RED (recorded as {@code bootError}, rethrown by {@code BaseBlockRunner}'s {@code @BeforeClass})
+     *       rather than leaving the block green and empty;</li>
+     *   <li>{@code Phase6.1-BrokenBlock} — a broken block fails in ISOLATION while its siblings pass, and its
+     *       container is still released by {@code onFinish}.</li>
+     * </ul>
+     * Never set this on a product block.
+     */
+    static final String PARAM_INJECT_PROVISIONING_FAILURE = "injectProvisioningFailure";
+    /** The domain {@link #PARAM_INJECT_PROVISIONING_FAILURE} targets — never created, hence the failure. */
+    static final String UNPROVISIONED_TENANT_DOMAIN = "never-created.invalid";
     /**
      * When {@code true}, every user provisioned by {@link #PARAM_INIT_TENANT_USERS} (except the super-tenant
      * {@code admin}) gets an EMAIL-FORM physical username — {@code <base>@email.com} instead of {@code <base>} —
      * making "email as username" a first-class block mode. Pair it with the
      * {@code artifacts/configFiles/emailUserName} extra overlay, which turns on {@code [tenant_mgt]
      * enable_email_domain}; the two must be set together (see that file for why).
+     *
+     * <p>This is the mechanism that closes the legacy {@code SUPER_TENANT_EMAIL_USER} /
+     * {@code TENANT_EMAIL_USER} {@code TestUserMode} rows: legacy fanned every class over those modes at the
+     * {@code @Factory}, whereas here the mode is a property of the BLOCK, so a feature earns email-username
+     * coverage by being listed in an email-mode block rather than by carrying extra {@code Examples} rows.
      *
      * <p><b>Actor references are unaffected.</b> Only the PHYSICAL username changes;
      * {@code Identity.resolveActor} still resolves {@code publisherUser@tenant1.com} / {@code admin}, because it
@@ -113,18 +135,16 @@ public class BlockLifecycleListener implements ITestListener {
      *
      * <p>The username regexes are deliberately NOT touched: this build's {@code database_unique_id} defaults are
      * {@code UsernameJavaRegEx}/{@code UsernameJavaScriptRegEx} = {@code ^[\S]{3,30}$}, which already admit
-     * {@code @}, so both the plain and the email form validate. Applies to the {@code default} tenant set only —
-     * the {@code adpsample} set's users ship fixed inside the migration dataset.
+     * {@code @}, so both the plain and the email form validate.
+     *
+     * <p>The flag is published into the block's shared scope under
+     * {@link TenantUserProvisioner#EMAIL_USER_MODE_KEY} BEFORE any provisioning, and the mail-domain transform
+     * itself lives in {@link TenantUserProvisioner#physicalUserName(String)} — so a user a SCENARIO provisions
+     * at runtime ({@code I provision user …}) gets the same form as the boot-time set. It has to: a plain
+     * runtime user would carry a single {@code @} once tenant-qualified and could not authenticate at all under
+     * this flag (see that method).
      */
     static final String PARAM_EMAIL_USER_MODE = "emailUserMode";
-    /**
-     * The mail domain appended to a provisioned user's base name in a {@link #PARAM_EMAIL_USER_MODE} block.
-     * A mail domain, NOT a tenant domain — it is the local part of the tenant-qualified username
-     * ({@code publisherUser11@email.com@tenant1.com}), mirroring the legacy {@code emailuser@email.com}.
-     * Keep it SHORT: the store's {@code UsernameJavaRegEx} caps the (tenant-unqualified) username at 30 chars,
-     * and the longest base name here is {@code subscriberUser11}, so this leaves 14 characters of headroom.
-     */
-    private static final String EMAIL_USERNAME_MAIL_DOMAIN = "@email.com";
     /**
      * When {@code true}, onStart ensures the shared NodeAppServer backend (network alias {@code nodebackend})
      * is running before APIM boots, so gateway-invocation tests have a reachable backend for deployed APIs.
@@ -347,7 +367,8 @@ public class BlockLifecycleListener implements ITestListener {
                     + " baseGatewayUrl=" + gatewayUrl);
 
             if (Boolean.parseBoolean(param(context, PARAM_INIT_TENANT_USERS))) {
-                provisionTenantUsers(label, param(context, PARAM_TENANT_SET),
+                provisionTenantUsers(label,
+                        Boolean.parseBoolean(param(context, PARAM_INJECT_PROVISIONING_FAILURE)),
                         Boolean.parseBoolean(param(context, PARAM_EMAIL_USER_MODE)));
             }
             // Runtime secondary user store (replaces the seeded .mv.db fixture). After tenant provisioning so the
@@ -448,73 +469,78 @@ public class BlockLifecycleListener implements ITestListener {
     }
 
     /**
-     * Provisions the selected tenant/user set against the block's OWN booted container. {@code baseUrl} is
-     * already published into the block's shared scope, so {@link TenantUserProvisioner} (which reads it from
-     * there) targets this container's mapped port. Mirrors the legacy init features: the {@code default} set
-     * matches {@code tenant_users_initialisation.feature}; {@code adpsample} matches
-     * {@code migrated_tenant_user_initialization.feature}. Called inside onStart's try, so a provisioning
-     * failure becomes {@code bootError} and the block is skipped cleanly rather than NPE-ing mid-scenario.
+     * Provisions the tenant/user set against the block's OWN booted container. {@code baseUrl} is already
+     * published into the block's shared scope, so {@link TenantUserProvisioner} (which reads it from there)
+     * targets this container's mapped port. Mirrors the legacy {@code tenant_users_initialisation.feature}.
+     * Called inside onStart's try, so a provisioning failure becomes {@code bootError} and the block is skipped
+     * cleanly rather than NPE-ing mid-scenario.
      *
-     * @param emailUserMode see {@link #PARAM_EMAIL_USER_MODE} — provisions every user of the {@code default} set
-     *                      (bar the super-tenant admin) with an email-form physical username
+     * @param injectProvisioningFailure see {@link #PARAM_INJECT_PROVISIONING_FAILURE} — framework verification
+     *                                  only; makes this method fail on purpose
+     * @param emailUserMode             see {@link #PARAM_EMAIL_USER_MODE} — provisions every user (bar the
+     *                                  super-tenant admin) with an email-form physical username
      */
-    private void provisionTenantUsers(String label, String tenantSet, boolean emailUserMode)
+    private void provisionTenantUsers(String label, boolean injectProvisioningFailure, boolean emailUserMode)
             throws java.io.IOException, JaxenException {
+
+        // Published BEFORE the first addUser so the provisioner's physicalUserName transform is in force for the
+        // boot-time set, and stays in shared scope so a scenario's own `I provision user …` gets the same form.
+        TestContext.setShared(TenantUserProvisioner.EMAIL_USER_MODE_KEY, emailUserMode);
 
         // Gateway readiness can pass before the SOAP admin services finish deploying; gate on the Tenant Mgt
         // service being live so provisioning never fires into a transient 404 (a race parallel boots widen).
         TenantUserProvisioner.awaitTenantMgtServiceReady();
 
-        if (TENANT_SET_ADPSAMPLE.equalsIgnoreCase(tenantSet)) {
-            TenantUserProvisioner.addAdpsampleTenant();
-            TenantUserProvisioner.addUser(Constants.ADPSAMPLE_TENANT_DOMAIN, "userKey1",
-                    "testTenantUser11", "testTenantUser11", "ADP_CREATOR, ADP_PUBLISHER, ADP_SUBSCRIBER");
+        if (injectProvisioningFailure) {
+            // Deliberate failure for the framework-verification blocks. Placed AFTER the readiness gate so the
+            // cause is unambiguously "this tenant does not exist" and not "the admin service was not up yet".
+            logger.info("Block '" + label + "' sets " + PARAM_INJECT_PROVISIONING_FAILURE
+                    + "=true; provisioning into the never-created tenant '" + UNPROVISIONED_TENANT_DOMAIN
+                    + "' so boot fails on purpose.");
+            TenantUserProvisioner.addUnprovisionedTenant(UNPROVISIONED_TENANT_DOMAIN);
+            TenantUserProvisioner.addUser(UNPROVISIONED_TENANT_DOMAIN, "unprovisionedUserKey",
+                    "unprovisionedUser", "unprovisionedUser", "Internal/subscriber");
+            throw new IllegalStateException("Provisioning into '" + UNPROVISIONED_TENANT_DOMAIN
+                    + "' was expected to fail for block '" + label + "' but succeeded — the "
+                    + PARAM_INJECT_PROVISIONING_FAILURE + " fault injector is no longer injecting a fault.");
         } else {
             String allRoles = "Internal/creator, Internal/publisher, Internal/subscriber";
             String publisherRoles = "Internal/creator, Internal/publisher";
             String subscriberRoles = "Internal/subscriber";
             TenantUserProvisioner.addSuperTenant();
-            // Only the USERNAME takes the email form; the password stays the plain base name, so an
+            // Base names only — TenantUserProvisioner applies the email form when the mode is on (published
+            // above). Only the USERNAME takes that form; the password stays the plain base name, so an
             // emailUserMode block differs from a default one in exactly one dimension.
-            TenantUserProvisioner.addTenant("tenant1.com", physicalUserName("admin", emailUserMode), "admin",
+            TenantUserProvisioner.addTenant("tenant1.com", "admin", "admin",
                     "First", "Tenant", "admin@tenant1.com");
             // The configured super-tenant admin must remain the plain `admin` because SOAP provisioning depends
             // on it. Give both organizations a separate admin-role actor in email mode so the email-login admin
             // arc is still a genuine Tenant ×2 outline rather than a tenant-only special case.
             if (emailUserMode) {
                 TenantUserProvisioner.addUser(Constants.SUPER_TENANT_DOMAIN, Constants.EMAIL_ADMIN_USER_KEY,
-                        physicalUserName("emailAdmin", true), "emailAdmin", "admin");
+                        "emailAdmin", "emailAdmin", "admin");
                 TenantUserProvisioner.addUser("tenant1.com", Constants.EMAIL_ADMIN_USER_KEY,
-                        physicalUserName("emailAdmin", true), "emailAdmin", "admin");
+                        "emailAdmin", "emailAdmin", "admin");
             }
             // Keep the original all-roles user (back-compat for any actor that needs creator+publisher+subscriber).
             TenantUserProvisioner.addUser(Constants.SUPER_TENANT_DOMAIN, Constants.USER_KEY,
-                    physicalUserName("testUser1", emailUserMode), "testUser1", allRoles);
+                    "testUser1", "testUser1", allRoles);
             TenantUserProvisioner.addUser("tenant1.com", Constants.USER_KEY,
-                    physicalUserName("testUser11", emailUserMode), "testUser11", allRoles);
+                    "testUser11", "testUser11", allRoles);
             // Least-privilege publisher (creator+publisher, NOT admin) — the default actor for publisher tests.
             TenantUserProvisioner.addUser(Constants.SUPER_TENANT_DOMAIN, Constants.PUBLISHER_USER_KEY,
-                    physicalUserName("publisherUser1", emailUserMode), "publisherUser1", publisherRoles);
+                    "publisherUser1", "publisherUser1", publisherRoles);
             TenantUserProvisioner.addUser("tenant1.com", Constants.PUBLISHER_USER_KEY,
-                    physicalUserName("publisherUser11", emailUserMode), "publisherUser11", publisherRoles);
+                    "publisherUser11", "publisherUser11", publisherRoles);
             // Subscriber-only (self-signup-equivalent) — for access-control negatives (publisher ops -> 403).
             TenantUserProvisioner.addUser(Constants.SUPER_TENANT_DOMAIN, Constants.SUBSCRIBER_USER_KEY,
-                    physicalUserName("subscriberUser1", emailUserMode), "subscriberUser1", subscriberRoles);
+                    "subscriberUser1", "subscriberUser1", subscriberRoles);
             TenantUserProvisioner.addUser("tenant1.com", Constants.SUBSCRIBER_USER_KEY,
-                    physicalUserName("subscriberUser11", emailUserMode), "subscriberUser11", subscriberRoles);
+                    "subscriberUser11", "subscriberUser11", subscriberRoles);
         }
-        logger.info("Block '" + label + "' provisioned tenant set '"
-                + (tenantSet == null || tenantSet.isBlank() ? "default" : tenantSet) + "'"
-                + (emailUserMode ? " with email-form usernames (" + EMAIL_USERNAME_MAIL_DOMAIN + ")" : ""));
-    }
-
-    /**
-     * The physical username to provision for a base actor name: the base name itself by default, or its
-     * email form in a {@link #PARAM_EMAIL_USER_MODE} block. Returning the base name UNCHANGED when the mode is
-     * off is what keeps every existing block byte-for-byte identical to before the mode existed.
-     */
-    private static String physicalUserName(String baseName, boolean emailUserMode) {
-        return emailUserMode ? baseName + EMAIL_USERNAME_MAIL_DOMAIN : baseName;
+        logger.info("Block '" + label + "' provisioned tenant users"
+                + (emailUserMode ? " with email-form usernames (e.g. "
+                        + TenantUserProvisioner.physicalUserName("publisherUser1") + ")" : ""));
     }
 
     /**

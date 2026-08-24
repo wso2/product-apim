@@ -112,3 +112,75 @@ Feature: Admin Application Owner Change
       | owner             | subscriber                 |
       | admin             | subscriberUser             |
       | admin@tenant1.com | subscriberUser@tenant1.com |
+
+  # Ports OAuthApplicationOwnerUpdateTestCase#testApplicationUpdateAfterOwnerChange — the transferred application is
+  # fully mutable BY ITS NEW OWNER. This suite updates applications elsewhere, but never as a new owner after a
+  # change-owner, so a transfer that moved the listing entry without moving the DevPortal subscriber binding (leaving
+  # the new owner unable to edit what it now owns) would go undetected. Tier, then name, then description are each
+  # changed in their OWN request as the new owner and pinned to the exact new value.
+  @cap:admin @feat:application-management @rule:change-owner @type:regression @dep:devportal @legacy:OAuthApplicationOwnerUpdateTestCase
+  Scenario Outline: The new owner can update a transferred application as <actor>
+    Given The system is ready
+    And I have valid access tokens as "<actor>"
+
+    # Materialize the target as a subscriber (see the first scenario: change-owner needs an AM_SUBSCRIBER row).
+    When I have a valid DCR application as "<newOwner>"
+    And I have a valid Devportal access token as "<newOwner>"
+    And I act as "<newOwner>"
+    And I create an application "${UNIQUE:PostXferSeed}" with visibility "PRIVATE" as "postXferSeedAppId"
+    Then The response status code should be 201
+
+    # The admin creates the application to be transferred.
+    When I act as "<actor>"
+    And I put JSON payload from file "artifacts/payloads/create_apim_test_app.json" in context as "postXferApp"
+    And I create an application with payload "postXferApp"
+    Then The response status code should be 201
+    And I extract response field "applicationId" and store it as "postXferAppId"
+    And I extract response field "name" and store it as "postXferOrigName"
+    And The value of response field "throttlingPolicy" should be "Unlimited"
+
+    When I change the owner of application "postXferAppId" to "<newOwner>"
+    Then The response status code should be 200
+
+    # Now acting as the NEW owner: each field updated in its own request and reflected exactly.
+    Given I act as "<newOwner>"
+    When I put the following JSON payload in context as "postXferTierPayload"
+    """
+    {"name": "{{postXferOrigName}}", "throttlingPolicy": "10PerMin", "description": "Test application for scenarios"}
+    """
+    And I update the application "postXferAppId" with payload "postXferTierPayload"
+    Then The response status code should be 200
+    And The value of response field "throttlingPolicy" should be "10PerMin"
+
+    When I generate a unique value and store it as "postXferNewName"
+    And I put the following JSON payload in context as "postXferNamePayload"
+    """
+    {"name": "{{postXferNewName}}", "throttlingPolicy": "10PerMin", "description": "Test application for scenarios"}
+    """
+    And I update the application "postXferAppId" with payload "postXferNamePayload"
+    Then The response status code should be 200
+    And The value of response field "name" should be "{{postXferNewName}}"
+
+    When I put the following JSON payload in context as "postXferDescPayload"
+    """
+    {"name": "{{postXferNewName}}", "throttlingPolicy": "10PerMin", "description": "Updated after ownership change"}
+    """
+    And I update the application "postXferAppId" with payload "postXferDescPayload"
+    Then The response status code should be 200
+    And The value of response field "description" should be "Updated after ownership change"
+
+    # All three changes persisted (a fresh GET as the new owner, not just the PUT echo).
+    When I retrieve the application with id "postXferAppId"
+    Then The response status code should be 200
+    And The value of response field "throttlingPolicy" should be "10PerMin"
+    And The value of response field "name" should be "{{postXferNewName}}"
+    And The value of response field "description" should be "Updated after ownership change"
+
+    Examples:
+      | actor             | newOwner                   |
+      | admin             | subscriberUser             |
+      | admin@tenant1.com | subscriberUser@tenant1.com |
+
+  # The admin system-scopes/{scope}?username=… subscriber lookup that change-owner performs before a transfer (the
+  # scope-verification half of OAuthApplicationOwnerUpdateTestCase#updateOwner) is ported in
+  # admin/system_scopes.feature, alongside the role-alias mapping scenarios of the same API.
