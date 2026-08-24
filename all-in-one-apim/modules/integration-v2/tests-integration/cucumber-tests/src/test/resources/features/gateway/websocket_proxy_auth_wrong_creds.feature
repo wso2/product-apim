@@ -18,9 +18,9 @@ Feature: Gateway WebSocket API — Authenticated Proxy Routing with Wrong Creden
   (caught by the lifecycle-status assertion earlier in the scenario).
 
   @cap:gateway @feat:streaming-invocation @rule:proxy-routing @type:negative @dep:publisher @legacy:WebSocketProxyProfileTestCase
-  Scenario: wrong proxy credentials — gateway fails to establish proxy tunnel and rejects WS handshake
+  Scenario Outline: wrong proxy credentials — gateway fails to establish proxy tunnel and rejects WS handshake as <actor>
     Given The system is ready
-    And I have valid access tokens as "admin"
+    And I have valid access tokens as "<actor>"
     And the proxy access logs are cleared
     And I have created an api from "artifacts/payloads/create_apim_ws_echo_api.json" as "wsApiId" and deployed it
     When I publish the "apis" resource with id "wsApiId"
@@ -37,3 +37,7 @@ Feature: Gateway WebSocket API — Authenticated Proxy Routing with Wrong Creden
     # count = 0 on the auth proxy — APIM's WS proxy client fails before sending CONNECT to Squid;
     # the rejection is at the gateway/proxy-setup layer, not a Squid 407 credential rejection.
     And the authenticated proxy should have received exactly 0 CONNECT request(s)
+    Examples:
+      | actor             |
+      | admin             |
+      | admin@tenant1.com |
