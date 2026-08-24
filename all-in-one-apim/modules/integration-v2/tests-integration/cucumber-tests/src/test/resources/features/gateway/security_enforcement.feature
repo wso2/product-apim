@@ -371,6 +371,59 @@ Feature: Gateway Security Enforcement
       | admin             |
       | admin@tenant1.com |
 
+  # Ports ErrorMessageTypeTestCase — the gateway's DEFAULT error message TYPE, asserted on a request the gateway
+  # cannot dispatch to any resource.
+  #
+  # MEASURED on this build (wso2am 4.7.0-SNAPSHOT / carbon-apimgt 9.33.171) before writing this scenario, by
+  # deploying an API with only GET|DELETE /customers/{id} and hitting an undefined path under its context, over
+  # HTTP :8280 and HTTPS :8243, with no credential and with a bogus bearer — all four give the SAME answer:
+  #   404, Content-Type application/json; charset=UTF-8, body
+  #   {"code":"404","type":"Status report","message":"Runtime Error","description":"No matching resource found for given API Request"}
+  # Legacy expected 403 with a body opening {"fault":{ — BOTH are stale: 4.x emits a flat {"code":...} error
+  # document, not the 2.x/3.x {"fault":{...}} wrapper, and an unmatched resource is 404 rather than 403. Legacy's
+  # own testng.xml:188 entry is commented out, so that expectation never actually ran. The ACTUAL values are
+  # pinned here exactly rather than the legacy ones being carried over unverified.
+  #
+  # This is a DIFFERENT axis from the unknown-CONTEXT 404 above, and the measurement is what proves it: an unknown
+  # context answers message "Not Found" / description "The requested resource is not available.", whereas a known
+  # context with an unmatched RESOURCE answers "Runtime Error" / "No matching resource found for given API
+  # Request". Asserting the absence of the unknown-context wording is therefore the discriminating gate that makes
+  # this a resource-dispatch assertion and not an accidental "the API was never deployed" 404.
+  @cap:gateway @feat:fault-handling @rule:error-message-type @type:negative @dep:publisher @legacy:ErrorMessageTypeTestCase
+  Scenario Outline: An unmatched resource path returns the JSON fault error document as <actor>
+    Given The system is ready
+    And I have valid access tokens as "<actor>"
+    And I have created an api from "artifacts/payloads/create_apim_test_api.json" as "emtApiId" and deployed it
+    When I publish the "apis" resource with id "emtApiId"
+    Then The lifecycle status of API "emtApiId" should be "Published"
+    When I retrieve the "apis" resource with id "emtApiId"
+    And I extract response field "context" and store it as "emtContext"
+    And the "apis" resource "emtApiId" should be live on the gateway, redeploying if propagation is lost
+
+    # Control: the DEFINED resource, invoked with no credential, is refused by the security handler (401/900902).
+    # That answer is only reachable once the context is routable at the gateway, so it establishes the API really
+    # is deployed before the unmatched-path assertion below is read.
+    When I invoke the API at gateway context "{{emtContext}}/1.0.0/customers/123/" with method "GET" without authentication until response status code becomes 401 within 60 seconds
+    Then The response status code should be 401
+    And The value of error response field "code" should be "900902"
+
+    # The unmatched resource path under the SAME (live) context: 404, JSON media type, and the exact fault document.
+    When I invoke the API at gateway context "{{emtContext}}/1.0.0/emtNoSuchResource/" with method "GET" without authentication until response status code becomes 404 within 60 seconds
+    Then The response status code should be 404
+    And The response header "Content-Type" should contain "application/json"
+    # The typed fault step parses the envelope and compares EXACTLY, so a body that merely happens to contain
+    # these strings elsewhere cannot satisfy it. "message" has no typed counterpart, so it stays a substring.
+    And The fault response should have code "404" type "Status report" and description "No matching resource found for given API Request"
+    And The response should contain "\"message\":\"Runtime Error\""
+    # The discriminator: this is resource-level dispatch, NOT the unknown-context 404 (whose body reads
+    # "The requested resource is not available.").
+    And The response should not contain "The requested resource is not available."
+
+    Examples:
+      | actor             |
+      | admin             |
+      | admin@tenant1.com |
+
   # Ports the operation-level auth-type enforcement of ChangeAuthTypeOfResourceTestCase. The legacy test cycles a
   # resource through the four auth types (Application & Application User, Application, Application User, None) and
   # invokes each WITH a valid token → 200 (which does not discriminate between the types). The security-relevant
@@ -1715,3 +1768,89 @@ Feature: Gateway Security Enforcement
       | tenant       | suffix       |
       | carbon.super |              |
       | tenant1.com  | @tenant1.com |
+
+  # Ports DigestAuthenticationTestCase#testDigestAuthentication — the GATEWAY half of DIGEST endpoint security.
+  # (The publisher-plane contract — type round-trip + password redaction — is already covered by
+  # publisher/api-config, so nothing of it is repeated here.) The nodebackend /digest resource speaks HTTP Digest
+  # (RFC 2617, MD5, qop=auth): the gateway's first backend call is answered 401 + WWW-Authenticate, and
+  # DigestAuthMediator derives the response hash from the configured endpoint-security credential and replays the
+  # request. A 200 naming the authenticated principal PROVES the handshake completed with THAT credential — the
+  # backend has no allow-all route, so nothing else reaches 200. Each Examples row configures its OWN backend
+  # principal (digestUser vs digestTenantUser) so the tenant1.com row asserts a DISTINCT authenticated user
+  # instead of re-running the super-tenant assertion.
+  @cap:gateway @feat:security-enforcement @rule:endpoint-security @type:regression @dep:publisher @legacy:DigestAuthenticationTestCase
+  Scenario Outline: A backend secured with HTTP Digest auth is authenticated by the gateway as <digestUser> for <actor>
+    Given The system is ready
+    And I have valid access tokens as "<actor>"
+    And I put the following JSON payload in context as "epdgPayload"
+    """
+    {"name":"${UNIQUE:EndpointDigestAPI}","context":"${UNIQUE:endpointDigestContext}","version":"1.0.0","endpointConfig":{"endpoint_type":"http","production_endpoints":{"url":"http://nodebackend:3005/digest"},"sandbox_endpoints":{"url":"http://nodebackend:3005/digest"},"endpoint_security":{"production":{"enabled":true,"type":"DIGEST","username":"<digestUser>","password":"<digestPass>"},"sandbox":{"enabled":true,"type":"DIGEST","username":"<digestUser>","password":"<digestPass>"}}},"policies":["Gold","Bronze","Unlimited"],"operations":[{"verb":"GET","target":"/auth","authType":"Application & Application User","throttlingPolicy":"Unlimited","scopes":[]}]}
+    """
+    And I create an "apis" resource with payload "epdgPayload" as "epdgApiId"
+    Then The response status code should be 201
+    When I deploy the API with id "epdgApiId"
+    Then The response status code should be 201
+    When I publish the "apis" resource with id "epdgApiId"
+    Then The lifecycle status of API "epdgApiId" should be "Published"
+    # Deploy-readiness gate: a lost runtime propagation event cannot be recovered by retrying the request.
+    And the "apis" resource "epdgApiId" should be live on the gateway, redeploying if propagation is lost
+    When I retrieve the "apis" resource with id "epdgApiId"
+    Then The response status code should be 200
+    And I extract response field "context" and store it as "epdgCtx"
+    When I have set up application with keys, subscribed to API "epdgApiId", and obtained access token for "epdgSubId"
+    Then The response status code should be 200
+
+    When I invoke the API at gateway context "{{epdgCtx}}/1.0.0/auth" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    # WHICH principal completed the handshake — not merely that something succeeded.
+    And The value of response field "authenticatedUser" should be "<digestUser>"
+    And The value of response field "scheme" should be "Digest"
+    And The value of response field "realm" should be "wso2-digest-backend"
+    # The digest-uri the gateway signed is the backend path (endpoint path + REST_URL_POSTFIX), not the gateway one.
+    And The value of response field "digestUri" should be "/digest/auth"
+
+    Examples:
+      | actor             | digestUser       | digestPass       |
+      | admin             | digestUser       | digestPass       |
+      | admin@tenant1.com | digestTenantUser | digestTenantPass |
+
+  # Negative half of the same arc: the DIGEST endpoint-security credential is configured with a WRONG password, so
+  # the response hash the gateway computes does not match and the backend refuses the replayed request. MEASURED,
+  # not guessed: the gateway relays the backend's refusal verbatim — HTTP 401 with the backend's plain-text body
+  # (it does not translate it into a gateway 500 or an APIM error code). The gate is discriminating on both sides:
+  # the deploy-readiness gate proves the artifact really is on the gateway (so a never-routable API cannot pass as
+  # a rejection), and the invoke waits for the exact refusal status rather than for a 200. The backend names the
+  # principal it rejected, so each tenant row asserts a DISTINCT rejection.
+  @cap:gateway @feat:security-enforcement @rule:endpoint-security @type:negative @dep:publisher @legacy:DigestAuthenticationTestCase
+  Scenario Outline: A wrong HTTP Digest endpoint-security password is refused at the backend for <digestUser> as <actor>
+    Given The system is ready
+    And I have valid access tokens as "<actor>"
+    And I put the following JSON payload in context as "epdgnPayload"
+    """
+    {"name":"${UNIQUE:EndpointDigestBadAPI}","context":"${UNIQUE:endpointDigestBadContext}","version":"1.0.0","endpointConfig":{"endpoint_type":"http","production_endpoints":{"url":"http://nodebackend:3005/digest"},"sandbox_endpoints":{"url":"http://nodebackend:3005/digest"},"endpoint_security":{"production":{"enabled":true,"type":"DIGEST","username":"<digestUser>","password":"notTheDigestPassword"},"sandbox":{"enabled":true,"type":"DIGEST","username":"<digestUser>","password":"notTheDigestPassword"}}},"policies":["Gold","Bronze","Unlimited"],"operations":[{"verb":"GET","target":"/auth","authType":"Application & Application User","throttlingPolicy":"Unlimited","scopes":[]}]}
+    """
+    And I create an "apis" resource with payload "epdgnPayload" as "epdgnApiId"
+    Then The response status code should be 201
+    When I deploy the API with id "epdgnApiId"
+    Then The response status code should be 201
+    When I publish the "apis" resource with id "epdgnApiId"
+    Then The lifecycle status of API "epdgnApiId" should be "Published"
+    # Discriminating gate: the artifact is confirmed present on the gateway BEFORE the negative invoke, so the
+    # refusal below cannot be an unrouted API in disguise.
+    And the "apis" resource "epdgnApiId" should be live on the gateway, redeploying if propagation is lost
+    When I retrieve the "apis" resource with id "epdgnApiId"
+    Then The response status code should be 200
+    And I extract response field "context" and store it as "epdgnCtx"
+    When I have set up application with keys, subscribed to API "epdgnApiId", and obtained access token for "epdgnSubId"
+    Then The response status code should be 200
+
+    When I invoke the API at gateway context "{{epdgnCtx}}/1.0.0/auth" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 401 within 60 seconds
+    Then The response status code should be 401
+    # The refusal is the BACKEND's digest rejection of this row's principal, not a gateway auth failure.
+    And The response should contain "response hash mismatch for <digestUser>"
+    And The response should not contain "900901"
+
+    Examples:
+      | actor             | digestUser       |
+      | admin             | digestUser       |
+      | admin@tenant1.com | digestTenantUser |

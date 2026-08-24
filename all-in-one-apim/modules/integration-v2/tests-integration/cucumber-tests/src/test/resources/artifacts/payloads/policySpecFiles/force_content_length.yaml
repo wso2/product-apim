@@ -1,0 +1,15 @@
+type: operation_policy_specification
+version: v4.5.0
+data:
+  category: Mediation
+  name: force_content_length
+  version: v1
+  displayName: force_content_length
+  description: "Sets the axis2-scope FORCE_HTTP_CONTENT_LENGTH, COPY_CONTENT_LENGTH_FROM_INCOMING and DISABLE_CHUNKING properties, so the passthru target sends the request entity to the backend with an explicit Content-Length instead of Transfer-Encoding chunked. Measured on 4.7.0 - the first two alone leave the wire chunked; DISABLE_CHUNKING is the one that carries the effect."
+  applicableFlows:
+   - request
+  supportedGateways:
+   - Synapse
+  supportedApiTypes:
+   - HTTP
+  policyAttributes: []

@@ -69,6 +69,13 @@ public class WorkflowAdminSteps {
 
     private static final Log logger = LogFactory.getLog(WorkflowAdminSteps.class);
 
+    /**
+     * Container port of the {@code BPMNProcessServerApp-1.0.0} node double (published to the host — see
+     * {@code NodeAppServer}), which records the process-start request the external
+     * {@code APIStateChangeWSWorkflowExecutor} POSTs and replays it on {@code ?debugInfo=startRequest}.
+     */
+    private static final int BPMN_PROCESS_SERVER_PORT = 3004;
+
     /** Governance-registry path of the workflow-extensions resource that selects the executors. */
     private static final String WF_EXTENSIONS_REGISTRY_PATH =
             "/_system/governance/apimgt/applicationdata/workflow-extensions.xml";
@@ -295,6 +302,30 @@ public class WorkflowAdminSteps {
     public void iAttemptToListPendingWorkflowsAsNonAdmin(String workflowType) throws IOException {
         Requests.get(Utils.getWorkflowsByTypeURL(Utils.getBaseUrl(), workflowType),
                 Identity.devportalHeaders());
+    }
+
+    /**
+     * Reads back the process-start request the external {@code APIStateChangeWSWorkflowExecutor} POSTed to the
+     * BPMN process server, publishing it as {@code httpResponse} so the feature asserts its contents with the
+     * generic response-field steps (the recorded body is plain JSON: {@code tenantId}, {@code processDefinitionKey},
+     * {@code businessKey} and the {@code variables} name/value array).
+     *
+     * <p>A dedicated step because there is NO step in this module that issues a request to an arbitrary URL — every
+     * request step targets a product endpoint through {@code Requests}/{@code execute}, and the node doubles whose
+     * own state the test JVM reads back each get exactly one such reader (the WebSub receiver's delivery log, the
+     * SSE emitter's stream diagnostics, the mock log sink). This is that reader for the BPMN double. It is HOST
+     * addressed via {@link Utils#getNodeBackendUrl(int)}, unlike the executor's {@code serviceEndpoint}, which must
+     * use the in-network {@code nodebackend} alias because the POST is made by the APIM container.
+     *
+     * <p>The double stores only the LAST start request, which is sound here because it is the only recorder of a
+     * request no other feature or block triggers: the WS executor is selected by exactly one scenario, whose
+     * Examples rows run sequentially and each pin their own unique apiName, so a row cannot read the previous
+     * row's record.
+     */
+    @When("I retrieve the process start request recorded by the BPMN process server")
+    public void iRetrieveTheRecordedBpmnStartRequest() throws IOException {
+        Requests.get(Utils.getNodeBackendUrl(BPMN_PROCESS_SERVER_PORT)
+                + "/runtime/process-instances?debugInfo=startRequest", Map.of());
     }
 
     /** Gets a single workflow task by its external reference and publishes the response for assertion. */

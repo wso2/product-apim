@@ -32,6 +32,7 @@ import org.apache.http.client.methods.HttpPatch;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.client.methods.RequestBuilder;
 import org.apache.http.config.Registry;
 import org.apache.http.config.RegistryBuilder;
 import org.apache.http.conn.socket.ConnectionSocketFactory;
@@ -61,8 +62,11 @@ import java.security.KeyManagementException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.zip.GZIPOutputStream;
 
@@ -391,6 +395,71 @@ public class SimpleHTTPClient {
         setHeaders(headers, request);
         try (CloseableHttpResponse response = client.execute(request)) {
             return constructResponse(response);
+        }
+    }
+
+    /**
+     * Sends a request and returns ALL values of one response header, DUPLICATES PRESERVED, next to the status and
+     * body. The shared {@link org.wso2.carbon.automation.test.utils.http.client.HttpResponse} collapses headers
+     * into a {@code Map<String,String>}, which structurally cannot represent a backend that emits the same header
+     * twice (two {@code Set-Cookie}s, a duplicated hop-by-hop {@code Transfer-Encoding}) — hence this variant.
+     *
+     * <p>Gateway-invocation primitive (used by {@code APIInvocationSteps}) — like {@link #doGetRaw} it is
+     * intentionally NOT wrapped in the {@link #withGeneralErrorRetry} 900967 retry (a management-plane transient);
+     * runtime gateway flakiness is absorbed by the invocation envelope ({@code Utils.retryUntil}).
+     *
+     * <p>It rides this shared Apache client on purpose: the container's certificate is {@code CN=localhost} with
+     * only {@code DNSName: localhost} in its SAN, so any client that performs hostname verification can NEVER
+     * reach the gateway when testcontainers publishes it on an IP (e.g. a colima/remote-docker host, where the
+     * mapped URL is {@code https://<ip>:<port>}). This client pairs trust-all with {@code NoopHostnameVerifier};
+     * the JDK {@code java.net.http.HttpClient} always forces {@code endpointIdentificationAlgorithm=HTTPS} and
+     * has no API to turn it off, so it failed every attempt there with an SSLHandshakeException.
+     *
+     * @param method     HTTP method (e.g. {@code GET})
+     * @param url        target endpoint URL
+     * @param headers    request headers
+     * @param headerName response header whose values are collected
+     * @return status code, every value of {@code headerName} in wire order, and the response body
+     * @throws IOException if the request fails
+     */
+    public MultiValuedHeaderResult doRequestCollectingHeader(String method, String url, Map<String, String> headers,
+            String headerName) throws IOException {
+
+        HttpUriRequest request = RequestBuilder.create(method.toUpperCase(Locale.ROOT)).setUri(url).build();
+        setHeaders(headers, request);
+        try (CloseableHttpResponse response = client.execute(request)) {
+            List<String> values = new ArrayList<>();
+            for (Header header : response.getHeaders(headerName)) {
+                values.add(header.getValue());
+            }
+            return new MultiValuedHeaderResult(response.getStatusLine().getStatusCode(), values,
+                    responseEntityBodyToString(response));
+        }
+    }
+
+    /** Result of {@link #doRequestCollectingHeader}: status, every value of the requested header, and the body. */
+    public static final class MultiValuedHeaderResult {
+        private final int statusCode;
+        private final List<String> headerValues;
+        private final String body;
+
+        public MultiValuedHeaderResult(int statusCode, List<String> headerValues, String body) {
+            this.statusCode = statusCode;
+            this.headerValues = headerValues;
+            this.body = body;
+        }
+
+        public int getStatusCode() {
+            return statusCode;
+        }
+
+        /** Every value of the requested response header, in wire order (duplicates preserved). */
+        public List<String> getHeaderValues() {
+            return headerValues;
+        }
+
+        public String getBody() {
+            return body;
         }
     }
 

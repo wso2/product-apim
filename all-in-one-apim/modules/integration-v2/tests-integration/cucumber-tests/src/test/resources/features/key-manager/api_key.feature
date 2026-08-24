@@ -57,6 +57,12 @@ Feature: Key Manager API Key
     And The value of response field "id" should be "123"
     And The value of response field "name" should be "John"
 
+    # Auth-bypass guard: this API uses the DEFAULT api-key header (ApiKey), so the SAME valid key presented in an
+    # UNCONFIGURED custom header ("Unconfigured-ApiKey-Header") must be REJECTED (401) — the gateway must honour
+    # the key only in the configured header. Ports CustomHeaderTestCase#testInvokeAPIWIthDefaultApiKeyHeaderWithOpaqueKey.
+    When I invoke the API at gateway context "{{apiContext}}/1.0.0/customers/123/" with method "GET" using api key "apiKey" in header "Unconfigured-ApiKey-Header" until response status code becomes 401 within 60 seconds
+    Then The response status code should be 401
+
     Examples:
       | actor             |
       | admin             |

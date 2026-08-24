@@ -1,0 +1,11 @@
+# Extra overlay: APIM analytics, publishing through the ELK (log-file) reporter.
+#
+# Merged on top of `basic`. These two keys are the WHOLE change: with analytics enabled and type "elk" the
+# gateway hands every request/response event to org.wso2.am.analytics.publisher.reporter.elk.ELKCounterMetric,
+# which logs it on the `org.wso2.am.analytics.publisher.reporter.elk` logger. That logger and the
+# APIM_METRICS_APPENDER that writes repository/logs/apim_metrics.log ALREADY exist in the 4.7.0 distribution's
+# log4j2.properties, so — unlike legacy, which had to copy a whole log4j2.properties in and restart — no
+# logging configuration is needed here.
+[apim.analytics]
+enable = true
+type = "elk"

@@ -17,8 +17,10 @@
 
  const express = require('express');
 const router = express.Router();
-const { handleGetRequest } = require('../controllers/duplicateHeaderController');
+const { handleGetRequest, handleTransferEncodingRequest } = require('../controllers/duplicateHeaderController');
 
 router.get('/', handleGetRequest);
+// Raw-socket route emitting two Transfer-Encoding: chunked headers (APIMANAGER3614 parity).
+router.get('/transfer-encoding', handleTransferEncodingRequest);
 
 module.exports = router;

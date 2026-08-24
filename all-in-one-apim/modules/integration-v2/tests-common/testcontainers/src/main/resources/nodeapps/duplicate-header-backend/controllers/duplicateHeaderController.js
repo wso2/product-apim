@@ -26,4 +26,26 @@
     res.end();
 };
 
-module.exports = { handleGetRequest };
+// Emits TWO `Transfer-Encoding: chunked` response headers. Express/Node normalise hop-by-hop headers, so the
+// status line + header block is written as raw bytes straight to the socket (the body follows chunk-encoded).
+const handleTransferEncodingRequest = (req, res) => {
+    const body = JSON.stringify({ RestResponse: "duplicateTransferEncoding" });
+    const raw = 'HTTP/1.1 200 OK\r\n'
+        + 'Server: testServer\r\n'
+        + 'Content-Type: application/json\r\n'
+        + 'Transfer-Encoding: chunked\r\n'
+        + 'Transfer-Encoding: chunked\r\n'
+        + 'Connection: close\r\n'
+        + '\r\n'
+        + Buffer.byteLength(body).toString(16) + '\r\n' + body + '\r\n0\r\n\r\n';
+
+    const socket = res.socket;
+    // Detach so Node does not append its own (normalised) response onto the same socket.
+    if (typeof res.detachSocket === 'function') {
+        res.detachSocket(socket);
+    }
+    socket.write(raw);
+    socket.end();
+};
+
+module.exports = { handleGetRequest, handleTransferEncodingRequest };

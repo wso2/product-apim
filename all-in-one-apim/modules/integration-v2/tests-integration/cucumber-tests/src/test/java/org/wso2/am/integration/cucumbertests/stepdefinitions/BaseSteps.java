@@ -634,11 +634,12 @@ public class BaseSteps {
     }
 
     /**
-     * Sets a top-level field of a JSON payload (in context) to a JSON OBJECT parsed from a classpath file — for
-     * injecting a nested structure (e.g. embedding a custom "LifeCycle" definition into the tenant configuration)
-     * that the string setter cannot express. Writes the merged payload back under the same key.
+     * Sets a top-level field of a JSON payload (in context) to a JSON OBJECT or ARRAY parsed from a classpath file
+     * — for injecting a nested structure (a custom "LifeCycle" definition, or the "Notifications" notifier array,
+     * into the tenant configuration) that the string setter cannot express. Writes the merged payload back under
+     * the same key. The file's first non-space character selects object vs array, so one step covers both shapes.
      *
-     * @param field        the top-level field to set to the parsed JSON object
+     * @param field        the top-level field to set to the parsed JSON value
      * @param jsonFilePath classpath path of the JSON file whose content becomes the field value
      * @param contextKey   context key holding the JSON payload to mutate
      */
@@ -650,8 +651,8 @@ public class BaseSteps {
             if (in == null) {
                 throw new FileNotFoundException("JSON file not found: " + jsonFilePath);
             }
-            String content = new String(in.readAllBytes(), StandardCharsets.UTF_8);
-            payload.put(field, new JSONObject(content));
+            String content = new String(in.readAllBytes(), StandardCharsets.UTF_8).trim();
+            payload.put(field, content.startsWith("[") ? new JSONArray(content) : new JSONObject(content));
         }
         TestContext.set(Utils.normalizeContextKey(contextKey), payload.toString());
     }
@@ -1314,15 +1315,21 @@ public class BaseSteps {
     /**
      * Verifies that the HTTP response contains a specific header with the expected value.
      *
+     * <p>The lookup is case-insensitive (HTTP header names are, and a server may echo a different casing than
+     * the one written in the feature) and {@code {{...}}} placeholders in the expected value are resolved —
+     * needed to compare a header against a value captured earlier in the scenario (e.g. the gateway's
+     * {@code activityid} correlation id, asserted equal on the request and response paths).
+     *
      * @param headerName The name of the HTTP header to check
      * @param expectedValue The expected value of the header
      */
     @Then("The response should contain the header {string} with value {string}")
     public void responseShouldContainHeaderWithValue(String headerName, String expectedValue) {
 
-        HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
-        Assert.assertTrue(response.getHeaders().containsKey(headerName), "Header " + headerName + " not found in response");
-        Assert.assertEquals(response.getHeaders().get(headerName), expectedValue, "Header value mismatch for " + headerName);
+        String actual = responseHeaderValue(headerName);
+        Assert.assertNotNull(actual, "Header " + headerName + " not found in response");
+        Assert.assertEquals(actual, Utils.resolveContextPlaceholders(expectedValue),
+                "Header value mismatch for " + headerName);
     }
 
     /**

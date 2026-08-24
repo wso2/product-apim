@@ -7,12 +7,19 @@ Feature: Publisher Streaming API Design
   Self-contained scenarios, torn down by the per-scenario cleanup hook. This feature's block sets
   use_legacy_async_parser=false (the v2 default is the legacy parser, which skips strict AsyncAPI-v2 validation).
 
-  @cap:publisher @feat:streaming-design @type:smoke @legacy:WebSocketAPITestCase
+  @cap:publisher @feat:streaming-design @type:smoke @legacy:WebSocketAPITestCase @legacy:WebSocketAPICorsValidationTestCase
   Scenario Outline: Create, deploy and publish a WebSocket API as <actor>
     Given The system is ready and I have valid publisher access tokens as "<actor>"
     And I have created an api from "artifacts/payloads/create_apim_test_websocket_api.json" as "websocketApiId" and deployed it
     When I publish the "apis" resource with id "websocketApiId"
     Then The lifecycle status of API "websocketApiId" should be "Published"
+    # A WS-TYPED API surfaces in BOTH listings — the publisher API list and the devportal marketplace listing.
+    # Ports WebSocketAPICorsValidationTestCase#publishWebSocketAPI's isAPIAvailable / isAPIAvailableInStore checks:
+    # v2 created/deployed/published WS APIs but never asserted listing presence for a WS-typed API. Scoped by the
+    # API's own id, never a raw count (§12).
+    When I retrieve all APIs created through the Publisher REST API
+    Then The API with id "websocketApiId" should be in the list of all APIS
+    And I retrieve the devportal API list until it contains "websocketApiId" within 60 seconds
 
     Examples:
       | actor                      |

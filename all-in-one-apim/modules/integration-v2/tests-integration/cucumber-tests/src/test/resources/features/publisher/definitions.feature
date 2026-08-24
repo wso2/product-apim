@@ -411,6 +411,38 @@ Feature: Publisher API Definition Import
       | publisherUser             |
       | publisherUser@tenant1.com |
 
+  # Sibling of the publisher-swagger order scenario above, on the DEVPORTAL (store) plane. Ports the actual
+  # surface of APIM4765ResourceOrderInSwagger, which read the STORE (restAPIStore.getSwaggerByID at :89): the
+  # legacy bug surfaced in the store copy specifically, so the publisher-plane order check does not cover it.
+  # Added as a SIBLING rather than folded into the publisher scenario because that scenario is publisher-plane
+  # only (create + swagger update + publisher-swagger retrieve, no deploy/publish); the store copy needs the API
+  # DEPLOYED and PUBLISHED to be visible in the devportal, which would change the sibling's character and add
+  # latency to its rows. Keeping them separate leaves the publisher scenario byte-identical. @dep:devportal.
+  @cap:publisher @feat:definitions @type:regression @dep:devportal @legacy:APIM4765ResourceOrderInSwagger
+  Scenario Outline: Resource order in the OpenAPI definition is preserved on the devportal as <actor>
+    Given The system is ready and I have valid publisher access tokens as "<actor>"
+    And I put JSON payload from file "artifacts/payloads/create_apim_test_api.json" in context as "orderDpApiPayload"
+    And I create an "apis" resource with payload "orderDpApiPayload" as "orderDpApiId"
+    When I update the swagger of "apis" resource "orderDpApiId" from file "artifacts/payloads/OAS/ordered_resources_api_oas.json"
+    Then The response status code should be 200
+    # Deploy + publish so the API (and its definition) is visible in the devportal store.
+    When I deploy the API with id "orderDpApiId"
+    Then The response status code should be 201
+    When I publish the "apis" resource with id "orderDpApiId"
+    Then The lifecycle status of API "orderDpApiId" should be "Published"
+    When I retrieve the devportal API "orderDpApiId" until the response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    # The store copy of the swagger preserves the declared resource order /*, /post, /list.
+    When I retrieve the devportal swagger of API "orderDpApiId"
+    Then The response status code should be 200
+    And The response should contain "/*" before "/post"
+    And The response should contain "/post" before "/list"
+
+    Examples:
+      | actor                     |
+      | publisherUser             |
+      | publisherUser@tenant1.com |
+
   # API export/import round-trip: export an API to an archive (GET /apis/export -> zip), delete it, then re-import
   # the archive (POST /apis/import) and confirm it is recreated with the same name. Ports the core archive
   # round-trip of APIImportExportTestCase. Uses a binary download so the zip is not corrupted. Runs as admin:
@@ -428,6 +460,13 @@ Feature: Publisher API Definition Import
     And I create an "apis" resource with payload "ieApiPayload" as "ieApiId"
     Then The response status code should be 201
     And I extract response field "name" and store it as "ieApiName"
+    # Capture the identity/config fields from the create response so the re-import can be asserted EQUAL to the
+    # original (not merely "contains" — a substring check cannot tell a preserved value from a coincidental one).
+    And I extract response field "version" and store it as "ieApiVersion"
+    And I extract response field "context" and store it as "ieApiContext"
+    And I extract response field "description" and store it as "ieApiDescription"
+    And I extract response field "responseCachingEnabled" and store it as "ieResponseCaching"
+    And I extract response field "isDefaultVersion" and store it as "ieIsDefaultVersion"
     # Export to an archive
     When I export the API "ieApiId" to an archive as "ieArchive"
     # Delete the original (not deployed) so the re-import does not collide on the case-insensitive-unique name
@@ -452,6 +491,23 @@ Feature: Publisher API Definition Import
     And The response should contain "\"verb\":\"GET\""
     And The response should contain "\"verb\":\"DELETE\""
     And The response should contain "/customers/{id}"
+    # EXACT identity/config equality through the round-trip (strengthens the "contains" checks above, which cannot
+    # distinguish a preserved value from an invented one): name/version/context/description equal the originals,
+    # the API-level config flags survive, and the subscription tiers are the exact set (not a superset a contains
+    # would accept).
+    And The value of response field "name" should be "{{ieApiName}}"
+    And The value of response field "version" should be "{{ieApiVersion}}"
+    And The value of response field "context" should be "{{ieApiContext}}"
+    And The value of response field "description" should be "{{ieApiDescription}}"
+    And The value of response field "responseCachingEnabled" should be "{{ieResponseCaching}}"
+    And The value of response field "isDefaultVersion" should be "{{ieIsDefaultVersion}}"
+    And The response field "policies[*]" should be exactly the list "Gold,Bronze,Unlimited"
+    And The response array field "policies" should have exactly 3 entries
+    # Per-resource equality: the resource COUNT plus each resource's verb+URI template — the pairing a bare
+    # "contains verb" / "contains path" pair cannot pin (both operations are on /customers/{id}: one GET, one DELETE).
+    And The response array field "operations" should have exactly 2 entries
+    And The response field "operations[*].verb" should be exactly the list "GET,DELETE"
+    And The response field "operations[*].target" should be exactly the list "/customers/{id}"
 
     # Post-import UPDATE re-assert (ports APIImportExportTestCase#testAPIUpdate + testAPIStateAfterUpdate):
     # after the round-trip, UPDATE the re-imported API's description, re-revision + deploy it, then confirm the
@@ -475,6 +531,38 @@ Feature: Publisher API Definition Import
     And The response should contain "\"visibility\":\"PUBLIC\""
     And The response should contain "\"verb\":\"GET\""
     And The response should contain "/customers/{id}"
+
+    Examples:
+      | actor             |
+      | admin             |
+      | admin@tenant1.com |
+
+  # PUBLISHED lifecycle state survives an archive round-trip (ports the published-state parity of
+  # APIImportExportTestCase#testAPIState): a PUBLISHED API is exported, deleted and re-imported, and the re-imported
+  # API must STILL be Published. Isolated as its own scenario because this behaviour is UNCONFIRMED — nothing else
+  # in v2 asserts lifecycle after any import, and gateway/rest_invocation re-publishes the re-imported API, which
+  # hints PUBLISHED may not survive; THE RUN SETTLES IT. The assertion is EXACT ("Published"), deliberately NOT
+  # widened to "Created or Published": if the product resets the state on import, ONLY this scenario fails (a
+  # finding) while the rest of the C3 round-trip coverage still lands. Runs as admin (import needs
+  # apim:api_import_export).
+  @cap:publisher @feat:definitions @rule:import-export @type:regression @legacy:APIImportExportTestCase
+  Scenario Outline: A published API's lifecycle state survives an export/import round-trip as <actor>
+    Given The system is ready and I have valid publisher access tokens as "<actor>"
+    And I have created an api from "artifacts/payloads/create_apim_test_api.json" as "lcApiId" and deployed it
+    When I retrieve the "apis" resource with id "lcApiId"
+    Then The response status code should be 200
+    And I extract response field "name" and store it as "lcApiName"
+    When I publish the "apis" resource with id "lcApiId"
+    Then The lifecycle status of API "lcApiId" should be "Published"
+    When I export the API "lcApiId" to an archive as "lcArchive"
+    When I delete the "apis" resource with id "lcApiId"
+    Then The response status code should be 200
+    When I import the exported archive "lcArchive" with additional properties "{}" as "lcImportResult"
+    Then The response status code should be 200
+    When I find the Publisher API named "{{lcApiName}}" and store its id as "lcImportedApiId"
+    Then The response status code should be 200
+    # The re-imported API must still be Published — the exact-value assertion the round-trip scenarios omit.
+    And The lifecycle status of API "lcImportedApiId" should be "Published"
 
     Examples:
       | actor             |
@@ -681,6 +769,33 @@ Feature: Publisher API Definition Import
       | admin             |
       | admin@tenant1.com |
 
+  # preserveProvider=false, SAME importer (the missing discriminating leg): when the SAME user re-imports the
+  # archive with ?preserveProvider=false, the provider stays that user — there is no other owner to re-attribute to,
+  # so this pins that preserveProvider=false does not corrupt the owner when importer==owner. Together with the
+  # different-importer preserveProvider=false scenario below (importer takes ownership) it makes the FALSE flag
+  # fully discriminating. Ports the same-provider preserveProvider=false leg of APIImportExportTestCase. Runs as
+  # admin (import needs apim:api_import_export). ×2 tenant.
+  @cap:publisher @feat:definitions @rule:import-export @type:regression @legacy:APIImportExportTestCase
+  Scenario Outline: preserveProvider=false keeps the provider as the same importing user on re-import as <actor>
+    Given The system is ready and I have valid publisher access tokens as "<actor>"
+    And I put JSON payload from file "artifacts/payloads/create_apim_test_api.json" in context as "ppFalseSameApiPayload"
+    And I create an "apis" resource with payload "ppFalseSameApiPayload" as "ppFalseSameApiId"
+    Then The response status code should be 201
+    And I extract response field "name" and store it as "ppFalseSameApiName"
+    When I export the API "ppFalseSameApiId" to an archive as "ppFalseSameArchive"
+    When I delete the "apis" resource with id "ppFalseSameApiId"
+    Then The response status code should be 200
+    When I import the exported archive "ppFalseSameArchive" with additional properties "{}" and preserveProvider "false" as "ppFalseSameImportResult"
+    Then The response status code should be 200
+    When I find the Publisher API named "{{ppFalseSameApiName}}" and store its id as "ppFalseSameImportedApiId"
+    Then The response status code should be 200
+    And The provider of API "ppFalseSameImportedApiId" should match actor "<actor>"
+
+    Examples:
+      | actor             |
+      | admin             |
+      | admin@tenant1.com |
+
   # preserveProvider=false: when a DIFFERENT publisher re-imports the archive with ?preserveProvider=false, the
   # imported API is re-owned by the importer. Ports APIImportExportTestCase#testPreserveProviderFalse...Import.
   # A second admin-capable user is provisioned inline (via the existing TenantUserProvisioner) to act as the
@@ -712,6 +827,40 @@ Feature: Publisher API Definition Import
       | owner             | importerKey       | tenant       | importer                    |
       | admin             | ppImporter        | carbon.super | ppImporter                  |
       | admin@tenant1.com | ppImporter        | tenant1.com  | ppImporter@tenant1.com      |
+
+  # preserveProvider=true, DIFFERENT importer (the missing discriminating leg): when a DIFFERENT publisher re-imports
+  # the archive with ?preserveProvider=true, the provider stays the ORIGINAL owner (NOT the importer). The
+  # same-provider preserveProvider=true scenario above cannot tell preservation from the default (importer==owner
+  # there); this one can, because owner != importer. Together they make the TRUE flag fully discriminating. Ports the
+  # different-importer preserveProvider=true leg of APIImportExportTestCase. A second admin-capable importer is
+  # provisioned inline via TenantUserProvisioner, reusing the preserveProvider=false different-importer pattern above.
+  @cap:publisher @feat:definitions @rule:import-export @type:regression @dep:admin @legacy:APIImportExportTestCase
+  Scenario Outline: preserveProvider=true keeps the original owner when a different publisher re-imports as <importer>
+    Given The system is ready
+    And I have valid access tokens as "<owner>"
+    And I provision user "<importerKey>" with roles "admin" in tenant "<tenant>"
+    And I have valid access tokens as "<importer>"
+    # Author + export the API as the original owner.
+    And I act as "<owner>"
+    And I put JSON payload from file "artifacts/payloads/create_apim_test_api.json" in context as "ppTrueDiffApiPayload"
+    And I create an "apis" resource with payload "ppTrueDiffApiPayload" as "ppTrueDiffApiId"
+    Then The response status code should be 201
+    And I extract response field "name" and store it as "ppTrueDiffApiName"
+    When I export the API "ppTrueDiffApiId" to an archive as "ppTrueDiffArchive"
+    When I delete the "apis" resource with id "ppTrueDiffApiId"
+    Then The response status code should be 200
+    # Re-import as the DIFFERENT importer with preserveProvider=true -> the provider stays the ORIGINAL owner.
+    When I act as "<importer>"
+    And I import the exported archive "ppTrueDiffArchive" with additional properties "{}" and preserveProvider "true" as "ppTrueDiffImportResult"
+    Then The response status code should be 200
+    When I find the Publisher API named "{{ppTrueDiffApiName}}" and store its id as "ppTrueDiffImportedApiId"
+    Then The response status code should be 200
+    And The provider of API "ppTrueDiffImportedApiId" should match actor "<owner>"
+
+    Examples:
+      | owner             | importerKey       | tenant       | importer                    |
+      | admin             | ppTrueImporter    | carbon.super | ppTrueImporter              |
+      | admin@tenant1.com | ppTrueImporter    | tenant1.com  | ppTrueImporter@tenant1.com  |
 
   # Thumbnail I/E: a thumbnail uploaded onto an API survives an export -> delete -> import round-trip
   # (hasThumbnail stays true on the re-imported API). Ports createAPIWithThumb + testAPIImportWithThumb.
@@ -776,14 +925,61 @@ Feature: Publisher API Definition Import
       | admin             |
       | admin@tenant1.com |
 
+  # Swagger-declared SCOPE bound to a role survives an export/import round-trip (ports the scope facet of
+  # APIImportExportTestCase#testNewAPICreation, whose new API declared a scope bound to an access role — the whole
+  # reason that legacy API existed). SIBLING of the restricted-visibility round-trip above rather than an extra
+  # column on it: that scenario's subject is visibility+endpoint preservation and it carries no declared scope, so
+  # an export that silently DROPPED a declared scope would pass it today; this scenario's subject is the scope +
+  # its role binding, which needs its own payload and its own after-import assertions. The two are kept separate so
+  # neither overloads the other. Runs as admin (import needs apim:api_import_export). The scope is API-local (not a
+  # shared scope), so it travels IN the archive and is torn down with the API by the per-scenario cleanup hook.
+  @cap:publisher @feat:definitions @rule:import-export @type:regression @legacy:APIImportExportTestCase
+  Scenario Outline: A swagger-declared scope bound to a role survives an export/import round-trip as <actor>
+    Given The system is ready and I have valid publisher access tokens as "<actor>"
+    And I put JSON payload from file "artifacts/payloads/create_apim_scoped_import_export_api.json" in context as "scApiPayload"
+    And I create an "apis" resource with payload "scApiPayload" as "scApiId"
+    Then The response status code should be 201
+    And I extract response field "name" and store it as "scApiName"
+    # Baseline BEFORE the round-trip: the created API declares exactly the one scope bound to the admin role.
+    When I retrieve the "apis" resource with id "scApiId"
+    Then The response status code should be 200
+    And The response field "scopes[*].scope.name" should be exactly the list "c14iescope"
+    And The response array field "scopes" should have exactly 1 entries
+    And The response field "scopes[*].scope.bindings[*]" should be exactly the list "admin"
+    # Export -> delete -> re-import.
+    When I export the API "scApiId" to an archive as "scArchive"
+    When I delete the "apis" resource with id "scApiId"
+    Then The response status code should be 200
+    When I import the exported archive "scArchive" with additional properties "{}" as "scImportResult"
+    Then The response status code should be 200
+    When I find the Publisher API named "{{scApiName}}" and store its id as "scImportedApiId"
+    Then The response status code should be 200
+    When I retrieve the "apis" resource with id "scImportedApiId"
+    Then The response status code should be 200
+    # AFTER re-import the scope survives WITH its role binding — the exact-set assertions pair with the cardinality
+    # pin (§12) so a dropped scope, an invented extra scope, or a scope whose binding was lost all fail. The
+    # operation still references the scope, proving the binding is not just declared but wired to the resource.
+    And The response field "scopes[*].scope.name" should be exactly the list "c14iescope"
+    And The response array field "scopes" should have exactly 1 entries
+    And The response field "scopes[*].scope.bindings[*]" should be exactly the list "admin"
+    And The response field "operations[*].scopes[*]" should be exactly the list "c14iescope"
+
+    Examples:
+      | actor             |
+      | admin             |
+      | admin@tenant1.com |
+
   # Restricted (role-based access-control) API export authorization: an API whose access is restricted to a role
   # can be exported by a user WITH that role and by the admin, but a publisher-scoped user WITHOUT the role gets
   # 401. Ports APIImportExportTestCase#testRestrictedAPIExportFrom{UserWithAccessRole,UserWithoutAccessRole,
   # AdminUser}. A custom role + two publisher users (one carrying the role, one not) are provisioned inline via
   # the existing TenantUserProvisioner.
   @cap:publisher @feat:definitions @rule:import-export @type:negative @dep:admin @legacy:APIImportExportTestCase
-  # The access role is lowercase: APIM stores/validates accessControlRoles case-folded (the legacy asserts the
-  # stored role is lowercase), so a mixed-case role fails the accessControlRoles validation with a 400.
+  # accessControlRoles is stored/read back CASE-FOLDED to lowercase, and a MIXED-CASE value is ACCEPTED (no 400) —
+  # verified live on 4.7.0 (input "ProbeMixedCaseRole" read back "probemixedcaserole"). This scenario submits a
+  # mixed-case value to accessControlRoles and asserts it reads back as the lowercase "<role>", restoring the
+  # legacy case-folding assertion that an earlier revision dropped. The provisioned role and user assignments use
+  # the folded form (matching what the product stores), so the export authz matrix below is unchanged and known good.
   Scenario Outline: Restricted-API export is allowed only for users with the access role as <owner>
     Given The system is ready
     And I have valid access tokens as "<owner>"
@@ -805,9 +1001,15 @@ Feature: Publisher API Definition Import
     And I set the field "accessControl" to "RESTRICTED" in the payload "raApiFullPayload"
     And I update the "apis" resource "raApiId" and "raApiFullPayload" with configuration type "accessControlRoles" and value:
     """
-    ["<role>"]
+    ["ApiExportRole"]
     """
     Then The response status code should be 200
+    # Case-folding: the mixed-case "ApiExportRole" submitted above must read back as the lowercase "<role>"
+    # (= apiexportrole). The count pin proves the single role is present, not silently dropped (§12).
+    When I retrieve the "apis" resource with id "raApiId"
+    Then The response status code should be 200
+    And The response field "accessControlRoles" should be exactly the list "<role>"
+    And The response array field "accessControlRoles" should have exactly 1 entries
     # Export succeeds for the admin owner.
     When I act as "<owner>"
     And I export the API "raApiId" to an archive as "raAdminArchive"

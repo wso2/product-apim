@@ -37,6 +37,82 @@ Feature: Gateway REST API Invocation
       | admin             |
       | admin@tenant1.com |
 
+  # Non-admin ROLE-BASED scope enforcement at the gateway (ports the invoke facet of
+  # APIImportExportTestCase#testNewAPIInvoke, whose scope-protected API was invoked by a non-admin store user).
+  # Every other scope-enforcement scenario mints its token as the ADMIN, whose role owns the binding, so the token
+  # ALWAYS carries the scope — that never exercises the role->scope grant path. Here two least-privilege
+  # (Internal/subscriber) users are provisioned; only one also holds the role bound to the operation scope. The
+  # resident KM grants a requested scope only to a user holding a bound role, so:
+  #   * the role-HOLDER's password-grant token carries the scope -> the gateway allows the operation -> 200 + backend body;
+  #   * the role-LACKER's token is issued (200) but WITHOUT the scope -> the gateway refuses the operation.
+  # The refusal is 403 (a valid, subscribed token that merely lacks the required scope), asserted EXACTLY — matching
+  # gateway/allowed_scopes and the IS7 role-enforcement negative; never widened to 401||403 (§12). The API is
+  # authored/published/subscribed as the tenant admin; only the two invocations act as the provisioned non-admins.
+  @cap:gateway @feat:security-enforcement @type:regression @dep:publisher @legacy:APIImportExportTestCase
+  Scenario Outline: A non-admin holding the bound role can invoke a scope-protected API while one without it is refused as <actor>
+    Given The system is ready
+    And I have valid access tokens as "<actor>"
+    And I provision role "c14scoperole" in tenant "<tenant>"
+    And I provision user "c14with" with roles "Internal/subscriber,c14scoperole" in tenant "<tenant>"
+    And I provision user "c14without" with roles "Internal/subscriber" in tenant "<tenant>"
+
+    # Author the scope-protected API (GET /customers/{id} requires the scope bound to c14scoperole), deploy + publish.
+    When I put JSON payload from file "artifacts/payloads/create_apim_scope_protected_role_api.json" in context as "spCreatePayload"
+    And I create an "apis" resource with payload "spCreatePayload" as "spApiId"
+    Then The response status code should be 201
+    When I put the following JSON payload in context as "spRevPayload"
+    """
+    {"description":"scope-protected revision"}
+    """
+    And I make a request to create a revision for "apis" resource "spApiId" with payload "spRevPayload"
+    Then The response status code should be 201
+    When I put the following JSON payload in context as "spDeployPayload"
+    """
+    [{"name":"{{gatewayEnvironment}}","vhost":"localhost","displayOnDevportal":true}]
+    """
+    And I make a request to deploy revision "revisionId" of "apis" resource "spApiId" with payload "spDeployPayload"
+    Then The response status code should be 201
+    When I publish the "apis" resource with id "spApiId"
+    Then The lifecycle status of API "spApiId" should be "Published"
+    When I retrieve the "apis" resource with id "spApiId"
+    And I extract response field "context" and store it as "spContext"
+
+    # Subscribe an application keyed for the password grant so scope-specific tokens can be minted for each user.
+    When I put JSON payload from file "artifacts/payloads/create_apim_test_app.json" in context as "spAppPayload"
+    And I create an application with payload "spAppPayload"
+    Then The response status code should be 201
+    When I put the following JSON payload in context as "spKeysPayload"
+    """
+    {"keyType": "PRODUCTION", "grantTypesToBeSupported": ["client_credentials", "password"]}
+    """
+    And I generate client credentials for application id "createdAppId" with payload "spKeysPayload"
+    Then The response status code should be 200
+    When I put the following JSON payload in context as "spSubPayload"
+    """
+    {"applicationId": "{{applicationId}}", "apiId": "{{apiId}}", "throttlingPolicy": "Unlimited"}
+    """
+    And I subscribe to API "spApiId" using application "createdAppId" with payload "spSubPayload" as "spSubId"
+    Then The response status code should be 201
+
+    # Role HOLDER: token carries the scope -> gateway allows -> 200 carrying the backend body (a bare 200 would not
+    # prove the call reached node-customer-service).
+    When I request an OAuth access token using password grant as user "<withUser>" with password "c14with" requesting scope "c14scope"
+    Then The response status code should be 200
+    And I invoke the API at gateway context "{{spContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    And The response should contain "\"name\":\"John\""
+
+    # Role LACKER: token issued (200) but WITHOUT the scope -> gateway refuses the operation with 403 (exact).
+    When I request an OAuth access token using password grant as user "<withoutUser>" with password "c14without" requesting scope "c14scope"
+    Then The response status code should be 200
+    And I invoke the API at gateway context "{{spContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 403 within 60 seconds
+    Then The response status code should be 403
+
+    Examples:
+      | actor             | tenant       | withUser            | withoutUser            |
+      | admin             | carbon.super | c14with             | c14without             |
+      | admin@tenant1.com | tenant1.com  | c14with@tenant1.com | c14without@tenant1.com |
+
   # Re-imported API is functionally invocable end-to-end: create an API, subscribe and INVOKE it (200) through
   # the gateway BEFORE export; then export -> delete -> re-import; deploy + publish the re-imported API,
   # re-subscribe, and INVOKE AGAIN (200) — proving the re-imported API is still routable/invocable through the
@@ -422,6 +498,205 @@ Feature: Gateway REST API Invocation
       | admin             |
       | admin@tenant1.com |
 
+  # Unsecured resource, production-only API: once the resource's authType is None the gateway has no key type to
+  # route on, so it serves the production endpoint and the SANDBOX token that was rejected 900901 becomes
+  # irrelevant. Discriminating arm of :341 — the 403 disappears once the resource is unsecured.
+  @cap:gateway @feat:rest-invocation @rule:endpoint-routing @type:regression @dep:publisher @legacy:InvokeAPIWithVariousEndpointsAndTokensTestCase
+  Scenario Outline: An unsecured resource on a production-only API serves production despite a sandbox token as <actor>
+    Given The system is ready
+    And I have valid access tokens as "<actor>"
+    And I have created an api from "artifacts/payloads/create_apim_prodonly_api.json" as "u1ApiId" and deployed it
+    When I publish the "apis" resource with id "u1ApiId"
+    Then The lifecycle status of API "u1ApiId" should be "Published"
+    When I retrieve the "apis" resource with id "u1ApiId"
+    And I extract response field "context" and store it as "u1Context"
+    When I put JSON payload from file "artifacts/payloads/create_apim_test_app.json" in context as "u1App"
+    And I create an application with payload "u1App"
+    Then The response status code should be 201
+    When I put the following JSON payload in context as "u1Sub"
+    """
+    {"applicationId": "{{applicationId}}", "apiId": "{{apiId}}", "throttlingPolicy": "Unlimited"}
+    """
+    And I subscribe to API "u1ApiId" using application "createdAppId" with payload "u1Sub" as "u1SubId"
+    Then The response status code should be 201
+    When I put the following JSON payload in context as "u1SandboxKeys"
+    """
+    {"keyType": "SANDBOX", "grantTypesToBeSupported": ["client_credentials"]}
+    """
+    And I generate client credentials for application id "createdAppId" with payload "u1SandboxKeys"
+    Then The response status code should be 200
+    When I put the following JSON payload in context as "u1Token"
+    """
+    {"consumerSecret": "{{appConsumerSecret}}", "validityPeriod": 3600}
+    """
+    And I request an access token for application id "createdAppId" using payload "u1Token"
+    Then The response status code should be 200
+
+    # Secured baseline: the SANDBOX token is rejected 403 + 900901 (this prod-only API has no sandbox endpoint).
+    # The baseline is what makes the post-flip 200 attributable — it proves the resource was genuinely secured.
+    When I invoke the API at gateway context "{{u1Context}}/1.0.0/x" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 403 within 60 seconds
+    Then The response status code should be 403
+    And The response should contain "900901"
+    And The response should contain "no sandbox endpoint"
+
+    # Flip the resource to authType None, redeploy, and gate on propagation before reading — a read before the new
+    # config reaches the gateway returns a false 403.
+    When I retrieve the "apis" resource with id "u1ApiId"
+    And I put the response payload in context as "u1ApiPayload"
+    When I update the "apis" resource "u1ApiId" and "u1ApiPayload" with configuration type "operations" and value:
+      """
+      [{"target":"/x","verb":"GET","authType":"None","throttlingPolicy":"Unlimited"}]
+      """
+    Then The response status code should be 200
+    When I deploy the API with id "u1ApiId"
+    And the "apis" resource "u1ApiId" should be live on the gateway, redeploying if propagation is lost
+
+    # Unsecured reading: the SANDBOX token is ignored; the production endpoint answers. The body gate proves
+    # echo/prod answered; the not-contains proves echo/sandbox (which does not exist) did not.
+    When I invoke the API at gateway context "{{u1Context}}/1.0.0/x" with method "GET" using access token "generatedAccessToken" and payload "" until response body contains "echo/prod" within 60 seconds
+    Then The response status code should be 200
+    And The response should not contain "echo/sandbox"
+
+    Examples:
+      | actor             |
+      | admin             |
+      | admin@tenant1.com |
+
+  # Unsecured resource, sandbox-only API: with authType None there is no key type, so the gateway serves the only
+  # endpoint that exists (sandbox), and the PRODUCTION token that was rejected 900901 becomes irrelevant.
+  # Discriminating arm of :382 — the 403 disappears once the resource is unsecured.
+  @cap:gateway @feat:rest-invocation @rule:endpoint-routing @type:regression @dep:publisher @legacy:InvokeAPIWithVariousEndpointsAndTokensTestCase
+  Scenario Outline: An unsecured resource on a sandbox-only API serves sandbox despite a production token as <actor>
+    Given The system is ready
+    And I have valid access tokens as "<actor>"
+    And I have created an api from "artifacts/payloads/create_apim_sandboxonly_api.json" as "u2ApiId" and deployed it
+    When I publish the "apis" resource with id "u2ApiId"
+    Then The lifecycle status of API "u2ApiId" should be "Published"
+    When I retrieve the "apis" resource with id "u2ApiId"
+    And I extract response field "context" and store it as "u2Context"
+    When I put JSON payload from file "artifacts/payloads/create_apim_test_app.json" in context as "u2App"
+    And I create an application with payload "u2App"
+    Then The response status code should be 201
+    When I put the following JSON payload in context as "u2Sub"
+    """
+    {"applicationId": "{{applicationId}}", "apiId": "{{apiId}}", "throttlingPolicy": "Unlimited"}
+    """
+    And I subscribe to API "u2ApiId" using application "createdAppId" with payload "u2Sub" as "u2SubId"
+    Then The response status code should be 201
+    When I put the following JSON payload in context as "u2ProdKeys"
+    """
+    {"keyType": "PRODUCTION", "grantTypesToBeSupported": ["client_credentials"]}
+    """
+    And I generate client credentials for application id "createdAppId" with payload "u2ProdKeys"
+    Then The response status code should be 200
+    When I put the following JSON payload in context as "u2Token"
+    """
+    {"consumerSecret": "{{appConsumerSecret}}", "validityPeriod": 3600}
+    """
+    And I request an access token for application id "createdAppId" using payload "u2Token"
+    Then The response status code should be 200
+
+    # Secured baseline: the PRODUCTION token is rejected 403 + 900901 (this sandbox-only API has no production endpoint).
+    When I invoke the API at gateway context "{{u2Context}}/1.0.0/x" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 403 within 60 seconds
+    Then The response status code should be 403
+    And The response should contain "900901"
+    And The response should contain "no production endpoint"
+
+    # Flip the resource to authType None, redeploy, and gate on propagation before reading.
+    When I retrieve the "apis" resource with id "u2ApiId"
+    And I put the response payload in context as "u2ApiPayload"
+    When I update the "apis" resource "u2ApiId" and "u2ApiPayload" with configuration type "operations" and value:
+      """
+      [{"target":"/x","verb":"GET","authType":"None","throttlingPolicy":"Unlimited"}]
+      """
+    Then The response status code should be 200
+    When I deploy the API with id "u2ApiId"
+    And the "apis" resource "u2ApiId" should be live on the gateway, redeploying if propagation is lost
+
+    # Unsecured reading: the PRODUCTION token is ignored; the sole (sandbox) endpoint answers. Body gate proves
+    # echo/sandbox answered; the not-contains proves echo/prod (which does not exist) did not.
+    When I invoke the API at gateway context "{{u2Context}}/1.0.0/x" with method "GET" using access token "generatedAccessToken" and payload "" until response body contains "echo/sandbox" within 60 seconds
+    Then The response status code should be 200
+    And The response should not contain "echo/prod"
+
+    Examples:
+      | actor             |
+      | admin             |
+      | admin@tenant1.com |
+
+  # Crown-jewel: the unifying rule stated directly. Once the resource is unsecured, NEITHER a sandbox token NOR
+  # the absence of a credential changes the endpoint — the gateway always serves the production endpoint. Secured
+  # baselines (SANDBOX token -> echo/sandbox per :278; no credential -> 401/900902) make both post-flip 200s
+  # attributable. Discriminating arm of :278.
+  @cap:gateway @feat:rest-invocation @rule:endpoint-routing @type:regression @dep:publisher @legacy:InvokeAPIWithVariousEndpointsAndTokensTestCase
+  Scenario Outline: An unsecured resource ignores the presented key type and serves the production endpoint as <actor>
+    Given The system is ready
+    And I have valid access tokens as "<actor>"
+    And I have created an api from "artifacts/payloads/create_apim_prodsandbox_api.json" as "u3ApiId" and deployed it
+    When I publish the "apis" resource with id "u3ApiId"
+    Then The lifecycle status of API "u3ApiId" should be "Published"
+    When I retrieve the "apis" resource with id "u3ApiId"
+    And I extract response field "context" and store it as "u3Context"
+    When I put JSON payload from file "artifacts/payloads/create_apim_test_app.json" in context as "u3App"
+    And I create an application with payload "u3App"
+    Then The response status code should be 201
+    When I put the following JSON payload in context as "u3Sub"
+    """
+    {"applicationId": "{{applicationId}}", "apiId": "{{apiId}}", "throttlingPolicy": "Unlimited"}
+    """
+    And I subscribe to API "u3ApiId" using application "createdAppId" with payload "u3Sub" as "u3SubId"
+    Then The response status code should be 201
+    When I put the following JSON payload in context as "u3SandboxKeys"
+    """
+    {"keyType": "SANDBOX", "grantTypesToBeSupported": ["client_credentials"]}
+    """
+    And I generate client credentials for application id "createdAppId" with payload "u3SandboxKeys"
+    Then The response status code should be 200
+    When I put the following JSON payload in context as "u3Token"
+    """
+    {"consumerSecret": "{{appConsumerSecret}}", "validityPeriod": 3600}
+    """
+    And I request an access token for application id "createdAppId" using payload "u3Token"
+    Then The response status code should be 200
+
+    # Secured baseline A: the SANDBOX token routes to the sandbox endpoint (echo/sandbox), matching :278.
+    When I invoke the API at gateway context "{{u3Context}}/1.0.0/x" with method "GET" using access token "generatedAccessToken" and payload "" until response body contains "echo/sandbox" within 60 seconds
+    Then The response status code should be 200
+    And The response should not contain "echo/prod"
+
+    # Secured baseline B: with NO credential the gateway rejects the call 401 + 900902 (Missing Credentials).
+    When I invoke the API at gateway context "{{u3Context}}/1.0.0/x" with method "GET" without authentication until response status code becomes 401 within 60 seconds
+    Then The response status code should be 401
+    And The response should contain "900902"
+
+    # Flip the resource to authType None, redeploy, and gate on propagation before re-reading both arms.
+    When I retrieve the "apis" resource with id "u3ApiId"
+    And I put the response payload in context as "u3ApiPayload"
+    When I update the "apis" resource "u3ApiId" and "u3ApiPayload" with configuration type "operations" and value:
+      """
+      [{"target":"/x","verb":"GET","authType":"None","throttlingPolicy":"Unlimited"}]
+      """
+    Then The response status code should be 200
+    When I deploy the API with id "u3ApiId"
+    And the "apis" resource "u3ApiId" should be live on the gateway, redeploying if propagation is lost
+
+    # Unsecured reading, SANDBOX token: the presented key type is ignored; the production endpoint answers. This
+    # body-gated invoke is also the propagation gate for the no-credential read that follows.
+    When I invoke the API at gateway context "{{u3Context}}/1.0.0/x" with method "GET" using access token "generatedAccessToken" and payload "" until response body contains "echo/prod" within 60 seconds
+    Then The response status code should be 200
+    And The response should not contain "echo/sandbox"
+
+    # Unsecured reading, NO credential: the missing credential no longer 401s; the same production endpoint answers.
+    When I invoke the API at gateway context "{{u3Context}}/1.0.0/x" with method "GET" without authentication until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    And The response should contain "echo/prod"
+    And The response should not contain "echo/sandbox"
+
+    Examples:
+      | actor             |
+      | admin             |
+      | admin@tenant1.com |
+
   # Swapping the endpoint URL of an ALREADY-DEPLOYED API repoints it at a DIFFERENT upstream. Ports
   # ChangeAPIEndPointURLTestCase (testAPIInvocationBeforeChangeTheEndPointURL + testEditEndPointURL +
   # testInvokeAPIAfterChangeAPIEndPointURLWithNewEndPointURL, which are one arc on one API).
@@ -518,7 +793,11 @@ Feature: Gateway REST API Invocation
     Then The response status code should be 200
     When I invoke the API at gateway context "{{seqContext}}/1.0.0/" with method "GET" using access token "generatedAccessToken" and payload "" until response body contains "Sample Response" within 60 seconds
     Then The response status code should be 200
-    And The response should contain "Sample Response"
+    # The sequence's payloadFactory emits the WHOLE body, so legacy asserted the body EQUALS
+    # {"Response" : "Sample Response"} — a "contains" would also pass if the sequence output were wrapped in or
+    # appended to anything else. Pinned as strict full-document JSON equality (no extra members, exact value)
+    # against the expected file, which carries the sequence's literal format string verbatim.
+    And The response body should equal the JSON file "artifacts/payloads/sequence_backend_expected_response.json"
 
     Examples:
       | actor             |
@@ -661,16 +940,54 @@ Feature: Gateway REST API Invocation
     And I extract response field "context" and store it as "qcCtx"
     When I have set up application with keys, subscribed to API "qcApiId", and obtained access token for "qcSub"
     Then The response status code should be 200
-    When I invoke the API at raw gateway context "{{qcCtx}}/1.0.0/qenc?queryParam=APIM:WSO2" using access token "generatedAccessToken" until response status code becomes 200 within 60 seconds
+    When I invoke the API at raw gateway context "{{qcCtx}}/1.0.0/qenc?queryParam=<queryValue>" using access token "generatedAccessToken" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
     And The response should contain "<expected>"
 
+    # The queryValue column is threaded verbatim into the raw invoke so each row can send a different
+    # reserved/special character through the same endpoint-expansion machinery. The existing colon rows keep
+    # their exact expected values (APIM:WSO2); the added rows cover the plus / encoded-space / trailing-percent
+    # cases from UriTemplateReservedCharacterEncodingTest (legacy's query-param decoding tests). The added-row
+    # expected values are what THIS build produced (reflect backend echoes the expanded outbound query verbatim).
     Examples:
-      | mode    | encoding        | payload                                                   | expected                    | actor             |
-      | default | percent-encoded | artifacts/payloads/create_apim_query_default_api.json     | sub?queryParam=APIM%3AWSO2  | admin             |
-      | default | percent-encoded | artifacts/payloads/create_apim_query_default_api.json     | sub?queryParam=APIM%3AWSO2  | admin@tenant1.com |
-      | escape  | preserved       | artifacts/payloads/create_apim_query_escape_api.json      | sub?queryParam=APIM:WSO2    | admin             |
-      | escape  | preserved       | artifacts/payloads/create_apim_query_escape_api.json      | sub?queryParam=APIM:WSO2    | admin@tenant1.com |
+      | mode    | encoding        | payload                                                   | queryValue      | expected                     | actor             |
+      | default | percent-encoded | artifacts/payloads/create_apim_query_default_api.json     | APIM:WSO2       | sub?queryParam=APIM%3AWSO2   | admin             |
+      | default | percent-encoded | artifacts/payloads/create_apim_query_default_api.json     | APIM:WSO2       | sub?queryParam=APIM%3AWSO2   | admin@tenant1.com |
+      | escape  | preserved       | artifacts/payloads/create_apim_query_escape_api.json      | APIM:WSO2       | sub?queryParam=APIM:WSO2     | admin             |
+      | escape  | preserved       | artifacts/payloads/create_apim_query_escape_api.json      | APIM:WSO2       | sub?queryParam=APIM:WSO2     | admin@tenant1.com |
+      # Plus character: default expansion percent-encodes the literal '+' to %2B (legacy assertTrue APIM%2BWSO2).
+      | default | percent-encoded | artifacts/payloads/create_apim_query_default_api.json     | APIM+WSO2       | sub?queryParam=APIM%2BWSO2   | admin             |
+      # Encoded space %20: preserved through the default expansion (legacy assertTrue APIM%20WSO2).
+      | default | percent-encoded | artifacts/payloads/create_apim_query_default_api.json     | APIM%20WSO2     | sub?queryParam=APIM%20WSO2   | admin             |
+      # Trailing/multi-escaped percent (aaa!@!% encoded): re-encoded intact (legacy assertTrue aaa%21%40%21%25).
+      | default | percent-encoded | artifacts/payloads/create_apim_query_default_api.json     | aaa%21%40%21%25 | sub?queryParam=aaa%21%40%21%25 | admin           |
+      # Plus character under escape (reserved) expansion: the '+' is preserved, NOT percent-encoded (legacy assertFalse APIM%2BWSO2).
+      | escape  | preserved       | artifacts/payloads/create_apim_query_escape_api.json      | APIM+WSO2       | sub?queryParam=APIM+WSO2     | admin             |
+
+  # Ports UriTemplateReservedCharacterEncodingTest#testURITemplateSpecialCaseVariableWithFullURL — a path
+  # parameter whose VALUE is itself a full URL (protocol://host:port/path, carrying ':' and '//') is captured by a
+  # reserved-expansion resource (/special_case/{+val}) and preserved through the {+uri.var.val} endpoint expansion.
+  # The reflect backend (/echo/*) echoes the expanded outbound path verbatim, so the exact expected value below is
+  # what THIS build produced (unknown ahead of the run — legacy asserted only the outbound gateway "To:" URL, which
+  # v2 has no equivalent log for). Sent RAW so the ':' and '//' reach the gateway verbatim. Single super-tenant row.
+  @cap:gateway @feat:rest-invocation @rule:full-url-path-param @type:regression @dep:publisher @legacy:UriTemplateReservedCharacterEncodingTest
+  Scenario Outline: A full URL passed as a path parameter is preserved through the templated endpoint as <actor>
+    Given The system is ready
+    And I have valid access tokens as "<actor>"
+    And I have created an api from "artifacts/payloads/create_apim_fullurl_pathparam_api.json" as "fuApiId" and deployed it
+    When I publish the "apis" resource with id "fuApiId"
+    Then The lifecycle status of API "fuApiId" should be "Published"
+    When I retrieve the "apis" resource with id "fuApiId"
+    And I extract response field "context" and store it as "fuCtx"
+    When I have set up application with keys, subscribed to API "fuApiId", and obtained access token for "fuSub"
+    Then The response status code should be 200
+    When I invoke the API at raw gateway context "{{fuCtx}}/1.0.0/special_case/http://nodebackend:9999/services/test_2" using access token "generatedAccessToken" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    And The response should contain "echo/subhttp://nodebackend:9999/services/test_2"
+
+    Examples:
+      | actor |
+      | admin |
 
   # Ports APIInvocationWithSimilarResourcesAndDifferentVerbsTestCase — an API with TWO overlapping resource paths
   # distinguished only by HTTP verb (GET /comp/cartes/* and POST /comp/cartes/op/*) routes each verb to the correct
@@ -823,6 +1140,31 @@ Feature: Gateway REST API Invocation
     # ORDER across the sandbox group: nine consecutive calls, every window of three distinct.
     When I invoke the API at gateway context "{{lbsContext}}/1.0.0/name" with method "GET" using access token "generatedAccessToken" 9 times round-robin across backend markers "File 1_Sandbox,File 2_Sandbox,File 3_Sandbox"
 
+  # Ports DuplicateHeaderTestCase — the gateway must NOT collapse duplicate response headers coming from the
+  # backend. The node duplicate-header-backend (port 3005, GET /duplicate) emits TWO Set-Cookie headers
+  # ("12wesdsfdffdsfff" and "3456wesfdsfdsfdf"); both must reach the client, since collapsing them silently
+  # breaks backend session handling. This assertion cannot be expressed by the generic header steps: the shared
+  # HttpResponse.getHeaders() is a Map<String,String>, which cannot hold two values for one key, so a raw
+  # java.net.http.HttpClient is used (see APIInvocationSteps#invokeAndAssertMultiValuedHeader) to read
+  # allValues("Set-Cookie") and assert the EXACT count AND both values — a count-only check would pass if the
+  # gateway duplicated one value twice, a values-only check if it emitted three.
+  # (Legacy's driver — a jaggery client — was removed, so this row was never actually blocked, only driverless;
+  # the raw JDK client here restores the observation the legacy client used to make.)
+  @cap:gateway @feat:header-transformation @rule:duplicate-headers @type:regression @dep:publisher @legacy:DuplicateHeaderTestCase
+  Scenario Outline: The gateway preserves duplicate Set-Cookie response headers from the backend as <actor>
+    Given The system is ready
+    And I have valid access tokens as "<actor>"
+    And I have created an api from "artifacts/payloads/create_apim_duplicate_header_api.json" as "dupApiId" and deployed it
+    When I publish the "apis" resource with id "dupApiId"
+    Then The lifecycle status of API "dupApiId" should be "Published"
+    When I retrieve the "apis" resource with id "dupApiId"
+    And I extract response field "context" and store it as "dupContext"
+    When I have set up application with keys, subscribed to API "dupApiId", and obtained access token for "dupSubId"
+    Then The response status code should be 200
+
+    # Both Set-Cookie headers the backend emits must survive to the client — exact count AND exact values.
+    When I invoke the API at gateway context "{{dupContext}}/1.0.0/" with method "GET" using access token "generatedAccessToken" and assert the response carries exactly 2 "Set-Cookie" headers with values "12wesdsfdffdsfff, 3456wesfdsfdsfdf" within 60 seconds
+
     Examples:
       | actor             |
       | admin             |
@@ -855,6 +1197,36 @@ Feature: Gateway REST API Invocation
     And The response reason phrase should be "Custom response"
     # The backend's body arrived intact — this is not a gateway-generated fault.
     And The response should contain "<?xml version=\"1.0\" encoding=\"UTF-8\"?><test></test>"
+
+  # Ports APIMANAGER3614DuplicateTransferEncodingHeaderTestCase (commented out in the legacy suite, so it never
+  # actually ran there). Transfer-Encoding is HOP-BY-HOP: unlike Set-Cookie above, a duplicated one must NOT be
+  # propagated — two Transfer-Encoding headers on one response is a request-smuggling / response-splitting vector,
+  # so the gateway must re-frame the response with exactly ONE. The backend is a raw-socket route on the node
+  # duplicate-header-backend (GET /duplicate/transfer-encoding, port 3005) that writes the status line + header
+  # block as raw bytes — express normalises hop-by-hop headers, so the duplicate cannot be produced with res.append.
+  # Verified on the wire against the container: the backend really does emit two "Transfer-Encoding: chunked".
+  # The multi-valued-header step is used for the same reason as the Set-Cookie row (the shared HttpResponse's
+  # Map<String,String> headers cannot represent a duplicate), and a second invocation pins the BODY: a gateway that
+  # mangled the duplicate-header response into an empty body would otherwise pass a headers-only assertion.
+  @cap:gateway @feat:header-transformation @rule:duplicate-headers @type:regression @dep:publisher @legacy:APIMANAGER3614DuplicateTransferEncodingHeaderTestCase
+  Scenario Outline: The gateway collapses duplicate Transfer-Encoding response headers from the backend as <actor>
+    Given The system is ready
+    And I have valid access tokens as "<actor>"
+    And I have created an api from "artifacts/payloads/create_apim_duplicate_transfer_encoding_api.json" as "teApiId" and deployed it
+    When I publish the "apis" resource with id "teApiId"
+    Then The lifecycle status of API "teApiId" should be "Published"
+    When I retrieve the "apis" resource with id "teApiId"
+    And I extract response field "context" and store it as "teContext"
+    When I have set up application with keys, subscribed to API "teApiId", and obtained access token for "teSubId"
+    Then The response status code should be 200
+
+    # Exactly ONE Transfer-Encoding header reaches the client, even though the backend emitted two.
+    When I invoke the API at gateway context "{{teContext}}/1.0.0/" with method "GET" using access token "generatedAccessToken" and assert the response carries exactly 1 "Transfer-Encoding" headers with values "chunked" within 60 seconds
+
+    # The body survives the re-framing intact.
+    When I invoke the API at gateway context "{{teContext}}/1.0.0/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    And The response should contain "\"RestResponse\":\"duplicateTransferEncoding\""
 
     Examples:
       | actor             |

@@ -37,6 +37,16 @@ Feature: Admin API Categories
     And I attempt to create an API category with payload "catSpecial"
     Then The response status code should be 400
 
+    # Negative: a name containing a SPACE is rejected. This is a DIFFERENT rule from the punctuation arm above —
+    # a space is not punctuation, and legacy's APICategoriesTestCase pins exactly this case ("Marketing Category"),
+    # so asserting punctuation alone would leave the space rule unpinned.
+    When I put the following JSON payload in context as "catSpaced"
+    """
+    {"name": "Marketing Category", "description": "This is Marketing Category"}
+    """
+    And I attempt to create an API category with payload "catSpaced"
+    Then The response status code should be 400
+
     # Negative: a duplicate name is rejected. Verified live on 4.7.0: the product returns 500 (a known quirk —
     # the unique-constraint violation is not mapped to a 409) with a descriptive body, so we pin the real behaviour.
     When I attempt to create an API category with payload "catCreate"

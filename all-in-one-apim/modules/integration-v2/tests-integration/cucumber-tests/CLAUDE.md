@@ -231,6 +231,27 @@ The chain, and how to refresh it:
 3. Now `mvn test` runs against the refreshed image. (Sanity check: `docker images | grep wso2am` — the
    `CreatedSince` should be "seconds/minutes ago", not hours; a stale timestamp means the image did not rebuild.)
 
+### Changing a nodeapp backend — REBUILD `node-app-server:latest` BY HAND
+The node backends are **not** mounted from disk: they are baked into the `node-app-server:latest` image
+(`NodeAppServer` reads `System.getProperty("node.docker.image.name")`). Its build exec is bound to
+**`pre-integration-test`**, which **`mvn test` never reaches** — so editing anything under
+`tests-common/testcontainers/src/main/resources/nodeapps/` and re-running `mvn test` silently keeps running the
+**OLD** code. The failure looks like a product bug ("the backend never responds / the product never notifies"),
+not like a stale fixture, which is what makes it expensive. After any nodeapp edit:
+```bash
+docker build -t node-app-server:latest tests-common/testcontainers/src/main/resources/nodeapps
+```
+(`mvn clean install -Dmaven.test.skip=true` also rebuilds it, via the same exec — use that if you are refreshing
+the APIM image anyway.)
+
+A **new** app additionally needs all of: its `COPY` lines + npm-install loop entry + `EXPOSE` in
+`nodeapps/Dockerfile`; an entry in `nodeapps/ecosystem.config.js`; and its port in `NodeAppServer.exposedPorts`.
+Miss the Dockerfile and the app never ships at all (`node-soap-service` sits in the tree today but is absent from
+the `COPY` list, so it is not in the image). **Only publish a port you actually need from the test JVM:** every
+port in `exposedPorts` joins the boot liveness set (`Wait.forListeningPort` waits on ALL of them), so a listed
+port that does not listen stalls **every** block's startup. Container-to-container traffic works unpublished —
+which is why the mail sink's SMTP port (3025) is deliberately not exposed while its read API rides on 3005.
+
 ## 9. Copyright header
 New `.java` files require the standard WSO2 license header. Use the **current year** — do not copy a
 year from another file.
@@ -521,11 +542,18 @@ of forking it locally. (The §7 context/funnel primitives — `TestContext.resol
   used from BOTH ends of a WebSub arc: the event source signs what it posts with the API's secret, and the test
   recomputes what the hub must have re-signed each delivery with using that subscriber's `hub.secret`.
 
-**`utils/JwtTestUtils`** (test-JWT assembly & mutation — never validation):
+**`utils/JwtTestUtils`** (test-JWT assembly, mutation **and signature verification**):
 - `base64Url(String | byte[])` — unpadded base64url for JWT segments / digests / thumbprints.
 - `decodeHeader(jwt)` / `decodePayload(jwt)` — segment → JSON text with a clear not-a-JWT failure.
 - `rsaPrivateKeyFromPem(pkcs8Pem)` — PKCS#8 PEM text → `PrivateKey`.
 - `signRs256(signingInput, key)` / `buildRs256Jwt(headerJson, claimsJson, key)` — RS256 assertion signing.
+- **Verification belongs here too.** This class previously carried a "never validation" charter; it was a
+  design boundary, not a technical one, and it left the gateway-issued backend JWT's SIGNATURE unasserted —
+  a token could be structurally perfect and cryptographically worthless and every assertion would pass. So
+  verification helpers live here, beside the assembly ones, since both operate on the same segment/PEM
+  primitives. **Never commit key material to the repo to do it:** obtain the gateway's PUBLIC key at RUNTIME
+  from the product under test (its JWKS endpoint, or read the shipped keystore out of the running container),
+  so the test verifies against the key the product is actually signing with rather than a stale copy.
 - `tamperClaim(jwt, claim)` — prefixes one claim with `tampered-` keeping the signature (the
   invalid-signature negative); `replaceInPayloadKeepingSignature(jwt, target, replacement)` — the
   free-form literal-swap variant.

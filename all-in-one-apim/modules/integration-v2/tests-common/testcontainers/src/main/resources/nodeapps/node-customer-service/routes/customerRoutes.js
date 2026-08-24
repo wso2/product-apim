@@ -130,12 +130,28 @@ router.get('/echo/*', (req, res) => {
   res.status(200).json({ received: req.originalUrl });
 });
 
-// GET /reflect-headers — reflects the request headers the backend received back in the response body, so a
+// /reflect-headers — reflects the request headers the backend received back in the response body, so a
 // test can assert on headers the gateway injects towards the backend (e.g. the X-JWT-Assertion backend JWT
 // carrying application-attribute claims). The legacy ApplicationAttributesTestCase used a header-echoing
 // backend (jwt_backend) for exactly this. Scoped to /reflect-headers so it does not mask other routes.
-router.get('/reflect-headers', (req, res) => {
-  res.status(200).json({ headers: req.headers });
+//
+// router.all (was router.get) so a POST-with-body can be observed too: the FORCE_HTTP_CONTENT_LENGTH
+// regression needs the ENTITY headers (content-length / transfer-encoding) of a request that carries a body,
+// and no other route in this tree echoes headers. Parsers only read the entity; they never touch req.headers,
+// so the reflected header map is exactly what arrived. The route-level catch-all text parser covers any
+// content-type the app-level parsers miss; application/json is already consumed by the app-level
+// bodyParser.json(), which leaves req.body as a parsed OBJECT, so that case is re-serialised (same as
+// /reflect-body does). `body` is added ONLY when an entity actually arrived — a bodyless request leaves
+// req.body as {} — so the GET response stays byte-for-byte what it has always been.
+router.all('/reflect-headers', express.text({ type: () => true }), (req, res) => {
+  const body = typeof req.body === 'string'
+    ? req.body
+    : (req.body && Object.keys(req.body).length > 0 ? JSON.stringify(req.body) : '');
+  const reflected = { headers: req.headers };
+  if (body.length > 0) {
+    reflected.body = body;
+  }
+  res.status(200).json(reflected);
 });
 
 // POST /reflect-body — echoes the raw request body the backend received straight back in the response, so a

@@ -1,0 +1,30 @@
+{
+  "name": "${UNIQUE:APIMDuplicateTransferEncoding}",
+  "context": "${UNIQUE:apiDuplicateTransferEncodingContext}",
+  "version": "1.0.0",
+  "endpointConfig": {
+    "endpoint_type": "http",
+    "production_endpoints": {
+      "template_not_supported": false,
+      "config": null,
+      "url": "http://nodebackend:3005/duplicate/transfer-encoding"
+    },
+    "sandbox_endpoints": {
+      "url": "http://nodebackend:3005/duplicate/transfer-encoding",
+      "config": null,
+      "template_not_supported": false
+    }
+  },
+  "description": "API whose backend (node duplicate-header-backend, port 3005, raw-socket route) emits TWO Transfer-Encoding chunked response headers; used to verify the gateway does not propagate the duplicated hop-by-hop header",
+  "policies": ["Gold", "Bronze", "Unlimited"],
+  "operations": [
+    {
+      "verb": "GET",
+      "target": "/",
+      "scopes": []
+    }
+  ],
+  "isDefaultVersion": true,
+  "additionalProperties": [],
+  "additionalPropertiesMap": {}
+}

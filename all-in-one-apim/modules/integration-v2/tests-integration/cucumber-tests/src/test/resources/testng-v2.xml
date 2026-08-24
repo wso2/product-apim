@@ -125,6 +125,9 @@
         <parameter name="blockLabel" value="keymanager"/>
         <parameter name="initTenantUsers" value="true"/>
         <parameter name="initBackend" value="true"/>
+        <!-- Purely additive SECONDARY.COM store (own H2 DB, no primary user/role/config change) — seeds the store
+             actors the token_issuance store-principal token arcs act as (§12). -->
+        <parameter name="initSecondaryUserStore" value="true"/>
         <classes>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.KeyManagerTokenIssuanceRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.KeyManagerTokenRevocationRunner"/>
@@ -689,8 +692,6 @@
         </classes>
     </test>
 
-
-
     <!-- Devops logging plane: correlation logging (per-component) and per-API / per-resource log levels.
          The two CO-HOST because their config is genuinely orthogonal — different devops resources
          (/config/correlation vs /tenant-logs), different appenders, different files (correlation.log vs
@@ -724,15 +725,35 @@
         </classes>
     </test>
 
-
-
+    <!-- ELK analytics metric log (APIMAnalyticsTest, ELKAnalyticsWithRespondMediatorTestCase). Own block for the
+         overlay, which is server-global in the loudest way: [apim.analytics] enable/type switches analytics
+         publishing on for the WHOLE container, so from boot every invocation any class made would write an event
+         into apim_metrics.log. It therefore cannot be co-hosted onto an existing block without changing what that
+         block's gateway traffic does.
+         initBackend is load-bearing for the first scenario, which must get a real 200 from the upstream before its
+         metric event can carry proxyResponseCode 200 (the respond-mediator scenario never reaches an upstream by
+         construction, which is its point).
+         thread-count=1 because the block holds exactly one class; the log-mark/appended-since window it asserts on
+         is container-global, so a sibling class's traffic would land inside it. -->
+    <test name="IntegrationV2-ElkAnalytics" parallel="classes" thread-count="1">
+        <parameter name="blockLabel" value="elk-analytics"/>
+        <parameter name="initTenantUsers" value="true"/>
+        <parameter name="initBackend" value="true"/>
+        <parameter name="tomlExtraOverlayPath" value="src/test/resources/artifacts/configFiles/elkAnalytics/deployment.toml"/>
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.AnalyticsElkMetricsRunner"/>
+        </classes>
+    </test>
 
     <!-- Approval-workflow suite (ports WorkflowApprovalExecutorTest). MUST stay thread-count=1: the _setup_
          feature flips the workflow executors to the Approval variants by writing workflow-extensions.xml into the
          governance registry (via ResourceAdminService SOAP), which is server-global for the container; a sibling
          class sharing the container would see the flipped executors. The overlay declares the three custom
          devportal application_attributes the pending tasks surface. The runner's AfterClass restores the original
-         executors. -->
+         executors. initBackend is REQUIRED, not optional: the runner's last feature
+         (workflow_ws_api_state_change) points the external APIStateChangeWSWorkflowExecutor at the
+         BPMNProcessServerApp double the NodeAppServer hosts on nodebackend:3004. -->
+
     <test name="IntegrationV2-ApprovalWorkflow" parallel="classes" thread-count="1">
         <parameter name="blockLabel" value="approval-workflow"/>
         <parameter name="initTenantUsers" value="true"/>
@@ -766,6 +787,23 @@
         <classes>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.CrossTenantSubscriptionRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.CrossTenantInvocationRunner"/>
+        </classes>
+    </test>
+    <!-- New-API-version subscriber notification email (NotificationTestCase). Own block for the
+         [output_adapter.email] overlay, which repoints the carbon email output-event adapter at the node
+         backend's SMTP capture sink (nodebackend:3025) — server-wide config that would misdirect every other
+         block's mail, so it cannot be co-hosted.
+         initBackend is MANDATORY here, not a gateway-invocation convenience: the SMTP sink IS the node backend,
+         so without it the product has nothing to deliver to and the arc fails as "the product never notifies".
+         thread-count=1: the feature mutates the container-wide tenant configuration (NotificationsEnabled plus
+         the Notifications notifier list), so no sibling class may share the container mid-scenario. -->
+    <test name="IntegrationV2-NewVersionNotification" parallel="classes" thread-count="1">
+        <parameter name="blockLabel" value="new-version-notification"/>
+        <parameter name="initTenantUsers" value="true"/>
+        <parameter name="initBackend" value="true"/>
+        <parameter name="tomlExtraOverlayPath" value="src/test/resources/artifacts/configFiles/newVersionNotification/deployment.toml"/>
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.NewVersionNotificationRunner"/>
         </classes>
     </test>
 </suite>

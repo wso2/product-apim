@@ -1,0 +1,43 @@
+{
+  "name": "${UNIQUE:C14ScopeIEAPI}",
+  "context": "${UNIQUE:c14ScopeIEContext}",
+  "version": "1.0.0",
+  "endpointConfig": {
+    "endpoint_type": "http",
+    "production_endpoints": {
+      "template_not_supported": false,
+      "config": null,
+      "url": "http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/"
+    },
+    "sandbox_endpoints": {
+      "url": "http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/",
+      "config": null,
+      "template_not_supported": false
+    }
+  },
+  "description": "API declaring a scope bound to a role, round-tripped through export/import — ports the swagger-declared-scope facet of APIImportExportTestCase#testNewAPICreation.",
+  "policies": ["Unlimited"],
+  "scopes": [
+    {
+      "scope": {
+        "name": "c14iescope",
+        "displayName": "c14iescope",
+        "description": "Operation scope bound to the admin role, round-tripped through export/import",
+        "bindings": ["admin"]
+      },
+      "shared": false
+    }
+  ],
+  "operations": [
+    {
+      "verb": "GET",
+      "target": "/customers/{id}",
+      "authType": "Application & Application User",
+      "throttlingPolicy": "Unlimited",
+      "scopes": ["c14iescope"]
+    }
+  ],
+  "isDefaultVersion": true,
+  "additionalProperties": [],
+  "additionalPropertiesMap": {}
+}

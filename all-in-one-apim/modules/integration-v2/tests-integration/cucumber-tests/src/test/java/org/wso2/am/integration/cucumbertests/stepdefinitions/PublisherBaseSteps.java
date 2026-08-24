@@ -39,6 +39,7 @@ import org.wso2.am.integration.cucumbertests.utils.clients.SimpleHTTPClient;
 import org.wso2.am.integration.test.utils.Constants;
 import org.wso2.carbon.automation.engine.context.beans.User;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
+import org.yaml.snakeyaml.Yaml;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -2813,6 +2814,56 @@ public class PublisherBaseSteps {
     }
 
     /**
+     * Retrieves the generated in/out conversion resource policies of a SOAP-to-REST API
+     * ({@code GET /apis/{apiId}/resource-policies?sequenceType=<in|out>}), publishing the {@code {list:[...]}}
+     * response so a following content + cardinality assertion can inspect the sequence {@code content} — the
+     * synapse mediation that performs the JSON&lt;-&gt;SOAP conversion. Nothing else in this suite reads these
+     * sequences, so an empty/degraded conversion would otherwise be invisible. Ports the retrieve half of
+     * SoapToRestTestCase#testValidateInOutSequence.
+     */
+    @When("I retrieve the {string} sequence resource policies of API {string}")
+    public void iRetrieveSequenceResourcePolicies(String sequenceType, String apiId) throws IOException {
+        String actualApiId = TestContext.resolve(apiId).toString();
+        Requests.get(Utils.getApiResourcePoliciesURL(Utils.getBaseUrl(), actualApiId, sequenceType),
+                Identity.publisherHeaders());
+    }
+
+    /**
+     * Updates the single in-sequence resource policy of a SOAP-to-REST API, inserting a unique marker property
+     * just inside the sequence root so the change is observable while the content stays a well-formed synapse
+     * sequence, then PUTs it back ({@code PUT /apis/{apiId}/resource-policies/{id}}) and publishes the PUT
+     * response. A following re-retrieve asserts the marker persisted. Ports the INTENT of
+     * SoapToRestTestCase#testUpdateInOutSequence, whose forEach swallowed update failures so it never verified
+     * the update actually took.
+     */
+    @When("I update the in-sequence resource policy of API {string} inserting marker {string}")
+    public void iUpdateInSequenceResourcePolicy(String apiId, String marker) throws IOException {
+        String actualApiId = TestContext.resolve(apiId).toString();
+        String markerValue = TestContext.resolve(marker).toString();
+        Map<String, String> headers = Identity.publisherHeaders();
+        // Intermediate read consumed locally (not the asserted response) — raw client per §7.
+        HttpResponse list = SimpleHTTPClient.getInstance().doGet(
+                Utils.getApiResourcePoliciesURL(Utils.getBaseUrl(), actualApiId, "in"), headers);
+        Assert.assertTrue(list != null && list.getResponseCode() >= 200 && list.getResponseCode() < 300
+                        && list.getData() != null && !list.getData().isBlank(),
+                "Could not read in-sequence resource policy of " + actualApiId + " before update: got="
+                        + (list == null ? "null" : list.getResponseCode() + "/" + list.getData()));
+        JSONArray policies = new JSONObject(list.getData()).getJSONArray("list");
+        Assert.assertEquals(policies.length(), 1,
+                "Expected exactly one in-sequence resource policy, got: " + list.getData());
+        JSONObject policy = policies.getJSONObject(0);
+        String content = policy.getString("content");
+        String markerElement = "<property name=\"" + markerValue + "\" value=\"" + markerValue + "\" scope=\"default\"/>";
+        int firstTagEnd = content.indexOf('>');
+        String updatedContent = firstTagEnd >= 0
+                ? content.substring(0, firstTagEnd + 1) + markerElement + content.substring(firstTagEnd + 1)
+                : content + markerElement;
+        policy.put("content", updatedContent);
+        Requests.put(Utils.getApiResourcePolicyByIdURL(Utils.getBaseUrl(), actualApiId, policy.getString("id")),
+                headers, policy.toString(), "application/json");
+    }
+
+    /**
      * Creates + deploys an API from a payload file, injecting a comma-separated tag list into its {@code tags}
      * field first (each tag placeholder resolved), so a DevPortal tag search can match on those tags. Registers
      * the API for teardown via the create primitive.
@@ -2949,6 +3000,23 @@ public class PublisherBaseSteps {
         Requests.delete(Utils.getAPISpecificPolicyById(Utils.getBaseUrl(), actualApiId, policyID), headers);
     }
 
+    /**
+     * Retrieves the operation-policy list of an API (GET {@code apis/{apiId}/operation-policies}) and publishes it,
+     * so a following assertion can confirm an API-specific policy is present (create paths) or ABSENT (post-delete).
+     * The generic {@code I retrieve the "{type}" resource with id "{id}"} step cannot express this two-segment
+     * sub-collection path — it resolves {@code id} through {@code TestContext.resolve} (a context key) and builds
+     * {@code {type}/{id}}, with no way to add the trailing {@code operation-policies} collection segment.
+     *
+     * @param apiId context key holding the API id whose policy list is retrieved
+     */
+    @When("I retrieve the operation policies of API {string}")
+    public void iRetrieveTheApiSpecificOperationPolicies(String apiId) throws IOException {
+        String actualApiId = TestContext.resolve(apiId).toString();
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
+        Requests.get(Utils.getAPISpecificPolicy(Utils.getBaseUrl(), actualApiId), headers);
+    }
+
     /** Resolves a shipped/created COMMON operation policy (its {@code id}/{@code name}/{@code version}) by display
      *  name (GET /operation-policies). Returns the list entry so callers get the version too — the attach path
      *  validates policyName+policyVersion against the spec identified by policyId (a missing version → 400). */
@@ -3069,10 +3137,19 @@ public class PublisherBaseSteps {
 
     /**
      * Extracts a previously-downloaded common-operation-policy archive (path stored under {@code archivePathKey})
-     * and asserts it contains a spec file named {@code <policyName>.<ext>} whose content parses as the given
-     * format ({@code json} or {@code yaml}), plus the {@code <policyName>.j2} synapse template. Ports the
-     * archive-content assertion of OperationPolicyTestCase#testCommonOperationPolicyExportWithJSONContent (JSON)
-     * and complements the YAML round-trip already covered.
+     * and asserts (a) it contains a spec file named {@code <policyName>.<ext>} whose content parses as the given
+     * format ({@code json} or {@code yaml}) carrying the policy name, plus the {@code <policyName>.j2} synapse
+     * template, AND (b) the exported artefacts faithfully carry the CONTENT of the SOURCE files the policy was
+     * created from ({@code artifacts/payloads/policySpecFiles/<policyName>.yaml} + {@code .j2}) — an export that
+     * produced an EMPTY or WRONG spec/synapse would pass a presence-only check but fails here. Ports the
+     * archive-content assertions of OperationPolicyTestCase#testCommonOperationPolicyExport (YAML) and
+     * testCommonOperationPolicyExportWithJSONContent (JSON), which likewise compared parsed spec content (not text).
+     *
+     * <p>The source spec is always YAML (v2 supplies YAML specs); it is parsed structurally and the exported spec
+     * (yaml OR json, both parsed with the same YAML parser since JSON is a YAML subset) must carry every
+     * {@code data} field/value the source declares (deep containment; list-valued fields compared as sets so a
+     * server re-ordering of e.g. {@code supportedApiTypes} is not a spurious failure). The synapse template is
+     * stored verbatim, so it is compared as normalized text (line-trimmed, blank lines dropped).</p>
      */
     @Then("The exported operation policy archive {string} should contain a {string} spec for policy {string}")
     public void theExportedPolicyArchiveShouldContain(String archivePathKey, String format, String policyName)
@@ -3101,6 +3178,82 @@ public class PublisherBaseSteps {
                             || specContent.contains("name:" + policyName),
                     "Exported YAML spec does not carry the policy name");
         }
+
+        // Content equality against the SOURCE files the policy was created from. The source spec is YAML; the
+        // exported spec may be YAML or JSON but both parse with the same YAML parser (JSON ⊂ YAML).
+        String sourceSpecResource = "artifacts/payloads/policySpecFiles/" + policyName + ".yaml";
+        String sourceSynapseResource = "artifacts/payloads/policySpecFiles/" + policyName + ".j2";
+        Object sourceSpec = new Yaml().load(Utils.readClasspathResource(sourceSpecResource));
+        Object exportedSpec = new Yaml().load(specContent);
+        Object sourceData = ((Map<?, ?>) sourceSpec).get("data");
+        Assert.assertTrue(exportedSpec instanceof Map && ((Map<?, ?>) exportedSpec).get("data") instanceof Map,
+                "Exported spec has no 'data' object: " + specContent);
+        Object exportedData = ((Map<?, ?>) exportedSpec).get("data");
+        assertSpecContentContainsSource(sourceData, exportedData, "data");
+
+        String sourceSynapse = normalizeSynapse(Utils.readClasspathResource(sourceSynapseResource));
+        String exportedSynapse = normalizeSynapse(
+                new String(Files.readAllBytes(synapseFile.toPath()), StandardCharsets.UTF_8));
+        Assert.assertEquals(exportedSynapse, sourceSynapse,
+                "Exported synapse template content does not match the source " + sourceSynapseResource);
+    }
+
+    /**
+     * Asserts the exported spec content ({@code actual}) faithfully carries the SOURCE content ({@code expected}):
+     * every scalar value is equal, every source list element is present in the exported list (set containment), and
+     * every source map key resolves recursively. Tolerant of any extra field the server may add on export, but
+     * catches a dropped field, a changed value, or an empty/wrong spec — the hole this strengthening closes.
+     */
+    private void assertSpecContentContainsSource(Object expected, Object actual, String path) {
+        if (expected instanceof Map<?, ?> expectedMap) {
+            Assert.assertTrue(actual instanceof Map,
+                    "Exported spec content at '" + path + "' is not an object: " + actual);
+            Map<?, ?> actualMap = (Map<?, ?>) actual;
+            for (Map.Entry<?, ?> entry : expectedMap.entrySet()) {
+                String childPath = path + "." + entry.getKey();
+                // An empty/null source value carries no content to verify — the server may legitimately omit an
+                // empty collection (e.g. policyAttributes: []) on export, so don't require the key in that case.
+                if (isEmptyValue(entry.getValue())) {
+                    continue;
+                }
+                Assert.assertTrue(actualMap.containsKey(entry.getKey()),
+                        "Exported spec is missing field '" + childPath + "'");
+                assertSpecContentContainsSource(entry.getValue(), actualMap.get(entry.getKey()), childPath);
+            }
+        } else if (expected instanceof List<?> expectedList) {
+            Assert.assertTrue(actual instanceof List,
+                    "Exported spec content at '" + path + "' is not a list: " + actual);
+            Set<String> actualSet = new HashSet<>();
+            for (Object o : (List<?>) actual) {
+                actualSet.add(String.valueOf(o));
+            }
+            for (Object o : expectedList) {
+                Assert.assertTrue(actualSet.contains(String.valueOf(o)),
+                        "Exported spec list '" + path + "' is missing element '" + o + "'; got " + actualSet);
+            }
+        } else {
+            Assert.assertEquals(String.valueOf(actual), String.valueOf(expected),
+                    "Exported spec value at '" + path + "' does not match source");
+        }
+    }
+
+    /** True when a parsed spec value carries no content to verify (null, empty list, or empty map). */
+    private boolean isEmptyValue(Object value) {
+        return value == null
+                || (value instanceof List<?> list && list.isEmpty())
+                || (value instanceof Map<?, ?> map && map.isEmpty());
+    }
+
+    /** Normalizes a synapse template for content comparison: trims each line and drops blank lines. */
+    private String normalizeSynapse(String content) {
+        StringBuilder sb = new StringBuilder();
+        for (String line : content.split("\\R")) {
+            String trimmed = line.trim();
+            if (!trimmed.isEmpty()) {
+                sb.append(trimmed).append('\n');
+            }
+        }
+        return sb.toString();
     }
 
     /**

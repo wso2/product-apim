@@ -35,6 +35,15 @@ Feature: Publisher Operation Policies
     # Both can be deleted (the delete path is under test; the cleanup hook backstops on early failure).
     When I delete the api "createdApiId" specific policy "apiSpecificPolicyId"
     Then The response status code should be 200
+
+    # Re-retrieve the API's policy list: the deleted (YAML-spec) API-specific policy is ABSENT — a delete that
+    # returned 200 without actually removing it would be caught here. Cardinality pin on the scenario-owned API:
+    # no API-specific policy remains attached to it.
+    When I retrieve the operation policies of API "createdApiId"
+    Then The response status code should be 200
+    And The response should not contain "custom_add_api_specific_header"
+    And The response array field "list[?(@.isAPISpecific==true)]" should have exactly 0 entries
+
     When I delete the "operation-policies" resource with id "commonPolicyId"
     Then The response status code should be 200
 
@@ -198,6 +207,72 @@ Feature: Publisher Operation Policies
     Then The response status code should be 200
     And The response should not contain "test-api-key-123"
     And The secret parameter "apiKey" of the operation policy in flow "request" of operation 0 of API "secUpdApiId" should be preserved and masked
+
+    # An UNSET/empty optional Secret (token, only ever given "") is ABSENT from parameters on retrieval — CONFIRMING
+    # the PublisherBaseSteps "Cleared/never-set: absent (or null)" note. The coherent rule this pins: an empty-value
+    # update PRESERVES an existing secret (apiKey stays set and masked) but does NOT CREATE an unset one (token stays
+    # absent). No existing step expresses "JSON path absent", so token-absence is pinned with "should not contain".
+    When I retrieve the "apis" resource with id "secUpdApiId"
+    Then The response status code should be 200
+    And The secret parameter "apiKey" of the operation policy in flow "request" of operation 0 of API "secUpdApiId" should be preserved and masked
+    And The response should not contain "\"token\""
+
+    Examples:
+      | actor             |
+      | admin             |
+      | admin@tenant1.com |
+
+  # A JSON-spec API-specific operation policy round-trips: create it from a JSON spec (v2 elsewhere only ever
+  # supplies YAML specs, so this exercises the JSON-spec create path), confirm it is present on the API's policy
+  # list, then delete it and confirm ABSENCE (a 200 that did not actually delete is caught by the re-retrieve).
+  # Ports OperationPolicyTestCase#testAddAPISpecificOperationPolicy (JSON create) and
+  # testDeleteAPISpecificOperationPolicy (the non-YAML delete path).
+  @cap:publisher @feat:operation-policies @type:regression @legacy:OperationPolicyTestCase
+  Scenario Outline: A JSON-spec API-specific operation policy can be created, listed and deleted as <actor>
+    Given The system is ready and I have valid publisher access tokens as "<actor>"
+    And I have created an api from "artifacts/payloads/create_apim_test_api.json" as "jsonApiId" and deployed it
+    When I create a new API specific policy for api "jsonApiId" with spec "artifacts/payloads/policySpecFiles/custom_add_api_specific_header.j2" and "artifacts/payloads/policySpecFiles/custom_add_api_specific_header.json" as "jsonPolicyId"
+    Then The response status code should be 201
+    And The response should contain "custom_add_api_specific_header"
+
+    # It appears on THIS API's (scenario-owned) policy list as an API-specific policy.
+    When I retrieve the operation policies of API "jsonApiId"
+    Then The response status code should be 200
+    And The response should contain "custom_add_api_specific_header"
+    And The response array field "list[?(@.isAPISpecific==true)]" should have exactly 1 entries
+
+    # Delete it — the re-retrieve proves ABSENCE (the non-YAML delete path).
+    When I delete the api "jsonApiId" specific policy "jsonPolicyId"
+    Then The response status code should be 200
+    When I retrieve the operation policies of API "jsonApiId"
+    Then The response status code should be 200
+    And The response should not contain "custom_add_api_specific_header"
+    And The response array field "list[?(@.isAPISpecific==true)]" should have exactly 0 entries
+
+    Examples:
+      | actor             |
+      | admin             |
+      | admin@tenant1.com |
+
+  # A Secret-attribute operation policy created at API-SPECIFIC scope (v2 elsewhere only creates the secret policy
+  # at COMMON scope): assert the create succeeds and the policy is present on the API's policy list with its Secret
+  # attribute declared. Ports OperationPolicyTestCase#testAddAPISpecificOperationPolicyWithSecrets.
+  @cap:publisher @feat:operation-policies @rule:secret-attributes @type:regression @legacy:OperationPolicyTestCase
+  Scenario Outline: A secret-attribute operation policy can be created at API-specific scope as <actor>
+    Given The system is ready and I have valid publisher access tokens as "<actor>"
+    And I have created an api from "artifacts/payloads/create_apim_test_api.json" as "secApiSpecificApiId" and deployed it
+    When I create a new API specific policy for api "secApiSpecificApiId" with spec "artifacts/payloads/policySpecFiles/add_secret_headers.j2" and "artifacts/payloads/policySpecFiles/add_secret_headers.yaml" as "secApiSpecificPolicyId"
+    Then The response status code should be 201
+    And The response should contain "add_secret_headers"
+    # The Secret attribute is declared on the created policy (the create response echoes the spec's attributes).
+    And The response should contain "apiKey"
+    And The response should contain "Secret"
+
+    # It is present on THIS API's (scenario-owned) policy list as an API-specific policy.
+    When I retrieve the operation policies of API "secApiSpecificApiId"
+    Then The response status code should be 200
+    And The response should contain "add_secret_headers"
+    And The response array field "list[?(@.isAPISpecific==true)]" should have exactly 1 entries
 
     Examples:
       | actor             |

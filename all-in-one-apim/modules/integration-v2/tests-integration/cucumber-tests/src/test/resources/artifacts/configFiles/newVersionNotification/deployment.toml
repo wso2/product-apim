@@ -1,0 +1,35 @@
+# Feature-specific TOML overlay for the IntegrationV2-NewVersionNotification block.
+#
+# Merged ON TOP of the shared `basic` overlay (base + basic + this) via tomlExtraOverlayPath — only the extra
+# keys this feature needs live here. Points the product's outbound mail at the in-network SMTP capture sink so
+# the new-API-version subscriber notification can be observed (legacy NotificationTestCase, which stood up an
+# in-JVM GreenMail server on 3025 and pointed the server at it by hand).
+#
+# WHY THIS TABLE AND NOT axis2_blocking_client.xml's `mailto` transportSender: NewAPIVersionEmailNotifier does
+# not use the axis2 mail transport at all. It publishes through the carbon OutputEventAdapterService with
+# adapter type "email" (its own javadoc: "email configurations should be saved in
+# <APIM_HOME>/repository/conf/output-event-adapters.xml"), and that file's <adapterConfig type="email"> block is
+# rendered from exactly these keys — so the whole thing is a plain §13 overlay, no file overlay needed.
+#
+# hostname MUST be the shared-network alias `nodebackend`, not localhost: the mail is sent from inside the APIM
+# container. Get it wrong and the send fails silently in a background adapter thread, which presents as "the
+# product never notifies" rather than as a config error.
+#
+# username/password are deliberately EMPTY. EmailEventAdapter branches on them: both non-null and non-empty ->
+# Session.getInstance(props, authenticator); otherwise the no-authenticator Session.getInstance(props). Empty is
+# what selects the unauthenticated path the plaintext sink accepts. The distribution defaults (abcd/xxxx against
+# smtp.gmail.com:587 with STARTTLS+auth on) would otherwise try to authenticate to the sink.
+#
+# signature and reply_to are restated because their default.json values are $ref{} pointers at username and
+# from_address; leaving them implicit would make the signature the empty username.
+
+[output_adapter.email]
+hostname = "nodebackend"
+port = "3025"
+enable_start_tls = false
+enable_authentication = false
+username = ""
+password = ""
+from_address = "apim-notifications@wso2.test"
+signature = ""
+reply_to = "apim-notifications@wso2.test"

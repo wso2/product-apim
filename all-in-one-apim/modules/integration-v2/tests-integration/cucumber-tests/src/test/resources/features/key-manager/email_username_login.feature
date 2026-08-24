@@ -135,3 +135,91 @@ Feature: Email-Form Username Login
       | actor                | expectedUsername                 |
       | userKey1             | testUser1@email.com@carbon.super |
       | userKey1@tenant1.com | testUser11@email.com@tenant1.com |
+
+  # Legacy arc 3: an email-form ADMIN gets an OpenID-scoped token and calls userinfo. Userinfo resolves the TOKEN
+  # OWNER's profile, and this block's principal carries TWO at-signs in its physical username
+  # (emailAdmin@email.com@carbon.super) — username splitting is exactly where email-form principals break (see
+  # gateway/basic_auth_email_username.feature and docs/devs/email-username-findings.md), so this pins that userinfo
+  # resolves the OWNER correctly in that awkward case, not merely that some 200 comes back.
+  @cap:key-manager @feat:token-issuance @type:regression @rule:email-username @legacy:OpenIDTokenTestCase @legacy:OpenIDTokenAPITestCase
+  Scenario Outline: An email-form admin gets an OpenID-scoped token and calls userinfo as <actor>
+    Given The system is ready
+    And I have valid access tokens as "<actor>"
+    # Pin the acting principal's physical username first — if the block ever provisioned plain usernames this
+    # scenario would pass while testing the wrong thing.
+    When I store the acting actor credentials as "emailOpenidUser" and "emailOpenidPass"
+    Then the actual value of "emailOpenidUser" should match the expected value:
+      """
+      <expectedUsername>
+      """
+    When I put JSON payload from file "artifacts/payloads/create_apim_test_app.json" in context as "emailOpenidApp"
+    And I create an application with payload "emailOpenidApp"
+    Then The response status code should be 201
+    When I put the following JSON payload in context as "emailOpenidKeys"
+    """
+    {"keyType": "PRODUCTION", "grantTypesToBeSupported": ["client_credentials", "password"]}
+    """
+    And I generate client credentials for application id "createdAppId" with payload "emailOpenidKeys"
+    Then The response status code should be 200
+    When I request an OAuth access token for the current user using password grant with scope "openid"
+    Then The response status code should be 200
+    And The response should contain "openid"
+    # The tenant row hits t/tenant1.com/oauth2/userinfo automatically — the step resolves the ACTING actor's tenant.
+    When I invoke the OpenID userinfo endpoint using access token "generatedAccessToken"
+    Then The response status code should be 200
+
+    Examples:
+      | actor                  | expectedUsername                  |
+      | emailAdmin             | emailAdmin@email.com@carbon.super |
+      | emailAdmin@tenant1.com | emailAdmin@email.com@tenant1.com  |
+
+  # Legacy arc 4: an email-form ADMIN re-issues an access token via the refresh grant and invokes with it. The
+  # resource owner's username is persisted with the refresh grant and RE-RESOLVED on exchange, so an email-form
+  # owner (two at-signs in its physical username) exercises that re-resolution rather than a plain one. This arc
+  # did not exist before: the existing email scenarios register only client_credentials + password, so refresh_token
+  # is added to grantTypesToBeSupported here.
+  @cap:key-manager @feat:token-issuance @type:regression @rule:email-username @dep:gateway @legacy:TokenAPITestCase @legacy:RefreshTokenTestCase
+  Scenario Outline: An email-form admin re-issues an access token via the refresh grant and invokes as <actor>
+    Given The system is ready
+    And I have valid access tokens as "<actor>"
+    # Pin the acting principal's physical username first — if the block ever provisioned plain usernames this
+    # scenario would pass while testing the wrong thing.
+    When I store the acting actor credentials as "emailRefreshUser" and "emailRefreshPass"
+    Then the actual value of "emailRefreshUser" should match the expected value:
+      """
+      <expectedUsername>
+      """
+    And I have created an api from "artifacts/payloads/create_apim_test_api.json" as "emailRefreshApiId" and deployed it
+    When I publish the "apis" resource with id "emailRefreshApiId"
+    Then The lifecycle status of API "emailRefreshApiId" should be "Published"
+    When I retrieve the "apis" resource with id "emailRefreshApiId"
+    And I extract response field "context" and store it as "emailRefreshCtx"
+    When I put JSON payload from file "artifacts/payloads/create_apim_test_app_oauth.json" in context as "emailRefreshApp"
+    And I create an application with payload "emailRefreshApp"
+    Then The response status code should be 201
+    When I put the following JSON payload in context as "emailRefreshKeys"
+    """
+    {"keyType": "PRODUCTION", "grantTypesToBeSupported": ["client_credentials", "password", "refresh_token"]}
+    """
+    And I generate client credentials for application id "createdAppId" with payload "emailRefreshKeys"
+    Then The response status code should be 200
+    When I put the following JSON payload in context as "emailRefreshSub"
+    """
+    {"applicationId": "{{applicationId}}", "apiId": "{{apiId}}", "throttlingPolicy": "Unlimited"}
+    """
+    And I subscribe to API "emailRefreshApiId" using application "createdAppId" with payload "emailRefreshSub" as "emailRefreshSubId"
+    Then The response status code should be 201
+    When I request an OAuth access token for the current user using password grant with scope "PRODUCTION"
+    Then The response status code should be 200
+    When I request a new OAuth access token using refresh token "refreshToken"
+    Then The response status code should be 200
+    # The REFRESHED token is the credential under test, so the backend payload is pinned — that is what shows the
+    # newly-minted token carried the call through to the upstream rather than merely producing a 200.
+    And I invoke the API at gateway context "{{emailRefreshCtx}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    And The response should contain "\"name\":\"John\""
+
+    Examples:
+      | actor                  | expectedUsername                  |
+      | emailAdmin             | emailAdmin@email.com@carbon.super |
+      | emailAdmin@tenant1.com | emailAdmin@email.com@tenant1.com  |

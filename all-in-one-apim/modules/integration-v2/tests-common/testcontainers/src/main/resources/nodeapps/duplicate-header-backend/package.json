@@ -7,6 +7,8 @@
     "start": "node server.js"
   },
   "dependencies": {
-    "express": "^4.18.2"
+    "express": "^4.18.2",
+    "mailparser": "^3.6.9",
+    "smtp-server": "^3.13.4"
   }
 }

@@ -575,6 +575,23 @@ public class Utils {
         return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + resourceType + "/" + resourceId;
     }
 
+    /**
+     * Publisher SOAP-to-REST conversion resource-policy list: {@code /apis/{apiId}/resource-policies?sequenceType=}
+     * (GET). {@code sequenceType} is the one required query param (in|out); returns the {@code {list:[...]}} of
+     * generated in/out sequences. The generic resource GET ({@link #getResourceEndpointURL}) cannot express this
+     * sub-path plus required query param, so it has its own builder.
+     */
+    public static String getApiResourcePoliciesURL(String baseUrl, String apiId, String sequenceType) {
+        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "apis/" + apiId
+                + "/resource-policies?sequenceType=" + urlEncode(sequenceType);
+    }
+
+    /** Single resource policy by id: {@code /apis/{apiId}/resource-policies/{resourcePolicyId}} (GET/PUT). */
+    public static String getApiResourcePolicyByIdURL(String baseUrl, String apiId, String resourcePolicyId) {
+        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "apis/" + apiId
+                + "/resource-policies/" + resourcePolicyId;
+    }
+
     /** Publisher API endpoints sub-resource collection: {@code /apis/{apiId}/endpoints} (POST add, GET list). */
     public static String getApiEndpointsURL(String baseUrl, String apiId) {
         return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "apis/" + apiId + "/endpoints";
@@ -1300,11 +1317,6 @@ public class Utils {
                 + urlEncode(sequenceType) + "&resourcePath=" + urlEncode(resourcePath) + "&verb=" + urlEncode(verb);
     }
 
-    /** Publisher — update (PUT) one SOAP-to-REST conversion sequence by its resource-policy id. */
-    public static String getApiResourcePolicyByIdURL(String baseUrl, String apiId, String resourcePolicyId) {
-        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "apis/" + apiId + "/resource-policies/"
-                + resourcePolicyId;
-    }
 
     public static String getProductSearchEndpointURL(String baseUrl, String productName) {
         return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "api-products?query=" + productName;

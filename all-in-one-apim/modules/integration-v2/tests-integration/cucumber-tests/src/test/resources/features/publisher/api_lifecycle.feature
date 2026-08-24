@@ -208,6 +208,40 @@ Feature: Publisher API Lifecycle
       | publisherUser             |
       | publisherUser@tenant1.com |
 
+  # Ports DAOTestCase#testDAOTestCase — an API deleted via DELETE /apis/{id} can be re-created by a PLAIN POST
+  # with the SAME name and context. v2 today only re-creates via IMPORT (definitions.feature:import-export), which
+  # resolves a name/context collision through APIImportExportManager — a different code path — so the plain
+  # POST /apis uniqueness path after a delete was unguarded. Catches DAO residue that would leave the name/context
+  # reserved and 409 the re-create. Least-privilege publisher in both tenants (×2).
+  @cap:publisher @feat:api-lifecycle @type:regression @legacy:DAOTestCase
+  Scenario Outline: A deleted API can be re-created by the same name and context as <actor>
+    Given The system is ready and I have valid publisher access tokens as "<actor>"
+    # Resolve the ${UNIQUE:...} name+context ONCE (put-time) so the re-create targets the SAME identity, not a
+    # fresh unique value.
+    And I put JSON payload from file "artifacts/payloads/create_apim_test_api.json" in context as "recreatePayload"
+    When I create an "apis" resource with payload "recreatePayload" as "firstApiId"
+    Then The response status code should be 201
+    And I extract response field "name" and store it as "recreateName"
+    And I extract response field "context" and store it as "recreateContext"
+    And I extract response field "provider" and store it as "recreateProvider"
+    When I delete the "apis" resource with id "firstApiId"
+    Then The response status code should be 200
+    # Re-create with the SAME payload (identical name+context) through a plain POST /apis — must be accepted.
+    When I attempt to create an "apis" resource with payload "recreatePayload" as "recreatedApiId"
+    Then The response status code should be 201
+    # The re-created API echoes back the original identity (name/context/version/provider).
+    When I retrieve the "apis" resource with id "recreatedApiId"
+    Then The response status code should be 200
+    And The value of response field "name" should be "{{recreateName}}"
+    And The value of response field "context" should be "{{recreateContext}}"
+    And The value of response field "version" should be "1.0.0"
+    And The value of response field "provider" should be "{{recreateProvider}}"
+
+    Examples:
+      | actor                     |
+      | publisherUser             |
+      | publisherUser@tenant1.com |
+
   # Ports APIPublishingAndVisibilityInStoreTestCase — a created-but-unpublished API is present in the publisher
   # but NOT visible in the devportal (store), and only becomes visible after publish. The devportal GET returns
   # 403 for an unpublished API (even with a valid devportal token), and 200 once published. The devportal check
