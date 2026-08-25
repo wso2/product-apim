@@ -49,11 +49,7 @@ import org.wso2.am.integration.cucumbertests.stepdefinitions.WorkflowAdminSteps;
                 "src/test/resources/features/admin/workflow_application_deletion.feature",
                 "src/test/resources/features/admin/workflow_key_registration.feature",
                 "src/test/resources/features/admin/workflow_pending_cleanup.feature",
-                "src/test/resources/features/admin/workflow_user_signup.feature",
-                // MUST remain the lexicographically LAST feature here: it flips APIStateChange to the external
-                // BPMN executor for the rest of the run (see the file's own note). Array order is not honoured —
-                // cucumber-testng sorts by filename — so the "ws" prefix is what keeps it last.
-                "src/test/resources/features/admin/workflow_ws_api_state_change.feature"
+                "src/test/resources/features/admin/workflow_user_signup.feature"
         },
         glue = {
                 "org.wso2.am.integration.cucumbertests.stepdefinitions"

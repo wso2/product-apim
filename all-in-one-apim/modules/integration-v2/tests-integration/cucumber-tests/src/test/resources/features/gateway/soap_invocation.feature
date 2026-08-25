@@ -303,18 +303,19 @@ Feature: Gateway SOAP API Invocation
     # POST operation with it.
     When I create a new shared scope as "s2rScopeEnf"
     Then The response status code should be 201
+    And I extract response field "name" and store it as "s2rScopeName"
     When I retrieve the "apis" resource with id "soApiId"
     And I put the response payload in context as "soPayload"
     When I update the "apis" resource "soApiId" and "soPayload" with configuration type "scopes" and value:
       """
-      [{"shared":true,"scope":{"name":"s2rScopeEnf","displayName":"s2rScopeEnf","description":"s2r operation scope enforcement","bindings":["admin"]}}]
+      [{"shared":true,"scope":{"name":"{{s2rScopeName}}","displayName":"{{s2rScopeName}}","description":"s2r operation scope enforcement","bindings":["admin"]}}]
       """
     Then The response status code should be 200
     When I retrieve the "apis" resource with id "soApiId"
     And I put the response payload in context as "soPayload"
     When I update the "apis" resource "soApiId" and "soPayload" with configuration type "operations" and value:
       """
-      [{"target":"/sayHello","verb":"POST","authType":"Application & Application User","throttlingPolicy":"Unlimited","scopes":["s2rScopeEnf"],"operationPolicies":{"request":[],"response":[],"fault":[]}}]
+      [{"target":"/sayHello","verb":"POST","authType":"Application & Application User","throttlingPolicy":"Unlimited","scopes":["{{s2rScopeName}}"],"operationPolicies":{"request":[],"response":[],"fault":[]}}]
       """
     Then The response status code should be 200
     When I deploy the API with id "soApiId"
@@ -344,7 +345,7 @@ Feature: Gateway SOAP API Invocation
     {"name":"WSO2"}
     """
     # A token WITH the scope is let through to the SOAP backend (200 + the stub's real body).
-    When I request an OAuth access token for the current user using password grant with scope "s2rScopeEnf"
+    When I request an OAuth access token for the current user using password grant with scope "{{s2rScopeName}}"
     Then The response status code should be 200
     When I invoke the API at gateway context "{{soContext}}/1.0.0/sayHello" with method "POST" using access token "generatedAccessToken" and payload "soBody" with content type "application/json" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200

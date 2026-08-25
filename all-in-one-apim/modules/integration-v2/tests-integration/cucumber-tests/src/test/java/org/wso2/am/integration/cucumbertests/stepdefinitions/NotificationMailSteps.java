@@ -138,6 +138,9 @@ public class NotificationMailSteps {
         }
         Assert.assertEquals(response.getResponseCode(), 200,
                 "Unexpected status from the mail sink at " + url + ": " + response.getData());
-        return new JSONObject(response.getData()).getInt("count");
+        String body = response.getData();
+        Assert.assertTrue(body != null && !body.trim().isEmpty(),
+                "The mail sink at " + url + " returned an empty response body: " + body);
+        return new JSONObject(body).getInt("count");
     }
 }

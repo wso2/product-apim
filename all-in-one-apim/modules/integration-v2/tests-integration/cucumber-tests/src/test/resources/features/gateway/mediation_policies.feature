@@ -133,6 +133,7 @@ Feature: Gateway Mediation Policies
     Given The system is ready
     And I have valid access tokens as "<actor>"
     And I have created an api from "artifacts/payloads/create_apim_claimvalidator_valuemismatch_api.json" as "cvValMissApiId" and deployed it
+    And the "apis" resource "cvValMissApiId" should be live on the gateway, redeploying if propagation is lost
     When I publish the "apis" resource with id "cvValMissApiId"
     Then The lifecycle status of API "cvValMissApiId" should be "Published"
     When I retrieve the "apis" resource with id "cvValMissApiId"
@@ -272,6 +273,7 @@ Feature: Gateway Mediation Policies
     Then The response status code should be 200
     When I deploy the API with id "secretApiId"
     And the "apis" resource "secretApiId" should be live on the gateway, redeploying if propagation is lost
+    And I wait until "apis" "secretApiId" revision is deployed in the gateway
     When I invoke the API at gateway context "{{secretContext}}/1.0.0/reflect-headers" with method "GET" using access token "generatedAccessToken" and payload "" until response body contains "test-api-key-123" within 60 seconds
     Then The response status code should be 200
     And The response should contain "test-api-key-123"
@@ -312,6 +314,7 @@ Feature: Gateway Mediation Policies
     Then The response status code should be 200
     When I deploy the API with id "baseSecretApiId"
     And the "apis" resource "baseSecretApiId" should be live on the gateway, redeploying if propagation is lost
+    And I wait until "apis" "baseSecretApiId" revision is deployed in the gateway
 
     # AFTER attach: the mandatory apiKey header now carries its real value at the backend.
     When I invoke the API at gateway context "{{baseSecretContext}}/1.0.0/reflect-headers" with method "GET" using access token "generatedAccessToken" and payload "" until response body contains "test-api-key-123" within 60 seconds
@@ -618,6 +621,7 @@ Feature: Gateway Mediation Policies
     Given The system is ready
     And I have valid access tokens as "<actor>"
     And I have created an api from "artifacts/payloads/create_apim_jsontoxml_typed_api.json" as "mtApiId" and deployed it
+    And the "apis" resource "mtApiId" should be live on the gateway, redeploying if propagation is lost
     When I publish the "apis" resource with id "mtApiId"
     Then The lifecycle status of API "mtApiId" should be "Published"
     When I retrieve the "apis" resource with id "mtApiId"
@@ -710,4 +714,3 @@ Feature: Gateway Mediation Policies
       | actor             |
       | admin             |
       | admin@tenant1.com |
-

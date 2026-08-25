@@ -101,6 +101,7 @@ Feature: Gateway Throttling Enforcement
 
     # Publish and deploy an API to invoke.
     And I have created an api from "artifacts/payloads/create_apim_test_api.json" as "subThrottleApiId" and deployed it
+    And the "apis" resource "subThrottleApiId" should be live on the gateway, redeploying if propagation is lost
     # A subscription can only use a tier the API OFFERS, so add the custom tier to the API's business plans.
     When I retrieve the "apis" resource with id "subThrottleApiId"
     And I put the response payload in context as "subApiPayload"
@@ -236,6 +237,7 @@ Feature: Gateway Throttling Enforcement
     And I extract response field "policyName" and store it as "highBurstTier"
 
     And I have created an api from "artifacts/payloads/create_apim_test_api.json" as "swapBurstApiId" and deployed it
+    And the "apis" resource "swapBurstApiId" should be live on the gateway, redeploying if propagation is lost
     # A subscription can only use a tier the API OFFERS, and this one moves between two — so offer BOTH.
     When I retrieve the "apis" resource with id "swapBurstApiId"
     And I put the response payload in context as "swapBurstApiPayload"
@@ -437,6 +439,7 @@ Feature: Gateway Throttling Enforcement
     # An API exposing POST /reflect-body, whose backend echoes the request body: a single oversized POST spends the
     # whole byte quota in one call.
     And I have created an api from "artifacts/payloads/create_apim_postbody_api.json" as "subBwApiId" and deployed it
+    And the "apis" resource "subBwApiId" should be live on the gateway, redeploying if propagation is lost
     # A subscription can only use a tier the API OFFERS, so add the custom bandwidth tier to the API's business plans.
     When I retrieve the "apis" resource with id "subBwApiId"
     And I put the response payload in context as "subBwApiPayload"
@@ -510,6 +513,7 @@ Feature: Gateway Throttling Enforcement
     Then The response status code should be 200
     When I deploy the API with id "advBwApiId"
     Then The response status code should be 201
+    And the "apis" resource "advBwApiId" should be live on the gateway, redeploying if propagation is lost
     When I publish the "apis" resource with id "advBwApiId"
     Then The lifecycle status of API "advBwApiId" should be "Published"
     When I retrieve the "apis" resource with id "advBwApiId"
@@ -777,6 +781,7 @@ Feature: Gateway Throttling Enforcement
     When I create an application throttling policy "${UNIQUE:xoResetThrottle3}" allowing 3 requests per minute
     Then The response status code should be 201
     And I have created an api from "artifacts/payloads/create_apim_test_api.json" as "xoResetApiId" and deployed it
+    And the "apis" resource "xoResetApiId" should be live on the gateway, redeploying if propagation is lost
     When I publish the "apis" resource with id "xoResetApiId"
     Then The lifecycle status of API "xoResetApiId" should be "Published"
     When I retrieve the "apis" resource with id "xoResetApiId"
@@ -837,6 +842,7 @@ Feature: Gateway Throttling Enforcement
     When I create an application throttling policy "${UNIQUE:xoResetBw1KB}" allowing 1 KB per minute
     Then The response status code should be 201
     And I have created an api from "artifacts/payloads/create_apim_postbody_api.json" as "xoResetBwApiId" and deployed it
+    And the "apis" resource "xoResetBwApiId" should be live on the gateway, redeploying if propagation is lost
     When I publish the "apis" resource with id "xoResetBwApiId"
     Then The lifecycle status of API "xoResetBwApiId" should be "Published"
     When I retrieve the "apis" resource with id "xoResetBwApiId"
@@ -910,6 +916,7 @@ Feature: Gateway Throttling Enforcement
     Then The response status code should be 200
     When I deploy the API with id "unlThrottleApiId"
     Then The response status code should be 201
+    And the "apis" resource "unlThrottleApiId" should be live on the gateway, redeploying if propagation is lost
     When I publish the "apis" resource with id "unlThrottleApiId"
     Then The lifecycle status of API "unlThrottleApiId" should be "Published"
     When I retrieve the "apis" resource with id "unlThrottleApiId"
@@ -972,6 +979,7 @@ Feature: Gateway Throttling Enforcement
     Then The response status code should be 200
     When I deploy the API with id "redeployApiId"
     Then The response status code should be 201
+    And the "apis" resource "redeployApiId" should be live on the gateway, redeploying if propagation is lost
     When I publish the "apis" resource with id "redeployApiId"
     Then The lifecycle status of API "redeployApiId" should be "Published"
     When I retrieve the "apis" resource with id "redeployApiId"
@@ -1018,6 +1026,7 @@ Feature: Gateway Throttling Enforcement
     # code 900800) is itself proof the new revision deployed, distinguishing it from the not-yet-enforced state.
     When I deploy the API with id "redeployApiId"
     Then The response status code should be 201
+    And I wait until "apis" "redeployApiId" revision is deployed in the gateway
     When I invoke the API at gateway context "{{redeployApiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 429 within 90 seconds
     Then The response status code should be 429
     And The value of error response field "code" should be "900800"

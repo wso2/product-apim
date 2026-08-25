@@ -190,6 +190,7 @@ Feature: Email-Form Username Login
       <expectedUsername>
       """
     And I have created an api from "artifacts/payloads/create_apim_test_api.json" as "emailRefreshApiId" and deployed it
+    And the "apis" resource "emailRefreshApiId" should be live on the gateway, redeploying if propagation is lost
     When I publish the "apis" resource with id "emailRefreshApiId"
     Then The lifecycle status of API "emailRefreshApiId" should be "Published"
     When I retrieve the "apis" resource with id "emailRefreshApiId"

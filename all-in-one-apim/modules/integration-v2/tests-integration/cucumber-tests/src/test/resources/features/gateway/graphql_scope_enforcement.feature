@@ -15,6 +15,7 @@ Feature: Gateway GraphQL Operation-Level Security
     And I have valid access tokens as "<actor>"
     When I create a new shared scope as "gqlScopeEnf"
     Then The response status code should be 201
+    And I extract response field "name" and store it as "gqlScopeName"
 
     # Create the GraphQL API, register the scope on it, and gate the `languages` operation with it.
     And I put JSON payload from file "artifacts/payloads/create_apim_test_graphql_api.json" in context as "graphQLAPIPayload"
@@ -25,14 +26,14 @@ Feature: Gateway GraphQL Operation-Level Security
     And I extract response field "context" and store it as "gqlApiContext"
     When I update the "apis" resource "gqlApiId" and "gqlPayload" with configuration type "scopes" and value:
       """
-      [{"shared":true,"scope":{"name":"gqlScopeEnf","displayName":"gqlScopeEnf","description":"graphql scope enforcement","bindings":["admin"]}}]
+      [{"shared":true,"scope":{"name":"{{gqlScopeName}}","displayName":"{{gqlScopeName}}","description":"graphql scope enforcement","bindings":["admin"]}}]
       """
     Then The response status code should be 200
     When I retrieve the "apis" resource with id "gqlApiId"
     And I put the response payload in context as "gqlPayload"
     When I update the "apis" resource "gqlApiId" and "gqlPayload" with configuration type "operations" and value:
       """
-      [{"target":"languages","verb":"QUERY","authType":"Application & Application User","throttlingPolicy":"Unlimited","scopes":["gqlScopeEnf"],"operationPolicies":{"request":[],"response":[],"fault":[]}},{"target":"language","verb":"QUERY","authType":"Application & Application User","throttlingPolicy":"Unlimited","scopes":[],"operationPolicies":{"request":[],"response":[],"fault":[]}}]
+      [{"target":"languages","verb":"QUERY","authType":"Application & Application User","throttlingPolicy":"Unlimited","scopes":["{{gqlScopeName}}"],"operationPolicies":{"request":[],"response":[],"fault":[]}},{"target":"language","verb":"QUERY","authType":"Application & Application User","throttlingPolicy":"Unlimited","scopes":[],"operationPolicies":{"request":[],"response":[],"fault":[]}}]
       """
     Then The response status code should be 200
 
@@ -70,7 +71,7 @@ Feature: Gateway GraphQL Operation-Level Security
     Then The response status code should be 201
 
     # A token WITH the scope can query the gated operation (200); one WITHOUT it is refused (403).
-    When I request an OAuth access token for the current user using password grant with scope "gqlScopeEnf"
+    When I request an OAuth access token for the current user using password grant with scope "{{gqlScopeName}}"
     Then The response status code should be 200
     When I put the following JSON payload in context as "gqlQuery"
     """
@@ -111,6 +112,7 @@ Feature: Gateway GraphQL Operation-Level Security
     And I have valid access tokens as "<actor>"
     When I create a new shared scope as "gqlSubScopeEnf"
     Then The response status code should be 201
+    And I extract response field "name" and store it as "gqlSubScopeName"
 
     And I put JSON payload from file "artifacts/payloads/create_apim_graphql_subscription_api.json" in context as "gqlSubScopePayload"
     And I create a GraphQL API with schema file "artifacts/payloads/graphql_subscription_schema.graphql" and additional properties "gqlSubScopePayload" as "gqlSubScopeApiId"
@@ -120,7 +122,7 @@ Feature: Gateway GraphQL Operation-Level Security
     And I extract response field "context" and store it as "gqlSubScopeContext"
     When I update the "apis" resource "gqlSubScopeApiId" and "gqlSubScopePayloadDto" with configuration type "scopes" and value:
       """
-      [{"shared":true,"scope":{"name":"gqlSubScopeEnf","displayName":"gqlSubScopeEnf","description":"graphql subscription scope enforcement","bindings":["admin"]}}]
+      [{"shared":true,"scope":{"name":"{{gqlSubScopeName}}","displayName":"{{gqlSubScopeName}}","description":"graphql subscription scope enforcement","bindings":["admin"]}}]
       """
     Then The response status code should be 200
     # Gate ONLY liftStatusChange; trailStatusChange stays ungated so the difference is the scope, not the API.
@@ -128,7 +130,7 @@ Feature: Gateway GraphQL Operation-Level Security
     And I put the response payload in context as "gqlSubScopePayloadDto"
     When I update the "apis" resource "gqlSubScopeApiId" and "gqlSubScopePayloadDto" with configuration type "operations" and value:
       """
-      [{"target":"allLifts","verb":"QUERY","authType":"Application & Application User","throttlingPolicy":"Unlimited","scopes":[],"operationPolicies":{"request":[],"response":[],"fault":[]}},{"target":"Lift","verb":"QUERY","authType":"Application & Application User","throttlingPolicy":"Unlimited","scopes":[],"operationPolicies":{"request":[],"response":[],"fault":[]}},{"target":"setLiftStatus","verb":"MUTATION","authType":"Application & Application User","throttlingPolicy":"Unlimited","scopes":[],"operationPolicies":{"request":[],"response":[],"fault":[]}},{"target":"liftStatusChange","verb":"SUBSCRIPTION","authType":"Application & Application User","throttlingPolicy":"Unlimited","scopes":["gqlSubScopeEnf"],"operationPolicies":{"request":[],"response":[],"fault":[]}},{"target":"trailStatusChange","verb":"SUBSCRIPTION","authType":"Application & Application User","throttlingPolicy":"Unlimited","scopes":[],"operationPolicies":{"request":[],"response":[],"fault":[]}}]
+      [{"target":"allLifts","verb":"QUERY","authType":"Application & Application User","throttlingPolicy":"Unlimited","scopes":[],"operationPolicies":{"request":[],"response":[],"fault":[]}},{"target":"Lift","verb":"QUERY","authType":"Application & Application User","throttlingPolicy":"Unlimited","scopes":[],"operationPolicies":{"request":[],"response":[],"fault":[]}},{"target":"setLiftStatus","verb":"MUTATION","authType":"Application & Application User","throttlingPolicy":"Unlimited","scopes":[],"operationPolicies":{"request":[],"response":[],"fault":[]}},{"target":"liftStatusChange","verb":"SUBSCRIPTION","authType":"Application & Application User","throttlingPolicy":"Unlimited","scopes":["{{gqlSubScopeName}}"],"operationPolicies":{"request":[],"response":[],"fault":[]}},{"target":"trailStatusChange","verb":"SUBSCRIPTION","authType":"Application & Application User","throttlingPolicy":"Unlimited","scopes":[],"operationPolicies":{"request":[],"response":[],"fault":[]}}]
       """
     Then The response status code should be 200
 
@@ -166,7 +168,7 @@ Feature: Gateway GraphQL Operation-Level Security
     Then The response status code should be 201
 
     # WITH the scope: the subscription is authorised and the backend event arrives.
-    When I request an OAuth access token for the current user using password grant with scope "gqlSubScopeEnf"
+    When I request an OAuth access token for the current user using password grant with scope "{{gqlSubScopeName}}"
     Then The response status code should be 200
     And I invoke the GraphQL subscription at gateway ws context "{{gqlSubScopeContext}}/1.0.0" with query "subscription { liftStatusChange { name } }" using access token "generatedAccessToken" expecting data containing "Astra Express" within 120 seconds
 

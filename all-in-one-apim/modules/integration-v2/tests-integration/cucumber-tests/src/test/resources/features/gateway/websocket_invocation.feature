@@ -186,6 +186,7 @@ Feature: Gateway WebSocket API Invocation
     And I have valid access tokens as "<actor>"
     When I create a new shared scope as "wsScopeEnf"
     Then The response status code should be 201
+    And I extract response field "name" and store it as "wsScopeName"
     And I have created an api from "artifacts/payloads/create_apim_ws_echo_api.json" as "wsApiId" and deployed it
     # Register the scope on the API and gate both WS operations (SUBSCRIBE + PUBLISH) with it
     When I retrieve the "apis" resource with id "wsApiId"
@@ -193,14 +194,14 @@ Feature: Gateway WebSocket API Invocation
     And I extract response field "context" and store it as "wsContext"
     When I update the "apis" resource "wsApiId" and "wsScopePayload" with configuration type "scopes" and value:
       """
-      [{"shared":true,"scope":{"name":"wsScopeEnf","displayName":"wsScopeEnf","description":"ws scope enforcement","bindings":["admin"]}}]
+      [{"shared":true,"scope":{"name":"{{wsScopeName}}","displayName":"{{wsScopeName}}","description":"ws scope enforcement","bindings":["admin"]}}]
       """
     Then The response status code should be 200
     When I retrieve the "apis" resource with id "wsApiId"
     And I put the response payload in context as "wsScopePayload"
     When I update the "apis" resource "wsApiId" and "wsScopePayload" with configuration type "operations" and value:
       """
-      [{"target":"/*","verb":"SUBSCRIBE","authType":"Application & Application User","throttlingPolicy":"Unlimited","scopes":["wsScopeEnf"],"operationPolicies":{"request":[],"response":[],"fault":[]}},{"target":"/*","verb":"PUBLISH","authType":"Application & Application User","throttlingPolicy":"Unlimited","scopes":["wsScopeEnf"],"operationPolicies":{"request":[],"response":[],"fault":[]}}]
+      [{"target":"/*","verb":"SUBSCRIBE","authType":"Application & Application User","throttlingPolicy":"Unlimited","scopes":["{{wsScopeName}}"],"operationPolicies":{"request":[],"response":[],"fault":[]}},{"target":"/*","verb":"PUBLISH","authType":"Application & Application User","throttlingPolicy":"Unlimited","scopes":["{{wsScopeName}}"],"operationPolicies":{"request":[],"response":[],"fault":[]}}]
       """
     Then The response status code should be 200
     # Redeploy the gated definition
@@ -233,7 +234,7 @@ Feature: Gateway WebSocket API Invocation
     And I subscribe to API "wsApiId" using application "createdAppId" with payload "wsScopeSubPayload" as "wsScopeSubId"
     Then The response status code should be 201
     # A token WITH the scope connects and echoes
-    When I request an OAuth access token for the current user using password grant with scope "wsScopeEnf"
+    When I request an OAuth access token for the current user using password grant with scope "{{wsScopeName}}"
     Then The response status code should be 200
     When I invoke the WebSocket API at gateway ws context "{{wsContext}}/1.0.0" with message "hello ws" using access token "generatedAccessToken" expecting echo "HELLO WS" within 60 seconds
     # A token WITHOUT the scope is rejected (allow time for the freshly-attached scope gate to propagate under load)

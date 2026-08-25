@@ -1309,14 +1309,15 @@ public class Utils {
     /**
      * Publisher — list the SOAP-to-REST conversion (resource policy) sequences of one resource path/verb.
      * {@code sequenceType} is {@code in} or {@code out}; the id may be an API id OR a revision UUID (a revision's
-     * sequences are read through the same path).
+     * sequences are read through the same path). Narrows the sequence-wide
+     * {@link #getApiResourcePoliciesURL(String, String, String)} rather than rebuilding the path, so the endpoint
+     * is spelled in exactly one place.
      */
     public static String getApiResourcePoliciesURL(String baseUrl, String apiId, String sequenceType,
                                                   String resourcePath, String verb) {
-        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "apis/" + apiId + "/resource-policies?sequenceType="
-                + urlEncode(sequenceType) + "&resourcePath=" + urlEncode(resourcePath) + "&verb=" + urlEncode(verb);
+        return getApiResourcePoliciesURL(baseUrl, apiId, sequenceType)
+                + "&resourcePath=" + urlEncode(resourcePath) + "&verb=" + urlEncode(verb);
     }
-
 
     public static String getProductSearchEndpointURL(String baseUrl, String productName) {
         return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "api-products?query=" + productName;

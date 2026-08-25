@@ -17,6 +17,7 @@ Feature: Gateway Default Version Routing
 
     # v1.0.0 → "File 1" backend, created as the default version, then published.
     And I have created an api from "artifacts/payloads/create_default_version_api.json" as "dvV1Id" and deployed it
+    And the "apis" resource "dvV1Id" should be live on the gateway, redeploying if propagation is lost
     When I publish the "apis" resource with id "dvV1Id"
     Then The lifecycle status of API "dvV1Id" should be "Published"
     When I retrieve the "apis" resource with id "dvV1Id"
@@ -131,6 +132,7 @@ Feature: Gateway Default Version Routing
 
     # v1.0.0 → "File 1" backend, created as the default version, deployed, then published.
     And I have created an api from "artifacts/payloads/create_default_version_api.json" as "pdV1Id" and deployed it
+    And the "apis" resource "pdV1Id" should be live on the gateway, redeploying if propagation is lost
     When I publish the "apis" resource with id "pdV1Id"
     Then The lifecycle status of API "pdV1Id" should be "Published"
     When I retrieve the "apis" resource with id "pdV1Id"

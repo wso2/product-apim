@@ -963,6 +963,11 @@ Feature: Publisher API Definition Import
     And The response array field "scopes" should have exactly 1 entries
     And The response field "scopes[*].scope.bindings[*]" should be exactly the list "admin"
     And The response field "operations[*].scopes[*]" should be exactly the list "c14iescope"
+    # The exact-list check above is a SET, so on its own it cannot see counts: an extra UNSCOPED operation, or a
+    # second operation that lost its scope, still flattens to {c14iescope} and would pass unnoticed. Both counts
+    # are therefore pinned against the fixture (one operation, carrying one scope reference).
+    And The response array field "operations" should have exactly 1 entries
+    And The response array field "operations[*].scopes[*]" should have exactly 1 entries
 
     Examples:
       | actor             |

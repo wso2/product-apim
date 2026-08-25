@@ -141,6 +141,7 @@ Feature: Gateway Throttle Isolation Across Email-Form And Plain Usernames
     When I create an application throttling policy "${UNIQUE:emResetThrottle3}" allowing 3 requests per minute
     Then The response status code should be 201
     And I have created an api from "artifacts/payloads/create_apim_test_api.json" as "emResetApiId" and deployed it
+    And the "apis" resource "emResetApiId" should be live on the gateway, redeploying if propagation is lost
     When I publish the "apis" resource with id "emResetApiId"
     Then The lifecycle status of API "emResetApiId" should be "Published"
     When I retrieve the "apis" resource with id "emResetApiId"

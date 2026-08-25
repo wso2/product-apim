@@ -40,6 +40,14 @@ const handleTransferEncodingRequest = (req, res) => {
         + Buffer.byteLength(body).toString(16) + '\r\n' + body + '\r\n0\r\n\r\n';
 
     const socket = res.socket;
+    // Nothing to write to if the client already went away. Measured, not assumed: on an aborted request
+    // res.socket is NOT null here — it is a live object with destroyed=true — and writing to it neither throws
+    // nor emits an uncaught error, so this guard is about intent rather than a crash. Without it the handler
+    // would detach and write against a dead connection and only be harmless because Node tolerates writes to a
+    // destroyed stream. Must precede detachSocket(): detaching is what nulls res.socket.
+    if (!socket || socket.destroyed) {
+        return;
+    }
     // Detach so Node does not append its own (normalised) response onto the same socket.
     if (typeof res.detachSocket === 'function') {
         res.detachSocket(socket);

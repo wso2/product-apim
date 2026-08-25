@@ -2447,7 +2447,10 @@ public class ApplicationBaseSteps {
      */
     private String reflectedBackendJwtAssertion() {
         HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
-        Assert.assertNotNull(response, "No invocation response captured");
+        Assert.assertTrue(response != null && response.getResponseCode() >= 200 && response.getResponseCode() < 300
+                        && response.getData() != null && !response.getData().isBlank(),
+                "Expected a successful reflected invocation response with a body, got: "
+                        + (response == null ? "null" : response.getResponseCode() + " / " + response.getData()));
         JSONObject body = new JSONObject(response.getData());
         Assert.assertTrue(body.has("headers"),
                 "Reflected response has no 'headers' object: " + response.getData());
@@ -5469,6 +5472,8 @@ public class ApplicationBaseSteps {
         HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
         Assert.assertNotNull(response, "No tag cloud response captured");
         Assert.assertEquals(response.getResponseCode(), 200, "Tag cloud retrieval failed");
+        Assert.assertTrue(response.getData() != null && !response.getData().isBlank(),
+                "Tag cloud retrieval returned an empty response body: " + response.getData());
         JSONArray list = new JSONObject(response.getData()).getJSONArray("list");
         Integer actual = null;
         for (int i = 0; i < list.length(); i++) {

@@ -298,6 +298,7 @@ Feature: Gateway REST API Invocation
     Then The response status code should be 200
     When I deploy the API with id "resApiId"
     Then The response status code should be 201
+    And I wait until "apis" "resApiId" revision is deployed in the gateway
     # The newly added POST resource is now invocable and routes to the backend.
     When I invoke the API at gateway context "{{resContext}}/1.0.0/customers/name" with method "POST" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
@@ -536,8 +537,7 @@ Feature: Gateway REST API Invocation
     # The baseline is what makes the post-flip 200 attributable — it proves the resource was genuinely secured.
     When I invoke the API at gateway context "{{u1Context}}/1.0.0/x" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 403 within 60 seconds
     Then The response status code should be 403
-    And The response should contain "900901"
-    And The response should contain "no sandbox endpoint"
+    And The error response should have code "900901" message "Runtime Error" and description containing "Sandbox key offered to the API with no sandbox endpoint"
 
     # Flip the resource to authType None, redeploy, and gate on propagation before reading — a read before the new
     # config reaches the gateway returns a false 403.
@@ -550,6 +550,7 @@ Feature: Gateway REST API Invocation
     Then The response status code should be 200
     When I deploy the API with id "u1ApiId"
     And the "apis" resource "u1ApiId" should be live on the gateway, redeploying if propagation is lost
+    And I wait until "apis" "u1ApiId" revision is deployed in the gateway
 
     # Unsecured reading: the SANDBOX token is ignored; the production endpoint answers. The body gate proves
     # echo/prod answered; the not-contains proves echo/sandbox (which does not exist) did not.
@@ -599,8 +600,7 @@ Feature: Gateway REST API Invocation
     # Secured baseline: the PRODUCTION token is rejected 403 + 900901 (this sandbox-only API has no production endpoint).
     When I invoke the API at gateway context "{{u2Context}}/1.0.0/x" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 403 within 60 seconds
     Then The response status code should be 403
-    And The response should contain "900901"
-    And The response should contain "no production endpoint"
+    And The error response should have code "900901" message "Runtime Error" and description containing "Production key offered to the API with no production endpoint"
 
     # Flip the resource to authType None, redeploy, and gate on propagation before reading.
     When I retrieve the "apis" resource with id "u2ApiId"
@@ -612,6 +612,7 @@ Feature: Gateway REST API Invocation
     Then The response status code should be 200
     When I deploy the API with id "u2ApiId"
     And the "apis" resource "u2ApiId" should be live on the gateway, redeploying if propagation is lost
+    And I wait until "apis" "u2ApiId" revision is deployed in the gateway
 
     # Unsecured reading: the PRODUCTION token is ignored; the sole (sandbox) endpoint answers. Body gate proves
     # echo/sandbox answered; the not-contains proves echo/prod (which does not exist) did not.
@@ -667,7 +668,7 @@ Feature: Gateway REST API Invocation
     # Secured baseline B: with NO credential the gateway rejects the call 401 + 900902 (Missing Credentials).
     When I invoke the API at gateway context "{{u3Context}}/1.0.0/x" with method "GET" without authentication until response status code becomes 401 within 60 seconds
     Then The response status code should be 401
-    And The response should contain "900902"
+    And The error response should have code "900902" message "Missing Credentials" and description containing "Make sure your API invocation call has a header"
 
     # Flip the resource to authType None, redeploy, and gate on propagation before re-reading both arms.
     When I retrieve the "apis" resource with id "u3ApiId"
@@ -679,6 +680,7 @@ Feature: Gateway REST API Invocation
     Then The response status code should be 200
     When I deploy the API with id "u3ApiId"
     And the "apis" resource "u3ApiId" should be live on the gateway, redeploying if propagation is lost
+    And I wait until "apis" "u3ApiId" revision is deployed in the gateway
 
     # Unsecured reading, SANDBOX token: the presented key type is ignored; the production endpoint answers. This
     # body-gated invoke is also the propagation gate for the no-credential read that follows.
@@ -747,6 +749,7 @@ Feature: Gateway REST API Invocation
     Then The response status code should be 200
     When I deploy the API with id "ceApiId"
     Then The response status code should be 201
+    And I wait until "apis" "ceApiId" revision is deployed in the gateway
 
     # AFTER: the SAME context, resource and token now reach the NEW upstream, and the old backend's body is gone.
     When I invoke the API at gateway context "{{ceContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response body contains "Hello World" within 120 seconds
@@ -1140,6 +1143,11 @@ Feature: Gateway REST API Invocation
     # ORDER across the sandbox group: nine consecutive calls, every window of three distinct.
     When I invoke the API at gateway context "{{lbsContext}}/1.0.0/name" with method "GET" using access token "generatedAccessToken" 9 times round-robin across backend markers "File 1_Sandbox,File 2_Sandbox,File 3_Sandbox"
 
+    Examples:
+      | actor             |
+      | admin             |
+      | admin@tenant1.com |
+
   # Ports DuplicateHeaderTestCase — the gateway must NOT collapse duplicate response headers coming from the
   # backend. The node duplicate-header-backend (port 3005, GET /duplicate) emits TWO Set-Cookie headers
   # ("12wesdsfdffdsfff" and "3456wesfdsfdsfdf"); both must reach the client, since collapsing them silently
@@ -1155,6 +1163,7 @@ Feature: Gateway REST API Invocation
     Given The system is ready
     And I have valid access tokens as "<actor>"
     And I have created an api from "artifacts/payloads/create_apim_duplicate_header_api.json" as "dupApiId" and deployed it
+    And the "apis" resource "dupApiId" should be live on the gateway, redeploying if propagation is lost
     When I publish the "apis" resource with id "dupApiId"
     Then The lifecycle status of API "dupApiId" should be "Published"
     When I retrieve the "apis" resource with id "dupApiId"
@@ -1198,6 +1207,11 @@ Feature: Gateway REST API Invocation
     # The backend's body arrived intact — this is not a gateway-generated fault.
     And The response should contain "<?xml version=\"1.0\" encoding=\"UTF-8\"?><test></test>"
 
+    Examples:
+      | actor             |
+      | admin             |
+      | admin@tenant1.com |
+
   # Ports APIMANAGER3614DuplicateTransferEncodingHeaderTestCase (commented out in the legacy suite, so it never
   # actually ran there). Transfer-Encoding is HOP-BY-HOP: unlike Set-Cookie above, a duplicated one must NOT be
   # propagated — two Transfer-Encoding headers on one response is a request-smuggling / response-splitting vector,
@@ -1213,6 +1227,7 @@ Feature: Gateway REST API Invocation
     Given The system is ready
     And I have valid access tokens as "<actor>"
     And I have created an api from "artifacts/payloads/create_apim_duplicate_transfer_encoding_api.json" as "teApiId" and deployed it
+    And the "apis" resource "teApiId" should be live on the gateway, redeploying if propagation is lost
     When I publish the "apis" resource with id "teApiId"
     Then The lifecycle status of API "teApiId" should be "Published"
     When I retrieve the "apis" resource with id "teApiId"

@@ -25,10 +25,16 @@ const OPAQUE = '5ccc069c403ebaf9f0171e9517f40e41';
 
 // Two distinct principals so a test can prove the gateway injected THAT api's configured credential rather
 // than a credential the backend would accept from anyone.
-const USERS = {
-    digestUser: 'digestPass',
-    digestTenantUser: 'digestTenantPass'
-};
+// A Map, not an object literal: an object index resolves INHERITED members, so USERS['__proto__'] returns
+// Object.prototype (and USERS['constructor'] the Object function) rather than undefined. Both survive the
+// "unknown user" guard below and stringify deterministically in the HA1 template ("[object Object]"), which
+// made them forgeable — verified against this stub: a request signed as __proto__ with password
+// "[object Object]" authenticated with 200. A Map has no such inherited keys, so the lookup can only find a
+// real entry.
+const USERS = new Map([
+    ['digestUser', 'digestPass'],
+    ['digestTenantUser', 'digestTenantPass']
+]);
 
 const md5 = (value) => crypto.createHash('md5').update(value, 'utf8').digest('hex');
 
@@ -61,7 +67,7 @@ const handleDigestRequest = (req, res) => {
     }
 
     const params = parseDigestParams(authHeader.substring('Digest '.length));
-    const password = USERS[params.username];
+    const password = USERS.get(params.username);
     if (password === undefined) {
         return challenge(res, `unknown user ${params.username}`);
     }

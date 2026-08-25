@@ -109,6 +109,7 @@ Feature: Backend JWT Claims
     Given The system is ready
     And I have valid access tokens as "<actor>"
     And I have created an api from "artifacts/payloads/create_apim_reflect_api.json" as "acApiId" and deployed it
+    And the "apis" resource "acApiId" should be live on the gateway, redeploying if propagation is lost
     When I publish the "apis" resource with id "acApiId"
     Then The lifecycle status of API "acApiId" should be "Published"
     When I retrieve the "apis" resource with id "acApiId"
@@ -239,7 +240,7 @@ Feature: Backend JWT Claims
     # base64(DN+serial) of the shipped wso2carbon signing certificate as the client-credentials path.
     And The reflected backend JWT header should contain "kid" with value "Q049bG9jYWxob3N0LCBPVT1XU08yLCBPPVdTTzIsIEw9TW91bnRhaW4gVmlldywgU1Q9Q0EsIEM9VVMjMjExMjc5NDc5Njg2NTExMjgzMzcxNzY2ODEwMjc1MjAyMjU0ODQ5MzE4NzgwMzI3"
     # DISCRIMINATOR 1: on the api-key path enduser is the bare username (the client-credentials path gives
-    # admin@carbon.super). Parameterised per row — the super value is observed; the tenant value is UNCONFIRMED.
+    # admin@carbon.super). Parameterised per row; both row values are measured — see the note at the Examples table.
     And The reflected backend JWT should contain claim "enduser" with value "<enduser>"
     # DISCRIMINATOR 2: sub is ABSENT on the api-key path (client-credentials carries a UUID sub) — proves the
     # credential path differs; asserted on the parsed claim set so a prefix name cannot mask a leak.

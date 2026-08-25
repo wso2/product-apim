@@ -1581,11 +1581,20 @@ public class PublisherBaseSteps {
      * Shared scopes can be used across multiple APIs to define common authorization scopes.
      * The scope ID is stored in the test context after creation.
      *
-     * @param scopeName Name of the shared scope to create
+     * <p>The supplied name is a BASE: it is uniquified through {@link Names#unique} before the scope is
+     * created, because a shared scope is tenant-wide and a literal would 409 a re-run on the same container
+     * whenever teardown could not remove it (a hard scenario failure), and would collide outright if two
+     * features ever picked the same literal. Capture the created name from the response —
+     * {@code I extract response field "name" and store it as "..."} — and reference that key wherever the
+     * scope is bound or requested; the base alone will not match. Mirrors the
+     * {@code ... bound to role} variant in JwtGrantSteps, which already works this way.
+     *
+     * @param scopeName base name of the shared scope to create
      */
     @When("I create a new shared scope as {string}")
     public void iCreateANewSharedScopeAs(String scopeName) throws IOException{
 
+        scopeName = Names.unique(Utils.resolveContextPlaceholders(scopeName));
         // Create payload
         try (InputStream inputStream = getClass().getClassLoader().getResourceAsStream("artifacts/payloads/create_apim_shared_scope_payload.json")) {
             if (inputStream == null) {
@@ -1859,6 +1868,8 @@ public class PublisherBaseSteps {
     @When("I fetch the shared scope with name {string} into context as {string}")
     public void fetchSharedScopeByName(String scopeName, String scopeId) throws IOException {
 
+        // Resolved: the creating step uniquifies the base name, so callers pass the captured {{key}}, not a literal.
+        scopeName = Utils.resolveContextPlaceholders(scopeName);
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION,
                 "Bearer " + Identity.publisherToken());
@@ -2829,12 +2840,20 @@ public class PublisherBaseSteps {
     }
 
     /**
-     * Updates the single in-sequence resource policy of a SOAP-to-REST API, inserting a unique marker property
-     * just inside the sequence root so the change is observable while the content stays a well-formed synapse
-     * sequence, then PUTs it back ({@code PUT /apis/{apiId}/resource-policies/{id}}) and publishes the PUT
+     * Updates the single in-sequence resource policy of a SOAP-to-REST API by PREPENDING a unique marker property
+     * mediator, then PUTs it back ({@code PUT /apis/{apiId}/resource-policies/{id}}) and publishes the PUT
      * response. A following re-retrieve asserts the marker persisted. Ports the INTENT of
      * SoapToRestTestCase#testUpdateInOutSequence, whose forEach swallowed update failures so it never verified
      * the update actually took.
+     *
+     * <p>Prepended rather than spliced in after the first tag: the policy {@code content} is a FRAGMENT of sibling
+     * mediators, not a rooted document (it opens with a self-closing {@code <header/>} followed by sibling
+     * {@code <property/>} / {@code <filter>} elements), so a leading property is a valid sibling and needs no
+     * scanning. Locating an insertion point with {@code indexOf('>')} would be a raw-text scan with no notion of
+     * markup — {@code >} is legal unescaped inside an XML attribute value, and synapse {@code regex}/
+     * {@code expression} attributes can carry one — so it could split a tag and produce content the PUT rejects,
+     * which would surface as a product fault rather than a test bug. Position is irrelevant here: the scenario
+     * re-retrieves and asserts the marker persisted, it never invokes the sequence.
      */
     @When("I update the in-sequence resource policy of API {string} inserting marker {string}")
     public void iUpdateInSequenceResourcePolicy(String apiId, String marker) throws IOException {
@@ -2854,11 +2873,7 @@ public class PublisherBaseSteps {
         JSONObject policy = policies.getJSONObject(0);
         String content = policy.getString("content");
         String markerElement = "<property name=\"" + markerValue + "\" value=\"" + markerValue + "\" scope=\"default\"/>";
-        int firstTagEnd = content.indexOf('>');
-        String updatedContent = firstTagEnd >= 0
-                ? content.substring(0, firstTagEnd + 1) + markerElement + content.substring(firstTagEnd + 1)
-                : content + markerElement;
-        policy.put("content", updatedContent);
+        policy.put("content", markerElement + content);
         Requests.put(Utils.getApiResourcePolicyByIdURL(Utils.getBaseUrl(), actualApiId, policy.getString("id")),
                 headers, policy.toString(), "application/json");
     }
@@ -3223,14 +3238,24 @@ public class PublisherBaseSteps {
         } else if (expected instanceof List<?> expectedList) {
             Assert.assertTrue(actual instanceof List,
                     "Exported spec content at '" + path + "' is not a list: " + actual);
+            List<String> actualCanonical = new ArrayList<>();
             Set<String> actualSet = new HashSet<>();
             for (Object o : (List<?>) actual) {
-                actualSet.add(String.valueOf(o));
+                String canonical = String.valueOf(o);
+                actualCanonical.add(canonical);
+                actualSet.add(canonical);
             }
+            Set<String> expectedSet = new HashSet<>();
             for (Object o : expectedList) {
-                Assert.assertTrue(actualSet.contains(String.valueOf(o)),
-                        "Exported spec list '" + path + "' is missing element '" + o + "'; got " + actualSet);
+                expectedSet.add(String.valueOf(o));
             }
+            Assert.assertEquals(actualCanonical.size(), expectedList.size(),
+                    "Exported spec list '" + path + "' has unexpected cardinality; expected "
+                            + expectedList.size() + " but got " + actualCanonical.size());
+            Assert.assertEquals(actualSet.size(), actualCanonical.size(),
+                    "Exported spec list '" + path + "' contains duplicate elements: " + actualCanonical);
+            Assert.assertEquals(actualSet, expectedSet,
+                    "Exported spec list '" + path + "' does not exactly match the source set");
         } else {
             Assert.assertEquals(String.valueOf(actual), String.valueOf(expected),
                     "Exported spec value at '" + path + "' does not match source");

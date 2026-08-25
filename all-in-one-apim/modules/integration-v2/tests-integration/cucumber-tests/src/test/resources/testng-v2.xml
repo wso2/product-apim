@@ -749,10 +749,16 @@
          feature flips the workflow executors to the Approval variants by writing workflow-extensions.xml into the
          governance registry (via ResourceAdminService SOAP), which is server-global for the container; a sibling
          class sharing the container would see the flipped executors. The overlay declares the three custom
-         devportal application_attributes the pending tasks surface. The runner's AfterClass restores the original
-         executors. initBackend is REQUIRED, not optional: the runner's last feature
-         (workflow_ws_api_state_change) points the external APIStateChangeWSWorkflowExecutor at the
-         BPMNProcessServerApp double the NodeAppServer hosts on nodebackend:3004. -->
+         devportal application_attributes the pending tasks surface. Each runner's AfterClass restores the original
+         executors. initBackend is REQUIRED, not optional: WorkflowWsApiStateChangeRunner points the external
+         APIStateChangeWSWorkflowExecutor at the BPMNProcessServerApp double the NodeAppServer hosts on
+         nodebackend:3004.
+         THE TWO RUNNERS SHARE THIS CONTAINER, which is safe ONLY at thread-count=1: each flips the server-global
+         workflow-extensions.xml and undoes it in its OWN AfterClass, and serialised classes mean one runner's
+         restore completes before the next class starts — in either order, because the shared helper keys captured
+         originals by container and clears them on restore, so the next flip re-captures the pristine config.
+         Raising thread-count here would interleave the two flips; split WorkflowWsApiStateChangeRunner into its
+         own block before doing that. -->
 
     <test name="IntegrationV2-ApprovalWorkflow" parallel="classes" thread-count="1">
         <parameter name="blockLabel" value="approval-workflow"/>
@@ -761,6 +767,7 @@
         <parameter name="tomlExtraOverlayPath" value="src/test/resources/artifacts/configFiles/approveWorkflow/deployment.toml"/>
         <classes>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.WorkflowApprovalRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.WorkflowWsApiStateChangeRunner"/>
         </classes>
     </test>
 

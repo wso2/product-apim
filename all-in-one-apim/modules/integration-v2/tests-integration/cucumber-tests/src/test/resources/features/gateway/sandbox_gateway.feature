@@ -143,6 +143,7 @@ Feature: Gateway Sandbox-Only Environment
     Then The response status code should be 200
     When I deploy the API with id "sbuApiId"
     And the "apis" resource "sbuApiId" should be live on the gateway, redeploying if propagation is lost
+    And I wait until "apis" "sbuApiId" revision is deployed in the gateway
 
     # Unsecured reading, SANDBOX token: still the sandbox endpoint. This body-gated invoke is also the propagation
     # gate for the production-token read that follows.
@@ -235,6 +236,7 @@ Feature: Gateway Sandbox-Only Environment
     Then The response status code should be 200
     When I deploy the API with id "ssuApiId"
     And the "apis" resource "ssuApiId" should be live on the gateway, redeploying if propagation is lost
+    And I wait until "apis" "ssuApiId" revision is deployed in the gateway
 
     # Unsecured reading, SANDBOX token: still the sandbox endpoint. Also the propagation gate for the read below.
     When I invoke the API at gateway context "{{ssuContext}}/1.0.0/x" with method "GET" using access token "ssuSandboxToken" and payload "" until response body contains "echo/sandbox" within 60 seconds

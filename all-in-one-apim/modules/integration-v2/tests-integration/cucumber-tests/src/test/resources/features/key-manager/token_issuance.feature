@@ -508,6 +508,7 @@ Feature: Key Manager Token Issuance
     Given The system is ready and I have valid publisher access tokens as "<actor>"
     When I create a new shared scope as "encTokenScope"
     Then The response status code should be 201
+    And I extract response field "name" and store it as "encTokenScopeName"
     When I put JSON payload from file "artifacts/payloads/create_apim_test_api.json" in context as "encApiCreate"
     And I create an "apis" resource with payload "encApiCreate" as "encApiId"
     Then The response status code should be 201
@@ -515,14 +516,14 @@ Feature: Key Manager Token Issuance
     And I put the response payload in context as "encApiPayload"
     When I update the "apis" resource "encApiId" and "encApiPayload" with configuration type "scopes" and value:
       """
-      [{"shared":true,"scope":{"name":"encTokenScope","displayName":"encTokenScope","description":"scope in token","bindings":["admin"]}}]
+      [{"shared":true,"scope":{"name":"{{encTokenScopeName}}","displayName":"{{encTokenScopeName}}","description":"scope in token","bindings":["admin"]}}]
       """
     Then The response status code should be 200
     When I retrieve the "apis" resource with id "encApiId"
     And I put the response payload in context as "encApiPayload"
     When I update the "apis" resource "encApiId" and "encApiPayload" with configuration type "operations" and value:
       """
-      [{"target":"/customers/{id}","verb":"GET","authType":"Application & Application User","throttlingPolicy":"Unlimited","scopes":["encTokenScope"],"operationPolicies":{"request":[],"response":[],"fault":[]}}]
+      [{"target":"/customers/{id}","verb":"GET","authType":"Application & Application User","throttlingPolicy":"Unlimited","scopes":["{{encTokenScopeName}}"],"operationPolicies":{"request":[],"response":[],"fault":[]}}]
       """
     Then The response status code should be 200
     When I put the following JSON payload in context as "encRevPayload"
@@ -553,9 +554,9 @@ Feature: Key Manager Token Issuance
     """
     And I subscribe to API "encApiId" using application "createdAppId" with payload "encSubPayload" as "encSubId"
     Then The response status code should be 201
-    When I request an OAuth access token for the current user using password grant with scope "encTokenScope"
+    When I request an OAuth access token for the current user using password grant with scope "{{encTokenScopeName}}"
     Then The response status code should be 200
-    And The response should contain "encTokenScope"
+    And The response should contain "{{encTokenScopeName}}"
 
     Examples:
       | actor             |
@@ -632,6 +633,7 @@ Feature: Key Manager Token Issuance
     Given The system is ready
     And I have valid access tokens as "<actor>"
     And I have created an api from "artifacts/payloads/create_apim_test_api.json" as "createdApiId" and deployed it
+    And the "apis" resource "createdApiId" should be live on the gateway, redeploying if propagation is lost
     When I publish the "apis" resource with id "createdApiId"
     Then The lifecycle status of API "createdApiId" should be "Published"
     When I retrieve the "apis" resource with id "createdApiId"
@@ -706,6 +708,7 @@ Feature: Key Manager Token Issuance
   Scenario Outline: A secondary-store principal's token invokes a published API through the gateway as <storeActor>
     Given The system is ready and I have valid publisher access tokens as "<providerActor>"
     And I have created an api from "artifacts/payloads/create_apim_test_api.json" as "createdApiId" and deployed it
+    And the "apis" resource "createdApiId" should be live on the gateway, redeploying if propagation is lost
     When I publish the "apis" resource with id "createdApiId"
     Then The lifecycle status of API "createdApiId" should be "Published"
     When I retrieve the "apis" resource with id "createdApiId"
@@ -747,6 +750,7 @@ Feature: Key Manager Token Issuance
   Scenario Outline: A secondary-store principal re-issues an access token via the refresh grant and invokes as <storeActor>
     Given The system is ready and I have valid publisher access tokens as "<providerActor>"
     And I have created an api from "artifacts/payloads/create_apim_test_api.json" as "createdApiId" and deployed it
+    And the "apis" resource "createdApiId" should be live on the gateway, redeploying if propagation is lost
     When I publish the "apis" resource with id "createdApiId"
     Then The lifecycle status of API "createdApiId" should be "Published"
     When I retrieve the "apis" resource with id "createdApiId"

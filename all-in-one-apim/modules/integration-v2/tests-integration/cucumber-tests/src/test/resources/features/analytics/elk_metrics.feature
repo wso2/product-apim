@@ -30,6 +30,7 @@ Feature: ELK Analytics Metric Logging
     Given The system is ready
     And I have valid access tokens as "<actor>"
     And I have created an api from "artifacts/payloads/create_apim_test_api.json" as "elkApiId" and deployed it
+    And the "apis" resource "elkApiId" should be live on the gateway, redeploying if propagation is lost
     When I publish the "apis" resource with id "elkApiId"
     Then The lifecycle status of API "elkApiId" should be "Published"
     When I retrieve the "apis" resource with id "elkApiId"
@@ -42,13 +43,22 @@ Feature: ELK Analytics Metric Logging
     And I invoke the API at gateway context "{{elkApiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
     # The event is published asynchronously after the response is returned, so this polls rather than reading once.
-    # One contiguous substring, so ALL FOUR facts are pinned on the SAME line: it is THIS api's event, the proxy
-    # response code it recorded is the 200 asserted above, the destination is the backend the request really
-    # reached, and the creator tenant is THIS row's tenant. MEASURED, not guessed: destination is the production
-    # endpoint URL of create_apim_test_api.json verbatim, INCLUDING its trailing slash (the ENDPOINT_ADDRESS
-    # message-context property is the configured address, unnormalised) — contrast the respond-mediator scenario
-    # below, where the property is absent and the product substitutes the placeholder.
-    And The server log file "apim_metrics.log" should gain a line containing "INFO ELKCounterMetric apimMetrics: apim:response, properties :{\"apiName\":\"{{elkApiName}}\",\"proxyResponseCode\":200,\"destination\":\"http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/\",\"apiCreatorTenantDomain\":\"<tenantDomain>\"" within 60 seconds
+    # ALL FOUR facts are required on the SAME line, which is what makes them one event: it is THIS api's event, the
+    # proxy response code it recorded is the 200 asserted above, the destination is the backend the request really
+    # reached, and the creator tenant is THIS row's tenant. Required as separate markers rather than one contiguous
+    # substring ON PURPOSE: the event is a HashMap serialised by Gson, so its FIELD ORDER is bucket order — adding
+    # one analytics attribute upstream can resize the table and reorder the JSON, which would break a contiguous
+    # match and report as "the log never gained the line", i.e. as if analytics had stopped publishing.
+    # MEASURED, not guessed: destination is the production endpoint URL of create_apim_test_api.json verbatim,
+    # INCLUDING its trailing slash (the ENDPOINT_ADDRESS message-context property is the configured address,
+    # unnormalised) — contrast the respond-mediator scenario below, where the property is absent and the product
+    # substitutes the placeholder.
+    And The server log file "apim_metrics.log" should gain a line containing all of the following within 60 seconds
+      | INFO ELKCounterMetric apimMetrics: apim:response, properties :                             |
+      | "apiName":"{{elkApiName}}"                                                                 |
+      | "proxyResponseCode":200                                                                    |
+      | "destination":"http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/"    |
+      | "apiCreatorTenantDomain":"<tenantDomain>"                                                  |
 
     Examples:
       | actor             | tenantDomain |
@@ -70,6 +80,7 @@ Feature: ELK Analytics Metric Logging
     And I create a new common policy with spec "artifacts/payloads/policySpecFiles/respond_mediator.j2" and "artifacts/payloads/policySpecFiles/respond_mediator.yaml" as "respondPolicyId"
     Then The response status code should be 201
     And I have created an api from "artifacts/payloads/create_apim_elk_respond_api.json" as "respondApiId" and deployed it
+    And the "apis" resource "respondApiId" should be live on the gateway, redeploying if propagation is lost
     When I publish the "apis" resource with id "respondApiId"
     Then The lifecycle status of API "respondApiId" should be "Published"
     When I retrieve the "apis" resource with id "respondApiId"
@@ -81,9 +92,15 @@ Feature: ELK Analytics Metric Logging
     When I mark the current end of the server log file "apim_metrics.log"
     And I invoke the API at gateway context "{{respondApiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
-    # Same single-line contiguous form as above: this api's event, its proxy response code, the placeholder
-    # destination that proves no endpoint was contacted, and this row's creator tenant.
-    And The server log file "apim_metrics.log" should gain a line containing "INFO ELKCounterMetric apimMetrics: apim:response, properties :{\"apiName\":\"{{respondApiName}}\",\"proxyResponseCode\":200,\"destination\":\"dummy_endpoint_address\",\"apiCreatorTenantDomain\":\"<tenantDomain>\"" within 60 seconds
+    # Same same-line, order-independent form as above (see that scenario for why field order is not pinned): this
+    # api's event, its proxy response code, the placeholder destination that proves no endpoint was contacted, and
+    # this row's creator tenant.
+    And The server log file "apim_metrics.log" should gain a line containing all of the following within 60 seconds
+      | INFO ELKCounterMetric apimMetrics: apim:response, properties : |
+      | "apiName":"{{respondApiName}}"                                |
+      | "proxyResponseCode":200                                       |
+      | "destination":"dummy_endpoint_address"                        |
+      | "apiCreatorTenantDomain":"<tenantDomain>"                     |
 
     Examples:
       | actor             | tenantDomain |

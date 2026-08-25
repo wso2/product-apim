@@ -109,9 +109,13 @@ Feature: Publisher API Versioning
     And I retrieve the devportal API list until it does not contain "cmpV1Id" within 30 seconds
 
     # Delete the latest → the devportal PROMOTES the previous version by the comparator (2.0.1a), not the oldest.
+    # Same ordering rationale as above: poll for the promoted v2 FIRST, then assert the absences. The deleted v3 is
+    # asserted gone explicitly — v2's presence only implies it while the one-entry-per-family grouping holds, so a
+    # grouping regression that listed BOTH would otherwise satisfy every check here unnoticed.
     When I delete the "apis" resource with id "cmpV3Id"
     Then The response status code should be 200
     When I retrieve the devportal API list until it contains "cmpV2Id" within 60 seconds
+    And I retrieve the devportal API list until it does not contain "cmpV3Id" within 30 seconds
     And I retrieve the devportal API list until it does not contain "cmpV1Id" within 30 seconds
 
   @cap:publisher @feat:versioning @type:negative @legacy:APIVersioningTestCase

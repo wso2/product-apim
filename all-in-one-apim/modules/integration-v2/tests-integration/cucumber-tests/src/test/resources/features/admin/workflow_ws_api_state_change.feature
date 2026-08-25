@@ -14,12 +14,13 @@ Feature: External BPMN workflow - API state change start request
   the assertion target is the request APIM SENDS; the approve/reject halves are covered against the in-product
   executor in workflow_api_state_change.
 
-  FILE ORDER MATTERS. Each row flips ITS OWN tenant's APIStateChange executor to the WS variant and does NOT flip
-  it back - a mid-scenario restore would not run on failure and would leave the block worse off. It is safe only
-  because this file sorts LAST in the runner (execution order is lexicographic by feature filename, and "ws" sorts
-  after every other "workflow_*" file), so no sibling scenario runs after it; the runner's AfterClass restores the
-  original executors of EVERY tenant it captured. Renaming this file, or adding a "workflow_x*"/"workflow_z*"
-  sibling, breaks that and will silently route later publish requests to the BPMN double.
+  THE FLIP IS BRACKETED BY ITS OWN RUNNER. Each row flips ITS OWN tenant's APIStateChange executor to the WS
+  variant and does NOT flip it back mid-scenario - a per-scenario restore would not run on failure and would leave
+  the block worse off. Instead this file is the sole feature of WorkflowWsApiStateChangeRunner, whose AfterClass
+  restores the original executors of EVERY tenant it captured. It previously lived in WorkflowApprovalRunner and
+  relied on "ws" sorting LAST among its workflow_* features; a rename or a new "workflow_x*"/"workflow_z*" sibling
+  would have silently routed that sibling's publish requests to the BPMN double, so the ordering assumption was
+  replaced by the runner boundary. Do NOT add another feature to that runner.
 
   BOTH TENANTS. The flip is a governance-registry write made as the ACTING actor, and that registry resource is
   tenant-scoped (the sibling _setup_workflow_executors already writes it per tenant, and the restore is keyed by
