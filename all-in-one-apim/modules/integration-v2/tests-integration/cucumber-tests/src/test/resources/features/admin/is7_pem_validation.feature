@@ -15,7 +15,7 @@ Feature: External Key Manager PEM Certificate Validation
   Scenario: The gateway validates and rejects IS7 tokens according to the pinned PEM certificate
     Given The system is ready
     And I have valid access tokens as "admin"
-    When I create a key manager from payload "artifacts/payloads/keymanagers/wso2is7-pem.json" as "pemKmId"
+    When I create a key manager from payload "artifacts/payloads/keymanagers/wso2is7-pem.json" as "pemKmId" and wait until it is operational
     And I have created an api from "artifacts/payloads/create_apim_test_api.json" as "createdApiId" and deployed it
     When I publish the "apis" resource with id "createdApiId"
     Then The lifecycle status of API "createdApiId" should be "Published"

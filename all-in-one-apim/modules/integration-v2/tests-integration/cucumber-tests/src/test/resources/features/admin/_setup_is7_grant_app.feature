@@ -11,7 +11,7 @@ Feature: Setup - WSO2 IS 7.x runtime app for grant-type tests
     Given The system is ready
     And I have valid access tokens as "<actor>"
     # Register the external key manager first - the runner-shared KM fixture every later keygen/token step uses.
-    When I create a key manager from payload "artifacts/payloads/keymanagers/wso2is7.json" as "grantKm"
+    When I create a key manager from payload "artifacts/payloads/keymanagers/wso2is7.json" as "grantKm" and wait until it is operational
     And I have created an api from "artifacts/payloads/create_apim_test_api.json" as "createdApiId" and deployed it
     When I publish the "apis" resource with id "createdApiId"
     Then The lifecycle status of API "createdApiId" should be "Published"

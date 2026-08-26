@@ -444,14 +444,29 @@ public class OrganizationSteps {
      *                  reference like {@code {{subOrg1}}})
      */
     @Then("The visible organizations of API {string} should be exactly {string}")
-    public void theVisibleOrganizationsOfApiShouldBeExactly(String apiIdKey, String expected) throws IOException {
+    public void theVisibleOrganizationsOfApiShouldBeExactly(String apiIdKey, String expected)
+            throws IOException, InterruptedException {
 
         String apiId = TestContext.resolve(apiIdKey).toString();
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
 
-        HttpResponse response = Requests.get(
-                Utils.getResourceEndpointURL(Utils.getBaseUrl(), "apis", apiId), headers);
+        List<String> expectedValues = new ArrayList<>();
+        for (String value : Utils.resolveContextPlaceholders(expected).split(",")) {
+            expectedValues.add(value.trim());
+        }
+        Collections.sort(expectedValues);
+
+        // Read-after-write: the publisher plane can serve the PRE-update document after the setter's PUT already
+        // answered 200, so poll (§7/§15). Only the read is retried — the assertions below still pin the exact set.
+        String url = Utils.getResourceEndpointURL(Utils.getBaseUrl(), "apis", apiId);
+        TestContext.remove("httpResponse");
+        HttpResponse response = Utils.retryUntil(Constants.RUNTIME_PROPAGATION_TIMEOUT,
+                () -> Requests.get(url, headers),
+                r -> r != null && r.getResponseCode() == 200 && r.getData() != null && !r.getData().isBlank()
+                        && expectedValues.equals(sortedVisibleOrganizations(r.getData())));
+        Requests.publishPollResult(response);
+
         Assert.assertTrue(response != null && response.getResponseCode() == 200 && response.getData() != null
                         && !response.getData().isBlank(),
                 "Failed to fetch API '" + apiId + "' to read its visible organizations: got "
@@ -465,14 +480,27 @@ public class OrganizationSteps {
         for (int i = 0; i < visible.length(); i++) {
             actual.add(visible.getString(i));
         }
-        List<String> expectedValues = new ArrayList<>();
-        for (String value : Utils.resolveContextPlaceholders(expected).split(",")) {
-            expectedValues.add(value.trim());
-        }
         Collections.sort(actual);
-        Collections.sort(expectedValues);
         Assert.assertEquals(actual, expectedValues,
                 "visibleOrganizations mismatch for API '" + apiId + "'. Body: " + response.getData());
+    }
+
+    /**
+     * The API's {@code visibleOrganizations}, sorted; null when the field is absent so a body without it reads as
+     * "not settled yet" rather than matching an empty expectation.
+     */
+    private static List<String> sortedVisibleOrganizations(String body) {
+
+        JSONArray visible = new JSONObject(body).optJSONArray("visibleOrganizations");
+        if (visible == null) {
+            return null;
+        }
+        List<String> values = new ArrayList<>();
+        for (int i = 0; i < visible.length(); i++) {
+            values.add(visible.getString(i));
+        }
+        Collections.sort(values);
+        return values;
     }
 
     /**

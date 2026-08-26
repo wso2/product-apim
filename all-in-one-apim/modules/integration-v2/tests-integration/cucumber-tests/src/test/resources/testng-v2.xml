@@ -48,6 +48,16 @@
             <class name="org.wso2.am.integration.cucumbertests.runners.block.PublisherServiceCatalogRunner"/>
         </classes>
     </test>
+    <!-- The deployment-acknowledgement contract runs in its own Publisher-configured block so its strict
+         gateway acknowledgement assertion is isolated from the high-churn Publisher runner classes. -->
+    <test name="IntegrationV2-Publisher-Acknowledgement" parallel="classes" thread-count="2">
+        <parameter name="blockLabel" value="publisher-acknowledgement"/>
+        <parameter name="initTenantUsers" value="true"/>
+        <parameter name="initSecondaryUserStore" value="true"/>
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.PublisherAPIRevisionAcknowledgementRunner"/>
+        </classes>
+    </test>
     <!-- DevPortal features share their own container (separate capability, consumer-plane actors).
          initSecondaryUserStore: additive, as on the publisher block above — it backs the SECONDARY.COM
          subscriber row on devportal/subscribe and the store-creator row on devportal/comments_2_thread_mutations

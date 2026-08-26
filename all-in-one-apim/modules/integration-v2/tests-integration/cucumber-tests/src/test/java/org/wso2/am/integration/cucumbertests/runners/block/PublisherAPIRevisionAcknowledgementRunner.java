@@ -12,7 +12,6 @@
  *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
- *
  */
 
 package org.wso2.am.integration.cucumbertests.runners.block;
@@ -20,14 +19,15 @@ package org.wso2.am.integration.cucumbertests.runners.block;
 import io.cucumber.testng.CucumberOptions;
 
 /**
- * Runner for publisher API-revision CRUD: list / deploy / delete-while-deployed guard / undeploy / delete /
- * restore. Runs in the IntegrationV2-Publisher block; parallel-safe (own uniquely-created API + revisions).
+ * Dedicated runner for the gateway deployment-acknowledgement contract. Keeping this scenario in its own
+ * block makes its strict acknowledgement assertion observable independently from the high-churn Publisher
+ * block, while retaining the Publisher actors and API lifecycle setup.
  */
 @CucumberOptions(
         features = {"src/test/resources/features/publisher/api_revisions.feature"},
         glue = {"org.wso2.am.integration.cucumbertests.stepdefinitions"},
-        plugin = {"pretty", "html:target/cucumber-report/publisher-api-revisions.html"},
-        tags = "not @rule:deployment-ack"
+        plugin = {"pretty", "html:target/cucumber-report/publisher-api-revision-acknowledgement.html"},
+        tags = "@rule:deployment-ack"
 )
-public class PublisherAPIRevisionsRunner extends BaseBlockRunner {
+public class PublisherAPIRevisionAcknowledgementRunner extends BaseBlockRunner {
 }

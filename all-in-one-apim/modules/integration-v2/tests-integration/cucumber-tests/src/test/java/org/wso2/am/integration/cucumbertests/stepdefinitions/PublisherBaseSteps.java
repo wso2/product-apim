@@ -3245,9 +3245,13 @@ public class PublisherBaseSteps {
         Object exportedData = ((Map<?, ?>) exportedSpec).get("data");
         assertSpecContentContainsSource(sourceData, exportedData, "data");
 
-        String sourceSynapse = normalizeSynapse(Utils.readClasspathResource(sourceSynapseResource));
-        String exportedSynapse = normalizeSynapse(
-                new String(Files.readAllBytes(synapseFile.toPath()), StandardCharsets.UTF_8));
+        // RAW comparison, no normalization. The previous form trimmed every line and dropped blank lines, which
+        // silently accepted a reformatted template: custom_add_common_header.j2 indents its <header> by 3 spaces,
+        // so an export that stripped or re-indented it passed. Synapse content is whitespace-significant enough
+        // that a reformat is worth failing on, and the product does round-trip it verbatim (verified by running
+        // PublisherOperationPoliciesRunner against this exact assertion).
+        String sourceSynapse = Utils.readClasspathResource(sourceSynapseResource);
+        String exportedSynapse = new String(Files.readAllBytes(synapseFile.toPath()), StandardCharsets.UTF_8);
         Assert.assertEquals(exportedSynapse, sourceSynapse,
                 "Exported synapse template content does not match the source " + sourceSynapseResource);
     }
@@ -3306,18 +3310,6 @@ public class PublisherBaseSteps {
         return value == null
                 || (value instanceof List<?> list && list.isEmpty())
                 || (value instanceof Map<?, ?> map && map.isEmpty());
-    }
-
-    /** Normalizes a synapse template for content comparison: trims each line and drops blank lines. */
-    private String normalizeSynapse(String content) {
-        StringBuilder sb = new StringBuilder();
-        for (String line : content.split("\\R")) {
-            String trimmed = line.trim();
-            if (!trimmed.isEmpty()) {
-                sb.append(trimmed).append('\n');
-            }
-        }
-        return sb.toString();
     }
 
     /**

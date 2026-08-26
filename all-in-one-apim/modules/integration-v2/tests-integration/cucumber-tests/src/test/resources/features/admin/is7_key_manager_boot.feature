@@ -15,7 +15,7 @@ Feature: External Key Manager End-to-End Token Flow
   Scenario Outline: Obtain a token from IS7 (<kmAuthMode> client auth) and invoke a deployed API through the gateway
     Given The system is ready
     And I have valid access tokens as "admin"
-    When I create a key manager from payload "<kmPayload>" as "bootKm"
+    When I create a key manager from payload "<kmPayload>" as "bootKm" and wait until it is operational
     And I have created an api from "artifacts/payloads/create_apim_test_api.json" as "createdApiId" and deployed it
     When I publish the "apis" resource with id "createdApiId"
     Then The lifecycle status of API "createdApiId" should be "Published"

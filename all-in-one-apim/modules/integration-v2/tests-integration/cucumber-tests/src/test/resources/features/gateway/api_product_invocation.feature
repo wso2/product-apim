@@ -16,7 +16,11 @@ Feature: Gateway API Product Invocation
     Given The system is ready
     And I have valid access tokens as "<actor>"
     And I have created an api from "artifacts/payloads/create_apim_test_api.json" as "prodApiId" and deployed it
+    # Deploy-readiness gate (self-healing). The deploy event is at-most-once, so a dropped one can never be
+    # recovered by the invoke's own polling — it would 404 to the deadline. This re-emits it.
+    And the "apis" resource "prodApiId" should be live on the gateway, redeploying if propagation is lost
     And I have created an api from "artifacts/payloads/create_apim_test_api_two.json" as "prodApiTwoId" and deployed it
+    And the "apis" resource "prodApiTwoId" should be live on the gateway, redeploying if propagation is lost
     When I create an API product "${UNIQUE:InvokeProduct}" with context "${UNIQUE:invokeProductCtx}" from APIs "prodApiId,prodApiTwoId" as "productId"
     Then The response status code should be 201
     # Deploy a product revision, publish, and capture the product's gateway context.
@@ -31,6 +35,11 @@ Feature: Gateway API Product Invocation
     """
     And I make a request to deploy revision "revisionId" of "api-products" resource "productId" with payload "prodDeploy"
     Then The response status code should be 201
+    # Deploy-readiness gate for the PRODUCT artifact (self-healing). Nothing else in this feature verified a
+    # product actually reached the gateway: CI saw the product URL answer "Invalid URL" (404) for a full
+    # 60s window because the deploy event was lost, and polling alone can never recover an at-most-once
+    # event. Works for api-products: the DTO carries name+version and the heal path is resourceType-aware.
+    And the "api-products" resource "productId" should be live on the gateway, redeploying if propagation is lost
     When I publish the "api-products" resource with id "productId"
     Then The response status code should be 200
     When I retrieve the "api-products" resource with id "productId"
@@ -93,6 +102,7 @@ Feature: Gateway API Product Invocation
     Given The system is ready
     And I have valid access tokens as "<actor>"
     And I have created an api from "artifacts/payloads/create_apim_test_api.json" as "epApiId" and deployed it
+    And the "apis" resource "epApiId" should be live on the gateway, redeploying if propagation is lost
     When I create an API product "${UNIQUE:EndpointProduct}" with context "${UNIQUE:endpointProductCtx}" from API "epApiId" as "epProductId"
     Then The response status code should be 201
     When I put the following JSON payload in context as "epRev"
@@ -102,6 +112,7 @@ Feature: Gateway API Product Invocation
     And I make a request to create a revision for "api-products" resource "epProductId" with payload "epRev"
     When I deploy revision "revisionId" of "api-products" resource "epProductId"
     Then The response status code should be 201
+    And the "api-products" resource "epProductId" should be live on the gateway, redeploying if propagation is lost
     When I publish the "api-products" resource with id "epProductId"
     Then The response status code should be 200
     When I retrieve the "api-products" resource with id "epProductId"
@@ -138,6 +149,7 @@ Feature: Gateway API Product Invocation
     Then The response status code should be 201
     When I deploy revision "revisionId" of "api-products" resource "epProductId"
     Then The response status code should be 201
+    And the "api-products" resource "epProductId" should be live on the gateway, redeploying if propagation is lost
     # The product now routes to the wildcard upstream: 200, ITS body, and the customer service's body gone.
     When I invoke the API at gateway context "{{epProductContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response body contains "Hello World" within 120 seconds
     Then The response status code should be 200
@@ -156,7 +168,9 @@ Feature: Gateway API Product Invocation
   Scenario Outline: A deployed API product in CREATED state is invocable with a publisher internal API key as <actor>
     Given The system is ready and I have valid publisher access tokens as "<actor>"
     And I have created an api from "artifacts/payloads/create_apim_test_api.json" as "ikApiId" and deployed it
+    And the "apis" resource "ikApiId" should be live on the gateway, redeploying if propagation is lost
     And I have created an api from "artifacts/payloads/create_apim_test_api_two.json" as "ikApiTwoId" and deployed it
+    And the "apis" resource "ikApiTwoId" should be live on the gateway, redeploying if propagation is lost
     When I create an API product "${UNIQUE:InternalKeyProduct}" with context "${UNIQUE:internalKeyProductCtx}" from APIs "ikApiId,ikApiTwoId" as "ikProductId"
     Then The response status code should be 201
     And The value of response field "state" should be "CREATED"
@@ -167,6 +181,7 @@ Feature: Gateway API Product Invocation
     And I make a request to create a revision for "api-products" resource "ikProductId" with payload "ikRev"
     When I deploy revision "revisionId" of "api-products" resource "ikProductId"
     Then The response status code should be 201
+    And the "api-products" resource "ikProductId" should be live on the gateway, redeploying if propagation is lost
     When I retrieve the "api-products" resource with id "ikProductId"
     And I extract response field "context" and store it as "ikProductContext"
     # The product is still in CREATED (never published), so only the internal key can invoke it.
@@ -190,6 +205,7 @@ Feature: Gateway API Product Invocation
     Given The system is ready
     And I have valid access tokens as "<actor>"
     And I have created an api from "artifacts/payloads/create_apim_test_api.json" as "lcApiId" and deployed it
+    And the "apis" resource "lcApiId" should be live on the gateway, redeploying if propagation is lost
     When I create an API product "${UNIQUE:LcProduct}" with context "${UNIQUE:lcProductCtx}" from API "lcApiId" as "lcProductId"
     Then The response status code should be 201
     When I put the following JSON payload in context as "lcRev"
@@ -203,6 +219,7 @@ Feature: Gateway API Product Invocation
     """
     And I make a request to deploy revision "revisionId" of "api-products" resource "lcProductId" with payload "lcDeploy"
     Then The response status code should be 201
+    And the "api-products" resource "lcProductId" should be live on the gateway, redeploying if propagation is lost
     When I publish the "api-products" resource with id "lcProductId"
     Then The response status code should be 200
     When I retrieve the "api-products" resource with id "lcProductId"
@@ -256,6 +273,7 @@ Feature: Gateway API Product Invocation
     Given The system is ready
     And I have valid access tokens as "<actor>"
     And I have created an api from "artifacts/payloads/create_apim_test_api.json" as "scopedApiId" and deployed it
+    And the "apis" resource "scopedApiId" should be live on the gateway, redeploying if propagation is lost
     When I create a new shared scope as "prodScopeEnf"
     Then The response status code should be 201
     And I extract response field "name" and store it as "prodScopeName"
@@ -288,6 +306,7 @@ Feature: Gateway API Product Invocation
     """
     And I make a request to deploy revision "revisionId" of "api-products" resource "scopeProductId" with payload "scopeDeploy"
     Then The response status code should be 201
+    And the "api-products" resource "scopeProductId" should be live on the gateway, redeploying if propagation is lost
     When I publish the "api-products" resource with id "scopeProductId"
     Then The response status code should be 200
     When I retrieve the "api-products" resource with id "scopeProductId"
@@ -339,7 +358,9 @@ Feature: Gateway API Product Invocation
     Given The system is ready
     And I have valid access tokens as "<actor>"
     And I have created an api from "artifacts/payloads/create_apim_restricted_visibility_api.json" as "restrictedApiId" and deployed it
+    And the "apis" resource "restrictedApiId" should be live on the gateway, redeploying if propagation is lost
     And I have created an api from "artifacts/payloads/create_apim_test_api_two.json" as "restrictedApiTwoId" and deployed it
+    And the "apis" resource "restrictedApiTwoId" should be live on the gateway, redeploying if propagation is lost
     When I create an API product "${UNIQUE:RestrictedProduct}" with context "${UNIQUE:restrictedProductCtx}" from APIs "restrictedApiId,restrictedApiTwoId" as "restrictedProductId"
     Then The response status code should be 201
     When I put the following JSON payload in context as "restrictedRev"
@@ -353,6 +374,7 @@ Feature: Gateway API Product Invocation
     """
     And I make a request to deploy revision "revisionId" of "api-products" resource "restrictedProductId" with payload "restrictedDeploy"
     Then The response status code should be 201
+    And the "api-products" resource "restrictedProductId" should be live on the gateway, redeploying if propagation is lost
     When I publish the "api-products" resource with id "restrictedProductId"
     Then The response status code should be 200
     When I retrieve the "api-products" resource with id "restrictedProductId"
@@ -412,6 +434,7 @@ Feature: Gateway API Product Invocation
     """
     And I make a request to deploy revision "revisionId" of "api-products" resource "advertiseProductId" with payload "advertiseDeploy"
     Then The response status code should be 201
+    And the "api-products" resource "advertiseProductId" should be live on the gateway, redeploying if propagation is lost
     When I publish the "api-products" resource with id "advertiseProductId"
     Then The response status code should be 200
     When I retrieve the "api-products" resource with id "advertiseProductId"
@@ -450,6 +473,7 @@ Feature: Gateway API Product Invocation
     Given The system is ready
     And I have valid access tokens as "<actor>"
     And I have created an api from "artifacts/payloads/create_apim_optransform_api.json" as "opPolicyApiId" and deployed it
+    And the "apis" resource "opPolicyApiId" should be live on the gateway, redeploying if propagation is lost
     When I create an API product "${UNIQUE:OpPolicyProduct}" with context "${UNIQUE:opPolicyProductCtx}" from API "opPolicyApiId" as "opPolicyProductId"
     Then The response status code should be 201
     When I put the following JSON payload in context as "opPolicyRev"
@@ -463,6 +487,7 @@ Feature: Gateway API Product Invocation
     """
     And I make a request to deploy revision "revisionId" of "api-products" resource "opPolicyProductId" with payload "opPolicyDeploy"
     Then The response status code should be 201
+    And the "api-products" resource "opPolicyProductId" should be live on the gateway, redeploying if propagation is lost
     When I publish the "api-products" resource with id "opPolicyProductId"
     Then The response status code should be 200
     When I retrieve the "api-products" resource with id "opPolicyProductId"
@@ -494,6 +519,7 @@ Feature: Gateway API Product Invocation
     Given The system is ready
     And I have valid access tokens as "<actor>"
     And I have created an api from "artifacts/payloads/create_apim_optransform_response_api.json" as "respPolicyApiId" and deployed it
+    And the "apis" resource "respPolicyApiId" should be live on the gateway, redeploying if propagation is lost
     When I create an API product "${UNIQUE:RespPolicyProduct}" with context "${UNIQUE:respPolicyProductCtx}" from API "respPolicyApiId" as "respPolicyProductId"
     Then The response status code should be 201
     When I put the following JSON payload in context as "respPolicyRev"
@@ -503,6 +529,7 @@ Feature: Gateway API Product Invocation
     And I make a request to create a revision for "api-products" resource "respPolicyProductId" with payload "respPolicyRev"
     When I deploy revision "revisionId" of "api-products" resource "respPolicyProductId"
     Then The response status code should be 201
+    And the "api-products" resource "respPolicyProductId" should be live on the gateway, redeploying if propagation is lost
     When I publish the "api-products" resource with id "respPolicyProductId"
     Then The response status code should be 200
     When I retrieve the "api-products" resource with id "respPolicyProductId"
@@ -543,6 +570,7 @@ Feature: Gateway API Product Invocation
     Then The response status code should be 201
     When I deploy revision "revisionId" of "api-products" resource "respPolicyProductId"
     Then The response status code should be 201
+    And the "api-products" resource "respPolicyProductId" should be live on the gateway, redeploying if propagation is lost
     # A JSON request body is now converted to XML inbound by the newly-added request policy, and the backend's
     # echo of that XML reaches the client untouched — proof the member API's policy change took effect through
     # the already-deployed product.

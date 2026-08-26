@@ -72,14 +72,27 @@ const handleDigestRequest = (req, res) => {
         return challenge(res, `unknown user ${params.username}`);
     }
 
+    // The challenge advertises qop="auth" ONLY, so honour it: anything else is refused rather than quietly
+    // accepted on a weaker computation. Verified against the gateway's client (Synapse) — it presents
+    // qop="auth", nc="00000001", a cnonce, the nonce, the digest-uri and algorithm="MD5" on every exchange, so
+    // requiring them rejects no legitimate request. The RFC 2069 no-qop form this used to fall back to was
+    // never once exercised; accepting it meant answering a qop="auth" challenge with an unchallenged scheme.
+    if (params.qop !== 'auth') {
+        return challenge(res, `unsupported qop ${params.qop === undefined ? '<absent>' : params.qop}`);
+    }
+    // Present-ness is checked BEFORE hashing: a missing field would otherwise interpolate the literal string
+    // "undefined" into the digest and surface as a response-hash mismatch, which reads as a wrong password.
+    const missing = ['nonce', 'nc', 'cnonce', 'uri', 'response'].filter((f) => params[f] === undefined);
+    if (missing.length > 0) {
+        return challenge(res, `malformed digest credentials, missing ${missing.join(',')}`);
+    }
+
     // HA2 hashes the digest-uri the CLIENT signed (params.uri), which is what RFC 2617 prescribes; the nonce is
     // likewise taken as presented. Nonce freshness/replay is deliberately not tracked — this stub proves
     // possession of the password, and a stateful nonce store would only add flakiness under parallel lanes.
     const ha1 = md5(`${params.username}:${REALM}:${password}`);
     const ha2 = md5(`${req.method}:${params.uri}`);
-    const expected = params.qop
-        ? md5(`${ha1}:${params.nonce}:${params.nc}:${params.cnonce}:${params.qop}:${ha2}`)
-        : md5(`${ha1}:${params.nonce}:${ha2}`);
+    const expected = md5(`${ha1}:${params.nonce}:${params.nc}:${params.cnonce}:${params.qop}:${ha2}`);
 
     if (expected !== params.response) {
         return challenge(res, `response hash mismatch for ${params.username}`);

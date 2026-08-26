@@ -221,7 +221,18 @@ public class ApiRevisionSteps {
         return responseBody.substring(start, end + 1);
     }
 
-    /** True once the named revision reports at least one live gateway that acknowledged the deployment. */
+    /**
+     * True once EVERY {@code deploymentInfo} entry of the named revision reports a live gateway that acknowledged
+     * the deployment.
+     *
+     * <p>Deliberately ALL entries, not ANY. This is the accept condition for the {@code retryUntil} above, and the
+     * assertions after that loop require the counts on EVERY entry — so an ANY test made the gate WEAKER than the
+     * assertion it gates: with more than one entry, the poll accepted the moment the first gateway acknowledged
+     * and the loop then failed on an entry that had not, reporting "No gateway acknowledged the deployment" while
+     * the ack was simply still in flight. Observed in CI as two failures on {@code deploymentInfo[0]} after only
+     * 10.7s and 2.3s — far inside the propagation window the poll was supposed to ride out. An accept condition
+     * must be at least as strong as what follows it, or the wait is decorative.
+     */
     private boolean acknowledged(String revisionsBody, String revisionId) {
 
         JSONObject revision = findRevision(revisionsBody, revisionId);
@@ -229,16 +240,16 @@ public class ApiRevisionSteps {
             return false;
         }
         JSONArray deploymentInfo = revision.optJSONArray("deploymentInfo");
-        if (deploymentInfo == null) {
+        if (deploymentInfo == null || deploymentInfo.length() == 0) {
             return false;
         }
         for (int i = 0; i < deploymentInfo.length(); i++) {
             JSONObject info = deploymentInfo.getJSONObject(i);
-            if (info.optInt("liveGatewayCount") > 0 && info.optInt("deployedGatewayCount") > 0) {
-                return true;
+            if (info.optInt("liveGatewayCount") <= 0 || info.optInt("deployedGatewayCount") <= 0) {
+                return false;
             }
         }
-        return false;
+        return true;
     }
 
     /** The revision entry with the given id from a {@code {"list":[...]}} revisions response, or null. */

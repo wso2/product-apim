@@ -78,6 +78,9 @@ Feature: Gateway Sandbox-Only Environment
     Given The system is ready
     And I have valid access tokens as "<actor>"
     And I have created an api from "artifacts/payloads/create_apim_prodsandbox_api.json" as "sbuApiId" and deployed it
+    # Deploy-readiness gate before the FIRST gateway read: the deploy event is at-most-once, so a dropped one can
+    # never be recovered by the invoke's own polling — it would 404 to the deadline. This re-emits the deploy.
+    And the "apis" resource "sbuApiId" should be live on the gateway, redeploying if propagation is lost
     When I publish the "apis" resource with id "sbuApiId"
     Then The lifecycle status of API "sbuApiId" should be "Published"
     When I retrieve the "apis" resource with id "sbuApiId"
@@ -173,6 +176,9 @@ Feature: Gateway Sandbox-Only Environment
     Given The system is ready
     And I have valid access tokens as "<actor>"
     And I have created an api from "artifacts/payloads/create_apim_sandboxonly_api.json" as "ssuApiId" and deployed it
+    # Deploy-readiness gate before the FIRST gateway read (see the both-endpoints scenario above for why polling
+    # alone cannot recover a dropped at-most-once deploy event).
+    And the "apis" resource "ssuApiId" should be live on the gateway, redeploying if propagation is lost
     When I publish the "apis" resource with id "ssuApiId"
     Then The lifecycle status of API "ssuApiId" should be "Published"
     When I retrieve the "apis" resource with id "ssuApiId"

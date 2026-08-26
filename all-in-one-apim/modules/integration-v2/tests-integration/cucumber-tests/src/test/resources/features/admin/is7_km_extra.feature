@@ -16,7 +16,7 @@ Feature: External Key Manager Coexistence, Permissions and Grant Handling
   Scenario Outline: An IS7-KM application and a resident-KM application both invoke the same API independently as <actor>
     Given The system is ready
     And I have valid access tokens as "<actor>"
-    When I create a key manager from payload "artifacts/payloads/keymanagers/wso2is7.json" as "coexKm"
+    When I create a key manager from payload "artifacts/payloads/keymanagers/wso2is7.json" as "coexKm" and wait until it is operational
     And I have created an api from "artifacts/payloads/create_apim_test_api.json" as "multiApiId" and deployed it
     When I publish the "apis" resource with id "multiApiId"
     Then The lifecycle status of API "multiApiId" should be "Published"

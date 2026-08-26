@@ -306,6 +306,9 @@ Feature: Gateway Mediation Policies
     And I have valid access tokens as "<actor>"
     And I create a new common policy with spec "artifacts/payloads/policySpecFiles/add_secret_headers.j2" and "artifacts/payloads/policySpecFiles/add_secret_headers.yaml" as "baseSecretPolicyId"
     And I have created an api from "artifacts/payloads/create_apim_reflect_api.json" as "baseSecretApiId" and deployed it
+    # Deploy-readiness gate before the FIRST gateway read: the deploy event is at-most-once, so a dropped one can
+    # never be recovered by the invoke's own polling — it would 404 to the deadline. This re-emits the deploy.
+    And the "apis" resource "baseSecretApiId" should be live on the gateway, redeploying if propagation is lost
     When I publish the "apis" resource with id "baseSecretApiId"
     Then The lifecycle status of API "baseSecretApiId" should be "Published"
     When I retrieve the "apis" resource with id "baseSecretApiId"
@@ -348,6 +351,9 @@ Feature: Gateway Mediation Policies
     And I have valid access tokens as "<actor>"
     And I create a new common policy with spec "artifacts/payloads/policySpecFiles/add_secret_headers.j2" and "artifacts/payloads/policySpecFiles/add_secret_headers.yaml" as "detachSecretPolicyId"
     And I have created an api from "artifacts/payloads/create_apim_secretpolicy_api.json" as "detachSecretApiId" and deployed it
+    # Deploy-readiness gate before the FIRST gateway read (see the baseline scenario above for why polling alone
+    # cannot recover a dropped at-most-once deploy event).
+    And the "apis" resource "detachSecretApiId" should be live on the gateway, redeploying if propagation is lost
     When I publish the "apis" resource with id "detachSecretApiId"
     Then The lifecycle status of API "detachSecretApiId" should be "Published"
     When I retrieve the "apis" resource with id "detachSecretApiId"
@@ -685,6 +691,9 @@ Feature: Gateway Mediation Policies
     And I have valid access tokens as "<actor>"
     And I create a new common policy with spec "artifacts/payloads/policySpecFiles/force_content_length.j2" and "artifacts/payloads/policySpecFiles/force_content_length.yaml" as "fclPolicyId"
     And I have created an api from "artifacts/payloads/create_apim_force_content_length_api.json" as "fclApiId" and deployed it
+    # Deploy-readiness gate before the FIRST gateway read (see the baseline scenario above for why polling alone
+    # cannot recover a dropped at-most-once deploy event).
+    And the "apis" resource "fclApiId" should be live on the gateway, redeploying if propagation is lost
     When I publish the "apis" resource with id "fclApiId"
     Then The lifecycle status of API "fclApiId" should be "Published"
     When I retrieve the "apis" resource with id "fclApiId"
