@@ -280,8 +280,40 @@ public class PublisherBaseSteps {
         Assert.assertNotNull(createRevisionResponse,
                 "Revision creation never returned a response for " + resourceType + " " + actualResourceId);
         Assert.assertEquals(createRevisionResponse.getResponseCode(), 201, createRevisionResponse.getData());
-        TestContext.set("revisionId", Utils.extractValueFromPayload(createRevisionResponse.getData(), "id"));
-        Thread.sleep(3000);
+        Object newRevisionId = Utils.extractValueFromPayload(createRevisionResponse.getData(), "id");
+        TestContext.set("revisionId", newRevisionId);
+        awaitRevisionReadable(resourceType, actualResourceId, newRevisionId.toString());
+    }
+
+    /**
+     * Polls until a just-created revision is READABLE by id, replacing the blind {@code Thread.sleep(3000)} that
+     * used to end this step (CLAUDE.md §4 — "wait, never sleep").
+     *
+     * <p>The sleep was covering something real: the very next thing every caller does is POST the deploy for this
+     * revision ({@link #iDeployApiRevisionGivenPayload}), which issues a single request with NO retry and whose
+     * 201 is asserted immediately — so a revision that is not yet addressable fails the deploy outright. Deleting
+     * the sleep without this gate would surface as an intermittent deploy failure on EVERY deploy path. Polling
+     * the revisions LIST until the new id appears is the condition the sleep was approximating, and it exits as
+     * soon as the revision is there rather than always paying 3s.
+     *
+     * <p>Deliberately the LIST endpoint, not {@code Utils.getRevisionByID}: the product answers a GET on
+     * {@code /revisions/{id}} with <b>501 Not Implemented</b> (that builder serves DELETE), so polling it can
+     * never succeed — measured, after this gate first shipped against it and failed on every deploy.
+     */
+    private void awaitRevisionReadable(String resourceType, String resourceId, String revisionId)
+            throws IOException, InterruptedException {
+
+        String url = Utils.getRevisionURL(Utils.getBaseUrl(), resourceType, resourceId);
+        Map<String, String> headers = Identity.publisherHeaders();
+        HttpResponse last = Utils.retryUntil(Constants.RUNTIME_PROPAGATION_TIMEOUT,
+                () -> SimpleHTTPClient.getInstance().doGet(url, headers),
+                response -> response != null && response.getResponseCode() == 200
+                        && response.getData() != null && response.getData().contains(revisionId));
+        Assert.assertTrue(last != null && last.getResponseCode() == 200 && last.getData() != null
+                        && last.getData().contains(revisionId),
+                "Revision " + revisionId + " of " + resourceType + " " + resourceId + " never appeared in the "
+                        + "revisions listing; got=" + (last == null ? "null"
+                        : last.getResponseCode() + "/" + last.getData()));
     }
 
     /**
@@ -1135,9 +1167,21 @@ public class PublisherBaseSteps {
     }
 
     /**
-     * Waits until a specific revision is deployed in the gateway.
-     * This step polls the deployment status endpoint until the revision appears in the deployed revisions list,
-     * with a timeout mechanism to prevent indefinite waiting.
+     * Waits until a specific revision is deployed, by polling the MANAGEMENT plane's deployment-status endpoint
+     * until the revision appears in the deployed list.
+     *
+     * <p><b>This is a management-plane check ONLY — it is NOT a gateway readiness gate.</b> It reports when the
+     * revision ROW is written, which is not when synapse has hot-swapped the running sequence, so an invocation
+     * issued straight after it can still be served by the OLD artifact. It previously papered over that with a
+     * blind {@code Thread.sleep(10000)}; that violated CLAUDE.md §4 ("wait, never sleep"), was simultaneously too
+     * short under CI load (it let mediation_policies.feature:374 read the pre-detach response) and pure waste
+     * everywhere else, and — worst — stood as a copyable template for the next author. It is gone.
+     *
+     * <p>If the following step ASSERTS on gateway behaviour, gate it on the DATA plane instead, so the condition
+     * is false in the old state and true in the new one: {@code ... until response body contains "<marker>"} for
+     * an effect that should appear, {@code ... until response body no longer contains "<marker>"} for one that
+     * should disappear, or a status poll to a code the old state cannot return. Use this step only to fail fast
+     * with a clear message when a deploy never landed at all.
      *
      * @param resourceType Type of resource (e.g., "apis", "api-products")
      * @param resourceId Context key containing the resource ID
@@ -1175,11 +1219,6 @@ public class PublisherBaseSteps {
                         if (revisionId.equals(deployedRevisionId)) {
                             deployed = true;
                             logger.info("Revision {} is deployed for API {}", revisionId, actualResourceId);
-                            try {
-                                Thread.sleep(10000);
-                            } catch (InterruptedException ignored) {
-                                Thread.currentThread().interrupt();
-                            }
                             break;
                         }
                     }

@@ -40,9 +40,19 @@ Feature: Gateway Basic-Auth Application Security
     Then The response status code should be 200
     When I retrieve the "apis" resource with id "baApiId"
     And I extract response field "context" and store it as "baContext"
+    And I extract response field "name" and store it as "baApiName"
+    # Hot-swap gate. The first invocation below is a WRONG password expecting 401 — and the OLD (default-security)
+    # artifact answers a Basic credential with 401 too, so that assertion could be satisfied before the security
+    # scheme ever reached synapse. A success probe would fix the gate but destroy the point of the scenario ("before
+    # any success"), so gate on synapse's own re-add line instead: it reads the log and issues no request, leaving
+    # the wrong-password call the scenario's genuine first invocation.
+    And I mark the current end of the server log file "wso2carbon.log"
     When I deploy the API with id "baApiId"
     Then The response status code should be 201
     And I wait until "apis" "baApiId" revision is deployed in the gateway
+    And The server log file "wso2carbon.log" should gain a line containing all of the following within 60 seconds
+      | {{baApiName}}                                       |
+      | was added to the Synapse configuration successfully |
     When I publish the "apis" resource with id "baApiId"
     Then The lifecycle status of API "baApiId" should be "Published"
 
@@ -213,9 +223,18 @@ Feature: Gateway Basic-Auth Application Security
     Then The response status code should be 200
     When I retrieve the "apis" resource with id "bkApiId"
     And I extract response field "context" and store it as "bkContext"
+    And I extract response field "name" and store it as "bkApiName"
+    # Hot-swap gate. An internal API key is validated independently of the declared scheme, so it returns 200
+    # against the OLD (default-security) artifact as well — an until-200 poll would be satisfied before basic_auth
+    # ever reached synapse, and the scenario would "prove" the bypass without the API being basic_auth-only yet.
+    # Synapse's own re-add line is the only signal here that separates the two artifacts.
+    And I mark the current end of the server log file "wso2carbon.log"
     When I deploy the API with id "bkApiId"
     Then The response status code should be 201
     And I wait until "apis" "bkApiId" revision is deployed in the gateway
+    And The server log file "wso2carbon.log" should gain a line containing all of the following within 60 seconds
+      | {{bkApiName}}                                       |
+      | was added to the Synapse configuration successfully |
     When I publish the "apis" resource with id "bkApiId"
     Then The lifecycle status of API "bkApiId" should be "Published"
 

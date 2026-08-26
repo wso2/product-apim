@@ -660,6 +660,39 @@ public class APIInvocationSteps {
     }
 
     /**
+     * The negative counterpart of the variant above: retries until the response is a 200 whose body NO LONGER
+     * contains the marker. Needed wherever a policy/config is REMOVED and the effect must disappear — there the
+     * status is 200 both before and after, so an until-status-200 poll is satisfied by the still-live old
+     * sequence and the absence assertion reads the pre-change response (a real CI failure at
+     * mediation_policies.feature:374). Management-plane deployment status cannot substitute: it flips when the
+     * revision row is written, which is not when synapse has hot-swapped. Polling the data plane for the absence
+     * is the only gate that distinguishes the two states.
+     */
+    @When("I invoke the API at gateway context {string} with method {string} using access token {string} and payload {string} until response body no longer contains {string} within {int} seconds")
+    public void invokeApiByContextUntilBodyNoLongerContains(String context, String httpMethod, String accessToken,
+                                                            String payload, String absentBody, int timeoutSeconds)
+            throws Exception {
+
+        String resolvedContext = Utils.resolveContextPlaceholders(context);
+        String marker = Utils.resolveContextPlaceholders(absentBody);
+        long started = System.currentTimeMillis();
+        HttpResponse last = Utils.retryUntil(timeoutSeconds * 1000L,
+                () -> invokeApiByContext(resolvedContext, httpMethod, accessToken, payload),
+                response -> response.getResponseCode() == 200 && response.getData() != null
+                        && !response.getData().contains(marker));
+        Requests.publishPollResult(last);
+        if (last != null && last.getResponseCode() == 401) {
+            Utils.logAuthRejection(resolvedContext, accessToken, credentialForDiagnostic(accessToken),
+                    last.getResponseCode(), last.getData(), System.currentTimeMillis() - started);
+        }
+        assertReachedExpectedStatus(last, 200);
+        String body = last.getData();
+        Assert.assertFalse(body == null || body.contains(marker),
+                "Response body was null or still contained '" + marker + "' when the deadline elapsed, so the "
+                        + "change never reached the gateway; last response: " + body);
+    }
+
+    /**
      * Invokes a deployed API at its full gateway context with an EXPLICIT Content-Type, retrying until the
      * response is a 200 whose body CONTAINS the given marker. The combination the two single-axis variants
      * cannot express: a RESPONSE-flow transformation policy is only exercised when the request carries the
@@ -1301,6 +1334,13 @@ public class APIInvocationSteps {
      * until it returns 200 (a freshly published API takes a moment to become routable) — but a 200 whose header
      * count/values are wrong is NOT retried, so a genuine collapse surfaces as an assertion failure rather than a
      * timeout.</p>
+     *
+     * <p>LIMITATION: {@code expectedValuesCsv} is comma-split, so an expected header value that itself CONTAINS a
+     * comma cannot be expressed — the common case being a dated {@code Set-Cookie}
+     * ({@code …; Expires=Wed, 21 Oct 2026 …}), which would be read as two values and fail the count assertion.
+     * Neither scenario using this step needs one today. If one ever does, take the markers as a DataTable instead
+     * (see {@code LoggingSteps#logFileShouldGainLineContainingAll}, which uses that form for the same reason)
+     * rather than inventing a second delimiter.</p>
      */
     @When("I invoke the API at gateway context {string} with method {string} using access token {string} and assert the response carries exactly {int} {string} headers with values {string} within {int} seconds")
     public void invokeAndAssertMultiValuedHeader(String context, String httpMethod, String accessToken,

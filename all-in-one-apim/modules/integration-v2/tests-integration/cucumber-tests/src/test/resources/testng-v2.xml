@@ -130,6 +130,9 @@
         <parameter name="initSecondaryUserStore" value="true"/>
         <classes>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.KeyManagerTokenIssuanceRunner"/>
+            <!-- The SECONDARY.COM store-principal arcs live here ONLY: token_issuance.feature itself is also run by
+                 IntegrationV2-EmailUserName, where a single-"@" store principal cannot resolve to a tenant. -->
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.KeyManagerTokenIssuanceStorePrincipalRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.KeyManagerTokenRevocationRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.KeyManagerApiKeyRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.KeyManagerOAuthKeysRunner"/>
@@ -600,6 +603,12 @@
         <!-- Gateway invocation in this block needs the node backend; without it Basic auth reaches a SUSPENDED
              endpoint (500) and a 200 would be unreachable (CLAUDE.md §11). -->
         <parameter name="initBackend" value="true"/>
+        <!-- Deliberately NO initSecondaryUserStore: the SECONDARY.COM store-principal token arcs live in their own
+             feature/runner (KeyManagerTokenIssuanceStorePrincipalRunner, KeyManager block only) because they
+             CANNOT pass here. Measured: with emailUserMode the carbon.super row passes but
+             SECONDARY.COM/subscriberUser1@tenant1.com is refused 401 — EnableEmailUserName splits on the LAST "@"
+             only when a name carries TWO or more, so a single-"@" store principal resolves to carbon.super and
+             never to tenant1. That is the specified rule this block exists to exercise, not a defect to seed around. -->
         <classes>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayBasicAuthEmailUserNameRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.DevPortalApplicationEmailUserNameRunner"/>

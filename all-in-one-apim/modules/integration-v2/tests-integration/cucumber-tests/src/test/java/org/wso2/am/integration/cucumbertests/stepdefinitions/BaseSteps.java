@@ -1643,7 +1643,19 @@ public class BaseSteps {
     }
 
     /**
-     * Waits for an API to be deployed in the gateway.
+     * Waits until the API's artifact is present at the gateway's admin artifact endpoint.
+     *
+     * <p><b>Presence is not readiness.</b> The endpoint answers 200 as soon as the artifact exists; it does not
+     * say synapse has finished swapping the running sequence, and it cannot distinguish one revision from
+     * another. This previously ended in a blind {@code Thread.sleep(10000)} standing in for that gap — a
+     * CLAUDE.md §4 violation ("wait, never sleep") that was both an unconditional 10s tax on all 7 call sites
+     * and no actual proof. It is gone. All 7 sites are first deploys (the old state is a 404, so their
+     * following poll is already discriminating) or perform no invocation at all.
+     *
+     * <p>If you add a caller that ASSERTS on gateway behaviour after a REDEPLOY, this step is not enough — gate
+     * on the data plane, so the condition is false in the old state and true in the new one (see
+     * {@code APIInvocationSteps} "until response body contains" / "until response body no longer contains"), or
+     * on synapse's own re-add line in wso2carbon.log when the observable is unchanged by the redeploy.
      *
      * @param apiDetailsPayload Context key containing the API details JSON payload
      */
@@ -1716,7 +1728,6 @@ public class BaseSteps {
         }
         Assert.assertTrue(isApiDeployed, "API " + apiName + " v" + apiVersion +
                 " was not deployed within the timeout");
-        Thread.sleep(10000);
     }
 
 

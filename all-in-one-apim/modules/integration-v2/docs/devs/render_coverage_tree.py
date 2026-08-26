@@ -39,9 +39,17 @@ DEFAULT_RUNNERS = os.path.join(_CUKE, "src", "test", "java", "org", "wso2", "am"
 EXCLUSION = {"infra", "framework", "migration", "setup"}
 SETUP_PREFIX = "_setup_"
 VALID_TYPES = {"smoke", "negative", "regression"}
-SCENARIO_RE = re.compile(r"^\s*(Scenario Outline|Scenario):\s*(.*)$")
-EXAMPLES_RE = re.compile(r"^\s*Examples:")
-FEATURE_RE = re.compile(r"^\s*Feature:\s*(.*)$")
+# Gherkin's English dialect accepts SYNONYMS for each keyword (read off the shipped gherkin-32.1.0 dialect:
+# Scenario Outline == "Scenario Template", Scenario == "Example", Examples == "Scenarios",
+# Feature == "Business Need"/"Ability"). Recognising only the common spelling is not a cosmetic gap: a
+# `Scenario Template`/`Example` scenario would be INVISIBLE here — silently uncounted, and never subjected to the
+# no-Examples check below — while a `Scenarios:` block would make a valid outline look dead. Longer alternatives
+# are listed first so the alternation cannot match a prefix; note `Examples:`/`Scenarios:` cannot be mis-read as
+# `Example`/`Scenario` because the trailing colon is required immediately.
+SCENARIO_RE = re.compile(r"^\s*(Scenario Outline|Scenario Template|Scenario|Example):\s*(.*)$")
+OUTLINE_KEYWORDS = {"Scenario Outline", "Scenario Template"}
+EXAMPLES_RE = re.compile(r"^\s*(Examples|Scenarios):")
+FEATURE_RE = re.compile(r"^\s*(Feature|Business Need|Ability):\s*(.*)$")
 CLASS_RE = re.compile(r'<class\s+name="([^"]+)"')
 XML_COMMENT_RE = re.compile(r"<!--.*?-->", re.S)
 # Comment stripping is a hand-rolled scan, NOT a regex, because a regex cannot tell a comment from a `//`
@@ -233,17 +241,24 @@ def scan_features(root):
             feat_ns, feat_bare = {}, set()
             pend_ns, pend_bare = {}, set()
             seen_feature = False
-            in_doc = False   # inside a """ docstring: its lines are payload, not Gherkin
+            in_doc = None    # active docstring delimiter ('"""' or '```') while inside one, else None
             cur = None       # index in `scenarios` of the scenario currently being read
             with open(path, encoding="utf-8") as fh:
                 for i, raw in enumerate(fh, 1):
                     s = raw.strip()
-                    # A docstring can hold lines that look like table rows (JSON/XML/markdown payloads),
-                    # so toggle out of Gherkin while inside one or they would be counted as Examples data.
-                    if s.startswith('"""'):
-                        in_doc = not in_doc
-                        continue
-                    if in_doc:
+                    # A docstring can hold lines that look like table rows (JSON/XML/markdown payloads), so step
+                    # out of Gherkin while inside one or they would be counted as Examples data — which would let
+                    # an outline with NO real Examples look like it had some, defeating the check in classify().
+                    # Gherkin accepts BOTH """ and ``` as delimiters, and the ACTIVE one must be tracked rather
+                    # than toggling on either: a """ line inside a ```-delimited payload (or vice versa) is
+                    # content, not a terminator, and treating it as one would resume parsing mid-payload.
+                    if in_doc is None:
+                        if s.startswith('"""') or s.startswith('```'):
+                            in_doc = s[:3]
+                            continue
+                    else:
+                        if s.startswith(in_doc):
+                            in_doc = None
                         continue
                     if s.startswith("@"):
                         ns, bare = parse_tags(s)
@@ -298,7 +313,7 @@ def classify(scenarios, caps, executed=None):
         # Nothing else here catches that -- it is not a tagging fault, and the not-executed check works at
         # FILE granularity, so the file still looks wired to a runner. Each Examples block spends one row on
         # its header, hence rows-minus-blocks is the data-row count.
-        if sc.get("kind") == "Scenario Outline" and sc.get("ex_rows", 0) - sc.get("ex_blocks", 0) < 1:
+        if sc.get("kind") in OUTLINE_KEYWORDS and sc.get("ex_rows", 0) - sc.get("ex_blocks", 0) < 1:
             invalid.append((sc, "Scenario Outline has no Examples data rows (generates zero test cases)"))
             continue
         is_setup_file = os.path.basename(sc["file"]).startswith(SETUP_PREFIX)

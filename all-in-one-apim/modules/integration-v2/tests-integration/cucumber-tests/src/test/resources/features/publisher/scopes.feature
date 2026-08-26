@@ -61,15 +61,24 @@ Feature: Publisher API Shared Scopes
       """
     Then The response status code should be 200
     When I retrieve the "apis" resource with id "scopeApiId"
-    Then The response should contain "{{assignScopeName}}"
+    # Asserted on the OPERATION, not on the payload as a whole: the scope is already in the API-level scopes array
+    # from the step above, so a bare "response contains" would pass even if the operation carried no scope at all.
+    Then The response field "operations[?(@.target=='/customers/{id}' && @.verb=='GET')].scopes[*]" should be exactly the list "{{assignScopeName}}"
+    And The response array field "operations[?(@.target=='/customers/{id}' && @.verb=='GET')].scopes[*]" should have exactly 1 entries
     And I put the response payload in context as "scopeApiPayload"
 
-    # Detach the scope from the operation again (scopes array cleared) — the update must succeed.
+    # Detach the scope from the operation again (scopes array cleared).
     When I update the "apis" resource "scopeApiId" and "scopeApiPayload" with configuration type "operations" and value:
       """
       [{"target":"/customers/{id}","verb":"GET","authType":"Application & Application User","throttlingPolicy":"Unlimited","scopes":[],"operationPolicies":{"request":[],"response":[],"fault":[]}}]
       """
     Then The response status code should be 200
+    # Re-read: a 200 on the PUT only says the request was accepted, not that the scope is gone. The verb pin comes
+    # first so the empty-scope assertion cannot pass vacuously by the operation having disappeared entirely.
+    When I retrieve the "apis" resource with id "scopeApiId"
+    Then The response status code should be 200
+    And The response field "operations[?(@.target=='/customers/{id}' && @.verb=='GET')].verb" should be exactly the list "GET"
+    And The response field "operations[?(@.target=='/customers/{id}' && @.verb=='GET')].scopes[*]" should be exactly the list ""
 
     Examples:
       | admin             |

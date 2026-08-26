@@ -83,9 +83,18 @@ Feature: Key Manager API Key
     Then The response status code should be 200
     When I retrieve the "apis" resource with id "createdApiId"
     And I extract response field "context" and store it as "apiContext"
+    And I extract response field "name" and store it as "invalidKeyApiName"
+    # Hot-swap gate. The only invocation below presents a GARBAGE key expecting 401, and the OLD (default-security)
+    # artifact rejects an unknown api-key header with 401 too — so the assertion could be satisfied before api_key
+    # security ever reached synapse, proving nothing. There is no valid-key probe available here that would not
+    # change what the scenario tests, so gate on synapse's own re-add line for this artifact.
+    And I mark the current end of the server log file "wso2carbon.log"
     When I deploy the API with id "createdApiId"
     Then The response status code should be 201
     And I wait until "apis" "createdApiId" revision is deployed in the gateway
+    And The server log file "wso2carbon.log" should gain a line containing all of the following within 60 seconds
+      | {{invalidKeyApiName}}                               |
+      | was added to the Synapse configuration successfully |
     When I publish the "apis" resource with id "createdApiId"
     Then The lifecycle status of API "createdApiId" should be "Published"
 

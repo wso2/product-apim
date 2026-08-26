@@ -322,6 +322,9 @@ Feature: Gateway SOAP API Invocation
     Then The response status code should be 201
     When I publish the "apis" resource with id "soApiId"
     Then The lifecycle status of API "soApiId" should be "Published"
+    # Deploy-readiness gate before the first gateway read: the runtime deploy event is at-most-once, so if the
+    # gateway dropped it no amount of until-200 polling can recover — this re-deploys the revision instead.
+    And the "apis" resource "soApiId" should be live on the gateway, redeploying if propagation is lost
     When I retrieve the "apis" resource with id "soApiId"
     And I extract response field "context" and store it as "soContext"
     # Subscribe an application keyed for the password grant so a scoped user token can be requested.
@@ -390,6 +393,9 @@ Feature: Gateway SOAP API Invocation
     Then The response status code should be 201
     When I publish the "apis" resource with id "dvApiId"
     Then The lifecycle status of API "dvApiId" should be "Published"
+    # Deploy-readiness gate before the first gateway read (see the scope-enforcement scenario above for why a
+    # dropped at-most-once deploy event cannot be polled away).
+    And the "apis" resource "dvApiId" should be live on the gateway, redeploying if propagation is lost
     When I retrieve the "apis" resource with id "dvApiId"
     And I extract response field "context" and store it as "dvContext"
     When I have set up application with keys, subscribed to API "dvApiId", and obtained access token for "dvSub"
@@ -433,6 +439,9 @@ Feature: Gateway SOAP API Invocation
     Then The response status code should be 201
     When I publish the "apis" resource with id "opApiId"
     Then The lifecycle status of API "opApiId" should be "Published"
+    # Deploy-readiness gate before the first gateway read (see the scope-enforcement scenario above for why a
+    # dropped at-most-once deploy event cannot be polled away).
+    And the "apis" resource "opApiId" should be live on the gateway, redeploying if propagation is lost
     When I retrieve the "apis" resource with id "opApiId"
     And I extract response field "context" and store it as "opContext"
     # The OAUTH-tokenType application fixture is the discriminator — its generated token is opaque, not a JWT.

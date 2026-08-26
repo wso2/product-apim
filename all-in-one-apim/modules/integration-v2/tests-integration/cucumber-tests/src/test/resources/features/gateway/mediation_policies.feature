@@ -256,6 +256,7 @@ Feature: Gateway Mediation Policies
     Then The lifecycle status of API "secretApiId" should be "Published"
     When I retrieve the "apis" resource with id "secretApiId"
     And I extract response field "context" and store it as "secretContext"
+    And I extract response field "name" and store it as "secretApiName"
     # The secret value must NOT be returned in the publisher representation of the API (it is masked).
     And The response should not contain "test-api-key-123"
     When I have set up application with keys, subscribed to API "secretApiId", and obtained access token for "secretSubId"
@@ -271,9 +272,18 @@ Feature: Gateway Mediation Policies
     # that preserve-on-empty is genuine and not a silent wipe the masked publisher view would hide.
     When I update the parameters of the operation policy in flow "request" of operation 0 of API "secretApiId" to "{\"apiKey\":\"\",\"token\":\"\"}"
     Then The response status code should be 200
+    # Hot-swap gate. This scenario's whole point is that the observable is UNCHANGED by the update (the secret is
+    # PRESERVED), so "test-api-key-123" is in the body before AND after — no data-plane poll can tell the old
+    # artifact from the new one, and the management-plane revision check below only reports that the revision ROW
+    # was written. Mark the log first, then wait for synapse's own re-add line for THIS artifact; that is the only
+    # signal here that distinguishes the two. Reads the log only, so it changes nothing the scenario asserts.
+    And I mark the current end of the server log file "wso2carbon.log"
     When I deploy the API with id "secretApiId"
     And the "apis" resource "secretApiId" should be live on the gateway, redeploying if propagation is lost
     And I wait until "apis" "secretApiId" revision is deployed in the gateway
+    And The server log file "wso2carbon.log" should gain a line containing all of the following within 60 seconds
+      | {{secretApiName}}                                   |
+      | was added to the Synapse configuration successfully |
     When I invoke the API at gateway context "{{secretContext}}/1.0.0/reflect-headers" with method "GET" using access token "generatedAccessToken" and payload "" until response body contains "test-api-key-123" within 60 seconds
     Then The response status code should be 200
     And The response should contain "test-api-key-123"
@@ -366,10 +376,14 @@ Feature: Gateway Mediation Policies
     # (b) A policy change reaches the gateway only on redeploy.
     When I deploy the API with id "detachSecretApiId"
     And the "apis" resource "detachSecretApiId" should be live on the gateway, redeploying if propagation is lost
-    # (c) Wait for the NEW policy-free revision to be the deployed one (it settles the synapse hot-swap) — otherwise
-    # the invoke races the redeploy and reads the still-live old sequence, which returns 200 with the header intact.
+    # (c) Wait for the NEW policy-free revision to be the deployed one. This is a MANAGEMENT-plane gate: it flips
+    # when the revision row is written, which is NOT when synapse has hot-swapped, so it cannot be the last word.
     And I wait until "apis" "detachSecretApiId" revision is deployed in the gateway
-    When I invoke the API at gateway context "{{detachSecretContext}}/1.0.0/reflect-headers" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
+    # (d) Gate on the DATA plane. The status is 200 both before and after the detach, so an until-status-200 poll
+    # is satisfied by the still-live old sequence and the absence assertion below then reads the pre-detach
+    # response — observed failing exactly that way in CI. Polling for the header's DISAPPEARANCE is the only
+    # gate that tells the two states apart; the assertions after it are re-assertions on the settled response.
+    When I invoke the API at gateway context "{{detachSecretContext}}/1.0.0/reflect-headers" with method "GET" using access token "generatedAccessToken" and payload "" until response body no longer contains "test-api-key-123" within 60 seconds
     Then The response status code should be 200
     And The response should not contain "test-api-key-123"
     And The response should not contain "\"apikey\""
