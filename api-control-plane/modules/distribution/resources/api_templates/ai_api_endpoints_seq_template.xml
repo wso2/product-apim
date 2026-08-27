@@ -56,6 +56,8 @@
 <class name="org.wso2.carbon.apimgt.gateway.mediators.GCPOAuth2TokenInjector">
     <property name="serviceAccountKey" value="$util.escapeXml($endpoint.serviceAccountKey)" type="STRING"/>
 </class>
+<!-- Vertex AI rejects chunked request bodies; force a Content-Length header on the outbound call. -->
+<property name="DISABLE_CHUNKING" value="true" scope="axis2"/>
         #end
         #if( $endpoint.authenticationType == "APIKEY" || $endpoint.authenticationType == "apikey")
 <class name="org.wso2.carbon.apimgt.gateway.mediators.ApiKeyMediator">
