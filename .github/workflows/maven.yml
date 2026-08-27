@@ -168,11 +168,12 @@ jobs:
         run: |
           echo "APIM_IMAGE=$(mvn -q -N help:evaluate -Dexpression=apim.docker.image.name -DforceStdout)" >> "$GITHUB_ENV"
           echo "SOLACE_SHIM_IMAGE=$(mvn -q -N help:evaluate -Dexpression=solace.shim.docker.image.name -DforceStdout)" >> "$GITHUB_ENV"
+          echo "SQUID_IMAGE=$(mvn -q -N help:evaluate -Dexpression=squid.docker.image.name -DforceStdout)" >> "$GITHUB_ENV"
       # Only locally built images travel by tar; public images are pulled by the matrix.
       - name: Save Docker images and IS staging
         run: |
           mkdir -p /tmp/v2-images
-          docker save "$APIM_IMAGE" node-app-server:latest "$SOLACE_SHIM_IMAGE" | gzip > /tmp/v2-images/images.tar.gz
+          docker save "$APIM_IMAGE" node-app-server:latest "$SOLACE_SHIM_IMAGE" "$SQUID_IMAGE" | gzip > /tmp/v2-images/images.tar.gz
           # The external-KM blocks read these staged files at runtime (see BlockLifecycleListener /
           # DynamicApimContainer#withExternalKmTrust); they exist only where pre-integration-test ran.
           tar -C all-in-one-apim/modules/integration-v2/tests-common/testcontainers/target -czf \
