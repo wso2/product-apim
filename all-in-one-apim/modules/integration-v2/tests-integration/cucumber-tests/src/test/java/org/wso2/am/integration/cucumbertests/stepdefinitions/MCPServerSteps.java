@@ -842,4 +842,117 @@ public class MCPServerSteps {
         HttpResponse response = Requests.put(Utils.getMCPServerBackendByIdURL(Utils.getBaseUrl(), actualId, actualBackendId),
                 publisherHeaders(), jsonPayload, Constants.CONTENT_TYPES.APPLICATION_JSON);
     }
+
+    // ---- Export / import of an MCP server archive ----
+    //
+    // An MCP server built on an existing API records that API's id, and the id belongs to the environment the
+    // archive was exported from, so the import has to resolve the reference by the name and the version the
+    // archive also carries. A second environment is stood in for by rewriting the recorded id to one that belongs
+    // to no API here — the same condition an import into a genuinely separate environment meets.
+    //
+    // The archive is exported as JSON (as the API export/import round-trip is) so the rewrite addresses the
+    // recorded FIELD rather than matching text in a YAML rendering of it.
+
+    /** Base name of the MCP-server definition inside an archive exported with {@code format=JSON}. */
+    private static final String MCP_SERVER_DEFINITION = "mcp_server.json";
+
+    /**
+     * Exports an MCP server to an archive and stores the downloaded zip's path under {@code archivePathKey}.
+     *
+     * @param idKey          context key holding the MCP server's id
+     * @param archivePathKey context key to store the downloaded archive's path under
+     */
+    @When("I export the MCP server {string} to an archive as {string}")
+    public void iExportMcpServerToArchive(String idKey, String archivePathKey) throws IOException {
+        String url = Utils.getMCPServerExportURL(Utils.getBaseUrl(), TestContext.resolve(idKey).toString(), "JSON");
+        SimpleHTTPClient.DownloadResult result = Requests.getToFile(url, publisherHeaders(), ".zip");
+        Assert.assertEquals(result.getStatusCode(), 200, "MCP server export did not return 200");
+        // Presence AND content: the export shares the temp directory the API export races on (see
+        // iExportApiToArchive), and a truncated archive otherwise surfaces as a confusing import failure.
+        Assert.assertNotNull(Utils.zipEntryText(result.getFile(), MCP_SERVER_DEFINITION),
+                "The exported archive carries no " + MCP_SERVER_DEFINITION);
+        TestContext.set(archivePathKey, result.getFile().getAbsolutePath());
+    }
+
+    /**
+     * Rewrites, in place, the reference API id the archive records — standing in for an archive exported from
+     * another environment, where that id belongs to no API here. Fails if it rewrote nothing, so an archive whose
+     * shape changed cannot leave the scenario importing an id that resolves trivially and still passing.
+     *
+     * @param archivePathKey context key holding the archive's path
+     * @param apiId          the id to record instead
+     */
+    @When("I rewrite the reference API id in the MCP server archive {string} to {string}")
+    public void iRewriteReferenceApiIdInArchive(String archivePathKey, String apiId) throws IOException {
+        String replacement = Utils.resolveContextPlaceholders(apiId);
+        int[] rewritten = {0};
+        Utils.rewriteZipEntry(new File(TestContext.resolve(archivePathKey).toString()), MCP_SERVER_DEFINITION,
+                definition -> {
+                    JSONObject root = new JSONObject(definition);
+                    JSONArray operations = root.getJSONObject("data").getJSONArray("operations");
+                    for (int i = 0; i < operations.length(); i++) {
+                        JSONObject mapping = operations.getJSONObject(i).optJSONObject("apiOperationMapping");
+                        if (mapping != null) {
+                            mapping.put("apiId", replacement);
+                            rewritten[0]++;
+                        }
+                    }
+                    return root.toString();
+                });
+        Assert.assertTrue(rewritten[0] > 0, "No reference API id was rewritten — the archive records none, so the "
+                + "import that follows would resolve the id it was exported with and prove nothing");
+    }
+
+    /**
+     * Imports an MCP server archive, storing the imported server's id under {@code idKey} and registering it for
+     * teardown. Non-asserting (the feature confirms the status), as the API-archive import step is.
+     *
+     * <p>As the ADMIN actor, not the publisher one every other step here uses: the import accepts
+     * {@code apim:mcp_server_import_export} — which maps to {@code admin,Internal/devops} — or {@code apim:admin},
+     * and the publisher token carries neither, so it is refused as unauthenticated. (The EXPORT needs no such
+     * thing; it also accepts {@code apim:mcp_server_view}, which the publisher token does carry.)
+     *
+     * <p>{@code Accept: application/json} is what makes the id available: the import answers a plain-text message
+     * by default and the id would then have to be recovered by polling the (eventually consistent) listing.
+     *
+     * @param archivePathKey context key holding the archive's path
+     * @param idKey          context key to store the imported MCP server's id under
+     */
+    @When("I import the MCP server archive {string} as {string}")
+    public void iImportMcpServerArchive(String archivePathKey, String idKey) throws IOException {
+        Map<String, String> headers = Identity.adminHeaders();
+        headers.put("Accept", Constants.CONTENT_TYPES.APPLICATION_JSON);
+        Map<String, File> files = new HashMap<>();
+        files.put("file", new File(TestContext.resolve(archivePathKey).toString()));
+        HttpResponse response = Requests.postMultipart(Utils.getMCPServerImportURL(Utils.getBaseUrl()), headers,
+                files, null);
+        if (response.getResponseCode() >= 200 && response.getResponseCode() < 300) {
+            Object importedId = Utils.extractValueFromPayload(response.getData(), "id");
+            TestContext.set(idKey, importedId);
+            ResourceCleanup.register(ResourceCleanup.CREATED_MCP_SERVER_IDS, importedId);
+        }
+    }
+
+    /**
+     * Asserts every tool of the MCP server references the given API. On an import this is the id the reference was
+     * resolved to, which has to be the id the API carries in THIS environment rather than the one the archive was
+     * exported with.
+     *
+     * @param idKey    context key holding the MCP server's id
+     * @param apiIdKey context key holding the API id the reference should have resolved to
+     */
+    @Then("The MCP server {string} should reference API {string}")
+    public void theMcpServerShouldReferenceApi(String idKey, String apiIdKey) throws IOException {
+        JSONObject dto = fetchMcpServerDto(TestContext.resolve(idKey).toString(), publisherHeaders(),
+                "to read the API its tools reference");
+        JSONArray operations = dto.getJSONArray("operations");
+        Assert.assertTrue(operations.length() > 0, "The MCP server should hold at least one tool");
+        for (int i = 0; i < operations.length(); i++) {
+            JSONObject mapping = operations.getJSONObject(i).optJSONObject("apiOperationMapping");
+            Assert.assertNotNull(mapping, "Tool " + i + " should hold an API operation mapping");
+            Assert.assertEquals(mapping.optString("apiId"), TestContext.resolve(apiIdKey).toString(),
+                    "The reference should be resolved onto the id the API carries in this environment rather than "
+                            + "the one the archive was exported with");
+        }
+    }
 }
