@@ -286,3 +286,39 @@ Feature: MCP Server authoring (publisher plane)
       | actor                     |
       | publisherUser             |
       | publisherUser@tenant1.com |
+
+  # An MCP server built on an existing API records that API's id, and the id belongs to the environment the archive
+  # was exported from. Importing it elsewhere failed even when the same API was present there. The reference is
+  # resolved by the name and the version the archive also records, which is what makes the archive portable.
+  #
+  # A second environment is stood in for by rewriting the recorded id to one that belongs to no API here — the same
+  # condition an import into a genuinely separate environment meets, without a second server to run.
+  #
+  # The IMPORT alone is performed as the admin actor: it accepts apim:mcp_server_import_export — which
+  # tenant-conf.json maps to admin,Internal/devops — or apim:admin, and the publisher token carries neither, so it
+  # is refused as unauthenticated. Everything else here, the export included, runs on the publisher token. This is
+  # also why the scenario is not an outline over publisherUser like its siblings.
+  @cap:publisher @feat:mcp-servers @rule:cross-environment-import @type:regression
+  Scenario: An MCP server whose archive records a reference API id from another environment is imported
+    Given The system is ready
+    And I have valid access tokens as "admin"
+    When I import openapi definition from "artifacts/payloads/OAS/mcp_petstore_oas3.json" with additional properties "artifacts/payloads/mcp_petstore_api_props.json" as "xenvApiId"
+    Then The response status code should be 201
+    When I deploy the "apis" resource with id "xenvApiId"
+    When I create an MCP server from api "xenvApiId" exposing paths "/pets" as "xenvMcpId"
+    Then The response status code should be 201
+    When I export the MCP server "xenvMcpId" to an archive as "xenvArchive"
+    # Stand in for another environment: the recorded id now belongs to no API here, while the API it names is present.
+    # The name and the version the archive also records are the only key left to resolve the reference by — an export
+    # that stopped writing them would leave this id unresolved and the import below would fail outright.
+    When I delete the MCP server "xenvMcpId"
+    Then The response status code should be 200
+    When I rewrite the reference API id in the MCP server archive "xenvArchive" to "00000000-1111-2222-3333-444444444444"
+    And I import the MCP server archive "xenvArchive" as "xenvImportedMcpId"
+    Then The response status code should be 200
+    # The import reproduces the tool set exactly — pinned by name and cardinality, so a tool dropped, duplicated or
+    # substituted on the way through the archive is caught and not just "some tool pointing at the right API"
+    When I retrieve the "mcp-servers" resource with id "xenvImportedMcpId"
+    Then the MCP server operations should be exactly "get_pets" in that order
+    # ...and its reference is resolved onto the id the API carries HERE, not the one the archive was exported with
+    And The MCP server "xenvImportedMcpId" should reference API "xenvApiId"
