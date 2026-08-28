@@ -33,7 +33,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <runGroupTest>false</runGroupTest>
         <!-- Default suite (filename under src/test/resources); override with -Dsurefire.suite.xml=<file> for framework-verification lanes. -->
-        <surefire.suite.xml>testng.xml</surefire.suite.xml>
+        <surefire.suite.xml>testng-v2.xml</surefire.suite.xml>
     </properties>
     <dependencies>
         <dependency>

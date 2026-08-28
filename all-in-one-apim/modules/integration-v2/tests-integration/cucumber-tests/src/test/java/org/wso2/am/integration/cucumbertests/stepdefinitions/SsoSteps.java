@@ -374,6 +374,8 @@ public class SsoSteps {
         int status = browser.changeApiProviderViaAdminSession(apiId, provider);
         Assert.assertEquals(status, 200, "change-provider via the SSO admin session should return 200 — the "
                 + "federated admin session's token must authorize this admin-only operation.");
+        ResourceCleanup.deregister(Constants.CREATED_API_IDS, apiId);
+        ResourceCleanup.registerFor(Constants.CREATED_API_IDS, apiId, actorRef);
         TestContext.set("ssoApiProvider", provider);
     }
 
