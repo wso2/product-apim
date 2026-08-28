@@ -74,6 +74,18 @@
             <class name="org.wso2.am.integration.cucumbertests.runners.block.DevPortalGraphqlComplexityRunner"/>
         </classes>
     </test>
+    <!-- A gateway that serves production traffic only. Its own container: a production-only Default changes the
+         deployment outcome of every API in it, so it cannot be co-hosted with the hybrid gateway features. -->
+    <test name="IntegrationV2-AiApiNonHybridGateway" parallel="classes" thread-count="1">
+        <parameter name="blockLabel" value="ai-api-non-hybrid-gateway"/>
+        <parameter name="initTenantUsers" value="true"/>
+        <parameter name="initBackend" value="true"/>
+        <parameter name="tomlExtraOverlayPath" value="src/test/resources/artifacts/configFiles/aiApiNonHybridGateway/deployment.toml"/>
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayAiApiNonHybridGatewayRunner"/>
+        </classes>
+    </test>
+
     <!-- Gateway features (runtime invocation) share their own container. -->
     <test name="IntegrationV2-Gateway" parallel="classes" thread-count="2">
         <parameter name="blockLabel" value="gateway"/>
