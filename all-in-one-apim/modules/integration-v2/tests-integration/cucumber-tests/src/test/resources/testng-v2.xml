@@ -48,6 +48,16 @@
             <class name="org.wso2.am.integration.cucumbertests.runners.block.PublisherServiceCatalogRunner"/>
         </classes>
     </test>
+    <!-- The deployment-acknowledgement contract runs in its own Publisher-configured block so its strict
+         gateway acknowledgement assertion is isolated from the high-churn Publisher runner classes. -->
+    <test name="IntegrationV2-Publisher-Acknowledgement" parallel="classes" thread-count="2">
+        <parameter name="blockLabel" value="publisher-acknowledgement"/>
+        <parameter name="initTenantUsers" value="true"/>
+        <parameter name="initSecondaryUserStore" value="true"/>
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.PublisherAPIRevisionAcknowledgementRunner"/>
+        </classes>
+    </test>
     <!-- DevPortal features share their own container (separate capability, consumer-plane actors).
          initSecondaryUserStore: additive, as on the publisher block above — it backs the SECONDARY.COM
          subscriber row on devportal/subscribe and the store-creator row on devportal/comments_2_thread_mutations
@@ -125,8 +135,14 @@
         <parameter name="blockLabel" value="keymanager"/>
         <parameter name="initTenantUsers" value="true"/>
         <parameter name="initBackend" value="true"/>
+        <!-- Purely additive SECONDARY.COM store (own H2 DB, no primary user/role/config change) — seeds the store
+             actors the token_issuance store-principal token arcs act as (§12). -->
+        <parameter name="initSecondaryUserStore" value="true"/>
         <classes>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.KeyManagerTokenIssuanceRunner"/>
+            <!-- The SECONDARY.COM store-principal arcs live here ONLY: token_issuance.feature itself is also run by
+                 IntegrationV2-EmailUserName, where a single-"@" store principal cannot resolve to a tenant. -->
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.KeyManagerTokenIssuanceStorePrincipalRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.KeyManagerTokenRevocationRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.KeyManagerApiKeyRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.KeyManagerOAuthKeysRunner"/>
@@ -597,6 +613,12 @@
         <!-- Gateway invocation in this block needs the node backend; without it Basic auth reaches a SUSPENDED
              endpoint (500) and a 200 would be unreachable (CLAUDE.md §11). -->
         <parameter name="initBackend" value="true"/>
+        <!-- Deliberately NO initSecondaryUserStore: the SECONDARY.COM store-principal token arcs live in their own
+             feature/runner (KeyManagerTokenIssuanceStorePrincipalRunner, KeyManager block only) because they
+             CANNOT pass here. Measured: with emailUserMode the carbon.super row passes but
+             SECONDARY.COM/subscriberUser1@tenant1.com is refused 401 — EnableEmailUserName splits on the LAST "@"
+             only when a name carries TWO or more, so a single-"@" store principal resolves to carbon.super and
+             never to tenant1. That is the specified rule this block exists to exercise, not a defect to seed around. -->
         <classes>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayBasicAuthEmailUserNameRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.DevPortalApplicationEmailUserNameRunner"/>
@@ -689,8 +711,6 @@
         </classes>
     </test>
 
-
-
     <!-- Devops logging plane: correlation logging (per-component) and per-API / per-resource log levels.
          The two CO-HOST because their config is genuinely orthogonal — different devops resources
          (/config/correlation vs /tenant-logs), different appenders, different files (correlation.log vs
@@ -724,15 +744,41 @@
         </classes>
     </test>
 
-
-
+    <!-- ELK analytics metric log (APIMAnalyticsTest, ELKAnalyticsWithRespondMediatorTestCase). Own block for the
+         overlay, which is server-global in the loudest way: [apim.analytics] enable/type switches analytics
+         publishing on for the WHOLE container, so from boot every invocation any class made would write an event
+         into apim_metrics.log. It therefore cannot be co-hosted onto an existing block without changing what that
+         block's gateway traffic does.
+         initBackend is load-bearing for the first scenario, which must get a real 200 from the upstream before its
+         metric event can carry proxyResponseCode 200 (the respond-mediator scenario never reaches an upstream by
+         construction, which is its point).
+         thread-count=1 because the block holds exactly one class; the log-mark/appended-since window it asserts on
+         is container-global, so a sibling class's traffic would land inside it. -->
+    <test name="IntegrationV2-ElkAnalytics" parallel="classes" thread-count="1">
+        <parameter name="blockLabel" value="elk-analytics"/>
+        <parameter name="initTenantUsers" value="true"/>
+        <parameter name="initBackend" value="true"/>
+        <parameter name="tomlExtraOverlayPath" value="src/test/resources/artifacts/configFiles/elkAnalytics/deployment.toml"/>
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.AnalyticsElkMetricsRunner"/>
+        </classes>
+    </test>
 
     <!-- Approval-workflow suite (ports WorkflowApprovalExecutorTest). MUST stay thread-count=1: the _setup_
          feature flips the workflow executors to the Approval variants by writing workflow-extensions.xml into the
          governance registry (via ResourceAdminService SOAP), which is server-global for the container; a sibling
          class sharing the container would see the flipped executors. The overlay declares the three custom
-         devportal application_attributes the pending tasks surface. The runner's AfterClass restores the original
-         executors. -->
+         devportal application_attributes the pending tasks surface. Each runner's AfterClass restores the original
+         executors. initBackend is REQUIRED, not optional: WorkflowWsApiStateChangeRunner points the external
+         APIStateChangeWSWorkflowExecutor at the BPMNProcessServerApp double the NodeAppServer hosts on
+         nodebackend:3004.
+         THE TWO RUNNERS SHARE THIS CONTAINER, which is safe ONLY at thread-count=1: each flips the server-global
+         workflow-extensions.xml and undoes it in its OWN AfterClass, and serialised classes mean one runner's
+         restore completes before the next class starts — in either order, because the shared helper keys captured
+         originals by container and clears them on restore, so the next flip re-captures the pristine config.
+         Raising thread-count here would interleave the two flips; split WorkflowWsApiStateChangeRunner into its
+         own block before doing that. -->
+
     <test name="IntegrationV2-ApprovalWorkflow" parallel="classes" thread-count="1">
         <parameter name="blockLabel" value="approval-workflow"/>
         <parameter name="initTenantUsers" value="true"/>
@@ -740,6 +786,7 @@
         <parameter name="tomlExtraOverlayPath" value="src/test/resources/artifacts/configFiles/approveWorkflow/deployment.toml"/>
         <classes>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.WorkflowApprovalRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.WorkflowWsApiStateChangeRunner"/>
         </classes>
     </test>
 
@@ -766,6 +813,23 @@
         <classes>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.CrossTenantSubscriptionRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.CrossTenantInvocationRunner"/>
+        </classes>
+    </test>
+    <!-- New-API-version subscriber notification email (NotificationTestCase). Own block for the
+         [output_adapter.email] overlay, which repoints the carbon email output-event adapter at the node
+         backend's SMTP capture sink (nodebackend:3025) — server-wide config that would misdirect every other
+         block's mail, so it cannot be co-hosted.
+         initBackend is MANDATORY here, not a gateway-invocation convenience: the SMTP sink IS the node backend,
+         so without it the product has nothing to deliver to and the arc fails as "the product never notifies".
+         thread-count=1: the feature mutates the container-wide tenant configuration (NotificationsEnabled plus
+         the Notifications notifier list), so no sibling class may share the container mid-scenario. -->
+    <test name="IntegrationV2-NewVersionNotification" parallel="classes" thread-count="1">
+        <parameter name="blockLabel" value="new-version-notification"/>
+        <parameter name="initTenantUsers" value="true"/>
+        <parameter name="initBackend" value="true"/>
+        <parameter name="tomlExtraOverlayPath" value="src/test/resources/artifacts/configFiles/newVersionNotification/deployment.toml"/>
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.NewVersionNotificationRunner"/>
         </classes>
     </test>
 </suite>

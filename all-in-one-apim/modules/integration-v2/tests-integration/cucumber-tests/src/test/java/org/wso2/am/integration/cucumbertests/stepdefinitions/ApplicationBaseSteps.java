@@ -22,6 +22,20 @@ import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.http.Header;
+import org.apache.http.client.config.CookieSpecs;
+import org.apache.http.client.config.RequestConfig;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.conn.ssl.NoopHostnameVerifier;
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.BasicCookieStore;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.util.EntityUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -45,12 +59,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.security.PrivateKey;
+import java.security.PublicKey;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -109,16 +125,25 @@ public class ApplicationBaseSteps {
     /**
      * Resets (clears) an application's throttle counters via the DevPortal reset-throttle-policy endpoint, so an
      * application that was just throttled (429) can invoke successfully (200) again without waiting out the window.
-     * The endpoint takes the application-owner's username in the body; {@code owner} is the acting actor reference
-     * (e.g. {@code admin@tenant1.com}), resolved to a bare username. Publishes the response for assertion.
+     * The endpoint takes the application-OWNER's username in the body; {@code owner} is the owning actor's
+     * reference (e.g. {@code subscriberUser} / {@code admin@tenant1.com}), resolved to its on-the-wire username
+     * via {@link Identity#apiUsername} — the same super-tenant-unqualified form the product stores as the app
+     * owner (see the owner-search steps). A raw actor ref must NOT be sent verbatim: a non-admin actor's ref
+     * (e.g. {@code subscriberUser}) differs from its physical username ({@code subscriberUser1}), so the reset
+     * would target the wrong throttle key. NOTE the caller must OWN the application: the product authorizes this
+     * endpoint on the CALLER, not on the body — {@code APIConsumerImpl.resetApplicationThrottlePolicy} evaluates
+     * {@code validateApplication(loggedInUser, ...)} and throws {@code APIMgtAuthorizationFailedException} with no
+     * admin override, while the body's username only populates the reset EVENT. So an admin CANNOT reset another
+     * user's application (observed: HTTP 500 "Application is not accessible to user  admin"); the acting actor
+     * must be the owner. Publishes the response for assertion.
      *
      * @param appId context key holding the application id
-     * @param owner the application owner's username (the acting actor)
+     * @param owner the owning actor's reference (resolved to the on-the-wire owner username)
      */
     @When("I reset the application throttle policy for {string} owned by {string}")
     public void iResetApplicationThrottlePolicy(String appId, String owner) throws IOException {
         String actualAppId = TestContext.resolve(appId).toString();
-        String ownerName = Utils.resolveContextPlaceholders(owner);
+        String ownerName = Identity.apiUsername(Identity.resolveActor(owner));
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
         String body = "{\"userName\": \"" + ownerName + "\"}";
@@ -2293,10 +2318,116 @@ public class ApplicationBaseSteps {
      */
     @Then("The reflected backend JWT should be signed with algorithm {string}")
     public void theReflectedBackendJwtShouldBeSignedWithAlgorithm(String expectedAlgorithm) {
+        // Kept as its own phrasing because "signed with algorithm" carries the signing semantics documented above
+        // (alg=NONE disables signing); it delegates to the shared header-field assertion so both read one code path.
+        assertReflectedBackendJwtHeaderField("alg", expectedAlgorithm);
+    }
+
+    /**
+     * Asserts the gateway-injected backend JWT is CRYPTOGRAPHICALLY sound: its signature verifies against the
+     * public key the gateway's own JWKS endpoint publishes, and its {@code kid} names that published key.
+     *
+     * <p>This is what the {@code alg}/{@code kid} header assertions cannot do. Those read two strings out of the
+     * JOSE header, so an assertion carrying {@code alg=RS256}, the right {@code kid} and a GARBAGE signature
+     * satisfies every other backend-JWT check in this suite — a backend trusting the injected identity would be
+     * trusting nothing. Ports BackendJWTUtil#verifySignature + the JWKS-kid half of #verifyJWTHeader.
+     *
+     * <p>The verification key is fetched at RUNTIME from the product under test (the gateway's {@code /jwks}
+     * API, tenant-scoped for a tenant actor), never from committed key material: the test must verify against
+     * the key the gateway is ACTUALLY signing with, and a checked-in PEM/keystore would silently go stale.
+     * The JWKS read is an intermediate read consumed inside this step, so it uses the raw client and does not
+     * touch {@code httpResponse} — the reflected invocation response stays the assertion target for the steps
+     * that follow.
+     */
+    @Then("The reflected backend JWT should be verifiably signed by the key the gateway JWKS endpoint publishes")
+    public void theReflectedBackendJwtShouldVerifyAgainstJwks() throws IOException {
+        String jwt = reflectedBackendJwtAssertion();
         String headerJson = decodeReflectedBackendJwtSegment(0);
         JSONObject header = new JSONObject(headerJson);
-        Assert.assertEquals(header.optString("alg"), Utils.resolveContextPlaceholders(expectedAlgorithm),
-                "Unexpected backend JWT signing algorithm. Header: " + headerJson);
+        String kid = header.optString("kid");
+        String alg = header.optString("alg");
+        Assert.assertFalse(kid.isEmpty(), "Backend JWT JOSE header carries no kid: " + headerJson);
+
+        // The gateway serves the JWKS API at /jwks, and at /t/<domain>/jwks for a tenant (both resolve to the
+        // super-tenant keystore unless tenant-based signing is on, which is why the kid is tenant-invariant).
+        String tenantDomain = Identity.actingTenantDomain();
+        String gatewayBase = Utils.getBaseGatewayUrl();
+        String jwksUrl = (gatewayBase.endsWith("/") ? gatewayBase.substring(0, gatewayBase.length() - 1)
+                : gatewayBase)
+                + (Constants.SUPER_TENANT_DOMAIN.equals(tenantDomain) ? "" : "/t/" + tenantDomain) + "/jwks";
+        HttpResponse jwks = SimpleHTTPClient.getInstance().doGet(jwksUrl, new HashMap<>());
+        Assert.assertTrue(jwks != null && jwks.getResponseCode() == 200
+                        && jwks.getData() != null && !jwks.getData().isBlank(),
+                "Gateway JWKS fetch failed at " + jwksUrl + ": got="
+                        + (jwks == null ? "null" : jwks.getResponseCode() + "/" + jwks.getData()));
+
+        JSONArray keys = new JSONObject(jwks.getData()).optJSONArray("keys");
+        Assert.assertTrue(keys != null && keys.length() > 0,
+                "Gateway JWKS at " + jwksUrl + " publishes no keys: " + jwks.getData());
+        // The JWKS repeats one certificate once per configured signing algorithm, so the published KEY IDENTITY
+        // is the DISTINCT kid set. Pinning that set to exactly the JWT's kid is the exact form of legacy's
+        // "kid equals the JWKS kid": it fails both if the gateway signs with a key JWKS does not publish and if
+        // a second, different signing key appears.
+        Set<String> publishedKids = new LinkedHashSet<>();
+        JSONObject matching = null;
+        for (int i = 0; i < keys.length(); i++) {
+            JSONObject jwk = keys.getJSONObject(i);
+            publishedKids.add(jwk.optString("kid"));
+            if (kid.equals(jwk.optString("kid")) && matching == null) {
+                matching = jwk;
+            }
+        }
+        Assert.assertEquals(publishedKids, Collections.singleton(kid),
+                "Backend JWT kid does not match the kid set the gateway JWKS publishes at " + jwksUrl
+                        + ": " + jwks.getData());
+
+        PublicKey publicKey = JwtTestUtils.rsaPublicKeyFromJwk(
+                matching.getString("n"), matching.getString("e"));
+        Assert.assertTrue(JwtTestUtils.verifyJwsSignature(jwt, alg, publicKey),
+                "Backend JWT signature does NOT verify against the JWKS key '" + kid + "' from " + jwksUrl
+                        + ". Assertion: " + jwt);
+    }
+
+    /**
+     * Asserts an arbitrary field of the gateway-injected backend JWT's JOSE header (segment 0). The general
+     * counterpart of the signing-algorithm assertion above: used to pin {@code typ} == {@code JWT}, which
+     * discriminates a well-formed JOSE header from one that stopped declaring the assertion is a JWT — a change
+     * every payload-claim assertion is blind to, since they read the payload segment only. Both this and the
+     * signing-algorithm step route through {@link #assertReflectedBackendJwtHeaderField} so there is one place
+     * that decodes the header and compares a field.
+     *
+     * @param fieldName     the JOSE header field name (e.g. {@code typ})
+     * @param expectedValue the exact expected value (e.g. {@code JWT})
+     */
+    @Then("The reflected backend JWT header should contain {string} with value {string}")
+    public void theReflectedBackendJwtHeaderShouldContain(String fieldName, String expectedValue) {
+        assertReflectedBackendJwtHeaderField(fieldName, expectedValue);
+    }
+
+    /** Decodes the JOSE header (segment 0) and asserts a field equals the (placeholder-resolved) expected value. */
+    private void assertReflectedBackendJwtHeaderField(String fieldName, String expectedValue) {
+        String headerJson = decodeReflectedBackendJwtSegment(0);
+        JSONObject header = new JSONObject(headerJson);
+        Assert.assertEquals(header.optString(fieldName), Utils.resolveContextPlaceholders(expectedValue),
+                "Unexpected backend JWT header field '" + fieldName + "'. Header: " + headerJson);
+    }
+
+    /**
+     * Asserts every segment of the gateway-injected {@code X-JWT-Assertion} is URL-safe base64 — i.e. contains none
+     * of {@code '+'}, {@code '/'} or {@code '='} (the standard-alphabet chars and padding that base64url replaces
+     * with {@code '-'}/{@code '_'} and omits). This is the ONLY assertion that actually tests the {@code encoding =
+     * base64url} config: the claim/header assertions decode through {@link #decodeReflectedBackendJwtSegment}, which
+     * falls back to a standard decoder (load-bearing for the non-urlsafe features), so they stay green even if the
+     * gateway reverted to standard base64. Checking the RAW segment BEFORE any decode, with no fallback, is what
+     * lets the url-safe feature fail at the thing it exists to prove.
+     */
+    @Then("The reflected backend JWT should be URL-safe base64 encoded")
+    public void theReflectedBackendJwtShouldBeUrlSafeBase64Encoded() {
+        String jwt = reflectedBackendJwtAssertion();
+        for (String segment : jwt.split("\\.")) {
+            Assert.assertFalse(segment.contains("+") || segment.contains("/") || segment.contains("="),
+                    "X-JWT-Assertion segment is not URL-safe base64 (contains '+', '/', or '='): " + segment);
+        }
     }
 
     /**
@@ -2310,14 +2441,16 @@ public class ApplicationBaseSteps {
     }
 
     /**
-     * Shared extractor for the reflected {@code X-JWT-Assertion}: pulls the header out of the echoed headers object
-     * and base64-decodes the requested segment (0 = JOSE header, 1 = claims payload), URL-safe first then standard
-     * because the gateway config uses {@code encoding = "base64"}. Each step is guarded so a missing header or a
-     * malformed assertion fails with a clear message rather than an opaque decode error.
+     * Extracts the RAW gateway-injected {@code X-JWT-Assertion} value from the reflected /reflect-headers response,
+     * with no decoding. Shared by the segment decoder and the URL-safe-encoding assertion (which must see the raw,
+     * still-encoded segments). Guarded so a missing response / headers object / assertion header fails clearly.
      */
-    private String decodeReflectedBackendJwtSegment(int segmentIndex) {
+    private String reflectedBackendJwtAssertion() {
         HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
-        Assert.assertNotNull(response, "No invocation response captured");
+        Assert.assertTrue(response != null && response.getResponseCode() >= 200 && response.getResponseCode() < 300
+                        && response.getData() != null && !response.getData().isBlank(),
+                "Expected a successful reflected invocation response with a body, got: "
+                        + (response == null ? "null" : response.getResponseCode() + " / " + response.getData()));
         JSONObject body = new JSONObject(response.getData());
         Assert.assertTrue(body.has("headers"),
                 "Reflected response has no 'headers' object: " + response.getData());
@@ -2331,7 +2464,18 @@ public class ApplicationBaseSteps {
             }
         }
         Assert.assertNotNull(jwt, "No X-JWT-Assertion header reached the backend: " + headers);
+        return jwt;
+    }
 
+    /**
+     * Base64-decodes the requested segment of the reflected {@code X-JWT-Assertion} (0 = JOSE header,
+     * 1 = claims payload), URL-safe first then standard because the non-urlsafe blocks use {@code encoding =
+     * "base64"}. The standard fallback is load-bearing for those callers; the url-safe feature does NOT rely on it
+     * to prove url-safety (see {@code theReflectedBackendJwtShouldBeUrlSafeBase64Encoded}). Guarded so a malformed
+     * assertion fails with a clear message rather than an opaque decode error.
+     */
+    private String decodeReflectedBackendJwtSegment(int segmentIndex) {
+        String jwt = reflectedBackendJwtAssertion();
         String[] segments = jwt.split("\\.");
         Assert.assertTrue(segments.length > segmentIndex,
                 "Malformed JWT assertion (expected > " + segmentIndex + " segments): " + jwt);
@@ -2628,7 +2772,6 @@ public class ApplicationBaseSteps {
             String password, String scope, String codeVerifier) throws Exception {
 
         String key = TestContext.resolve("consumerKey").toString();
-        java.net.http.HttpClient http = trustAllHttpClientWithCookies();
 
         StringBuilder authz = new StringBuilder(base).append("oauth2/authorize?response_type=code&client_id=")
                 .append(Utils.urlEncode(key)).append("&redirect_uri=").append(Utils.urlEncode(redirectUri));
@@ -2639,7 +2782,10 @@ public class ApplicationBaseSteps {
             authz.append("&code_challenge=").append(Utils.urlEncode(pkceS256Challenge(codeVerifier)))
                     .append("&code_challenge_method=S256");
         }
-        String granted = authorizeThroughLoginAndConsent(http, base, authz.toString(), username, password);
+        String granted;
+        try (CloseableHttpClient http = trustAllHttpClientWithCookies()) {
+            granted = authorizeThroughLoginAndConsent(http, base, authz.toString(), username, password);
+        }
         String code = Utils.queryParam(granted, "code");
         Assert.assertNotNull(code, "No authorization code in the final authorize redirect: " + granted);
 
@@ -2670,13 +2816,13 @@ public class ApplicationBaseSteps {
      * application name the consent redirect carries as {@code consentApplicationName} plus the rendered consent
      * page HTML as {@code consentPageBody}.
      */
-    private String authorizeThroughLoginAndConsent(java.net.http.HttpClient http, String base, String authorizeUrl,
+    private String authorizeThroughLoginAndConsent(CloseableHttpClient http, String base, String authorizeUrl,
             String username, String password) throws Exception {
 
         // Step 1: /oauth2/authorize -> 302 to login; carry sessionDataKey.
-        java.net.http.HttpResponse<String> authzResp = sendNoRedirect(http, "GET", authorizeUrl, null);
+        BrowserResponse authzResp = sendNoRedirect(http, "GET", authorizeUrl, null);
         String afterAuthz = locationHeader(authzResp, authorizeUrl);
-        TestContext.set("authorizeSetCookies", String.join("\n", authzResp.headers().allValues("Set-Cookie")));
+        TestContext.set("authorizeSetCookies", String.join("\n", authzResp.allValues("Set-Cookie")));
         String sdk = Utils.queryParam(afterAuthz, "sessionDataKey");
         Assert.assertNotNull(sdk, "No sessionDataKey in the authorize redirect: " + afterAuthz);
 
@@ -2713,13 +2859,13 @@ public class ApplicationBaseSteps {
      * JVM, so only its path and query are used and the origin is rebuilt from the host-mapped {@code base} —
      * the same rule the rest of this flow follows for Locations.
      */
-    private String fetchConsentPage(java.net.http.HttpClient http, String base, String consentRedirect)
+    private String fetchConsentPage(CloseableHttpClient http, String base, String consentRedirect)
             throws Exception {
 
         java.net.URI redirect = java.net.URI.create(consentRedirect);
         String url = base + redirect.getPath().replaceFirst("^/", "")
                 + (redirect.getRawQuery() == null ? "" : "?" + redirect.getRawQuery());
-        java.net.http.HttpResponse<String> resp = sendNoRedirect(http, "GET", url, null);
+        BrowserResponse resp = sendNoRedirect(http, "GET", url, null);
         Assert.assertEquals(resp.statusCode(), 200,
                 "Consent page fetch failed at " + url + ": HTTP " + resp.statusCode());
         return resp.body();
@@ -2737,22 +2883,28 @@ public class ApplicationBaseSteps {
     }
 
     /** Sends one request WITHOUT following redirects and returns its Location header (asserts a redirect). */
-    private String redirectLocation(java.net.http.HttpClient http, String method, String url, String formBody)
+    private String redirectLocation(CloseableHttpClient http, String method, String url, String formBody)
             throws Exception {
         return locationHeader(sendNoRedirect(http, method, url, formBody), url);
     }
 
     /** Sends one request WITHOUT following redirects and returns the raw response (headers included). */
-    private java.net.http.HttpResponse<String> sendNoRedirect(java.net.http.HttpClient http, String method,
-            String url, String formBody) throws Exception {
-        java.net.http.HttpRequest.Builder b = java.net.http.HttpRequest.newBuilder(java.net.URI.create(url));
+    private BrowserResponse sendNoRedirect(CloseableHttpClient http, String method, String url, String formBody)
+            throws Exception {
+        HttpUriRequest request;
         if ("POST".equals(method)) {
-            b.header("Content-Type", "application/x-www-form-urlencoded")
-                    .POST(java.net.http.HttpRequest.BodyPublishers.ofString(formBody == null ? "" : formBody));
+            HttpPost post = new HttpPost(url);
+            post.setHeader("Content-Type", "application/x-www-form-urlencoded");
+            post.setEntity(new StringEntity(formBody == null ? "" : formBody, StandardCharsets.UTF_8));
+            request = post;
         } else {
-            b.GET();
+            request = new HttpGet(url);
         }
-        return http.send(b.build(), java.net.http.HttpResponse.BodyHandlers.ofString());
+        try (CloseableHttpResponse resp = http.execute(request)) {
+            String body = resp.getEntity() == null ? ""
+                    : EntityUtils.toString(resp.getEntity(), StandardCharsets.UTF_8);
+            return new BrowserResponse(resp.getStatusLine().getStatusCode(), body, resp.getAllHeaders());
+        }
     }
 
     /**
@@ -2778,21 +2930,70 @@ public class ApplicationBaseSteps {
     }
 
     /** Returns a no-redirect response's Location header, asserting the response actually was a redirect. */
-    private String locationHeader(java.net.http.HttpResponse<String> resp, String url) {
-        java.util.Optional<String> loc = resp.headers().firstValue("Location");
+    private String locationHeader(BrowserResponse resp, String url) {
+        java.util.Optional<String> loc = resp.firstValue("Location");
         Assert.assertTrue(loc.isPresent(), "Expected a redirect with a Location header from " + url
                 + " but got HTTP " + resp.statusCode() + " / body=" + resp.body());
         return loc.get();
     }
 
-    /** Builds an HttpClient that trusts IS's self-signed cert, keeps a cookie jar, and never auto-redirects. */
-    private java.net.http.HttpClient trustAllHttpClientWithCookies() throws Exception {
+    /**
+     * Builds the browser-like client the OAuth legs drive: trust-all certs AND no hostname verification, a
+     * per-client cookie jar (the login/consent legs carry the IS session across redirects) and redirects NOT
+     * followed (the flow reads each Location itself). Hostname verification must go too, not just chain trust:
+     * the shipped wso2carbon cert is CN=localhost with no IP SAN, so addressing the container by the colima VM
+     * IP (TESTCONTAINERS_HOST_OVERRIDE) otherwise fails with "No subject alternative names matching IP address".
+     * Apache HttpClient rather than java.net.http, which re-forces endpoint identification to "HTTPS" internally
+     * and so cannot express that. Caller closes it.
+     */
+    private CloseableHttpClient trustAllHttpClientWithCookies() throws Exception {
+        // Chain trust comes from the shared Utils.trustAllSslContext(); the hostname verifier is disabled
+        // separately below, because an SSLContext alone cannot express it.
         javax.net.ssl.SSLContext ssl = Utils.trustAllSslContext();
-        return java.net.http.HttpClient.newBuilder()
-                .sslContext(ssl)
-                .cookieHandler(new java.net.CookieManager())
-                .followRedirects(java.net.http.HttpClient.Redirect.NEVER)
+        return HttpClients.custom()
+                .setSSLSocketFactory(new SSLConnectionSocketFactory(ssl, NoopHostnameVerifier.INSTANCE))
+                .setDefaultCookieStore(new BasicCookieStore())
+                .setDefaultRequestConfig(RequestConfig.custom()
+                        .setRedirectsEnabled(false)
+                        .setCookieSpec(CookieSpecs.STANDARD)
+                        .build())
                 .build();
+    }
+
+    /** A no-redirect response reduced to what the OAuth legs read: status, body and (repeatable) headers. */
+    private static final class BrowserResponse {
+
+        private final int statusCode;
+        private final String body;
+        private final Header[] headers;
+
+        private BrowserResponse(int statusCode, String body, Header[] headers) {
+            this.statusCode = statusCode;
+            this.body = body;
+            this.headers = headers;
+        }
+
+        private int statusCode() {
+            return statusCode;
+        }
+
+        private String body() {
+            return body;
+        }
+
+        private java.util.List<String> allValues(String name) {
+            java.util.List<String> values = new java.util.ArrayList<>();
+            for (Header header : headers) {
+                if (header.getName().equalsIgnoreCase(name)) {
+                    values.add(header.getValue());
+                }
+            }
+            return values;
+        }
+
+        private java.util.Optional<String> firstValue(String name) {
+            return allValues(name).stream().findFirst();
+        }
     }
 
     /** Computes the PKCE S256 code_challenge (base64url, no padding) for a verifier. */
@@ -2829,7 +3030,6 @@ public class ApplicationBaseSteps {
     public void iRequestDeviceCodeTokenFromExternalKm(String username, String password) throws Exception {
 
         String base = IntegrationActors.baseUrl(IntegrationActors.IS);
-        java.net.http.HttpClient http = trustAllHttpClientWithCookies();
 
         // 1. device_authorize -> device_code + user_code.
         HttpResponse da = Requests.post(base + "oauth2/device_authorize", clientCredentialsHeader(),
@@ -2841,20 +3041,23 @@ public class ApplicationBaseSteps {
         String deviceCode = daj.getString("device_code");
         String userCode = daj.getString("user_code");
 
-        // 2. submit the user_code -> 302 to login (carries sessionDataKey).
-        String sdk = Utils.queryParam(
-                redirectLocation(http, "POST", base + "oauth2/device", "user_code=" + Utils.urlEncode(userCode)),
-                "sessionDataKey");
-        Assert.assertNotNull(sdk, "No sessionDataKey after submitting the device user_code");
+        try (CloseableHttpClient http = trustAllHttpClientWithCookies()) {
+            // 2. submit the user_code -> 302 to login (carries sessionDataKey).
+            String sdk = Utils.queryParam(
+                    redirectLocation(http, "POST", base + "oauth2/device", "user_code=" + Utils.urlEncode(userCode)),
+                    "sessionDataKey");
+            Assert.assertNotNull(sdk, "No sessionDataKey after submitting the device user_code");
 
-        // 3. authenticate -> 302 back to /oauth2/authorize with a fresh sessionDataKey.
-        String loginForm = "username=" + Utils.urlEncode(username) + "&password=" + Utils.urlEncode(password)
-                + "&sessionDataKey=" + Utils.urlEncode(sdk);
-        String sdk2 = Utils.queryParam(redirectLocation(http, "POST", base + "commonauth", loginForm), "sessionDataKey");
-        Assert.assertNotNull(sdk2, "Device login did not redirect back to /oauth2/authorize (bad credentials?)");
+            // 3. authenticate -> 302 back to /oauth2/authorize with a fresh sessionDataKey.
+            String loginForm = "username=" + Utils.urlEncode(username) + "&password=" + Utils.urlEncode(password)
+                    + "&sessionDataKey=" + Utils.urlEncode(sdk);
+            String sdk2 = Utils.queryParam(redirectLocation(http, "POST", base + "commonauth", loginForm),
+                    "sessionDataKey");
+            Assert.assertNotNull(sdk2, "Device login did not redirect back to /oauth2/authorize (bad credentials?)");
 
-        // 4. resume /oauth2/authorize to commit the device approval.
-        redirectLocation(http, "GET", base + "oauth2/authorize?sessionDataKey=" + Utils.urlEncode(sdk2), null);
+            // 4. resume /oauth2/authorize to commit the device approval.
+            redirectLocation(http, "GET", base + "oauth2/authorize?sessionDataKey=" + Utils.urlEncode(sdk2), null);
+        }
 
         // 5. exchange the device_code for a token (approval already committed -> no polling wait needed).
         HttpResponse response = Requests.post(IntegrationActors.tokenEndpoint(IntegrationActors.IS), clientCredentialsHeader(),
@@ -3303,8 +3506,11 @@ public class ApplicationBaseSteps {
                 + "&redirect_uri=" + Utils.urlEncode(RESIDENT_AUTHZ_REDIRECT_URI)
                 + "&scope=" + Utils.urlEncode(Utils.resolveContextPlaceholders(scope));
 
-        String granted = authorizeThroughLoginAndConsent(trustAllHttpClientWithCookies(), base, authorizeUrl,
-                actor.getUserName(), actor.getPassword());
+        String granted;
+        try (CloseableHttpClient http = trustAllHttpClientWithCookies()) {
+            granted = authorizeThroughLoginAndConsent(http, base, authorizeUrl,
+                    actor.getUserName(), actor.getPassword());
+        }
         String fragment = java.net.URI.create(granted).getRawFragment();
         Assert.assertNotNull(fragment, "The implicit grant redirect carried no fragment: " + granted);
         String token = fragmentParam(fragment, "access_token");
@@ -3328,7 +3534,10 @@ public class ApplicationBaseSteps {
                 + Utils.urlEncode(TestContext.resolve("consumerKey").toString())
                 + "&redirect_uri=" + Utils.urlEncode(redirectUri);
 
-        String location = redirectLocation(trustAllHttpClientWithCookies(), "GET", url, null);
+        String location;
+        try (CloseableHttpClient http = trustAllHttpClientWithCookies()) {
+            location = redirectLocation(http, "GET", url, null);
+        }
         String errorCode = Utils.queryParam(location, "oauthErrorCode");
         Assert.assertNotNull(errorCode, "The authorize request with redirect_uri '" + redirectUri
                 + "' was not redirected to an OAuth error page: " + location);
@@ -5263,6 +5472,8 @@ public class ApplicationBaseSteps {
         HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
         Assert.assertNotNull(response, "No tag cloud response captured");
         Assert.assertEquals(response.getResponseCode(), 200, "Tag cloud retrieval failed");
+        Assert.assertTrue(response.getData() != null && !response.getData().isBlank(),
+                "Tag cloud retrieval returned an empty response body: " + response.getData());
         JSONArray list = new JSONObject(response.getData()).getJSONArray("list");
         Integer actual = null;
         for (int i = 0; i < list.length(); i++) {

@@ -18,6 +18,7 @@ Feature: Publisher Shared Scope Enforcement Across Restart
     Given The system is ready and I have valid publisher access tokens as "admin"
     When I create a new shared scope as "sharedScopeRestartEnf"
     Then The response status code should be 201
+    And I extract response field "name" and store it as "restartScopeName"
 
     # Attach the shared scope to the API and its GET operation, then deploy once (so the deployed revision
     # enforces the scope).
@@ -28,14 +29,14 @@ Feature: Publisher Shared Scope Enforcement Across Restart
     And I put the response payload in context as "scopeApiPayload"
     When I update the "apis" resource "scopeApiId" and "scopeApiPayload" with configuration type "scopes" and value:
       """
-      [{"shared":true,"scope":{"name":"sharedScopeRestartEnf","displayName":"sharedScopeRestartEnf","description":"restart enforcement scope","bindings":["admin"]}}]
+      [{"shared":true,"scope":{"name":"{{restartScopeName}}","displayName":"{{restartScopeName}}","description":"restart enforcement scope","bindings":["admin"]}}]
       """
     Then The response status code should be 200
     When I retrieve the "apis" resource with id "scopeApiId"
     And I put the response payload in context as "scopeApiPayload"
     When I update the "apis" resource "scopeApiId" and "scopeApiPayload" with configuration type "operations" and value:
       """
-      [{"target":"/customers/{id}","verb":"GET","authType":"Application & Application User","throttlingPolicy":"Unlimited","scopes":["sharedScopeRestartEnf"],"operationPolicies":{"request":[],"response":[],"fault":[]}}]
+      [{"target":"/customers/{id}","verb":"GET","authType":"Application & Application User","throttlingPolicy":"Unlimited","scopes":["{{restartScopeName}}"],"operationPolicies":{"request":[],"response":[],"fault":[]}}]
       """
     Then The response status code should be 200
     When I put the following JSON payload in context as "scopeRevPayload"
@@ -71,7 +72,7 @@ Feature: Publisher Shared Scope Enforcement Across Restart
     Then The response status code should be 201
 
     # Baseline enforcement: a token WITH the scope succeeds (200), one WITHOUT it is refused (403).
-    When I request an OAuth access token for the current user using password grant with scope "sharedScopeRestartEnf"
+    When I request an OAuth access token for the current user using password grant with scope "{{restartScopeName}}"
     Then The response status code should be 200
     And I invoke the API at gateway context "{{apiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
@@ -84,7 +85,7 @@ Feature: Publisher Shared Scope Enforcement Across Restart
 
     # Graceful restart — enforcement must STILL hold (with-scope 200, without-scope 403).
     When I gracefully restart the API Manager server
-    And I request an OAuth access token for the current user using password grant with scope "sharedScopeRestartEnf"
+    And I request an OAuth access token for the current user using password grant with scope "{{restartScopeName}}"
     Then The response status code should be 200
     And I invoke the API at gateway context "{{apiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200

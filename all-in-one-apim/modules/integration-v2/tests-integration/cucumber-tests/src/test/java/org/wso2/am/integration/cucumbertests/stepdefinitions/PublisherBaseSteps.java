@@ -39,6 +39,7 @@ import org.wso2.am.integration.cucumbertests.utils.clients.SimpleHTTPClient;
 import org.wso2.am.integration.test.utils.Constants;
 import org.wso2.carbon.automation.engine.context.beans.User;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
+import org.yaml.snakeyaml.Yaml;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -279,8 +280,40 @@ public class PublisherBaseSteps {
         Assert.assertNotNull(createRevisionResponse,
                 "Revision creation never returned a response for " + resourceType + " " + actualResourceId);
         Assert.assertEquals(createRevisionResponse.getResponseCode(), 201, createRevisionResponse.getData());
-        TestContext.set("revisionId", Utils.extractValueFromPayload(createRevisionResponse.getData(), "id"));
-        Thread.sleep(3000);
+        Object newRevisionId = Utils.extractValueFromPayload(createRevisionResponse.getData(), "id");
+        TestContext.set("revisionId", newRevisionId);
+        awaitRevisionReadable(resourceType, actualResourceId, newRevisionId.toString());
+    }
+
+    /**
+     * Polls until a just-created revision is READABLE by id, replacing the blind {@code Thread.sleep(3000)} that
+     * used to end this step (CLAUDE.md §4 — "wait, never sleep").
+     *
+     * <p>The sleep was covering something real: the very next thing every caller does is POST the deploy for this
+     * revision ({@link #iDeployApiRevisionGivenPayload}), which issues a single request with NO retry and whose
+     * 201 is asserted immediately — so a revision that is not yet addressable fails the deploy outright. Deleting
+     * the sleep without this gate would surface as an intermittent deploy failure on EVERY deploy path. Polling
+     * the revisions LIST until the new id appears is the condition the sleep was approximating, and it exits as
+     * soon as the revision is there rather than always paying 3s.
+     *
+     * <p>Deliberately the LIST endpoint, not {@code Utils.getRevisionByID}: the product answers a GET on
+     * {@code /revisions/{id}} with <b>501 Not Implemented</b> (that builder serves DELETE), so polling it can
+     * never succeed — measured, after this gate first shipped against it and failed on every deploy.
+     */
+    private void awaitRevisionReadable(String resourceType, String resourceId, String revisionId)
+            throws IOException, InterruptedException {
+
+        String url = Utils.getRevisionURL(Utils.getBaseUrl(), resourceType, resourceId);
+        Map<String, String> headers = Identity.publisherHeaders();
+        HttpResponse last = Utils.retryUntil(Constants.RUNTIME_PROPAGATION_TIMEOUT,
+                () -> SimpleHTTPClient.getInstance().doGet(url, headers),
+                response -> response != null && response.getResponseCode() == 200
+                        && response.getData() != null && response.getData().contains(revisionId));
+        Assert.assertTrue(last != null && last.getResponseCode() == 200 && last.getData() != null
+                        && last.getData().contains(revisionId),
+                "Revision " + revisionId + " of " + resourceType + " " + resourceId + " never appeared in the "
+                        + "revisions listing; got=" + (last == null ? "null"
+                        : last.getResponseCode() + "/" + last.getData()));
     }
 
     /**
@@ -1134,9 +1167,21 @@ public class PublisherBaseSteps {
     }
 
     /**
-     * Waits until a specific revision is deployed in the gateway.
-     * This step polls the deployment status endpoint until the revision appears in the deployed revisions list,
-     * with a timeout mechanism to prevent indefinite waiting.
+     * Waits until a specific revision is deployed, by polling the MANAGEMENT plane's deployment-status endpoint
+     * until the revision appears in the deployed list.
+     *
+     * <p><b>This is a management-plane check ONLY — it is NOT a gateway readiness gate.</b> It reports when the
+     * revision ROW is written, which is not when synapse has hot-swapped the running sequence, so an invocation
+     * issued straight after it can still be served by the OLD artifact. It previously papered over that with a
+     * blind {@code Thread.sleep(10000)}; that violated CLAUDE.md §4 ("wait, never sleep"), was simultaneously too
+     * short under CI load (it let mediation_policies.feature:374 read the pre-detach response) and pure waste
+     * everywhere else, and — worst — stood as a copyable template for the next author. It is gone.
+     *
+     * <p>If the following step ASSERTS on gateway behaviour, gate it on the DATA plane instead, so the condition
+     * is false in the old state and true in the new one: {@code ... until response body contains "<marker>"} for
+     * an effect that should appear, {@code ... until response body no longer contains "<marker>"} for one that
+     * should disappear, or a status poll to a code the old state cannot return. Use this step only to fail fast
+     * with a clear message when a deploy never landed at all.
      *
      * @param resourceType Type of resource (e.g., "apis", "api-products")
      * @param resourceId Context key containing the resource ID
@@ -1174,11 +1219,6 @@ public class PublisherBaseSteps {
                         if (revisionId.equals(deployedRevisionId)) {
                             deployed = true;
                             logger.info("Revision {} is deployed for API {}", revisionId, actualResourceId);
-                            try {
-                                Thread.sleep(10000);
-                            } catch (InterruptedException ignored) {
-                                Thread.currentThread().interrupt();
-                            }
                             break;
                         }
                     }
@@ -1580,11 +1620,20 @@ public class PublisherBaseSteps {
      * Shared scopes can be used across multiple APIs to define common authorization scopes.
      * The scope ID is stored in the test context after creation.
      *
-     * @param scopeName Name of the shared scope to create
+     * <p>The supplied name is a BASE: it is uniquified through {@link Names#unique} before the scope is
+     * created, because a shared scope is tenant-wide and a literal would 409 a re-run on the same container
+     * whenever teardown could not remove it (a hard scenario failure), and would collide outright if two
+     * features ever picked the same literal. Capture the created name from the response —
+     * {@code I extract response field "name" and store it as "..."} — and reference that key wherever the
+     * scope is bound or requested; the base alone will not match. Mirrors the
+     * {@code ... bound to role} variant in JwtGrantSteps, which already works this way.
+     *
+     * @param scopeName base name of the shared scope to create
      */
     @When("I create a new shared scope as {string}")
     public void iCreateANewSharedScopeAs(String scopeName) throws IOException{
 
+        scopeName = Names.unique(Utils.resolveContextPlaceholders(scopeName));
         // Create payload
         try (InputStream inputStream = getClass().getClassLoader().getResourceAsStream("artifacts/payloads/create_apim_shared_scope_payload.json")) {
             if (inputStream == null) {
@@ -1858,6 +1907,8 @@ public class PublisherBaseSteps {
     @When("I fetch the shared scope with name {string} into context as {string}")
     public void fetchSharedScopeByName(String scopeName, String scopeId) throws IOException {
 
+        // Resolved: the creating step uniquifies the base name, so callers pass the captured {{key}}, not a literal.
+        scopeName = Utils.resolveContextPlaceholders(scopeName);
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION,
                 "Bearer " + Identity.publisherToken());
@@ -2813,6 +2864,60 @@ public class PublisherBaseSteps {
     }
 
     /**
+     * Retrieves the generated in/out conversion resource policies of a SOAP-to-REST API
+     * ({@code GET /apis/{apiId}/resource-policies?sequenceType=<in|out>}), publishing the {@code {list:[...]}}
+     * response so a following content + cardinality assertion can inspect the sequence {@code content} — the
+     * synapse mediation that performs the JSON&lt;-&gt;SOAP conversion. Nothing else in this suite reads these
+     * sequences, so an empty/degraded conversion would otherwise be invisible. Ports the retrieve half of
+     * SoapToRestTestCase#testValidateInOutSequence.
+     */
+    @When("I retrieve the {string} sequence resource policies of API {string}")
+    public void iRetrieveSequenceResourcePolicies(String sequenceType, String apiId) throws IOException {
+        String actualApiId = TestContext.resolve(apiId).toString();
+        Requests.get(Utils.getApiResourcePoliciesURL(Utils.getBaseUrl(), actualApiId, sequenceType),
+                Identity.publisherHeaders());
+    }
+
+    /**
+     * Updates the single in-sequence resource policy of a SOAP-to-REST API by PREPENDING a unique marker property
+     * mediator, then PUTs it back ({@code PUT /apis/{apiId}/resource-policies/{id}}) and publishes the PUT
+     * response. A following re-retrieve asserts the marker persisted. Ports the INTENT of
+     * SoapToRestTestCase#testUpdateInOutSequence, whose forEach swallowed update failures so it never verified
+     * the update actually took.
+     *
+     * <p>Prepended rather than spliced in after the first tag: the policy {@code content} is a FRAGMENT of sibling
+     * mediators, not a rooted document (it opens with a self-closing {@code <header/>} followed by sibling
+     * {@code <property/>} / {@code <filter>} elements), so a leading property is a valid sibling and needs no
+     * scanning. Locating an insertion point with {@code indexOf('>')} would be a raw-text scan with no notion of
+     * markup — {@code >} is legal unescaped inside an XML attribute value, and synapse {@code regex}/
+     * {@code expression} attributes can carry one — so it could split a tag and produce content the PUT rejects,
+     * which would surface as a product fault rather than a test bug. Position is irrelevant here: the scenario
+     * re-retrieves and asserts the marker persisted, it never invokes the sequence.
+     */
+    @When("I update the in-sequence resource policy of API {string} inserting marker {string}")
+    public void iUpdateInSequenceResourcePolicy(String apiId, String marker) throws IOException {
+        String actualApiId = TestContext.resolve(apiId).toString();
+        String markerValue = TestContext.resolve(marker).toString();
+        Map<String, String> headers = Identity.publisherHeaders();
+        // Intermediate read consumed locally (not the asserted response) — raw client per §7.
+        HttpResponse list = SimpleHTTPClient.getInstance().doGet(
+                Utils.getApiResourcePoliciesURL(Utils.getBaseUrl(), actualApiId, "in"), headers);
+        Assert.assertTrue(list != null && list.getResponseCode() >= 200 && list.getResponseCode() < 300
+                        && list.getData() != null && !list.getData().isBlank(),
+                "Could not read in-sequence resource policy of " + actualApiId + " before update: got="
+                        + (list == null ? "null" : list.getResponseCode() + "/" + list.getData()));
+        JSONArray policies = new JSONObject(list.getData()).getJSONArray("list");
+        Assert.assertEquals(policies.length(), 1,
+                "Expected exactly one in-sequence resource policy, got: " + list.getData());
+        JSONObject policy = policies.getJSONObject(0);
+        String content = policy.getString("content");
+        String markerElement = "<property name=\"" + markerValue + "\" value=\"" + markerValue + "\" scope=\"default\"/>";
+        policy.put("content", markerElement + content);
+        Requests.put(Utils.getApiResourcePolicyByIdURL(Utils.getBaseUrl(), actualApiId, policy.getString("id")),
+                headers, policy.toString(), "application/json");
+    }
+
+    /**
      * Creates + deploys an API from a payload file, injecting a comma-separated tag list into its {@code tags}
      * field first (each tag placeholder resolved), so a DevPortal tag search can match on those tags. Registers
      * the API for teardown via the create primitive.
@@ -2949,6 +3054,23 @@ public class PublisherBaseSteps {
         Requests.delete(Utils.getAPISpecificPolicyById(Utils.getBaseUrl(), actualApiId, policyID), headers);
     }
 
+    /**
+     * Retrieves the operation-policy list of an API (GET {@code apis/{apiId}/operation-policies}) and publishes it,
+     * so a following assertion can confirm an API-specific policy is present (create paths) or ABSENT (post-delete).
+     * The generic {@code I retrieve the "{type}" resource with id "{id}"} step cannot express this two-segment
+     * sub-collection path — it resolves {@code id} through {@code TestContext.resolve} (a context key) and builds
+     * {@code {type}/{id}}, with no way to add the trailing {@code operation-policies} collection segment.
+     *
+     * @param apiId context key holding the API id whose policy list is retrieved
+     */
+    @When("I retrieve the operation policies of API {string}")
+    public void iRetrieveTheApiSpecificOperationPolicies(String apiId) throws IOException {
+        String actualApiId = TestContext.resolve(apiId).toString();
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
+        Requests.get(Utils.getAPISpecificPolicy(Utils.getBaseUrl(), actualApiId), headers);
+    }
+
     /** Resolves a shipped/created COMMON operation policy (its {@code id}/{@code name}/{@code version}) by display
      *  name (GET /operation-policies). Returns the list entry so callers get the version too — the attach path
      *  validates policyName+policyVersion against the spec identified by policyId (a missing version → 400). */
@@ -3069,10 +3191,19 @@ public class PublisherBaseSteps {
 
     /**
      * Extracts a previously-downloaded common-operation-policy archive (path stored under {@code archivePathKey})
-     * and asserts it contains a spec file named {@code <policyName>.<ext>} whose content parses as the given
-     * format ({@code json} or {@code yaml}), plus the {@code <policyName>.j2} synapse template. Ports the
-     * archive-content assertion of OperationPolicyTestCase#testCommonOperationPolicyExportWithJSONContent (JSON)
-     * and complements the YAML round-trip already covered.
+     * and asserts (a) it contains a spec file named {@code <policyName>.<ext>} whose content parses as the given
+     * format ({@code json} or {@code yaml}) carrying the policy name, plus the {@code <policyName>.j2} synapse
+     * template, AND (b) the exported artefacts faithfully carry the CONTENT of the SOURCE files the policy was
+     * created from ({@code artifacts/payloads/policySpecFiles/<policyName>.yaml} + {@code .j2}) — an export that
+     * produced an EMPTY or WRONG spec/synapse would pass a presence-only check but fails here. Ports the
+     * archive-content assertions of OperationPolicyTestCase#testCommonOperationPolicyExport (YAML) and
+     * testCommonOperationPolicyExportWithJSONContent (JSON), which likewise compared parsed spec content (not text).
+     *
+     * <p>The source spec is always YAML (v2 supplies YAML specs); it is parsed structurally and the exported spec
+     * (yaml OR json, both parsed with the same YAML parser since JSON is a YAML subset) must carry every
+     * {@code data} field/value the source declares (deep containment; list-valued fields compared as sets so a
+     * server re-ordering of e.g. {@code supportedApiTypes} is not a spurious failure). The synapse template is
+     * stored verbatim, so it is compared as normalized text (line-trimmed, blank lines dropped).</p>
      */
     @Then("The exported operation policy archive {string} should contain a {string} spec for policy {string}")
     public void theExportedPolicyArchiveShouldContain(String archivePathKey, String format, String policyName)
@@ -3101,6 +3232,84 @@ public class PublisherBaseSteps {
                             || specContent.contains("name:" + policyName),
                     "Exported YAML spec does not carry the policy name");
         }
+
+        // Content equality against the SOURCE files the policy was created from. The source spec is YAML; the
+        // exported spec may be YAML or JSON but both parse with the same YAML parser (JSON ⊂ YAML).
+        String sourceSpecResource = "artifacts/payloads/policySpecFiles/" + policyName + ".yaml";
+        String sourceSynapseResource = "artifacts/payloads/policySpecFiles/" + policyName + ".j2";
+        Object sourceSpec = new Yaml().load(Utils.readClasspathResource(sourceSpecResource));
+        Object exportedSpec = new Yaml().load(specContent);
+        Object sourceData = ((Map<?, ?>) sourceSpec).get("data");
+        Assert.assertTrue(exportedSpec instanceof Map && ((Map<?, ?>) exportedSpec).get("data") instanceof Map,
+                "Exported spec has no 'data' object: " + specContent);
+        Object exportedData = ((Map<?, ?>) exportedSpec).get("data");
+        assertSpecContentContainsSource(sourceData, exportedData, "data");
+
+        // RAW comparison, no normalization. The previous form trimmed every line and dropped blank lines, which
+        // silently accepted a reformatted template: custom_add_common_header.j2 indents its <header> by 3 spaces,
+        // so an export that stripped or re-indented it passed. Synapse content is whitespace-significant enough
+        // that a reformat is worth failing on, and the product does round-trip it verbatim (verified by running
+        // PublisherOperationPoliciesRunner against this exact assertion).
+        String sourceSynapse = Utils.readClasspathResource(sourceSynapseResource);
+        String exportedSynapse = new String(Files.readAllBytes(synapseFile.toPath()), StandardCharsets.UTF_8);
+        Assert.assertEquals(exportedSynapse, sourceSynapse,
+                "Exported synapse template content does not match the source " + sourceSynapseResource);
+    }
+
+    /**
+     * Asserts the exported spec content ({@code actual}) faithfully carries the SOURCE content ({@code expected}):
+     * every scalar value is equal, every source list element is present in the exported list (set containment), and
+     * every source map key resolves recursively. Tolerant of any extra field the server may add on export, but
+     * catches a dropped field, a changed value, or an empty/wrong spec — the hole this strengthening closes.
+     */
+    private void assertSpecContentContainsSource(Object expected, Object actual, String path) {
+        if (expected instanceof Map<?, ?> expectedMap) {
+            Assert.assertTrue(actual instanceof Map,
+                    "Exported spec content at '" + path + "' is not an object: " + actual);
+            Map<?, ?> actualMap = (Map<?, ?>) actual;
+            for (Map.Entry<?, ?> entry : expectedMap.entrySet()) {
+                String childPath = path + "." + entry.getKey();
+                // An empty/null source value carries no content to verify — the server may legitimately omit an
+                // empty collection (e.g. policyAttributes: []) on export, so don't require the key in that case.
+                if (isEmptyValue(entry.getValue())) {
+                    continue;
+                }
+                Assert.assertTrue(actualMap.containsKey(entry.getKey()),
+                        "Exported spec is missing field '" + childPath + "'");
+                assertSpecContentContainsSource(entry.getValue(), actualMap.get(entry.getKey()), childPath);
+            }
+        } else if (expected instanceof List<?> expectedList) {
+            Assert.assertTrue(actual instanceof List,
+                    "Exported spec content at '" + path + "' is not a list: " + actual);
+            List<String> actualCanonical = new ArrayList<>();
+            Set<String> actualSet = new HashSet<>();
+            for (Object o : (List<?>) actual) {
+                String canonical = String.valueOf(o);
+                actualCanonical.add(canonical);
+                actualSet.add(canonical);
+            }
+            Set<String> expectedSet = new HashSet<>();
+            for (Object o : expectedList) {
+                expectedSet.add(String.valueOf(o));
+            }
+            Assert.assertEquals(actualCanonical.size(), expectedList.size(),
+                    "Exported spec list '" + path + "' has unexpected cardinality; expected "
+                            + expectedList.size() + " but got " + actualCanonical.size());
+            Assert.assertEquals(actualSet.size(), actualCanonical.size(),
+                    "Exported spec list '" + path + "' contains duplicate elements: " + actualCanonical);
+            Assert.assertEquals(actualSet, expectedSet,
+                    "Exported spec list '" + path + "' does not exactly match the source set");
+        } else {
+            Assert.assertEquals(String.valueOf(actual), String.valueOf(expected),
+                    "Exported spec value at '" + path + "' does not match source");
+        }
+    }
+
+    /** True when a parsed spec value carries no content to verify (null, empty list, or empty map). */
+    private boolean isEmptyValue(Object value) {
+        return value == null
+                || (value instanceof List<?> list && list.isEmpty())
+                || (value instanceof Map<?, ?> map && map.isEmpty());
     }
 
     /**

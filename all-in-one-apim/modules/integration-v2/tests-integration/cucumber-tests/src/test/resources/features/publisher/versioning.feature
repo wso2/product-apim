@@ -62,6 +62,62 @@ Feature: Publisher API Versioning
       | publisherUser@tenant1.com     |
       | SECONDARY.COM/publisherUser1  |
 
+  # Ports the ODD VERSION-STRING ordering matrix of APIMANAGER4081PaginationCountTestCase (api3Versions:
+  # 1.0.0b, 2.0.1a, 2.0.1c — read ~:121-123). The legacy class's global publisher/devportal COUNT assertions are
+  # deliberately NOT ported: they are unportable under parallel isolation (§4 — a sibling class may add rows
+  # mid-scenario). What IS portable and was missing: the product's non-semver version comparator
+  # (ComparableVersion) and the devportal's latest-version promotion. With display_multiple_versions unset (the
+  # v2 default → false; APIUtil#isAllowDisplayMultipleVersions), the devportal marketplace listing groups by
+  # name and surfaces only the LATEST published version per name via APIVersionComparator, so the listing is a
+  # clean by-name comparator probe: 2.0.1c > 2.0.1a > 1.0.0b. All list assertions are scoped BY the family's
+  # own uniquely-generated ids — never a raw count or unfiltered list (§12). Runs as one publisher (super
+  # tenant); a single family suffices to exercise the comparator, so it is not outlined over tenants.
+  @cap:publisher @feat:versioning @type:regression @dep:devportal @legacy:APIMANAGER4081PaginationCountTestCase
+  Scenario: The devportal surfaces the comparator-latest non-semver version and re-promotes when it is deleted
+    Given The system is ready and I have valid publisher access tokens as "publisherUser"
+    # v1 = 1.0.0b (the comparator-lowest of the family).
+    And I put JSON payload from file "artifacts/payloads/create_apim_test_api.json" in context as "cmpPayload"
+    And I set the field "version" to "1.0.0b" in the payload "cmpPayload"
+    And I create an "apis" resource with payload "cmpPayload" as "cmpV1Id"
+    Then The response status code should be 201
+    When I deploy the API with id "cmpV1Id"
+    Then The response status code should be 201
+    When I publish the "apis" resource with id "cmpV1Id"
+    Then The lifecycle status of API "cmpV1Id" should be "Published"
+
+    # v2 = 2.0.1a (comparator-greater than 1.0.0b).
+    When I create a new version "2.0.1a" of "apis" resource "cmpV1Id" with default version "false" as "cmpV2Id"
+    Then The response status code should be 201
+    When I deploy the API with id "cmpV2Id"
+    Then The response status code should be 201
+    When I publish the "apis" resource with id "cmpV2Id"
+    Then The lifecycle status of API "cmpV2Id" should be "Published"
+
+    # v3 = 2.0.1c (the comparator-latest of the family).
+    When I create a new version "2.0.1c" of "apis" resource "cmpV1Id" with default version "false" as "cmpV3Id"
+    Then The response status code should be 201
+    When I deploy the API with id "cmpV3Id"
+    Then The response status code should be 201
+    When I publish the "apis" resource with id "cmpV3Id"
+    Then The lifecycle status of API "cmpV3Id" should be "Published"
+
+    # The grouped devportal listing shows the comparator-latest (v3=2.0.1c) and hides the older versions. Poll
+    # for v3's presence FIRST (it must index and become the latest-shown entry) before asserting the older ids
+    # are filtered out, so the checks never race the index.
+    When I retrieve the devportal API list until it contains "cmpV3Id" within 60 seconds
+    And I retrieve the devportal API list until it does not contain "cmpV2Id" within 30 seconds
+    And I retrieve the devportal API list until it does not contain "cmpV1Id" within 30 seconds
+
+    # Delete the latest → the devportal PROMOTES the previous version by the comparator (2.0.1a), not the oldest.
+    # Same ordering rationale as above: poll for the promoted v2 FIRST, then assert the absences. The deleted v3 is
+    # asserted gone explicitly — v2's presence only implies it while the one-entry-per-family grouping holds, so a
+    # grouping regression that listed BOTH would otherwise satisfy every check here unnoticed.
+    When I delete the "apis" resource with id "cmpV3Id"
+    Then The response status code should be 200
+    When I retrieve the devportal API list until it contains "cmpV2Id" within 60 seconds
+    And I retrieve the devportal API list until it does not contain "cmpV3Id" within 30 seconds
+    And I retrieve the devportal API list until it does not contain "cmpV1Id" within 30 seconds
+
   @cap:publisher @feat:versioning @type:negative @legacy:APIVersioningTestCase
   Scenario Outline: A subscriber-role user cannot create a new API version as <subscriber>
     # Create the base API as a publisher, then re-authenticate as a subscriber whose token lacks the

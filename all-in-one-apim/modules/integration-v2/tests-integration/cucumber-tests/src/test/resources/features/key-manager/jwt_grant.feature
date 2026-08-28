@@ -155,13 +155,15 @@ Feature: Key Manager JWT (jwt-bearer) grant with an external trusted IdP
 
   # An assertion signed by a DIFFERENT key than the registered IdP's cert fails signature verification. The
   # IdP is registered with extidpjwt's cert but the assertion is signed with other-keystore's private key.
-  # error_description IS pinned to legacy's "Signature or Message Authentication invalid": a bare 400 +
-  # invalid_grant is the token endpoint's catch-all for every jwt-bearer rejection (missing IdP, expired
-  # assertion, bad audience), so without the description this negative would pass for the WRONG reason — the
-  # whole point is that the failure is SIGNATURE verification. The earlier caveat here conflated this with the
-  # tampered-payload case: a payload edit that breaks base64/JSON parsing surfaces a claimset-retrieval error,
-  # but a structurally intact assertion signed with the wrong key reaches signature verification, which is the
-  # same path the tamper scenario above already pins this string on.
+  # error_description IS pinned: a bare 400 + invalid_grant is the token endpoint's catch-all for every
+  # jwt-bearer rejection (missing IdP, expired assertion, bad audience), so without the description this negative
+  # would pass for the WRONG reason — the whole point is that the failure is SIGNATURE verification. Measured on
+  # this build, a wrong-key (but structurally intact) signature surfaces
+  # {"error_description":"Signature or Message Authentication invalid.","error":"invalid_grant"} — note the
+  # TRAILING PERIOD, which is pinned below.
+  # Note this is NOT the tampered-payload case: a payload edit that breaks base64/JSON parsing surfaces a
+  # claimset-retrieval error, whereas a structurally intact assertion signed with the wrong key reaches signature
+  # verification — the same path the tamper scenario above pins this string on.
   @cap:key-manager @feat:token-issuance @type:negative @legacy:JWTGrantTestCase
   Scenario Outline: Reject a JWT signed with a certificate not matching the IdP as <actor>
     Given The system is ready
@@ -189,7 +191,7 @@ Feature: Key Manager JWT (jwt-bearer) grant with an external trusted IdP
     And I exchange the JWT assertion "wrongCertJwt" for a token using consumer key "consumerKey" secret "consumerSecret" scope ""
     Then The response status code should be 400
     And The response should contain "invalid_grant"
-    And The response should contain "Signature or Message Authentication invalid"
+    And The response should contain "Signature or Message Authentication invalid."
 
     Examples:
       | actor             |

@@ -148,7 +148,10 @@ Feature: Gateway Basic Authentication With Email-Form Usernames
     When I invoke the API at gateway context "{{boContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
     And The response should contain "\"name\":\"John\""
-    # Second invocation — the regression-catching one.
+    # Second invocation — the regression-catching one. The BODY assertion below is the real detector here: the
+    # exact-count step would assert the repeat's status without retrying, but it does not store a response, so the
+    # body check would silently re-read the FIRST call's. Keeping until-200 preserves the stronger body assertion,
+    # and the regression it guards is deterministic (a poisoned cache fails every retry, not just the first).
     When I invoke the API at gateway context "{{boContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
     And The response should contain "\"name\":\"John\""

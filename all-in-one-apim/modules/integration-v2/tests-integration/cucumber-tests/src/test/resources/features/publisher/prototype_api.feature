@@ -46,15 +46,30 @@ Feature: Prototype API runtime, mock and visibility
     When I change the lifecycle of API "protoApiId" with action "Deploy as a Prototype"
     Then The response status code should be 200
     When I deploy the API with id "protoApiId"
+    Then The response status code should be 201
+    # Deploy-readiness gate BEFORE the demote, and it is load-bearing. The deploy and the demote each fire an
+    # independent AT-MOST-ONCE propagation event; issued back-to-back they can be processed OUT OF ORDER, and if
+    # the deploy lands after the undeploy the API stays on the gateway with no further event to ever correct it.
+    # Seen in CI: the two events were 9ms apart, and the invocation below then answered 401 for the full 180s
+    # window instead of 404. Gating here makes the deploy land first, so the demote's undeploy cannot be
+    # overtaken — and it re-emits the deploy if that event was the one lost.
+    And the "apis" resource "protoApiId" should be live on the gateway, redeploying if propagation is lost
     When I retrieve the "apis" resource with id "protoApiId"
     And I extract response field "context" and store it as "apiContext"
     When I change the lifecycle of API "protoApiId" with action "Demote to Created"
     Then The response status code should be 200
     And The lifecycle status of API "protoApiId" should be "Created"
-    # Demote-to-Created undeploys the API from the gateway, so the route is removed — an invocation returns
-    # 404 (not routable), not 401. Poll until the undeploy propagates.
-    When I invoke the API at gateway context "{{apiContext}}/1.0.0/customers/123/" with method "GET" without authentication until response status code becomes 404 within 60 seconds
-    Then The response status code should be 404
+    # Demote-to-Created does NOT undeploy the API: it stays on the gateway and merely stops being open, so an
+    # UNAUTHENTICATED invocation is refused 401 — the security property legacy pins
+    # (PrototypedAPITestcase#testDemotedPrototypedEndpointAPItoCreated asserts exactly 401, "User was able to
+    # invoke the API demoted to CREATED from PROTOTYPE"). This previously expected 404 on the premise that the
+    # route is removed; measured, the artifact is still in synapse after the demote and is only destroyed by the
+    # cleanup hook's API delete, 6s AFTER a 180s poll for 404 had already given up. The old expectation passed
+    # only while the deploy-readiness gate above was missing — the invoke then beat the deploy to the gateway and
+    # 404'd because the API had never been deployed at all, which is a vacuous pass, not the behaviour under test.
+    # 200 -> 401 is discriminating: while prototyped, this same unauthenticated call returns 200.
+    When I invoke the API at gateway context "{{apiContext}}/1.0.0/customers/123/" with method "GET" without authentication until response status code becomes 401 within 60 seconds
+    Then The response status code should be 401
 
     Examples:
       | actor             |

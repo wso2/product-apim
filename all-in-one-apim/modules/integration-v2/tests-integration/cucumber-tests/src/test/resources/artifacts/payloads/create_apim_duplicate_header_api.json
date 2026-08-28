@@ -1,0 +1,30 @@
+{
+  "name": "${UNIQUE:APIMDuplicateHeader}",
+  "context": "${UNIQUE:apiDuplicateHeaderContext}",
+  "version": "1.0.0",
+  "endpointConfig": {
+    "endpoint_type": "http",
+    "production_endpoints": {
+      "template_not_supported": false,
+      "config": null,
+      "url": "http://nodebackend:3005/duplicate"
+    },
+    "sandbox_endpoints": {
+      "url": "http://nodebackend:3005/duplicate",
+      "config": null,
+      "template_not_supported": false
+    }
+  },
+  "description": "API whose backend (node duplicate-header-backend, port 3005) emits TWO Set-Cookie response headers; used to verify the gateway does not collapse duplicate response headers",
+  "policies": ["Gold", "Bronze", "Unlimited"],
+  "operations": [
+    {
+      "verb": "GET",
+      "target": "/",
+      "scopes": []
+    }
+  ],
+  "isDefaultVersion": true,
+  "additionalProperties": [],
+  "additionalPropertiesMap": {}
+}

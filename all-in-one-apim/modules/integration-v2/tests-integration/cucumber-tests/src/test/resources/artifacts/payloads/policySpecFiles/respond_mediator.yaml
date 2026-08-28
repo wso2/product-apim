@@ -1,0 +1,15 @@
+type: operation_policy_specification
+version: v4.5.0
+data:
+  category: Mediation
+  name: respond_mediator
+  version: v1
+  displayName: respond_mediator
+  description: Short-circuits the request flow with a synapse respond mediator, so the backend is never called.
+  applicableFlows:
+   - request
+  supportedGateways:
+   - Synapse
+  supportedApiTypes:
+   - HTTP
+  policyAttributes: []

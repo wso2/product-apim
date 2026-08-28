@@ -634,11 +634,12 @@ public class BaseSteps {
     }
 
     /**
-     * Sets a top-level field of a JSON payload (in context) to a JSON OBJECT parsed from a classpath file — for
-     * injecting a nested structure (e.g. embedding a custom "LifeCycle" definition into the tenant configuration)
-     * that the string setter cannot express. Writes the merged payload back under the same key.
+     * Sets a top-level field of a JSON payload (in context) to a JSON OBJECT or ARRAY parsed from a classpath file
+     * — for injecting a nested structure (a custom "LifeCycle" definition, or the "Notifications" notifier array,
+     * into the tenant configuration) that the string setter cannot express. Writes the merged payload back under
+     * the same key. The file's first non-space character selects object vs array, so one step covers both shapes.
      *
-     * @param field        the top-level field to set to the parsed JSON object
+     * @param field        the top-level field to set to the parsed JSON value
      * @param jsonFilePath classpath path of the JSON file whose content becomes the field value
      * @param contextKey   context key holding the JSON payload to mutate
      */
@@ -650,8 +651,8 @@ public class BaseSteps {
             if (in == null) {
                 throw new FileNotFoundException("JSON file not found: " + jsonFilePath);
             }
-            String content = new String(in.readAllBytes(), StandardCharsets.UTF_8);
-            payload.put(field, new JSONObject(content));
+            String content = new String(in.readAllBytes(), StandardCharsets.UTF_8).trim();
+            payload.put(field, content.startsWith("[") ? new JSONArray(content) : new JSONObject(content));
         }
         TestContext.set(Utils.normalizeContextKey(contextKey), payload.toString());
     }
@@ -1314,15 +1315,21 @@ public class BaseSteps {
     /**
      * Verifies that the HTTP response contains a specific header with the expected value.
      *
+     * <p>The lookup is case-insensitive (HTTP header names are, and a server may echo a different casing than
+     * the one written in the feature) and {@code {{...}}} placeholders in the expected value are resolved —
+     * needed to compare a header against a value captured earlier in the scenario (e.g. the gateway's
+     * {@code activityid} correlation id, asserted equal on the request and response paths).
+     *
      * @param headerName The name of the HTTP header to check
      * @param expectedValue The expected value of the header
      */
     @Then("The response should contain the header {string} with value {string}")
     public void responseShouldContainHeaderWithValue(String headerName, String expectedValue) {
 
-        HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
-        Assert.assertTrue(response.getHeaders().containsKey(headerName), "Header " + headerName + " not found in response");
-        Assert.assertEquals(response.getHeaders().get(headerName), expectedValue, "Header value mismatch for " + headerName);
+        String actual = responseHeaderValue(headerName);
+        Assert.assertNotNull(actual, "Header " + headerName + " not found in response");
+        Assert.assertEquals(actual, Utils.resolveContextPlaceholders(expectedValue),
+                "Header value mismatch for " + headerName);
     }
 
     /**
@@ -1636,7 +1643,19 @@ public class BaseSteps {
     }
 
     /**
-     * Waits for an API to be deployed in the gateway.
+     * Waits until the API's artifact is present at the gateway's admin artifact endpoint.
+     *
+     * <p><b>Presence is not readiness.</b> The endpoint answers 200 as soon as the artifact exists; it does not
+     * say synapse has finished swapping the running sequence, and it cannot distinguish one revision from
+     * another. This previously ended in a blind {@code Thread.sleep(10000)} standing in for that gap — a
+     * CLAUDE.md §4 violation ("wait, never sleep") that was both an unconditional 10s tax on all 7 call sites
+     * and no actual proof. It is gone. All 7 sites are first deploys (the old state is a 404, so their
+     * following poll is already discriminating) or perform no invocation at all.
+     *
+     * <p>If you add a caller that ASSERTS on gateway behaviour after a REDEPLOY, this step is not enough — gate
+     * on the data plane, so the condition is false in the old state and true in the new one (see
+     * {@code APIInvocationSteps} "until response body contains" / "until response body no longer contains"), or
+     * on synapse's own re-add line in wso2carbon.log when the observable is unchanged by the redeploy.
      *
      * @param apiDetailsPayload Context key containing the API details JSON payload
      */
@@ -1709,7 +1728,6 @@ public class BaseSteps {
         }
         Assert.assertTrue(isApiDeployed, "API " + apiName + " v" + apiVersion +
                 " was not deployed within the timeout");
-        Thread.sleep(10000);
     }
 
 

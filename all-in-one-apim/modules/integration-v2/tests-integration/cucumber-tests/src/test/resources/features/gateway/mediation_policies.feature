@@ -122,6 +122,37 @@ Feature: Gateway Mediation Policies
       | admin             |
       | admin@tenant1.com |
 
+  # The same policy configured with the claim PRESENT in the token but a NON-MATCHING value blocks the
+  # invocation (403). Distinct from the missing-claim deny above: here accessVerificationClaim=aut IS carried by
+  # the client-credentials token (aut=APPLICATION), but the policy requires aut=NOTAPPLICATION, so the value
+  # comparison fails. Discriminating: a validator that checked only for the claim's PRESENCE and ignored its
+  # VALUE would let this through and pass every other scenario. Ports
+  # JWTClaimBasedAccessValidatorPolicyTestCase#...WithInvalidClaimValue.
+  @cap:gateway @feat:mediation-policies @rule:claim-access-validator @type:negative @dep:publisher @legacy:JWTClaimBasedAccessValidatorPolicyTestCase
+  Scenario Outline: A JWT-claim access-validator whose claim is present but value mismatches blocks the invocation as <actor>
+    Given The system is ready
+    And I have valid access tokens as "<actor>"
+    And I have created an api from "artifacts/payloads/create_apim_claimvalidator_valuemismatch_api.json" as "cvValMissApiId" and deployed it
+    And the "apis" resource "cvValMissApiId" should be live on the gateway, redeploying if propagation is lost
+    When I publish the "apis" resource with id "cvValMissApiId"
+    Then The lifecycle status of API "cvValMissApiId" should be "Published"
+    When I retrieve the "apis" resource with id "cvValMissApiId"
+    And I extract response field "context" and store it as "cvValMissContext"
+    When I have set up application with keys, subscribed to API "cvValMissApiId", and obtained access token for "cvValMissSubId"
+    Then The response status code should be 200
+    When I invoke the API at gateway context "{{cvValMissContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 403 within 60 seconds
+    Then The response status code should be 403
+    # The value-mismatch deny carries error code 900912 "Claim Mismatch" — a DIFFERENT code from the missing-claim
+    # deny above (which the validator reports when the claim is absent). Pinning it proves the validator distinguished
+    # a present-but-wrong-value claim from an absent one, the exact behaviour a presence-only check would get wrong.
+    And The response should contain "900912"
+    And The response should contain "Claim Mismatch"
+
+    Examples:
+      | actor             |
+      | admin             |
+      | admin@tenant1.com |
+
   # accessVerificationClaimValueRegex: the claim value (aut=APPLICATION) is additionally validated against a
   # regex. ^[A-Z]+$ MATCHES the uppercase APPLICATION claim, so the invocation is permitted (200). Ports
   # JWTClaimBasedAccessValidatorPolicyTestCase#...WithValidRegex.
@@ -207,9 +238,12 @@ Feature: Gateway Mediation Policies
   # Secret-attribute operation policy: a policy declaring "Secret"-type attributes (apiKey mandatory, token
   # optional) injects those values as headers towards the backend. The secret value is observed on the backend
   # request (via /reflect-headers) but is MASKED (not returned) in the publisher representation of the API.
-  # Ports the secret-attributes slice of OperationPolicyTestCase.
+  # F3 (the load-bearing extension): after proving injection, an EMPTY-value update must PRESERVE the secret, not
+  # wipe it — this is the ONLY assertion that separates "preserved" from "silently cleared" at runtime, since the
+  # publisher plane masks a preserved secret to "" (indistinguishable from a wipe there). Ports the
+  # injection + testUpdatePolicyWithSecretAttributes slices of OperationPolicyTestCase.
   @cap:gateway @feat:mediation-policies @rule:secret-attributes @type:regression @dep:publisher @legacy:OperationPolicyTestCase
-  Scenario Outline: A secret-attribute operation policy injects the secret header but masks it on retrieval as <actor>
+  Scenario Outline: A secret-attribute operation policy injects the secret, masks it on retrieval, and preserves it on an empty-value update as <actor>
     Given The system is ready
     And I have valid access tokens as "<actor>"
     And I create a new common policy with spec "artifacts/payloads/policySpecFiles/add_secret_headers.j2" and "artifacts/payloads/policySpecFiles/add_secret_headers.yaml" as "secretPolicyId"
@@ -222,6 +256,7 @@ Feature: Gateway Mediation Policies
     Then The lifecycle status of API "secretApiId" should be "Published"
     When I retrieve the "apis" resource with id "secretApiId"
     And I extract response field "context" and store it as "secretContext"
+    And I extract response field "name" and store it as "secretApiName"
     # The secret value must NOT be returned in the publisher representation of the API (it is masked).
     And The response should not contain "test-api-key-123"
     When I have set up application with keys, subscribed to API "secretApiId", and obtained access token for "secretSubId"
@@ -231,6 +266,133 @@ Feature: Gateway Mediation Policies
     When I invoke the API at gateway context "{{secretContext}}/1.0.0/reflect-headers" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
     And The response should contain "test-api-key-123"
+
+    # F3: update the policy parameters supplying an EMPTY apiKey (the same update the publisher scenario does),
+    # redeploy, wait for propagation, and confirm the REAL value STILL reaches the backend — the end-to-end proof
+    # that preserve-on-empty is genuine and not a silent wipe the masked publisher view would hide.
+    When I update the parameters of the operation policy in flow "request" of operation 0 of API "secretApiId" to "{\"apiKey\":\"\",\"token\":\"\"}"
+    Then The response status code should be 200
+    # Hot-swap gate. This scenario's whole point is that the observable is UNCHANGED by the update (the secret is
+    # PRESERVED), so "test-api-key-123" is in the body before AND after — no data-plane poll can tell the old
+    # artifact from the new one, and the management-plane revision check below only reports that the revision ROW
+    # was written. Mark the log first, then wait for synapse's own re-add line for THIS artifact; that is the only
+    # signal here that distinguishes the two. Reads the log only, so it changes nothing the scenario asserts.
+    And I mark the current end of the server log file "wso2carbon.log"
+    When I deploy the API with id "secretApiId"
+    And the "apis" resource "secretApiId" should be live on the gateway, redeploying if propagation is lost
+    And I wait until "apis" "secretApiId" revision is deployed in the gateway
+    And The server log file "wso2carbon.log" should gain a line containing all of the following within 60 seconds
+      | {{secretApiName}}                                   |
+      | was added to the Synapse configuration successfully |
+    When I invoke the API at gateway context "{{secretContext}}/1.0.0/reflect-headers" with method "GET" using access token "generatedAccessToken" and payload "" until response body contains "test-api-key-123" within 60 seconds
+    Then The response status code should be 200
+    And The response should contain "test-api-key-123"
+
+    Examples:
+      | actor             |
+      | admin             |
+      | admin@tenant1.com |
+
+  # Attach baseline + optional-secret measurement. A plain reflect-headers API (no policy) is invoked FIRST to
+  # establish that neither injected secret header is present, then the add_secret_headers policy is attached to the
+  # GET operation (mandatory apiKey set, optional token empty) and redeployed. The mandatory apiKey then reaches
+  # the backend with its real value; the optional token's on-the-wire shape is measured (its own last assertion,
+  # so a wrong guess costs only that line). The injected header names arrive lowercased by the node backend
+  # (req.headers). Ports testAPIBeforeAttachingPolicyWithSecretAttributes + the after-attach header assertions of
+  # testAPIAfterAttachingPolicyWithSecretAttributes.
+  @cap:gateway @feat:mediation-policies @rule:secret-attributes @type:regression @dep:publisher @legacy:OperationPolicyTestCase
+  Scenario Outline: A secret-attribute policy is absent before attach and injects the secret headers after attach as <actor>
+    Given The system is ready
+    And I have valid access tokens as "<actor>"
+    And I create a new common policy with spec "artifacts/payloads/policySpecFiles/add_secret_headers.j2" and "artifacts/payloads/policySpecFiles/add_secret_headers.yaml" as "baseSecretPolicyId"
+    And I have created an api from "artifacts/payloads/create_apim_reflect_api.json" as "baseSecretApiId" and deployed it
+    # Deploy-readiness gate before the FIRST gateway read: the deploy event is at-most-once, so a dropped one can
+    # never be recovered by the invoke's own polling — it would 404 to the deadline. This re-emits the deploy.
+    And the "apis" resource "baseSecretApiId" should be live on the gateway, redeploying if propagation is lost
+    When I publish the "apis" resource with id "baseSecretApiId"
+    Then The lifecycle status of API "baseSecretApiId" should be "Published"
+    When I retrieve the "apis" resource with id "baseSecretApiId"
+    And I extract response field "context" and store it as "baseSecretContext"
+    When I have set up application with keys, subscribed to API "baseSecretApiId", and obtained access token for "baseSecretSubId"
+    Then The response status code should be 200
+
+    # BASELINE: with no policy attached, neither the secret value nor the injected header names reach the backend.
+    When I invoke the API at gateway context "{{baseSecretContext}}/1.0.0/reflect-headers" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    And The response should not contain "test-api-key-123"
+    And The response should not contain "\"apikey\""
+
+    # Attach the secret policy to the GET operation: mandatory apiKey set, optional token left empty. Redeploy.
+    When I attach the common operation policy "add_secret_headers" to operation 0 of API "baseSecretApiId" in flows "request" with parameters "{\"apiKey\":\"test-api-key-123\",\"token\":\"\"}"
+    Then The response status code should be 200
+    When I deploy the API with id "baseSecretApiId"
+    And the "apis" resource "baseSecretApiId" should be live on the gateway, redeploying if propagation is lost
+    And I wait until "apis" "baseSecretApiId" revision is deployed in the gateway
+
+    # AFTER attach: the mandatory apiKey header now carries its real value at the backend.
+    When I invoke the API at gateway context "{{baseSecretContext}}/1.0.0/reflect-headers" with method "GET" using access token "generatedAccessToken" and payload "" until response body contains "test-api-key-123" within 60 seconds
+    Then The response status code should be 200
+    And The response should contain "test-api-key-123"
+    And The response should contain "\"apikey\""
+    # The OPTIONAL token secret was attached empty — measured shape: header present with an empty value.
+    And The response should contain "\"token\":\"\""
+
+    Examples:
+      | actor             |
+      | admin             |
+      | admin@tenant1.com |
+
+  # Detach stops injection. After the secret policy injects the header at the backend, its operation policies are
+  # removed and the API is redeployed; the secret header (and its value) must no longer reach the backend. Ports
+  # the clear-then-verify half of testDeleteAPISpecificOperationPolicyWithSecrets.
+  @cap:gateway @feat:mediation-policies @rule:secret-attributes @type:regression @dep:publisher @legacy:OperationPolicyTestCase
+  Scenario Outline: Detaching a secret-attribute operation policy stops the header injection as <actor>
+    Given The system is ready
+    And I have valid access tokens as "<actor>"
+    And I create a new common policy with spec "artifacts/payloads/policySpecFiles/add_secret_headers.j2" and "artifacts/payloads/policySpecFiles/add_secret_headers.yaml" as "detachSecretPolicyId"
+    And I have created an api from "artifacts/payloads/create_apim_secretpolicy_api.json" as "detachSecretApiId" and deployed it
+    # Deploy-readiness gate before the FIRST gateway read (see the baseline scenario above for why polling alone
+    # cannot recover a dropped at-most-once deploy event).
+    And the "apis" resource "detachSecretApiId" should be live on the gateway, redeploying if propagation is lost
+    When I publish the "apis" resource with id "detachSecretApiId"
+    Then The lifecycle status of API "detachSecretApiId" should be "Published"
+    When I retrieve the "apis" resource with id "detachSecretApiId"
+    And I extract response field "context" and store it as "detachSecretContext"
+    When I have set up application with keys, subscribed to API "detachSecretApiId", and obtained access token for "detachSecretSubId"
+    Then The response status code should be 200
+
+    # The secret is injected while the policy is attached.
+    When I invoke the API at gateway context "{{detachSecretContext}}/1.0.0/reflect-headers" with method "GET" using access token "generatedAccessToken" and payload "" until response body contains "test-api-key-123" within 60 seconds
+    Then The response status code should be 200
+    And The response should contain "test-api-key-123"
+
+    # Detach the operation policies by clearing all flows via the generic operations-update step (same inline
+    # operations-replace pattern as api_product_invocation.feature:266) and redeploy — the injection must stop.
+    When I retrieve the "apis" resource with id "detachSecretApiId"
+    And I put the response payload in context as "detachApiPayload"
+    When I update the "apis" resource "detachSecretApiId" and "detachApiPayload" with configuration type "operations" and value:
+      """
+      [{"target":"/reflect-headers","verb":"GET","authType":"Application & Application User","throttlingPolicy":"Unlimited","scopes":[],"operationPolicies":{"request":[],"response":[],"fault":[]}}]
+      """
+    Then The response status code should be 200
+    # (a) Management plane: confirm the detach actually emptied the operation's request-flow policy list.
+    When I retrieve the "apis" resource with id "detachSecretApiId"
+    Then The response status code should be 200
+    And The response field "operations[0].operationPolicies.request" should be exactly the list ""
+    # (b) A policy change reaches the gateway only on redeploy.
+    When I deploy the API with id "detachSecretApiId"
+    And the "apis" resource "detachSecretApiId" should be live on the gateway, redeploying if propagation is lost
+    # (c) Wait for the NEW policy-free revision to be the deployed one. This is a MANAGEMENT-plane gate: it flips
+    # when the revision row is written, which is NOT when synapse has hot-swapped, so it cannot be the last word.
+    And I wait until "apis" "detachSecretApiId" revision is deployed in the gateway
+    # (d) Gate on the DATA plane. The status is 200 both before and after the detach, so an until-status-200 poll
+    # is satisfied by the still-live old sequence and the absence assertion below then reads the pre-detach
+    # response — observed failing exactly that way in CI. Polling for the header's DISAPPEARANCE is the only
+    # gate that tells the two states apart; the assertions after it are re-assertions on the settled response.
+    When I invoke the API at gateway context "{{detachSecretContext}}/1.0.0/reflect-headers" with method "GET" using access token "generatedAccessToken" and payload "" until response body no longer contains "test-api-key-123" within 60 seconds
+    Then The response status code should be 200
+    And The response should not contain "test-api-key-123"
+    And The response should not contain "\"apikey\""
 
     Examples:
       | actor             |
@@ -479,6 +641,7 @@ Feature: Gateway Mediation Policies
     Given The system is ready
     And I have valid access tokens as "<actor>"
     And I have created an api from "artifacts/payloads/create_apim_jsontoxml_typed_api.json" as "mtApiId" and deployed it
+    And the "apis" resource "mtApiId" should be live on the gateway, redeploying if propagation is lost
     When I publish the "apis" resource with id "mtApiId"
     Then The lifecycle status of API "mtApiId" should be "Published"
     When I retrieve the "apis" resource with id "mtApiId"
@@ -504,3 +667,73 @@ Feature: Gateway Mediation Policies
       | admin             |
       | admin@tenant1.com |
 
+  # By default the gateway streams a POST body on to the backend with Transfer-Encoding: chunked and no
+  # Content-Length. A request-flow operation policy setting the axis2-scope properties the legacy
+  # FORCE_HTTP_CONTENT_LENGTH sequence set makes the passthru target send an explicit Content-Length instead.
+  # Legacy captured the backend-bound bytes with a WireMonitorServer; v2 has no wire monitor, so
+  # /reflect-headers is the observation point (made POST-capable, echoing the received headers AND the body).
+  #
+  # MEASURED on 4.7.0, do not trim the policy back: FORCE_HTTP_CONTENT_LENGTH +
+  # COPY_CONTENT_LENGTH_FROM_INCOMING ALONE leave the wire chunked. That was verified with a witness property
+  # in the same sequence (a transport header carrying get-property('axis2','FORCE_HTTP_CONTENT_LENGTH')), which
+  # came back as "true" on a still-chunked request — so the sequence ran and the property was set, and the
+  # passthru simply did not act on it. Adding the axis2-scope DISABLE_CHUNKING is what makes the backend receive
+  # Content-Length; the policy therefore carries all three, as the legacy sequence did.
+  #
+  # The BEFORE half is what makes this prove something: it measures the gateway DEFAULT (chunked, no
+  # content-length) on the very same API, so the after-attach assertion cannot be satisfied by behaviour the
+  # gateway would have had anyway. The absence of transfer-encoding after the attach is gated on positive
+  # evidence the call really reached the backend — the exact content-length AND the intact echoed body — so a
+  # request that never arrived can never pass it. Ports ContentLengthHeaderTestCase.
+  @cap:gateway @feat:mediation-policies @rule:force-content-length @type:regression @dep:publisher @legacy:ContentLengthHeaderTestCase
+  Scenario Outline: A FORCE_HTTP_CONTENT_LENGTH policy sends the backend a Content-Length instead of chunking as <actor>
+    Given The system is ready
+    And I have valid access tokens as "<actor>"
+    And I create a new common policy with spec "artifacts/payloads/policySpecFiles/force_content_length.j2" and "artifacts/payloads/policySpecFiles/force_content_length.yaml" as "fclPolicyId"
+    And I have created an api from "artifacts/payloads/create_apim_force_content_length_api.json" as "fclApiId" and deployed it
+    # Deploy-readiness gate before the FIRST gateway read (see the baseline scenario above for why polling alone
+    # cannot recover a dropped at-most-once deploy event).
+    And the "apis" resource "fclApiId" should be live on the gateway, redeploying if propagation is lost
+    When I publish the "apis" resource with id "fclApiId"
+    Then The lifecycle status of API "fclApiId" should be "Published"
+    When I retrieve the "apis" resource with id "fclApiId"
+    And I extract response field "context" and store it as "fclContext"
+    When I have set up application with keys, subscribed to API "fclApiId", and obtained access token for "fclSubId"
+    Then The response status code should be 200
+
+    # A body of KNOWN size: {"probe":"forceContentLength"} is exactly 30 bytes (no trailing newline — a Gherkin
+    # docstring carries neither the indentation nor a trailing newline).
+    When I put the following JSON payload in context as "fclPayload"
+    """
+    {"probe":"forceContentLength"}
+    """
+
+    # BASELINE — no policy attached: the gateway chunks the body on to the backend and sends no Content-Length.
+    When I invoke the API at gateway context "{{fclContext}}/1.0.0/reflect-headers" with method "POST" using access token "generatedAccessToken" and payload "fclPayload" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    And The value of response field "$.body" should be "{\"probe\":\"forceContentLength\"}"
+    And The response should contain "\"transfer-encoding\":\"chunked\""
+    And The response should not contain "content-length"
+
+    # Attach the axis2-scope property policy to the POST operation; a policy change reaches the gateway only on
+    # redeploy, and the new revision must be the deployed one before the effect is observable.
+    When I attach the common operation policy "force_content_length" to operation 0 of API "fclApiId" in flows "request" with parameters "{}"
+    Then The response status code should be 200
+    When I deploy the API with id "fclApiId"
+    And the "apis" resource "fclApiId" should be live on the gateway, redeploying if propagation is lost
+    And I wait until "apis" "fclApiId" revision is deployed in the gateway
+
+    # AFTER attach: the entity is buffered and sent with an explicit Content-Length of exactly the 30 bytes posted...
+    When I invoke the API at gateway context "{{fclContext}}/1.0.0/reflect-headers" with method "POST" using access token "generatedAccessToken" and payload "fclPayload" until response body contains "content-length" within 60 seconds
+    Then The response status code should be 200
+    And The value of response field "$.headers['content-length']" should be "30"
+    # ...the body still arrived intact (with the exact length above, the discriminating gate that the request
+    # really reached the backend — so the absence assertion below cannot pass on a call that never happened)...
+    And The value of response field "$.body" should be "{\"probe\":\"forceContentLength\"}"
+    # ...and the chunked encoding is gone.
+    And The response should not contain "transfer-encoding"
+
+    Examples:
+      | actor             |
+      | admin             |
+      | admin@tenant1.com |

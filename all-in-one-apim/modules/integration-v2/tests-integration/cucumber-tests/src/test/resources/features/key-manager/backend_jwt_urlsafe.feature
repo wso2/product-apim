@@ -21,6 +21,19 @@ Feature: Backend JWT URL-safe encoding
     Then The response status code should be 200
     And The reflected backend JWT should contain claim "keytype" with value "PRODUCTION"
     And The reflected backend JWT should contain claim "subscriber" with value "<actor>"
+    # Same generator invariants as the standard-encoding feature — proving the claims survive the url-safe round trip.
+    And The reflected backend JWT should contain claim "iss" with value "wso2.org/products/am"
+    And The reflected backend JWT should contain claim "applicationtier" with value "Unlimited"
+    And The reflected backend JWT header should contain "typ" with value "JWT"
+    # Same JOSE-header invariants as the standard-encoding feature: RS256 signing and the kid must survive the
+    # url-safe round trip too (the kid string value itself is not affected by the segment encoding). The kid is
+    # base64(DN+serial) of the shipped wso2carbon signing certificate — deterministic and identical across tenants.
+    And The reflected backend JWT header should contain "alg" with value "RS256"
+    And The reflected backend JWT header should contain "kid" with value "Q049bG9jYWxob3N0LCBPVT1XU08yLCBPPVdTTzIsIEw9TW91bnRhaW4gVmlldywgU1Q9Q0EsIEM9VVMjMjExMjc5NDc5Njg2NTExMjgzMzcxNzY2ODEwMjc1MjAyMjU0ODQ5MzE4NzgwMzI3"
+    # THE assertion this feature exists for: the raw X-JWT-Assertion segments must be base64url (no '+', '/', '=').
+    # The claim assertions above decode through a helper that falls back to standard base64, so they would stay
+    # green even if encoding reverted to base64 — this raw, no-fallback check is what makes the feature able to fail.
+    And The reflected backend JWT should be URL-safe base64 encoded
 
     Examples:
       | actor             |

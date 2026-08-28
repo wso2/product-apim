@@ -56,3 +56,67 @@ Feature: Approval workflow - API state change
       | admin@tenant1.com |
       | publisherUser |
       | publisherUser@tenant1.com |
+
+  # Ports APIStateChangeWorkflowTestCase#testAPIStateChangeAndRejectWorkflow (the legacy class is commented out of
+  # testng.xml, so this arc has never run). "Stays PUBLISHED" is ALSO true before the reject, so asserting the
+  # state alone would prove nothing. The discriminating gate is the pair around it: the task must first be
+  # RETRIEVABLE by its reference (200 - the Block request really parked), and after the reject the SAME reference
+  # must be gone (404 - the admin get-by-reference resolves only CREATED tasks, so a rejected one no longer
+  # answers). Only then does "still Published" mean "the rejected transition was not applied".
+  # Two rows, one per tenant: the REQUESTER axis (admin vs non-admin) is already covered by the approve scenario
+  # above against the very same executor and endpoint, so repeating it here would buy nothing.
+  @cap:admin @feat:workflows @dep:publisher @legacy:APIStateChangeWorkflowTestCase @type:regression
+  Scenario Outline: A rejected Block request leaves the API PUBLISHED as requester <requester>
+    Given The system is ready with an admin approver and "<requester>" as the requester
+
+    # A PUBLISHED API, taken there through the approval executors (deploy + publish both parked and approved).
+    Given I act as the tenant admin for "<requester>"
+    When I publish API from "artifacts/payloads/create_apim_test_api.json" through the approval workflow as "rejectApiId"
+    Then The lifecycle status of API "rejectApiId" should be "Published"
+
+    # Request Block — accepted (200) but Published:Block is in the executor's stateList, so it parks instead of
+    # transitioning; the API must still read PUBLISHED.
+    Given I act as "<requester>"
+    When I change the lifecycle of API "rejectApiId" with action "Block"
+    Then The response status code should be 200
+    And The lifecycle status of API "rejectApiId" should be "Published"
+
+    # The Block request really parked: the pending task exists and is retrievable by its reference.
+    Given I act as the tenant admin for "<requester>"
+    When I capture the pending "AM_API_STATE" workflow reference where "apiName" is "{{wfApiName}}" as "blockWfRef"
+    And I get the workflow with reference "blockWfRef"
+    Then The response status code should be 200
+
+    # Reject it. The reject was PROCESSED - the same reference is no longer a pending task - and only then is
+    # "the API is still PUBLISHED" evidence that the rejected transition was never applied.
+    When I "REJECTED" the workflow with reference "blockWfRef"
+    Then The response status code should be 200
+    When I get the workflow with reference "blockWfRef"
+    Then The response status code should be 404
+    And There should be no pending "AM_API_STATE" workflow where "apiName" is "{{wfApiName}}"
+    Given I act as "<requester>"
+    Then The lifecycle status of API "rejectApiId" should be "Published"
+
+    Examples:
+      | requester         |
+      | admin             |
+      | admin@tenant1.com |
+
+  # Ports the unknown-reference half of APIStateChangeWorkflowTestCase#testWorkflowCallbackRestAPI. The
+  # wrong-scope half of that method is already covered against this same endpoint by
+  # workflow_application_creation.feature's "A non-admin token cannot read or decide a pending workflow by its
+  # external reference" scenario (measured 401), so only the unknown-reference case is added here.
+  # The reference is a freshly minted UUID rather than a literal: it is guaranteed absent by construction and
+  # cannot collide with a real task another scenario in this serialized block has parked.
+  @cap:admin @feat:workflows @legacy:APIStateChangeWorkflowTestCase @type:negative
+  Scenario Outline: The workflow callback rejects an unknown workflow reference as <adminActor>
+    Given The system is ready
+    And I have valid access tokens as "<adminActor>"
+    When I generate a random UUID and store it as "unknownWfRef"
+    And I "APPROVED" the workflow with reference "unknownWfRef"
+    Then The response status code should be 404
+
+    Examples:
+      | adminActor        |
+      | admin             |
+      | admin@tenant1.com |

@@ -36,13 +36,17 @@ import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 /**
  * Gateway runtime-invocation steps. Invokes deployed APIs through the block's gateway (REST/SOAP/SSE, by access
@@ -653,6 +657,39 @@ public class APIInvocationSteps {
         Assert.assertTrue(body != null && body.contains(marker),
                 "Response body was missing/null or never contained '" + marker + "' within the deadline; last response: "
                         + body);
+    }
+
+    /**
+     * The negative counterpart of the variant above: retries until the response is a 200 whose body NO LONGER
+     * contains the marker. Needed wherever a policy/config is REMOVED and the effect must disappear — there the
+     * status is 200 both before and after, so an until-status-200 poll is satisfied by the still-live old
+     * sequence and the absence assertion reads the pre-change response (a real CI failure at
+     * mediation_policies.feature:374). Management-plane deployment status cannot substitute: it flips when the
+     * revision row is written, which is not when synapse has hot-swapped. Polling the data plane for the absence
+     * is the only gate that distinguishes the two states.
+     */
+    @When("I invoke the API at gateway context {string} with method {string} using access token {string} and payload {string} until response body no longer contains {string} within {int} seconds")
+    public void invokeApiByContextUntilBodyNoLongerContains(String context, String httpMethod, String accessToken,
+                                                            String payload, String absentBody, int timeoutSeconds)
+            throws Exception {
+
+        String resolvedContext = Utils.resolveContextPlaceholders(context);
+        String marker = Utils.resolveContextPlaceholders(absentBody);
+        long started = System.currentTimeMillis();
+        HttpResponse last = Utils.retryUntil(timeoutSeconds * 1000L,
+                () -> invokeApiByContext(resolvedContext, httpMethod, accessToken, payload),
+                response -> response.getResponseCode() == 200 && response.getData() != null
+                        && !response.getData().contains(marker));
+        Requests.publishPollResult(last);
+        if (last != null && last.getResponseCode() == 401) {
+            Utils.logAuthRejection(resolvedContext, accessToken, credentialForDiagnostic(accessToken),
+                    last.getResponseCode(), last.getData(), System.currentTimeMillis() - started);
+        }
+        assertReachedExpectedStatus(last, 200);
+        String body = last.getData();
+        Assert.assertFalse(body == null || body.contains(marker),
+                "Response body was null or still contained '" + marker + "' when the deadline elapsed, so the "
+                        + "change never reached the gateway; last response: " + body);
     }
 
     /**
@@ -1270,5 +1307,79 @@ public class APIInvocationSteps {
             }
         }
         return events;
+    }
+
+    /**
+     * Invokes a deployed API through the gateway with {@link SimpleHTTPClient#doRequestCollectingHeader} — NOT the
+     * shared {@link #execute} funnel — so that MULTI-VALUED response headers are preserved and can be asserted
+     * exactly. The shared {@code HttpResponse.getHeaders()} returns a {@code Map<String,String>}, which cannot hold
+     * two values for one header name, so the generic header-assertion steps ({@code The response header … should …})
+     * are structurally blind to a backend that emits the same header twice (e.g. two {@code Set-Cookie}s). This step
+     * reads every value of the named header instead and asserts BOTH the exact count AND the exact (sorted) set of
+     * values, so a gateway that COLLAPSED the duplicates (one value), duplicated one of them (two identical values)
+     * or added a third would each fail. The shared {@code HttpResponse} type is deliberately left unchanged:
+     * widening it to hold multi-valued headers is a cross-cutting change to a shared module and out of scope for
+     * this assertion, which is why the raw-client primitive is used here rather than the usual funnel.
+     *
+     * <p>It goes through {@code SimpleHTTPClient} (Apache, trust-all + {@code NoopHostnameVerifier}) rather than
+     * the JDK {@code java.net.http.HttpClient} this step first used: the container certificate is
+     * {@code CN=localhost} / SAN {@code DNSName: localhost}, and the JDK client always forces
+     * {@code endpointIdentificationAlgorithm=HTTPS} with no API to disable it — so on any host where
+     * testcontainers publishes the gateway on an IP (colima/remote docker → {@code https://<ip>:<port>}) EVERY
+     * attempt died with an SSLHandshakeException and the step timed out with "last status -1".
+     *
+     * <p>Does NOT publish {@code httpResponse} (the raw response is not the shared type the generic assertion
+     * steps read), so it self-asserts the status and headers; it still clears any prior {@code httpResponse}
+     * first, so a throw cannot leave a stale response for a following assertion (§7). Retries the whole invocation
+     * until it returns 200 (a freshly published API takes a moment to become routable) — but a 200 whose header
+     * count/values are wrong is NOT retried, so a genuine collapse surfaces as an assertion failure rather than a
+     * timeout.</p>
+     *
+     * <p>LIMITATION: {@code expectedValuesCsv} is comma-split, so an expected header value that itself CONTAINS a
+     * comma cannot be expressed — the common case being a dated {@code Set-Cookie}
+     * ({@code …; Expires=Wed, 21 Oct 2026 …}), which would be read as two values and fail the count assertion.
+     * Neither scenario using this step needs one today. If one ever does, take the markers as a DataTable instead
+     * (see {@code LoggingSteps#logFileShouldGainLineContainingAll}, which uses that form for the same reason)
+     * rather than inventing a second delimiter.</p>
+     */
+    @When("I invoke the API at gateway context {string} with method {string} using access token {string} and assert the response carries exactly {int} {string} headers with values {string} within {int} seconds")
+    public void invokeAndAssertMultiValuedHeader(String context, String httpMethod, String accessToken,
+                                                 int expectedCount, String headerName, String expectedValuesCsv,
+                                                 int timeoutSeconds) throws Exception {
+
+        TestContext.remove(HTTP_RESPONSE_KEY);
+        String resolvedContext = Utils.resolveContextPlaceholders(context);
+        String token = TestContext.resolve(accessToken).toString();
+        String base = Utils.getBaseGatewayUrl();
+        if (base.endsWith("/")) {
+            base = base.substring(0, base.length() - 1);
+        }
+        String endpointUrl = base + (resolvedContext.startsWith("/") ? "" : "/") + resolvedContext;
+        List<String> expectedValues = Arrays.stream(expectedValuesCsv.split(","))
+                .map(String::trim).sorted().collect(Collectors.toList());
+
+        Map<String, String> requestHeaders = Identity.bearerHeaders(token);
+        AtomicInteger lastStatus = new AtomicInteger(-1);
+        // Retry only ROUTABILITY (a non-200 while the gateway warms up); once a 200 arrives its headers ARE the
+        // answer and are asserted below — a collapsed header set must fail, not be polled away.
+        List<String> observed = Utils.retryUntil(timeoutSeconds * 1000L, () -> {
+            SimpleHTTPClient.MultiValuedHeaderResult result = SimpleHTTPClient.getInstance()
+                    .doRequestCollectingHeader(httpMethod, endpointUrl, requestHeaders, headerName);
+            lastStatus.set(result.getStatusCode());
+            if (result.getStatusCode() != 200) {
+                return null;
+            }
+            return result.getHeaderValues();
+        }, result -> true);
+
+        Assert.assertNotNull(observed, "The API at " + resolvedContext + " never returned 200 within the deadline "
+                + "(last status " + lastStatus.get() + "), so the '" + headerName + "' headers could not be asserted.");
+        List<String> observedSorted = new ArrayList<>(observed);
+        Collections.sort(observedSorted);
+        Assert.assertEquals(observed.size(), expectedCount, "The gateway returned " + observed.size() + " '"
+                + headerName + "' header(s) but exactly " + expectedCount + " were expected — the duplicate headers "
+                + "were collapsed or multiplied. Observed values: " + observed);
+        Assert.assertEquals(observedSorted, expectedValues, "The '" + headerName + "' header values did not match "
+                + "exactly. Observed (sorted): " + observedSorted + "; expected (sorted): " + expectedValues);
     }
 }

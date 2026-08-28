@@ -21,7 +21,7 @@ Feature: External Key Manager Introspection Mode
   Scenario: Obtain a token from IS7 (introspection mode) and invoke a deployed API through the gateway
     Given The system is ready
     And I have valid access tokens as "admin"
-    When I create a key manager from payload "artifacts/payloads/keymanagers/wso2is7-introspect.json" as "superKmId"
+    When I create a key manager from payload "artifacts/payloads/keymanagers/wso2is7-introspect.json" as "superKmId" and wait until it is operational
     And I have created an api from "artifacts/payloads/create_apim_test_api.json" as "createdApiId" and deployed it
     When I publish the "apis" resource with id "createdApiId"
     Then The lifecycle status of API "createdApiId" should be "Published"
@@ -64,7 +64,7 @@ Feature: External Key Manager Introspection Mode
     # IntrospectionCache TTL note above applies - the revoke->401 poll succeeds once the entry evicts.
     Given The system is ready
     And I have valid access tokens as "admin@tenant1.com"
-    When I create a key manager from payload "artifacts/payloads/keymanagers/wso2is7-introspect.json" as "tenantKmId"
+    When I create a key manager from payload "artifacts/payloads/keymanagers/wso2is7-introspect.json" as "tenantKmId" and wait until it is operational
     And I have created an api from "artifacts/payloads/create_apim_test_api.json" as "createdApiId" and deployed it
     When I publish the "apis" resource with id "createdApiId"
     Then The lifecycle status of API "createdApiId" should be "Published"

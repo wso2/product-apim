@@ -26,11 +26,24 @@ Feature: External Key Manager Key Generation Negatives
       | admin             |
       | admin@tenant1.com |
 
-  Scenario Outline: Key generation against an unreachable WSO2-IS-7 key manager fails cleanly as <actor>
-    # A KM whose endpoints are unreachable must fail key generation with a clean, bounded error - not hang or 200.
-    # Pinned behavior: APIM creates the key-mapping row then the DCR to the unreachable endpoint fails, surfacing
-    # (within ~2s) as 409 "Key Mappings already exists" - distinct from reachable (200) and disabled (400). The
-    # point of this test is the clean, prompt failure, whatever its exact code.
+  Scenario Outline: Key generation against an unreachable WSO2-IS-7 key manager yields no usable credential as <actor>
+    # A KM whose endpoints are unreachable must never hand back working credentials. Asserted on the RESULTING
+    # APPLICATION STATE, not on the keygen response, and that choice is deliberate:
+    #
+    # The keygen response is not the product's. APIM commits the key-mapping row, then the DCR to the dead endpoint
+    # fails, and the real answer is 500 with the management API's GENERIC envelope
+    # ({"code":900967,"message":"General Error","description":"Server Error Occurred","moreInfo":"","error":[]} -
+    # measured; it says nothing about unreachability). SimpleHTTPClient matches 900967 and re-POSTs after 2000ms,
+    # and the retry collides with the row attempt 1 left behind, so a caller sees 409 "Key Mappings already exists".
+    # That 409 is a TEST-CLIENT artifact: a real Developer Portal user sees the 500. Asserting it would pin our
+    # harness AND break the moment the 900967 retry is scoped away from non-idempotent verbs.
+    #
+    # The end state is identical either way - DCR never ran, so there is no credential - which is why it is the
+    # sound observable. It is also the property actually worth guaranteeing: an unreachable IdP must not yield a
+    # usable credential. The entry COUNT is the one part that merely characterises today's behaviour (the create is
+    # not atomic, so a mapping survives a failed DCR); if APIM is ever made atomic it becomes 0 and this needs
+    # revisiting. It is pinned regardless, because a count assertion is what stops the null checks below being
+    # satisfied by an empty list.
     Given I have valid access tokens as "<actor>"
     When I create a key manager from payload "artifacts/payloads/keymanagers/wso2is7-unreachable.json" as "unreachableKm"
     Then The response status code should be 201
@@ -42,7 +55,13 @@ Feature: External Key Manager Key Generation Negatives
     {"keyType": "PRODUCTION", "keyManager": "{{unreachableKmName}}", "grantTypesToBeSupported": ["client_credentials"]}
     """
     And I generate client credentials for application id "createdAppId" with payload "unreachableKeygenPayload"
-    Then The response status code should be 409
+    When I retrieve existing application keys for "createdAppId"
+    Then The response status code should be 200
+    And The response array field "list" should have exactly 1 entries
+    And The value of response field "list[0].keyManager" should be "{{unreachableKmName}}"
+    And The value of response field "list[0].keyType" should be "PRODUCTION"
+    And The response field "list[0].consumerKey" should be null
+    And The response field "list[0].consumerSecret" should be null
 
     Examples:
       | actor             |

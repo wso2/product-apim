@@ -17,6 +17,7 @@
 
 package org.wso2.am.integration.cucumbertests.stepdefinitions;
 
+import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import org.json.JSONArray;
@@ -299,6 +300,85 @@ public class LoggingSteps {
         Assert.assertTrue(appended != null && containsMarker(appended, expected),
                 "No line containing '" + expected + "' was appended to " + fileName + " within " + seconds
                         + "s. Appended since the mark:\n" + appended);
+    }
+
+    /**
+     * Polls until ONE line appended after the mark contains EVERY supplied marker, in any order.
+     *
+     * <p>The single-marker variant above can only pin co-occurrence by making the caller spell out one contiguous
+     * substring, which silently pins FIELD ORDER as well. That is unsafe against a JSON log line built from a
+     * {@code HashMap} and serialised with Gson (the ELK analytics event is exactly that): field order is bucket
+     * order, so adding one attribute upstream can resize the table, reorder the output and break the assertion —
+     * reported as "the log never gained the line", which reads as "the product stopped logging" rather than as a
+     * brittle test. Asserting the markers SEPARATELY is not equivalent either: N single-marker calls can each be
+     * satisfied by a DIFFERENT line, losing the same-event guarantee. This step keeps that guarantee and drops the
+     * ordering assumption, which is the only accidental part.
+     *
+     * <p>On failure it reports the appended line that matched the MOST markers and names the ones it lacked, so a
+     * genuine reorder or a genuinely missing field are distinguishable in the report.
+     *
+     * @param fileName server log file, relative to the container's log directory
+     * @param seconds  poll budget
+     * @param markers  one marker per row, single column; each is placeholder-resolved
+     */
+    @Then("The server log file {string} should gain a line containing all of the following within {int} seconds")
+    public void logFileShouldGainLineContainingAll(String fileName, int seconds, DataTable markers)
+            throws InterruptedException {
+
+        List<String> expected = new ArrayList<>();
+        for (String raw : markers.asList()) {
+            expected.add(Utils.resolveContextPlaceholders(raw));
+        }
+        Assert.assertFalse(expected.isEmpty(), "No markers supplied — the assertion would be vacuous.");
+        String appended = Utils.retryUntil(seconds * 1000L,
+                () -> appendedSinceMark(fileName),
+                text -> containsAllOnOneLine(text, expected));
+        Assert.assertTrue(appended != null && containsAllOnOneLine(appended, expected),
+                "No single line containing all of " + expected + " was appended to " + fileName + " within "
+                        + seconds + "s. " + closestLineReport(appended, expected)
+                        + "\nAppended since the mark:\n" + appended);
+    }
+
+    /** True when at least one appended line contains every marker (order-independent). */
+    private static boolean containsAllOnOneLine(String appended, List<String> markers) {
+        if (appended == null) {
+            return false;
+        }
+        for (String line : appended.split("\\R")) {
+            boolean all = true;
+            for (String marker : markers) {
+                if (!line.contains(marker)) {
+                    all = false;
+                    break;
+                }
+            }
+            if (all) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /** Diagnostic: the appended line matching the most markers, and which ones it lacked. */
+    private static String closestLineReport(String appended, List<String> markers) {
+        if (appended == null || appended.isBlank()) {
+            return "Nothing was appended at all.";
+        }
+        String bestLine = null;
+        List<String> bestMissing = null;
+        for (String line : appended.split("\\R")) {
+            List<String> missing = new ArrayList<>();
+            for (String marker : markers) {
+                if (!line.contains(marker)) {
+                    missing.add(marker);
+                }
+            }
+            if (bestMissing == null || missing.size() < bestMissing.size()) {
+                bestMissing = missing;
+                bestLine = line;
+            }
+        }
+        return "Closest appended line was missing " + bestMissing + ":\n  " + bestLine;
     }
 
     /**

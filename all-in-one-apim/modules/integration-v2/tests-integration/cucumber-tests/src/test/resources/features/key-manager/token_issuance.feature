@@ -508,6 +508,7 @@ Feature: Key Manager Token Issuance
     Given The system is ready and I have valid publisher access tokens as "<actor>"
     When I create a new shared scope as "encTokenScope"
     Then The response status code should be 201
+    And I extract response field "name" and store it as "encTokenScopeName"
     When I put JSON payload from file "artifacts/payloads/create_apim_test_api.json" in context as "encApiCreate"
     And I create an "apis" resource with payload "encApiCreate" as "encApiId"
     Then The response status code should be 201
@@ -515,14 +516,14 @@ Feature: Key Manager Token Issuance
     And I put the response payload in context as "encApiPayload"
     When I update the "apis" resource "encApiId" and "encApiPayload" with configuration type "scopes" and value:
       """
-      [{"shared":true,"scope":{"name":"encTokenScope","displayName":"encTokenScope","description":"scope in token","bindings":["admin"]}}]
+      [{"shared":true,"scope":{"name":"{{encTokenScopeName}}","displayName":"{{encTokenScopeName}}","description":"scope in token","bindings":["admin"]}}]
       """
     Then The response status code should be 200
     When I retrieve the "apis" resource with id "encApiId"
     And I put the response payload in context as "encApiPayload"
     When I update the "apis" resource "encApiId" and "encApiPayload" with configuration type "operations" and value:
       """
-      [{"target":"/customers/{id}","verb":"GET","authType":"Application & Application User","throttlingPolicy":"Unlimited","scopes":["encTokenScope"],"operationPolicies":{"request":[],"response":[],"fault":[]}}]
+      [{"target":"/customers/{id}","verb":"GET","authType":"Application & Application User","throttlingPolicy":"Unlimited","scopes":["{{encTokenScopeName}}"],"operationPolicies":{"request":[],"response":[],"fault":[]}}]
       """
     Then The response status code should be 200
     When I put the following JSON payload in context as "encRevPayload"
@@ -553,9 +554,9 @@ Feature: Key Manager Token Issuance
     """
     And I subscribe to API "encApiId" using application "createdAppId" with payload "encSubPayload" as "encSubId"
     Then The response status code should be 201
-    When I request an OAuth access token for the current user using password grant with scope "encTokenScope"
+    When I request an OAuth access token for the current user using password grant with scope "{{encTokenScopeName}}"
     Then The response status code should be 200
-    And The response should contain "encTokenScope"
+    And The response should contain "{{encTokenScopeName}}"
 
     Examples:
       | actor             |
@@ -590,6 +591,75 @@ Feature: Key Manager Token Issuance
       """
       PRODUCTION
       """
+
+    Examples:
+      | actor             |
+      | admin             |
+      | admin@tenant1.com |
+
+  # Ports OpenIDTokenAPITestCase's ACTUAL arc: legacy created its application with tokenType OAUTH (opaque) and
+  # presented THAT token at userinfo. The openid scenario above uses the JWT-default app, so the opaque-token-at-
+  # userinfo path was untested for every principal (admin included). Discriminator: the fixture's tokenType OAUTH.
+  # There is no existing step to assert "not in JWT format", so that assertion is intentionally omitted (see report).
+  @cap:key-manager @feat:token-issuance @type:regression @rule:openid @legacy:OpenIDTokenAPITestCase
+  Scenario Outline: Call userinfo with an opaque OpenID-scoped token as <actor>
+    Given The system is ready
+    And I have valid access tokens as "<actor>"
+    When I put JSON payload from file "artifacts/payloads/create_apim_test_app_oauth.json" in context as "createAppPayload"
+    And I create an application with payload "createAppPayload"
+    Then The response status code should be 201
+    When I put the following JSON payload in context as "generateApplicationKeysPayload"
+    """
+    {"keyType": "PRODUCTION", "grantTypesToBeSupported": ["client_credentials", "password"]}
+    """
+    And I generate client credentials for application id "createdAppId" with payload "generateApplicationKeysPayload"
+    Then The response status code should be 200
+    When I request an OAuth access token for the current user using password grant with scope "openid"
+    Then The response status code should be 200
+    And The response should contain "openid"
+    When I invoke the OpenID userinfo endpoint using access token "generatedAccessToken"
+    Then The response status code should be 200
+
+    Examples:
+      | actor             |
+      | admin             |
+      | admin@tenant1.com |
+
+  # Ports TokenAPITestCase's sandbox-key arc on an OPAQUE application. Every SANDBOX key in the tree today sits on a
+  # default/JWT app; this pins the same sandbox-token-invoke on an app whose tokenType is OAUTH (opaque).
+  # Discriminator: the fixture's tokenType OAUTH — the invoke itself is identical to the JWT sandbox case above.
+  @cap:key-manager @feat:token-issuance @type:regression @rule:sandbox @dep:gateway @legacy:TokenAPITestCase
+  Scenario Outline: Issue a sandbox-scoped token on an opaque application and invoke as <actor>
+    Given The system is ready
+    And I have valid access tokens as "<actor>"
+    And I have created an api from "artifacts/payloads/create_apim_test_api.json" as "createdApiId" and deployed it
+    And the "apis" resource "createdApiId" should be live on the gateway, redeploying if propagation is lost
+    When I publish the "apis" resource with id "createdApiId"
+    Then The lifecycle status of API "createdApiId" should be "Published"
+    When I retrieve the "apis" resource with id "createdApiId"
+    And I extract response field "context" and store it as "apiContext"
+    When I put JSON payload from file "artifacts/payloads/create_apim_test_app_oauth.json" in context as "createAppPayload"
+    And I create an application with payload "createAppPayload"
+    Then The response status code should be 201
+    When I put the following JSON payload in context as "generateSandboxApplicationKeysPayload"
+    """
+    {"keyType": "SANDBOX", "grantTypesToBeSupported": ["client_credentials", "password", "refresh_token"]}
+    """
+    And I generate client credentials for application id "createdAppId" with payload "generateSandboxApplicationKeysPayload"
+    Then The response status code should be 200
+    When I put the following JSON payload in context as "apiSubscriptionPayload"
+    """
+    {"applicationId": "{{applicationId}}", "apiId": "{{apiId}}", "throttlingPolicy": "Unlimited"}
+    """
+    And I subscribe to API "createdApiId" using application "createdAppId" with payload "apiSubscriptionPayload" as "subscriptionId"
+    Then The response status code should be 201
+    When I request an OAuth access token for the current user using password grant with scope "SANDBOX"
+    Then The response status code should be 200
+    # The SANDBOX-key token is the credential under test; pin the backend payload so the 200 is evidence the token
+    # was honoured all the way to the upstream (same body string the JWT sandbox scenario above asserts).
+    And I invoke the API at gateway context "{{apiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    And The response should contain "\"name\":\"John\""
 
     Examples:
       | actor             |
