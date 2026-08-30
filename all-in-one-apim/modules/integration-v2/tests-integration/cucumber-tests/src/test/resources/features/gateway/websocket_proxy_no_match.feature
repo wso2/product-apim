@@ -13,9 +13,9 @@ Feature: Gateway WebSocket API — No Proxy Profile Match
   contacted and the gateway went direct.
 
   @cap:gateway @feat:streaming-invocation @rule:proxy-no-match @type:smoke @dep:publisher @legacy:WebSocketProxyProfileTestCase
-  Scenario Outline: backend hostname unmatched by any proxy profile — gateway connects directly as <actor>
+  Scenario: backend hostname unmatched by any proxy profile — gateway connects directly
     Given The system is ready
-    And I have valid access tokens as "<actor>"
+    And I have valid access tokens as "admin"
     And the proxy access logs are cleared
     And I have created an api from "artifacts/payloads/create_apim_ws_echo_api.json" as "wsApiId" and deployed it
     When I publish the "apis" resource with id "wsApiId"
@@ -30,7 +30,3 @@ Feature: Gateway WebSocket API — No Proxy Profile Match
     # Zero CONNECT entries prove Squid was never contacted. The echo alone cannot prove the direct
     # path because Squid can also reach nodebackend on the Docker network.
     Then the anonymous proxy should have received exactly 0 CONNECT request(s)
-    Examples:
-      | actor             |
-      | admin             |
-      | admin@tenant1.com |

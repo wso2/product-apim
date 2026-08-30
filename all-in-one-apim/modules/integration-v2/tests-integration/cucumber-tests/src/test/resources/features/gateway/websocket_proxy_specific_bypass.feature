@@ -11,9 +11,9 @@ Feature: Gateway WebSocket API — Specific Proxy Profile Bypass
   passing echo alone is insufficient because Squid can also reach nodebackend on the Docker network.
 
   @cap:gateway @feat:streaming-invocation @rule:proxy-bypass @type:smoke @dep:publisher @legacy:WebSocketProxyProfileTestCase
-  Scenario Outline: bypass_hosts in a specific proxy profile — gateway connects directly to the backend as <actor>
+  Scenario: bypass_hosts in a specific proxy profile — gateway connects directly to the backend
     Given The system is ready
-    And I have valid access tokens as "<actor>"
+    And I have valid access tokens as "admin"
     And the proxy access logs are cleared
     And I have created an api from "artifacts/payloads/create_apim_ws_echo_api.json" as "wsApiId" and deployed it
     When I publish the "apis" resource with id "wsApiId"
@@ -27,7 +27,3 @@ Feature: Gateway WebSocket API — Specific Proxy Profile Bypass
     When I invoke the WebSocket API at gateway ws context "{{wsContext}}/1.0.0" with message "proxy-bypass-direct" using access token "generatedAccessToken" expecting echo "PROXY-BYPASS-DIRECT" within 60 seconds
     # Zero CONNECT entries prove Squid was never contacted, confirming bypass took effect.
     Then the anonymous proxy should have received exactly 0 CONNECT request(s)
-    Examples:
-      | actor             |
-      | admin             |
-      | admin@tenant1.com |

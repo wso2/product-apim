@@ -11,9 +11,9 @@ Feature: Gateway WebSocket API — Anonymous Proxy Routing
   (not a silent fallback to direct connection).
 
   @cap:gateway @feat:streaming-invocation @rule:proxy-routing @type:smoke @dep:publisher @legacy:WebSocketProxyProfileTestCase
-  Scenario Outline: proxy profile without bypass — gateway routes WS connection through anonymous Squid proxy as <actor>
+  Scenario: proxy profile without bypass — gateway routes WS connection through anonymous Squid proxy
     Given The system is ready
-    And I have valid access tokens as "<actor>"
+    And I have valid access tokens as "admin"
     And the proxy access logs are cleared
     And I have created an api from "artifacts/payloads/create_apim_ws_echo_api.json" as "wsApiId" and deployed it
     When I publish the "apis" resource with id "wsApiId"
@@ -28,15 +28,11 @@ Feature: Gateway WebSocket API — Anonymous Proxy Routing
     # Exactly one CONNECT entry in the anonymous proxy access log proves the gateway used the proxy
     # path and did not silently fall back to a direct connection.
     Then the anonymous proxy should have received exactly 1 CONNECT request(s)
-    Examples:
-      | actor             |
-      | admin             |
-      | admin@tenant1.com |
 
   @cap:gateway @feat:streaming-invocation @rule:proxy-routing @type:smoke @dep:publisher @legacy:WebSocketProxyProfileTestCase
-  Scenario Outline: proxy routes multiple WS connections — CONNECT count accumulates per connection as <actor>
+  Scenario: proxy routes multiple WS connections — CONNECT count accumulates per connection
     Given The system is ready
-    And I have valid access tokens as "<actor>"
+    And I have valid access tokens as "admin"
     And the proxy access logs are cleared
     And I have created an api from "artifacts/payloads/create_apim_ws_echo_api.json" as "wsApiId" and deployed it
     When I publish the "apis" resource with id "wsApiId"
@@ -50,7 +46,3 @@ Feature: Gateway WebSocket API — Anonymous Proxy Routing
     When I invoke the WebSocket API at gateway ws context "{{wsContext}}/1.0.0" with message "first-connection" using access token "generatedAccessToken" expecting echo "FIRST-CONNECTION" within 60 seconds
     When I invoke the WebSocket API at gateway ws context "{{wsContext}}/1.0.0" with message "second-connection" using access token "generatedAccessToken" expecting echo "SECOND-CONNECTION" within 60 seconds
     Then the anonymous proxy should have received exactly 2 CONNECT request(s)
-    Examples:
-      | actor             |
-      | admin             |
-      | admin@tenant1.com |

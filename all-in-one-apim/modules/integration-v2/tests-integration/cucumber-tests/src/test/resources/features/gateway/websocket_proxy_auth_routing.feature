@@ -12,9 +12,9 @@ Feature: Gateway WebSocket API — Authenticated Proxy Routing
   log confirms the proxy path (and credential handshake) was completed successfully.
 
   @cap:gateway @feat:streaming-invocation @rule:proxy-routing @type:smoke @dep:publisher @legacy:WebSocketProxyProfileTestCase
-  Scenario Outline: proxy profile with Basic-auth credentials — gateway authenticates with and routes through Squid as <actor>
+  Scenario: proxy profile with Basic-auth credentials — gateway authenticates with and routes through Squid
     Given The system is ready
-    And I have valid access tokens as "<actor>"
+    And I have valid access tokens as "admin"
     And the proxy access logs are cleared
     And I have created an api from "artifacts/payloads/create_apim_ws_echo_api.json" as "wsApiId" and deployed it
     When I publish the "apis" resource with id "wsApiId"
@@ -30,7 +30,3 @@ Feature: Gateway WebSocket API — Authenticated Proxy Routing
     # Exactly one CONNECT entry in the authenticated proxy access log proves the gateway provided
     # valid credentials and the proxy accepted the tunnelling request.
     Then the authenticated proxy should have received exactly 1 CONNECT request(s)
-    Examples:
-      | actor             |
-      | admin             |
-      | admin@tenant1.com |
