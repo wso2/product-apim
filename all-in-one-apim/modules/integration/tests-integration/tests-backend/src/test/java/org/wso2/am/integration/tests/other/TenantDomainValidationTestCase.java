@@ -84,13 +84,19 @@ public class TenantDomainValidationTestCase extends APIManagerLifecycleBaseTest 
             invalidTenantDomainCreated = true;
             fail("Tenant creation was expected to be rejected for the invalid domain " + INVALID_TENANT_DOMAIN
                     + ", but it succeeded.");
-        } catch (TenantMgtAdminServiceExceptionException e) {
-            // The generated stub instantiates this exception through its no-arg constructor, so getMessage() only
-            // ever returns the exception class name. The server's detail is carried in the fault message bean.
-            assertNotNull(e.getFaultMessage(), "Tenant creation fault carried no fault message.");
-            assertNotNull(e.getFaultMessage().getTenantMgtAdminServiceException(),
-                    "Tenant creation fault carried no exception detail.");
-            String faultMessage = e.getFaultMessage().getTenantMgtAdminServiceException().getMessage();
+        } catch (Exception e) {
+            // The rejection can surface two ways. When the stub maps the fault it throws the typed exception,
+            // built through its no-arg constructor, so getMessage() is only the class name and the server's text
+            // lives in the fault bean. Otherwise the fault travels as an AxisFault/RemoteException whose message
+            // IS the fault reason. Read whichever carries the detail rather than assuming one shape.
+            String faultMessage = e.getMessage();
+            if (e instanceof TenantMgtAdminServiceExceptionException) {
+                TenantMgtAdminServiceExceptionException fault = (TenantMgtAdminServiceExceptionException) e;
+                if (fault.getFaultMessage() != null
+                        && fault.getFaultMessage().getTenantMgtAdminServiceException() != null) {
+                    faultMessage = fault.getFaultMessage().getTenantMgtAdminServiceException().getMessage();
+                }
+            }
             assertTrue(faultMessage != null && faultMessage.contains(ILLEGAL_TENANT_DOMAIN_MESSAGE),
                     "Expected the message '" + ILLEGAL_TENANT_DOMAIN_MESSAGE + "' when creating a tenant with an "
                             + "invalid domain but received : " + faultMessage);
