@@ -1324,7 +1324,7 @@
         <carbon.governance.version>4.9.7</carbon.governance.version>
 
         <!--carbon versions-->
-        <carbon.kernel.version>4.11.18</carbon.kernel.version>
+        <carbon.kernel.version>4.11.19</carbon.kernel.version>
 
         <cipher.tool.version>1.1.30</cipher.tool.version>
 
