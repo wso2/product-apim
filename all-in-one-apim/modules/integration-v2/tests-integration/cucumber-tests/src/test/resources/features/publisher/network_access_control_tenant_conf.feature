@@ -8,7 +8,7 @@ Feature: Publisher Network Access Control - tenant-configuration policy source
   same reference - proving the tenant-conf source both enforces and is tenant-scoped. The original tenant
   configuration is restored at the end; the runner must stay single-scenario so the mutation cannot bleed into
   a sibling. Runs in the network-access-control-tenant-conf container (needs the node fixtures backend on
-  nodebackend:3021).
+  nodebackend:3026).
 
   @cap:publisher @feat:network-access-control @rule:tenant-conf-policy @type:negative @dep:admin
   Scenario: A tenant-configuration deny policy blocks a reference for that tenant only

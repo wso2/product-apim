@@ -14,7 +14,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "http://nodebackend:3021/schema-fragment.yaml"
+                  "$ref": "http://nodebackend:3026/schema-fragment.yaml"
                 }
               }
             }

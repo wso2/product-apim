@@ -6,7 +6,7 @@ Feature: Publisher Network Access Control - allow-mode remote reference resoluti
   NOT blocked as "could not be resolved". And even under allow-mode, a nested reference from an allow-listed document
   to a non-allow-listed host is still rejected, because the resolver re-validates every crawled reference.
   Ports SafeRefResolutionTestCase (allow-mode group). Runs in the network-access-control-allow container (needs the node
-  fixtures backend on nodebackend:3021).
+  fixtures backend on nodebackend:3026).
 
   # An allow-listed remote reference resolves (is fetched) and the definition validates - not blocked.
   @cap:publisher @feat:network-access-control @rule:allow-mode @type:regression @legacy:SafeRefResolutionTestCase
@@ -61,7 +61,7 @@ Feature: Publisher Network Access Control - allow-mode remote reference resoluti
   @cap:publisher @feat:network-access-control @rule:mcp-import @type:regression
   Scenario Outline: Importing an OpenAPI with an allow-listed reference as an MCP server succeeds as <actor>
     Given The system is ready and I have valid publisher access tokens as "<actor>"
-    When I create an MCP server from openapi "artifacts/payloads/networkAccessControl/mcp_oas30_nodebackend_ref.json" with backend "http://nodebackend:3021" as "nacMcpAllowId"
+    When I create an MCP server from openapi "artifacts/payloads/networkAccessControl/mcp_oas30_nodebackend_ref.json" with backend "http://nodebackend:3026" as "nacMcpAllowId"
     Then The response status code should be 201
     And The response should not contain "could not be resolved"
     And The response should contain "getPets"

@@ -16,7 +16,7 @@
  */
 
 // Static fixtures backend for the network access-control allow-mode integration tests. Served on the
-// shared docker network as http://nodebackend:3021/... . Two documents:
+// shared docker network as http://nodebackend:3026/... . Two documents:
 //   /schema-fragment.yaml - a valid OpenAPI schema object; the allow-mode positive control's remote $ref
 //                           resolves to this, proving an allow-listed host IS fetched (not blocked).
 //   /outer.yaml           - a schema whose nested $ref targets a NON-allow-listed loopback host, proving the
@@ -24,7 +24,7 @@
 // Pure Node http (no dependencies) so the node image build needs no extra npm packages.
 const http = require('http');
 
-const port = process.env.PORT || 3021;
+const port = process.env.PORT || 3026;
 
 const SCHEMA_FRAGMENT =
     'type: object\n' +
