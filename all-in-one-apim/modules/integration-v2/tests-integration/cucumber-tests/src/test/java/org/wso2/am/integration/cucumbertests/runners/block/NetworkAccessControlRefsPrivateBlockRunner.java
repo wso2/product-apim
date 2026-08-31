@@ -23,7 +23,7 @@ import io.cucumber.testng.CucumberOptions;
  * Runner for the network access-control remote OpenAPI reference tests - the port of the private-block
  * group of SafeRefResolutionTestCase. Under the network-access-control-private-block container's deny + block-private-network
  * policy, a remote reference to a loopback host in an inline definition or an OpenAPI archive is rejected
- * as "not trusted" (HTTP 400) before any fetch.
+ * as "could not be resolved" (HTTP 400) before any fetch.
  */
 @CucumberOptions(
         features = {

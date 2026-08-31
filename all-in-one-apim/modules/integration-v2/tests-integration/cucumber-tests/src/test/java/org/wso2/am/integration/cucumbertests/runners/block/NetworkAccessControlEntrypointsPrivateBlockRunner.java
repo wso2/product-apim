@@ -23,7 +23,7 @@ import io.cucumber.testng.CucumberOptions;
  * Runner for the network access-control negatives on the additional publisher entry points (updateSwagger and
  * MCP import). Under the network-access-control-private-block container's deny + block-private-network policy,
  * updating an API's definition or importing an OpenAPI as an MCP server with a loopback reference is rejected
- * as "not trusted".
+ * as "could not be resolved".
  */
 @CucumberOptions(
         features = {

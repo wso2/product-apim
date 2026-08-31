@@ -23,7 +23,7 @@ import io.cucumber.testng.CucumberOptions;
  * Runner for the network access-control nested WSDL import tests - the port of
  * HostValidationWsdlNestedImportTestCase. Under the network-access-control-private-block container's deny +
  * block-private-network policy, a nested xsd:import to a loopback host or via a filesystem path traversal
- * is rejected as "not trusted" (HTTP 400) before any fetch.
+ * is rejected as "could not be resolved" (HTTP 400) before any fetch.
  */
 @CucumberOptions(
         features = {

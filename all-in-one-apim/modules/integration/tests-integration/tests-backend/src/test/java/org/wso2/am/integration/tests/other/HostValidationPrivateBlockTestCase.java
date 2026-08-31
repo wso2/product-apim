@@ -56,7 +56,7 @@ public class HostValidationPrivateBlockTestCase extends APIMIntegrationBaseTest 
         Assert.assertNotNull(endpointDto, "Endpoint validation response must not be null");
         Assert.assertNotNull(endpointDto.getError(),
                 "Expected host validation error for loopback URL when block_private_network_access=true");
-        Assert.assertTrue(endpointDto.getError().contains("not trusted"),
+        Assert.assertTrue(endpointDto.getError().contains("could not be resolved"),
                 "Expected private network block for loopback, got: " + endpointDto.getError());
 
         try {
@@ -70,7 +70,7 @@ public class HostValidationPrivateBlockTestCase extends APIMIntegrationBaseTest 
         } catch (ApiException e) {
             Assert.assertEquals(e.getCode(), HttpStatus.SC_BAD_REQUEST,
                     "Expected HTTP 400 for KM with link-local (169.254.x.x) URL");
-            Assert.assertTrue(e.getResponseBody() != null && e.getResponseBody().contains("not trusted"),
+            Assert.assertTrue(e.getResponseBody() != null && e.getResponseBody().contains("could not be resolved"),
                     "Expected host validation block error in KM create response body, got: " + e.getResponseBody());
         }
 
@@ -84,7 +84,7 @@ public class HostValidationPrivateBlockTestCase extends APIMIntegrationBaseTest 
         } catch (org.wso2.am.integration.clients.publisher.api.ApiException e) {
             Assert.assertEquals(e.getCode(), HttpStatus.SC_BAD_REQUEST,
                     "Expected HTTP 400 for WSDL import from loopback address");
-            Assert.assertTrue(e.getResponseBody() != null && e.getResponseBody().contains("not trusted"),
+            Assert.assertTrue(e.getResponseBody() != null && e.getResponseBody().contains("could not be resolved"),
                     "Expected host validation block error in WSDL import response body, got: " + e.getResponseBody());
         }
     }

@@ -53,7 +53,7 @@ public class HostValidationAllowModeTestCase extends APIMIntegrationBaseTest {
         ApiEndpointValidationResponseDTO dto = restAPIPublisher.validateEndpointRaw(NON_PLATFORM_LISTED_URL, null);
         Assert.assertNotNull(dto, "[allow mode] Endpoint validation response must not be null");
         Assert.assertNotNull(dto.getError(), "[allow mode] Expected error for URL not in platform hosts list");
-        Assert.assertTrue(dto.getError().contains("not trusted"),
+        Assert.assertTrue(dto.getError().contains("could not be resolved"),
                 "[allow mode] Expected allow-mode block, got: " + dto.getError());
     }
 
@@ -65,7 +65,7 @@ public class HostValidationAllowModeTestCase extends APIMIntegrationBaseTest {
         Assert.assertNotNull(dto, "[allow mode] Endpoint validation response must not be null");
         Assert.assertNotNull(dto.getError(),
                 "[allow mode] Expected error for private IP not in allow mode hosts list");
-        Assert.assertTrue(dto.getError().contains("not trusted"),
+        Assert.assertTrue(dto.getError().contains("could not be resolved"),
                 "[allow mode] Expected block, got: " + dto.getError());
     }
 
@@ -79,7 +79,7 @@ public class HostValidationAllowModeTestCase extends APIMIntegrationBaseTest {
             Assert.assertNotNull(dto, "[allow mode precedence] Endpoint validation response must not be null");
             Assert.assertNotNull(dto.getError(),
                     "[allow mode precedence] Expected block despite tenant allow mode config");
-            Assert.assertTrue(dto.getError().contains("not trusted"),
+            Assert.assertTrue(dto.getError().contains("could not be resolved"),
                     "[allow mode precedence] Platform allow mode must block non-listed URLs despite tenant config, got: "
                             + dto.getError());
         } finally {

@@ -3,7 +3,7 @@ Feature: Publisher Network Access Control - allow-mode remote reference resoluti
 
   Positive controls for the outbound host-validation policy. Under an allow-mode policy that allow-lists the
   in-network fixtures host, a remote reference to that host is fetched and the definition validates - it is
-  NOT blocked as "not trusted". And even under allow-mode, a nested reference from an allow-listed document
+  NOT blocked as "could not be resolved". And even under allow-mode, a nested reference from an allow-listed document
   to a non-allow-listed host is still rejected, because the resolver re-validates every crawled reference.
   Ports SafeRefResolutionTestCase (allow-mode group). Runs in the network-access-control-allow container (needs the node
   fixtures backend on nodebackend:3021).
@@ -14,7 +14,7 @@ Feature: Publisher Network Access Control - allow-mode remote reference resoluti
     Given The system is ready and I have valid publisher access tokens as "<actor>"
     When I validate the openapi definition from file "<definition>"
     Then The response status code should be 200
-    And The response should not contain "not trusted"
+    And The response should not contain "could not be resolved"
 
     Examples:
       | actor                     | variant     | definition                                             |
@@ -28,12 +28,12 @@ Feature: Publisher Network Access Control - allow-mode remote reference resoluti
   # A nested reference from an allow-listed document to a non-allow-listed loopback host is still blocked
   # (the crawl re-validates nested references, so the second-order reference cannot escape the policy).
   @cap:publisher @feat:network-access-control @rule:nested-ref @type:negative @legacy:SafeRefResolutionTestCase
-  Scenario Outline: A nested reference to a non-allow-listed host is rejected as not trusted as <actor>
+  Scenario Outline: A nested reference to a non-allow-listed host is rejected as <actor>
     Given The system is ready and I have valid publisher access tokens as "<actor>"
     When I validate the openapi definition from file "artifacts/payloads/networkAccessControl/swagger20_nested_ref.json"
     Then The response status code should be 400
-    And The response should contain "not trusted"
-    And The response should contain "definition contains a URL that is not trusted"
+    And The response should contain "could not be resolved"
+    And The response should contain "remote reference in the definition could not be resolved"
 
     Examples:
       | actor                     |
@@ -49,7 +49,7 @@ Feature: Publisher Network Access Control - allow-mode remote reference resoluti
     And I import openapi definition from "artifacts/payloads/networkAccessControl/oas30_seed_clean.json" with additional properties "artifacts/payloads/archive_additional_properties.json" as "nacUpdateAllowApiId"
     When I update the swagger of "apis" resource "nacUpdateAllowApiId" from file "artifacts/payloads/networkAccessControl/oas30_nodebackend_ref.json"
     Then The response status code should be 200
-    And The response should not contain "not trusted"
+    And The response should not contain "could not be resolved"
 
     Examples:
       | actor                     |
@@ -63,7 +63,7 @@ Feature: Publisher Network Access Control - allow-mode remote reference resoluti
     Given The system is ready and I have valid publisher access tokens as "<actor>"
     When I create an MCP server from openapi "artifacts/payloads/networkAccessControl/mcp_oas30_nodebackend_ref.json" with backend "http://nodebackend:3021" as "nacMcpAllowId"
     Then The response status code should be 201
-    And The response should not contain "not trusted"
+    And The response should not contain "could not be resolved"
     And The response should contain "getPets"
 
     Examples:

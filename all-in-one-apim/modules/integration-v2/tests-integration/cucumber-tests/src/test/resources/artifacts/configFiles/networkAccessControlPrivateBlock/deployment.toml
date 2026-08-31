@@ -3,7 +3,7 @@
 #
 # Under mode="deny" + block_private_network_access=true, any remote reference embedded in a submitted
 # definition (OpenAPI $ref / nested WSDL xsd:import) whose host resolves to a loopback or private-network
-# address (e.g. 127.0.0.1) is rejected with HTTP 400 "URL is not trusted" BEFORE any outbound fetch.
+# address (e.g. 127.0.0.1) is rejected with HTTP 400 "URL could not be resolved" BEFORE any outbound fetch.
 # Ports the old hostValidationPrivateBlock overlay (HostValidationPrivateBlockTestSuite).
 [server.network_security.access_control]
 mode = "deny"

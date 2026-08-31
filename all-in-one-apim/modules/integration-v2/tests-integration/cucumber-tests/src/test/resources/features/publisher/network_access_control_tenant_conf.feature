@@ -25,12 +25,12 @@ Feature: Publisher Network Access Control - tenant-configuration policy source
     When I act as "publisherUser@tenant1.com"
     And I validate the openapi definition from file "artifacts/payloads/networkAccessControl/oas30_nodebackend_ref.json"
     Then The response status code should be 400
-    And The response should contain "not trusted"
-    And The response should contain "definition contains a URL that is not trusted"
+    And The response should contain "could not be resolved"
+    And The response should contain "remote reference in the definition could not be resolved"
     When I act as "publisherUser"
     And I validate the openapi definition from file "artifacts/payloads/networkAccessControl/oas30_nodebackend_ref.json"
     Then The response status code should be 200
-    And The response should not contain "not trusted"
+    And The response should not contain "could not be resolved"
     When I act as "admin@tenant1.com"
     And I update the tenant configuration from "nacTenantConfOriginal"
     Then The response status code should be 200

@@ -4,7 +4,7 @@ Feature: Publisher Network Access Control - additional publisher entry points
   Publisher-plane enforcement of the outbound host-validation policy on two further entry points that resolve
   a user-supplied OpenAPI definition: updating an existing API's definition (PUT swagger) and importing an
   OpenAPI as an MCP server. Under the private-block policy (deny + block_private_network_access) a reference
-  that resolves to a loopback host is rejected with HTTP 400 and a "not trusted" error before any outbound
+  that resolves to a loopback host is rejected with HTTP 400 and a "could not be resolved" error before any outbound
   fetch. Runs in the network-access-control-private-block container.
 
   # Updating an existing API's definition (PUT /apis/{id}/swagger) with a loopback reference is blocked. The
@@ -12,13 +12,13 @@ Feature: Publisher Network Access Control - additional publisher entry points
   # (8.8.8.8, never contacted) so the create passes the policy; the update then replaces the definition with a
   # loopback reference, which is the only blockable URL. asserting the definition-gate message pins the block to that gate.
   @cap:publisher @feat:network-access-control @rule:update-swagger @type:negative
-  Scenario Outline: Updating an API definition with a loopback <variant> reference is rejected as not trusted as <actor>
+  Scenario Outline: Updating an API definition with a loopback <variant> reference is rejected as <actor>
     Given The system is ready and I have valid publisher access tokens as "<actor>"
     And I import openapi definition from "artifacts/payloads/networkAccessControl/<seed>" with additional properties "artifacts/payloads/networkAccessControl/nac_seed_public_props.json" as "nacUpdateApiId"
     When I update the swagger of "apis" resource "nacUpdateApiId" from file "artifacts/payloads/networkAccessControl/<blocked>"
     Then The response status code should be 400
-    And The response should contain "not trusted"
-    And The response should contain "definition contains a URL that is not trusted"
+    And The response should contain "could not be resolved"
+    And The response should contain "remote reference in the definition could not be resolved"
 
     Examples:
       | actor                     | variant     | seed                      | blocked                     |
@@ -33,12 +33,12 @@ Feature: Publisher Network Access Control - additional publisher entry points
   # first passes - the loopback $ref is then the only blockable URL, and asserting the definition-gate message
   # pins the block to that gate rather than the endpoint gate (900405).
   @cap:publisher @feat:network-access-control @rule:mcp-import @type:negative
-  Scenario Outline: Importing an OpenAPI with a loopback reference as an MCP server is rejected as not trusted as <actor>
+  Scenario Outline: Importing an OpenAPI with a loopback reference as an MCP server is rejected as <actor>
     Given The system is ready and I have valid publisher access tokens as "<actor>"
     When I create an MCP server from openapi "artifacts/payloads/networkAccessControl/mcp_oas30_loopback_ref.json" with backend "http://8.8.8.8" as "nacMcpBlockedId"
     Then The response status code should be 400
-    And The response should contain "not trusted"
-    And The response should contain "definition contains a URL that is not trusted"
+    And The response should contain "could not be resolved"
+    And The response should contain "remote reference in the definition could not be resolved"
 
     Examples:
       | actor                     |

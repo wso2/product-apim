@@ -59,13 +59,13 @@ public class HostValidationDisabledTestCase extends APIMIntegrationBaseTest {
         ApiEndpointValidationResponseDTO s2dto1 = restAPIPublisher.validateEndpointRaw(LINK_LOCAL_URL, apiId);
         Assert.assertNotNull(s2dto1, "[feature disabled] Endpoint validation response must not be null");
         if (s2dto1.getError() != null) {
-            Assert.assertFalse(s2dto1.getError().contains("not trusted"),
+            Assert.assertFalse(s2dto1.getError().contains("could not be resolved"),
                     "[feature disabled] Should not block when disabled, error: " + s2dto1.getError());
         }
         ApiEndpointValidationResponseDTO s2dto2 = restAPIPublisher.validateEndpointRaw(LOOPBACK_URL, apiId);
         Assert.assertNotNull(s2dto2, "[feature disabled] Endpoint validation response must not be null");
         if (s2dto2.getError() != null) {
-            Assert.assertFalse(s2dto2.getError().contains("not trusted"),
+            Assert.assertFalse(s2dto2.getError().contains("could not be resolved"),
                     "[feature disabled] Should not block loopback when disabled, error: " + s2dto2.getError());
         }
     }

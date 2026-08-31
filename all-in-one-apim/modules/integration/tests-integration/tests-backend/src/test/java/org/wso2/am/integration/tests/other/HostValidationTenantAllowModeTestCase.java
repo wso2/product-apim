@@ -156,7 +156,7 @@ public class HostValidationTenantAllowModeTestCase extends APIMIntegrationBaseTe
         // Default: no NetworkSecurityAccessControl in tenant config. Allow mode must not trigger.
         ApiEndpointValidationResponseDTO dto = restAPIPublisher.validateEndpointRaw(BLOCKED_URL, apiId);
         if (dto.getError() != null) {
-            Assert.assertFalse(dto.getError().contains("not trusted"),
+            Assert.assertFalse(dto.getError().contains("could not be resolved"),
                     "URL should not be blocked by host validation when allow mode is disabled, error: " + dto.getError());
         }
     }
@@ -171,7 +171,7 @@ public class HostValidationTenantAllowModeTestCase extends APIMIntegrationBaseTe
                     restAPIPublisher.validateEndpointRaw(BLOCKED_URL, apiId);
             Assert.assertNotNull(dto.getError(),
                     "Endpoint validation must return an error for a URL blocked by the tenant allow mode");
-            Assert.assertTrue(dto.getError().contains("not trusted"),
+            Assert.assertTrue(dto.getError().contains("could not be resolved"),
                     "Expected host validation block message, got: " + dto.getError());
         } finally {
             restoreOriginalTenantConfig();
@@ -187,7 +187,7 @@ public class HostValidationTenantAllowModeTestCase extends APIMIntegrationBaseTe
             ApiEndpointValidationResponseDTO dto =
                     restAPIPublisher.validateEndpointRaw(ALLOWED_URL, apiId);
             if (dto.getError() != null) {
-                Assert.assertFalse(dto.getError().contains("not trusted"),
+                Assert.assertFalse(dto.getError().contains("could not be resolved"),
                         "URL matching the allow mode hosts should not be blocked by host validation, error: " + dto.getError());
             }
         } finally {
@@ -211,7 +211,7 @@ public class HostValidationTenantAllowModeTestCase extends APIMIntegrationBaseTe
         } catch (ApiException e) {
             Assert.assertEquals(e.getCode(), HttpStatus.SC_BAD_REQUEST,
                     "Expected HTTP 400 for KM creation with blocked by host validation URL");
-            Assert.assertTrue(e.getResponseBody() != null && e.getResponseBody().contains("not trusted"),
+            Assert.assertTrue(e.getResponseBody() != null && e.getResponseBody().contains("could not be resolved"),
                     "Expected host validation block error in KM create response body, got: " + e.getResponseBody());
         } finally {
             restoreOriginalTenantConfig();
@@ -237,7 +237,7 @@ public class HostValidationTenantAllowModeTestCase extends APIMIntegrationBaseTe
         } catch (ApiException e) {
             Assert.assertEquals(e.getCode(), HttpStatus.SC_BAD_REQUEST,
                     "Expected HTTP 400 for KM creation with blocked by host validation JWKS URL");
-            Assert.assertTrue(e.getResponseBody() != null && e.getResponseBody().contains("not trusted"),
+            Assert.assertTrue(e.getResponseBody() != null && e.getResponseBody().contains("could not be resolved"),
                     "Expected host validation block error in KM JWKS cert response body, got: " + e.getResponseBody());
         } finally {
             restoreOriginalTenantConfig();
@@ -269,7 +269,7 @@ public class HostValidationTenantAllowModeTestCase extends APIMIntegrationBaseTe
             } catch (ApiException e) {
                 Assert.assertEquals(e.getCode(), HttpStatus.SC_BAD_REQUEST,
                         "Expected HTTP 400 for KM update with blocked by host validation URL");
-                Assert.assertTrue(e.getResponseBody() != null && e.getResponseBody().contains("not trusted"),
+                Assert.assertTrue(e.getResponseBody() != null && e.getResponseBody().contains("could not be resolved"),
                         "Expected host validation block error in KM update response body, got: " + e.getResponseBody());
             }
         } finally {
@@ -293,7 +293,7 @@ public class HostValidationTenantAllowModeTestCase extends APIMIntegrationBaseTe
                     "GraphQL schema validation must return isValid=false for a URL blocked by the tenant allow mode");
             Assert.assertNotNull(response.getErrorMessage(),
                     "GraphQL validation response must include an error message for blocked by host validation URL");
-            Assert.assertTrue(response.getErrorMessage().contains("not trusted"),
+            Assert.assertTrue(response.getErrorMessage().contains("could not be resolved"),
                     "Expected host validation block error in GraphQL validation errorMessage, got: " + response.getErrorMessage());
         } finally {
             restoreOriginalTenantConfig();
@@ -315,7 +315,7 @@ public class HostValidationTenantAllowModeTestCase extends APIMIntegrationBaseTe
         } catch (org.wso2.am.integration.clients.publisher.api.ApiException e) {
             Assert.assertEquals(e.getCode(), HttpStatus.SC_BAD_REQUEST,
                     "Expected HTTP 400 for WSDL import from blocked by host validation URL");
-            Assert.assertTrue(e.getResponseBody() != null && e.getResponseBody().contains("not trusted"),
+            Assert.assertTrue(e.getResponseBody() != null && e.getResponseBody().contains("could not be resolved"),
                     "Expected host validation block error in WSDL import response body, got: " + e.getResponseBody());
         } finally {
             restoreOriginalTenantConfig();
@@ -333,7 +333,7 @@ public class HostValidationTenantAllowModeTestCase extends APIMIntegrationBaseTe
         } catch (org.wso2.am.integration.clients.publisher.api.ApiException e) {
             Assert.assertEquals(e.getCode(), HttpStatus.SC_BAD_REQUEST,
                     "Expected HTTP 400 for OAS definition validate from blocked by host validation URL");
-            Assert.assertTrue(e.getResponseBody() != null && e.getResponseBody().contains("not trusted"),
+            Assert.assertTrue(e.getResponseBody() != null && e.getResponseBody().contains("could not be resolved"),
                     "Expected host validation block error in OAS validate response body, got: " + e.getResponseBody());
         } finally {
             restoreOriginalTenantConfig();
@@ -351,7 +351,7 @@ public class HostValidationTenantAllowModeTestCase extends APIMIntegrationBaseTe
         } catch (ApiException e) {
             Assert.assertEquals(e.getCode(), HttpStatus.SC_BAD_REQUEST,
                     "Expected HTTP 400 for KM discover with blocked by host validation URL");
-            Assert.assertTrue(e.getResponseBody() != null && e.getResponseBody().contains("not trusted"),
+            Assert.assertTrue(e.getResponseBody() != null && e.getResponseBody().contains("could not be resolved"),
                     "Expected host validation block error in KM discover response body, got: " + e.getResponseBody());
         } finally {
             restoreOriginalTenantConfig();
@@ -377,7 +377,7 @@ public class HostValidationTenantAllowModeTestCase extends APIMIntegrationBaseTe
         } catch (org.wso2.am.integration.clients.publisher.api.ApiException e) {
             Assert.assertEquals(e.getCode(), HttpStatus.SC_BAD_REQUEST,
                     "Expected HTTP 400 for MCP proxy create with blocked by host validation URL");
-            Assert.assertTrue(e.getResponseBody() != null && e.getResponseBody().contains("not trusted"),
+            Assert.assertTrue(e.getResponseBody() != null && e.getResponseBody().contains("could not be resolved"),
                     "Expected host validation block error in MCP proxy create response body, got: " + e.getResponseBody());
         } finally {
             restoreOriginalTenantConfig();
@@ -415,7 +415,7 @@ public class HostValidationTenantAllowModeTestCase extends APIMIntegrationBaseTe
         } catch (org.wso2.am.integration.clients.publisher.api.ApiException e) {
             Assert.assertEquals(e.getCode(), HttpStatus.SC_BAD_REQUEST,
                     "Expected HTTP 400 for API creation with blocked by host validation backend URL");
-            Assert.assertTrue(e.getResponseBody() != null && e.getResponseBody().contains("not trusted"),
+            Assert.assertTrue(e.getResponseBody() != null && e.getResponseBody().contains("could not be resolved"),
                     "Expected host validation block error in API create response body, got: " + e.getResponseBody());
         } finally {
             restoreOriginalTenantConfig();
@@ -440,7 +440,7 @@ public class HostValidationTenantAllowModeTestCase extends APIMIntegrationBaseTe
         } catch (org.wso2.am.integration.clients.publisher.api.ApiException e) {
             Assert.assertEquals(e.getCode(), HttpStatus.SC_BAD_REQUEST,
                     "Expected HTTP 400 for API update with blocked by host validation backend URL");
-            Assert.assertTrue(e.getResponseBody() != null && e.getResponseBody().contains("not trusted"),
+            Assert.assertTrue(e.getResponseBody() != null && e.getResponseBody().contains("could not be resolved"),
                     "Expected host validation block error in API update response body, got: " + e.getResponseBody());
         } finally {
             restoreOriginalTenantConfig();
@@ -471,7 +471,7 @@ public class HostValidationTenantAllowModeTestCase extends APIMIntegrationBaseTe
         } catch (org.wso2.am.integration.clients.publisher.api.ApiException e) {
             Assert.assertEquals(e.getCode(), HttpStatus.SC_BAD_REQUEST,
                     "Expected HTTP 400 for MCP server create from API with blocked by host validation endpoint");
-            Assert.assertTrue(e.getResponseBody() != null && e.getResponseBody().contains("not trusted"),
+            Assert.assertTrue(e.getResponseBody() != null && e.getResponseBody().contains("could not be resolved"),
                     "Expected host validation block error in MCP server create response body, got: " + e.getResponseBody());
         } finally {
             restoreOriginalTenantConfig();
@@ -497,7 +497,7 @@ public class HostValidationTenantAllowModeTestCase extends APIMIntegrationBaseTe
         } catch (org.wso2.am.integration.clients.publisher.api.ApiException e) {
             Assert.assertEquals(e.getCode(), HttpStatus.SC_BAD_REQUEST,
                     "Expected HTTP 400 for MCP server update with blocked by host validation backend URL");
-            Assert.assertTrue(e.getResponseBody() != null && e.getResponseBody().contains("not trusted"),
+            Assert.assertTrue(e.getResponseBody() != null && e.getResponseBody().contains("could not be resolved"),
                     "Expected host validation block error in MCP server update response body, got: " + e.getResponseBody());
         } finally {
             restoreOriginalTenantConfig();
@@ -523,7 +523,7 @@ public class HostValidationTenantAllowModeTestCase extends APIMIntegrationBaseTe
         } catch (org.wso2.am.integration.clients.publisher.api.ApiException e) {
             Assert.assertEquals(e.getCode(), HttpStatus.SC_BAD_REQUEST,
                     "Expected HTTP 400 for MCP server backend update with blocked by host validation URL");
-            Assert.assertTrue(e.getResponseBody() != null && e.getResponseBody().contains("not trusted"),
+            Assert.assertTrue(e.getResponseBody() != null && e.getResponseBody().contains("could not be resolved"),
                     "Expected host validation block error in MCP server backend update response body, got: " + e.getResponseBody());
         } finally {
             restoreOriginalTenantConfig();
@@ -554,7 +554,7 @@ public class HostValidationTenantAllowModeTestCase extends APIMIntegrationBaseTe
         } catch (org.wso2.am.integration.clients.publisher.api.ApiException e) {
             Assert.assertEquals(e.getCode(), HttpStatus.SC_BAD_REQUEST,
                     "Expected HTTP 400 for OpenAPI import with blocked by host validation endpoint");
-            Assert.assertTrue(e.getResponseBody() != null && e.getResponseBody().contains("not trusted"),
+            Assert.assertTrue(e.getResponseBody() != null && e.getResponseBody().contains("could not be resolved"),
                     "Expected host validation block error in OpenAPI import response body, got: " + e.getResponseBody());
         } finally {
             restoreOriginalTenantConfig();
@@ -585,7 +585,7 @@ public class HostValidationTenantAllowModeTestCase extends APIMIntegrationBaseTe
         } catch (org.wso2.am.integration.clients.publisher.api.ApiException e) {
             Assert.assertEquals(e.getCode(), HttpStatus.SC_BAD_REQUEST,
                     "Expected HTTP 400 for AsyncAPI import with blocked by host validation endpoint");
-            Assert.assertTrue(e.getResponseBody() != null && e.getResponseBody().contains("not trusted"),
+            Assert.assertTrue(e.getResponseBody() != null && e.getResponseBody().contains("could not be resolved"),
                     "Expected host validation block error in AsyncAPI import response body, got: " + e.getResponseBody());
         } finally {
             restoreOriginalTenantConfig();
@@ -609,7 +609,7 @@ public class HostValidationTenantAllowModeTestCase extends APIMIntegrationBaseTe
         } catch (org.wso2.am.integration.clients.publisher.api.ApiException e) {
             Assert.assertEquals(e.getCode(), HttpStatus.SC_BAD_REQUEST,
                     "Expected HTTP 400 for GraphQL schema import from blocked by host validation URL");
-            Assert.assertTrue(e.getResponseBody() != null && e.getResponseBody().contains("not trusted"),
+            Assert.assertTrue(e.getResponseBody() != null && e.getResponseBody().contains("could not be resolved"),
                     "Expected host validation block error in GraphQL import response body, got: " + e.getResponseBody());
         } finally {
             restoreOriginalTenantConfig();
@@ -640,7 +640,7 @@ public class HostValidationTenantAllowModeTestCase extends APIMIntegrationBaseTe
         } catch (org.wso2.am.integration.clients.publisher.api.ApiException e) {
             Assert.assertEquals(e.getCode(), HttpStatus.SC_BAD_REQUEST,
                     "Expected HTTP 400 for MCP server from OpenAPI with blocked by host validation endpoint");
-            Assert.assertTrue(e.getResponseBody() != null && e.getResponseBody().contains("not trusted"),
+            Assert.assertTrue(e.getResponseBody() != null && e.getResponseBody().contains("could not be resolved"),
                     "Expected host validation block error in MCP server from OpenAPI response body, got: " + e.getResponseBody());
         } finally {
             restoreOriginalTenantConfig();
@@ -660,7 +660,7 @@ public class HostValidationTenantAllowModeTestCase extends APIMIntegrationBaseTe
         } catch (org.wso2.am.integration.clients.publisher.api.ApiException e) {
             Assert.assertEquals(e.getCode(), HttpStatus.SC_BAD_REQUEST,
                     "Expected HTTP 400 for API ZIP import with blocked by host validation endpoint");
-            Assert.assertTrue(e.getResponseBody() != null && e.getResponseBody().contains("not trusted"),
+            Assert.assertTrue(e.getResponseBody() != null && e.getResponseBody().contains("could not be resolved"),
                     "Expected host validation block error in API ZIP import response body, got: " + e.getResponseBody());
         } finally {
             restoreOriginalTenantConfig();
@@ -680,7 +680,7 @@ public class HostValidationTenantAllowModeTestCase extends APIMIntegrationBaseTe
         } catch (org.wso2.am.integration.clients.publisher.api.ApiException e) {
             Assert.assertEquals(e.getCode(), HttpStatus.SC_BAD_REQUEST,
                     "Expected HTTP 400 for MCP server ZIP import with blocked by host validation endpoint");
-            Assert.assertTrue(e.getResponseBody() != null && e.getResponseBody().contains("not trusted"),
+            Assert.assertTrue(e.getResponseBody() != null && e.getResponseBody().contains("could not be resolved"),
                     "Expected host validation block error in MCP server ZIP import response body, got: " + e.getResponseBody());
         } finally {
             restoreOriginalTenantConfig();
@@ -697,7 +697,7 @@ public class HostValidationTenantAllowModeTestCase extends APIMIntegrationBaseTe
             ApiEndpointValidationResponseDTO superDto =
                     restAPIPublisher.validateEndpointRaw(BLOCKED_URL, apiId);
             Assert.assertNotNull(superDto.getError(), "Expected host validation block for super tenant");
-            Assert.assertTrue(superDto.getError().contains("not trusted"),
+            Assert.assertTrue(superDto.getError().contains("could not be resolved"),
                     "Super tenant allow mode should block non-matching URL, got: " + superDto.getError());
 
             // New tenant has default config (no NetworkSecurityAccessControl block — feature inactive).
@@ -705,7 +705,7 @@ public class HostValidationTenantAllowModeTestCase extends APIMIntegrationBaseTe
                     tenantPublisher.validateEndpointRaw(BLOCKED_URL, null);
             Assert.assertNotNull(tenantDto, "Tenant endpoint validation response must not be null");
             if (tenantDto.getError() != null) {
-                Assert.assertFalse(tenantDto.getError().contains("not trusted"),
+                Assert.assertFalse(tenantDto.getError().contains("could not be resolved"),
                         "New tenant with default config must not inherit super-tenant allow mode, got: "
                                 + tenantDto.getError());
             }

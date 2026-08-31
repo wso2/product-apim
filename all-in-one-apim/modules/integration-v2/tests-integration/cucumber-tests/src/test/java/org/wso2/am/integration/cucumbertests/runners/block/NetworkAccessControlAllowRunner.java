@@ -23,7 +23,7 @@ import io.cucumber.testng.CucumberOptions;
  * Runner for the network access-control allow-mode tests - the port of the allow-mode group of
  * SafeRefResolutionTestCase. Under the network-access-control-allow container's allow-mode policy (host nodebackend
  * allow-listed), a remote reference to the allow-listed fixtures host is fetched and validates, while a
- * nested reference from that document to a non-allow-listed host is still rejected as "not trusted".
+ * nested reference from that document to a non-allow-listed host is still rejected as "could not be resolved".
  */
 @CucumberOptions(
         features = {
