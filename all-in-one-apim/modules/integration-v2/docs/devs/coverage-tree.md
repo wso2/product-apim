@@ -410,7 +410,7 @@ integration-v2 product tests
 │   │   ├── [load-balance] A load-balanced endpoint distributes requests across all backends as <actor>  (gateway/rest_invocation.feature:1065)
 │   │   ├── [load-balance] A load-balanced SANDBOX endpoint group round-robins across all sandbox members as <actor>  (gateway/rest_invocation.feature:1101)
 │   │   ├── [status-line] The gateway relays a backend's non-standard status reason phrase as <actor>  (gateway/rest_invocation.feature:1192)
-│   │   ├── [tenant-domain] A mis-cased tenant domain in the gateway path is rejected and leaves the tenant's routing intact  (gateway/rest_invocation.feature:1260)
+│   │   ├── [tenant-domain] A mis-cased tenant domain in the gateway path is rejected and leaves the tenant's routing intact  (gateway/rest_invocation.feature:1261)
 │   │   ├── [sandbox-gateway] A sandbox-only gateway accepts a sandbox token and rejects a production token as <actor>  (gateway/sandbox_gateway.feature:12)
 │   │   ├── [sandbox-gateway] An unsecured resource on a both-endpoints API serves the sandbox endpoint for either token on the sandbox gateway as <actor>  (gateway/sandbox_gateway.feature:77)
 │   │   ├── [sandbox-gateway] An unsecured resource on a sandbox-only API serves the sandbox endpoint for either token on the sandbox gateway as <actor>  (gateway/sandbox_gateway.feature:175)

@@ -1249,10 +1249,11 @@ Feature: Gateway REST API Invocation
       | admin@tenant1.com |
 
   # A tenant API is addressed at the gateway as /t/<domain>/<context>, and the domain is matched EXACTLY — so a
-  # mis-cased variant ("/t/Tenant1.com/") resolves to no tenant and the gateway rejects the call with a 500.
+  # mis-cased variant ("/t/Tenant1.com/") is rejected by the gateway with a 404 and a generic message, so that a
+  # probe cannot tell an existing tenant from a non-existent one.
   # The third leg is the actual subject: a failed tenant resolution must not poison tenant routing, so the
   # correctly-cased path must still serve the backend afterwards. Legs 1 and 2 are the control and the trigger.
-  # Ports TenantDomainValidationTestCase#testAPIInvokeWithTenants (valid 200, mis-cased 500, valid 200 again).
+  # Ports TenantDomainValidationTestCase#testAPIInvokeWithTenants (valid 200, mis-cased 404, valid 200 again).
   # Tenant-only, so a plain Scenario rather than the actor outline used above: a super-tenant API's context
   # carries no /t/ segment at all, so there is nothing to mis-case in the carbon.super row.
   # Subscribed on Unlimited (as the legacy did) so the three back-to-back invocations cannot hit a tier limit.
@@ -1279,8 +1280,9 @@ Feature: Gateway REST API Invocation
     # copied first so the correctly-cased value survives for leg 3 (the replace step rewrites in place).
     When I copy context value "tdvContext" to "tdvMisCasedContext"
     And I replace "/t/tenant1.com/" with "/t/Tenant1.com/" in context "tdvMisCasedContext"
-    And I invoke the API at gateway context "{{tdvMisCasedContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 500 within 60 seconds
-    Then The response status code should be 500
+    And I invoke the API at gateway context "{{tdvMisCasedContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 404 within 60 seconds
+    Then The response status code should be 404
+    And The response should contain "The requested resource is not available"
 
     # Leg 3 (the point) — the correctly-cased path still reaches the backend, so tenant routing was not poisoned
     When I invoke the API at gateway context "{{tdvContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
