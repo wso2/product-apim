@@ -844,6 +844,7 @@
             <class name="org.wso2.am.integration.cucumbertests.runners.block.NetworkAccessControlRefsPrivateBlockRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.NetworkAccessControlWsdlPrivateBlockRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.NetworkAccessControlEntrypointsPrivateBlockRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.NetworkAccessControlUrlPrivateBlockRunner"/>
         </classes>
     </test>
     <!-- Network access-control allow-mode positive controls. Own block: the allow-mode policy (nodebackend
@@ -856,6 +857,7 @@
         <parameter name="tomlExtraOverlayPath" value="src/test/resources/artifacts/configFiles/networkAccessControlAllow/deployment.toml"/>
         <classes>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.NetworkAccessControlAllowRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.NetworkAccessControlUrlAllowRunner"/>
         </classes>
     </test>
     <!-- Network access-control tenant-conf policy source. Own block with NO platform overlay (clean container):
@@ -867,6 +869,27 @@
         <parameter name="initBackend" value="true"/>
         <classes>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.NetworkAccessControlTenantConfRunner"/>
+        </classes>
+    </test>
+    <!-- Network access-control DISABLED negative control. Own block with NO platform overlay: with no policy
+         configured the gate is inactive, so a loopback/link-local endpoint URL is not blocked. -->
+    <test name="IntegrationV2-NetworkAccessControlDisabled" parallel="classes" thread-count="1">
+        <parameter name="blockLabel" value="network-access-control-disabled"/>
+        <parameter name="initTenantUsers" value="true"/>
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.NetworkAccessControlUrlDisabledRunner"/>
+        </classes>
+    </test>
+    <!-- Network access-control tenant-allow URL-gate block. Permissive platform overlay (feature enabled, no
+         mode/hosts); each scenario applies a per-tenant NetworkSecurityAccessControl allow policy at runtime and
+         asserts it gates every publisher/admin URL-validation entry point. No gateway backend: the blocked hosts
+         are rejected before any fetch, and the allow-listed positive control asserts only that no block occurs. -->
+    <test name="IntegrationV2-NetworkAccessControlTenantAllow" parallel="classes" thread-count="1">
+        <parameter name="blockLabel" value="network-access-control-tenant-allow"/>
+        <parameter name="initTenantUsers" value="true"/>
+        <parameter name="tomlExtraOverlayPath" value="src/test/resources/artifacts/configFiles/networkAccessControlTenantAllow/deployment.toml"/>
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.NetworkAccessControlUrlTenantAllowRunner"/>
         </classes>
     </test>
 </suite>

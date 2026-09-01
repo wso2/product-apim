@@ -1,0 +1,8 @@
+# Network access-control TENANT-ALLOW platform overlay (the network-access-control-tenant-allow container).
+# Merged on top of (distribution + basic) via the block's tomlExtraOverlayPath parameter.
+#
+# The platform policy is permissive (feature enabled, no mode/hosts), so nothing is blocked at the platform
+# level; each scenario applies a per-tenant NetworkSecurityAccessControl allow policy at runtime and asserts
+# that the tenant policy gates the publisher URL-validation entry points. Ports HostValidationTenantAllowMode.
+[server.network_security.access_control]
+block_private_network_access = false
