@@ -18,6 +18,7 @@ Feature: Publisher Network Access Control - tenant-configuration policy source
     And The system is ready and I have valid publisher access tokens as "publisherUser"
     And I act as "admin@tenant1.com"
     And I capture the tenant configuration as "nacTenantConfOriginal"
+    And I register tenant configuration "nacTenantConfOriginal" for cleanup
     And I capture the tenant configuration as "nacTenantConf"
     And I set the JSON object field "NetworkSecurityAccessControl" from file "artifacts/payloads/networkAccessControl/nac_tenant_deny_nodebackend.json" in the payload "nacTenantConf"
     And I update the tenant configuration from "nacTenantConf"

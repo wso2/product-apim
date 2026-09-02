@@ -3591,6 +3591,8 @@ public class PublisherBaseSteps {
         formFields.put("implementationType", "SOAP");
         HttpResponse response = Requests.postMultipart(Utils.getImportWsdlURL(Utils.getBaseUrl()), headers, files,
                 formFields);
+        // A refusal is the expected outcome; register any unexpectedly-created API so it is swept in teardown.
+        ResourceCleanup.registerIfCreated(Constants.CREATED_API_IDS, response, "id");
     }
 
     /** Non-asserting AsyncAPI import for negative/invalid-spec scenarios (publishes {@code httpResponse}; stores
