@@ -56,4 +56,22 @@ public final class Names {
 
         return base + "_" + suffix + "_" + counter.incrementAndGet();
     }
+
+    /**
+     * Returns a hex string of exactly {@code length} characters, unique across runners and across
+     * repeated calls within the same runner (built from the same suffix/counter scope as {@link #unique}).
+     * Intended for boundary-length testing of fields with a maximum character count, where the value must
+     * both hit an exact length and stay collision-free on repeated test runs.
+     */
+    public static String ofLength(int length) {
+        if (length < 0) {
+            throw new IllegalArgumentException("length must be non-negative");
+        }
+
+        StringBuilder value = new StringBuilder(unique("l").replace("_", ""));
+        while (value.length() < length) {
+            value.append(java.util.UUID.randomUUID().toString().replace("-", ""));
+        }
+        return value.substring(0, length);
+    }
 }
