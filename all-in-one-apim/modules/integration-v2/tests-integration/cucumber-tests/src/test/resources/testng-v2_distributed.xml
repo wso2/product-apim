@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+<!-- Focused distributed checkpoint: the current Publisher block. -->
+<suite name="Integration Tests v2 Distributed" parallel="tests" thread-count="2">
+    <listeners>
+        <listener class-name="org.wso2.am.integration.cucumbertests.utils.listeners.DistributedLifecycleListener"/>
+        <listener class-name="org.wso2.am.integration.cucumbertests.utils.listeners.BlockScopeListener"/>
+    </listeners>
+    <test name="IntegrationV2-Distributed-Publisher" parallel="classes" thread-count="2">
+        <parameter name="blockLabel" value="distributed-publisher"/>
+        <parameter name="initTenantUsers" value="true"/>
+        <parameter name="initSecondaryUserStore" value="true"/>
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.PublisherVersioningRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.PublisherLifecycleRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.PublisherConfigRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.PublisherOperationPoliciesRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.PublisherScopesRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.PublisherDefinitionsRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.PublisherDocsRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.PublisherGraphQLDesignRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.PublisherSoapDesignRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.PublisherAPIRevisionsRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.PublisherApiProductsRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.PublisherAccessControlRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.PublisherApiVisibilityDomainsRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.PublisherApiProviderChangeRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.PublisherDefaultEndpointRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.PublisherEndpointCertificatesRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.PublisherServiceCatalogRunner"/>
+        </classes>
+    </test>
+    <test name="IntegrationV2-Distributed-Gateway" parallel="classes" thread-count="2">
+        <parameter name="blockLabel" value="distributed-gateway"/>
+        <parameter name="initTenantUsers" value="true"/>
+        <parameter name="initBackend" value="true"/>
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayDenyEnforcementRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayRestInvocationRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewaySoapInvocationRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayGraphQLInvocationRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewaySecurityEnforcementRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayCredentialTypeConfusionRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayBasicAuthSecurityRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayThrottlingEnforcementRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayGraphQLScopeEnforcementRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayDefaultVersionRoutingRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayLifecycleStageInvocationRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayApiProductInvocationRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayGraphqlQueryLimitsRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayGraphqlEndpointSecurityRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.PublisherGraphqlFromUrlRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayAiApiInvocationRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayPrototypeApiRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewaySchemaValidationRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayWebSocketInvocationRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewaySseInvocationRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayWebSubInvocationRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayCorsRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayMediationPoliciesRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.PublisherMcpServersRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayMcpInvocationRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayAudienceValidationRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayRestArtifactsRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayDefaultEndpointInvocationRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayGraphQLSubscriptionRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayGraphqlSubscriptionThrottlingRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayGraphqlSubQueryLimitsRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayGraphqlSubscriptionTenantIsolationRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayProviderChangeInvocationRunner"/>
+        </classes>
+    </test>
+</suite>

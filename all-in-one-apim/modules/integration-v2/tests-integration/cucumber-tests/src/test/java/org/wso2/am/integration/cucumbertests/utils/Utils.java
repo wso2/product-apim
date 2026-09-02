@@ -538,6 +538,11 @@ public class Utils {
                 + "&tenantDomain=" + URLEncoder.encode(tenantDomain, StandardCharsets.UTF_8);
     }
 
+    /** Gateway management URL, distinct from the data-plane invocation URL in a distributed runtime. */
+    public static String getBaseGatewayManagementUrl() {
+        return requiredContextUrl("baseGatewayManagementUrl");
+    }
+
     /** Publisher — endpoint-certificate collection: {@code /endpoint-certificates} (POST multipart upload). */
     public static String getEndpointCertificatesURL(String baseUrl) {
         return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "endpoint-certificates";
@@ -1545,6 +1550,14 @@ public class Utils {
     /** Admin REST API — a single gateway environment by id (get/update/delete). */
     public static String getEnvironmentByIdURL(String baseUrl, String environmentId) {
         return baseUrl + Constants.DEFAULT_APIM_ADMIN + "environments/" + environmentId;
+    }
+
+    public static String getPlatformGatewaysURL(String baseUrl) {
+        return baseUrl + Constants.DEFAULT_APIM_ADMIN + "gateways";
+    }
+
+    public static String getPlatformGatewayByIdURL(String baseUrl, String gatewayId) {
+        return baseUrl + Constants.DEFAULT_APIM_ADMIN + "gateways/" + gatewayId;
     }
 
     /** Admin REST API — the gateway instances of an environment. */

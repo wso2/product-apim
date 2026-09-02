@@ -30,7 +30,7 @@ import org.wso2.am.integration.cucumbertests.utils.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wso2.am.integration.test.utils.Constants;
-import org.wso2.am.testcontainers.DynamicApimContainer;
+import org.wso2.am.testcontainers.ApimRuntime;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -479,15 +479,15 @@ public class LoggingSteps {
         // Path shape owned by DynamicApimContainer alongside getContainerLog4j2Path(), so the in-container
         // layout lives in one module; the accessor also validates apim.server.name instead of silently
         // resolving a path containing "null".
-        return container().readContainerFile(container().getContainerLogFilePath(fileName));
+        return container().readGatewayLogFile(fileName);
     }
 
-    private DynamicApimContainer container() {
+    private ApimRuntime container() {
         Object candidate = TestContext.get("blockApimContainer");
-        if (!(candidate instanceof DynamicApimContainer)) {
+        if (!(candidate instanceof ApimRuntime)) {
             throw new IllegalStateException("Block APIM container is not available in the test context");
         }
-        return (DynamicApimContainer) candidate;
+        return (ApimRuntime) candidate;
     }
 
     /**

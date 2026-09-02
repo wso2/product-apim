@@ -21,6 +21,7 @@ import com.github.dockerjava.api.model.Ulimit;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.Network;
 import org.testcontainers.containers.wait.strategy.Wait;
 
 import java.time.Duration;
@@ -54,10 +55,10 @@ import java.time.Duration;
  * assertion targets.
  *
  * <p><b>Why two GenericContainers rather than {@code DockerComposeContainer}.</b> Compose support creates
- * its OWN network, so APIM — which lives on {@link ContainerNetwork#SHARED_NETWORK} — could not resolve the
- * shim by network alias, and the shim could not resolve the broker. Wrapping two containers here keeps both
- * on the shared network with stable aliases while still presenting a single object to callers, which is the
- * property that actually mattered.
+ * its OWN network, so APIM — which lives on the block's private network — could not resolve the shim by network
+ * alias, and the shim could not resolve the broker. Wrapping two containers here lets the caller put both on
+ * the SAME block network with stable aliases while still presenting a single object, which is the property that
+ * actually mattered.
  *
  * <p><b>Scope (CLAUDE.md 14).</b> Infrastructure only. This class boots containers and publishes URLs. It
  * performs NO product operation — registering the Solace environment, importing, deploying, subscribing and
@@ -68,7 +69,7 @@ public class DynamicSolaceBroker {
 
     private static final Log logger = LogFactory.getLog(DynamicSolaceBroker.class);
 
-    /** Alias APIM uses to reach the faked connector on the shared network. */
+    /** Alias APIM uses to reach the faked connector on the block network. */
     public static final String SHIM_ALIAS = "solaceshim";
     /** Alias the shim (and any messaging client) uses to reach the broker. */
     public static final String BROKER_ALIAS = "solacebroker";
@@ -132,34 +133,26 @@ public class DynamicSolaceBroker {
     private final GenericContainer<?> shim;
 
     /**
-     * Shared singleton, mirroring {@link NodeAppServer}: several blocks may opt in via
-     * {@code initSolaceBroker}, and a full event broker is far too heavy to boot per block. Holder-idiom
-     * initialisation, so the containers start exactly once on first use and are never stopped per block —
-     * stopping one would break sibling blocks sharing it (the same reason NodeAppServer is never stopped).
+     * PER-BLOCK, and deliberately NOT a shared singleton multi-homed across block networks like
+     * {@link NodeAppServer}. The difference is direction of traffic: blocks only CALL the node backend, so one
+     * stateless instance can serve every block's network at once; this pair CALLS BACK INTO APIM — the shim's
+     * {@code APIM_JWKS_URL} resolves {@link #APIM_JWKS_ALIAS} to fetch APIM's JWKS. A container attached to two
+     * block networks would resolve that alias on both, so which APIM answers would be arbitrary. Giving each
+     * block its own broker on its own private network makes the alias unambiguous by construction, which is what
+     * removed the JVM-wide alias permit these blocks previously serialized on.
      *
-     * <p>Sharing is NOT symmetric with NodeAppServer, though, and the difference decides the alias. Blocks CALL
-     * the node backend, so any number may share it; this broker CALLS BACK into APIM to fetch its JWKS, and its
-     * OAuth profile holds a single {@code endpointJwks} configured once per JVM. So while several blocks may opt
-     * in, only one live APIM may own the {@code apimforsolace} alias that URL resolves to — the listener
-     * serializes those blocks on a permit ({@code SOLACE_JWKS_ALIAS_PERMIT}); they run, just not concurrently.
+     * <p>Per-block also isolates broker STATE (VPN client-usernames, OAuth profile) that scenarios provision
+     * over SEMP, which a shared broker could not offer. The cost is one broker boot per opting-in block (~1-2
+     * min); only blocks that set {@code initSolaceBroker} pay it.
+     *
+     * @param blockLabel owning block's label — log prefix and diagnostics only
+     * @param network    the block's private docker network both containers join (the caller owns its lifecycle;
+     *                   {@link #stop()} must run before it is closed)
      */
-    private static class InstanceHolder {
-        private static final DynamicSolaceBroker instance = createStarted();
+    public DynamicSolaceBroker(String blockLabel, Network network) {
 
-        private static DynamicSolaceBroker createStarted() {
-            DynamicSolaceBroker b = new DynamicSolaceBroker();
-            b.start();
-            return b;
-        }
-    }
-
-    public static DynamicSolaceBroker getInstance() {
-        return InstanceHolder.instance;
-    }
-
-    private DynamicSolaceBroker() {
-
-        logger.info("Initializing DynamicSolaceBroker (faked control plane + real PubSub+ data plane)...");
+        logger.info("Initializing DynamicSolaceBroker for block '" + blockLabel
+                + "' (faked control plane + real PubSub+ data plane)...");
 
         // ---- DATA plane: real PubSub+ standard ------------------------------------------------------
         // shm_size and the nofile ulimit are REQUIRED by the broker, not tuning: with the docker default
@@ -167,7 +160,7 @@ public class DynamicSolaceBroker {
         broker = new GenericContainer<>(
                 System.getProperty("solace.broker.docker.image.name", DEFAULT_BROKER_IMAGE))
                 .withExposedPorts(SEMP_PORT, SMF_PORT, MQTT_PORT, WS_MQTT_PORT, AMQP_PORT, REST_PORT)
-                .withNetwork(ContainerNetwork.SHARED_NETWORK)
+                .withNetwork(network)
                 .withNetworkAliases(BROKER_ALIAS)
                 // MEASURED: these two names are exact. An invented single
                 // "username_admin_globalaccess_password" makes SolOS abort during config render with
@@ -197,7 +190,7 @@ public class DynamicSolaceBroker {
         shim = new GenericContainer<>(
                 System.getProperty("solace.shim.docker.image.name", DEFAULT_SHIM_IMAGE))
                 .withExposedPorts(SHIM_PORT)
-                .withNetwork(ContainerNetwork.SHARED_NETWORK)
+                .withNetwork(network)
                 .withNetworkAliases(SHIM_ALIAS)
                 // The shim advertises broker endpoint URIs to APIM using the in-network alias, so the URIs
                 // APIM stores are reachable from inside the network rather than only from the host.
@@ -294,12 +287,12 @@ public class DynamicSolaceBroker {
         return "http://" + broker.getHost() + ":" + broker.getMappedPort(SEMP_PORT) + "/SEMP/v2";
     }
 
-    /** SMF messaging URI reachable from inside the shared network. */
+    /** SMF messaging URI reachable from inside the block network. */
     public String getSmfUri() {
         return "tcp://" + BROKER_ALIAS + ":" + SMF_PORT;
     }
 
-    /** MQTT messaging URI reachable from inside the shared network. */
+    /** MQTT messaging URI reachable from inside the block network. */
     public String getMqttUri() {
         return "tcp://" + BROKER_ALIAS + ":" + MQTT_PORT;
     }

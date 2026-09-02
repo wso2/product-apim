@@ -3,8 +3,9 @@ Feature: Gateway Endpoint Certificate TLS Invocation
 
   The RUNTIME half of the endpoint-certificate feature: whether an uploaded endpoint certificate actually changes
   what the GATEWAY trusts when it calls a backend over TLS. The backend is the tls-backend node app on
-  https://nodebackend:3023, which presents a self-signed certificate the gateway does not trust out of the box, and
-  which mirrors node-customer-service so GET /customers/123 answers {"id":123,"name":"John"}.
+  https://nodebackend:3023 for the super tenant and https://tenantbackend:3026 for tenant1, both of which present
+  self-signed certificates the gateway does not trust out of the box and mirror node-customer-service so GET
+  /customers/123 answers {"id":123,"name":"John"}.
 
   The whole arc is ONE scenario on purpose: each leg is the control for the next, and the ASSERTION IS THE
   TRANSITION. A post-upload 200 on its own proves nothing (the gateway might have trusted the backend all along);
@@ -23,6 +24,7 @@ Feature: Gateway Endpoint Certificate TLS Invocation
   Scenario Outline: An endpoint certificate upload and delete flip gateway trust of a TLS backend as <actor>
     Given The system is ready
     And I have valid access tokens as "<actor>"
+    And I put literal value "<backendUrl>" in context as "tlsBackendUrl"
     And I generate a unique value and store it as "tlsCertAlias"
     And I have created an api from "artifacts/payloads/create_apim_tls_endpoint_api.json" as "tlsCertApiId" and deployed it
     When I publish the "apis" resource with id "tlsCertApiId"
@@ -40,7 +42,7 @@ Feature: Gateway Endpoint Certificate TLS Invocation
     # LEG 2 — upload the backend's certificate for that endpoint. Propagation is two-staged (the certificate
     # reloader writes it into the gateway trust store, then the HTTPS sender re-reads its SSL profile), which the
     # block's overlay shortens to about a minute; hence the longer window here.
-    When I upload endpoint certificate "artifacts/certs/endpoint/nodebackend.cer" with alias "{{tlsCertAlias}}" for endpoint "https://nodebackend:3023"
+    When I upload endpoint certificate "<certificatePath>" with alias "{{tlsCertAlias}}" for endpoint "<backendUrl>"
     Then The response status code should be 201
     When I invoke the API at gateway context "{{tlsCertApiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 240 seconds
     Then The response status code should be 200
@@ -57,6 +59,6 @@ Feature: Gateway Endpoint Certificate TLS Invocation
     When I invoke the API at gateway context "{{tlsCertApiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and the response status code should remain 500 for 10 seconds
 
     Examples:
-      | actor |
-      | admin |
-      | admin@tenant1.com |
+      | actor             | backendUrl                 | certificatePath                            |
+      | admin             | https://nodebackend:3023   | artifacts/certs/endpoint/nodebackend.cer   |
+      | admin@tenant1.com | https://tenantbackend:3026 | artifacts/certs/endpoint/tenantbackend.cer |
