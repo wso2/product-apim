@@ -1,0 +1,6 @@
+{
+  "name": "${UNIQUE:NacGqlImport}",
+  "version": "1.0.0",
+  "context": "${UNIQUE:nacgqlimportctx}",
+  "policies": ["Unlimited"]
+}

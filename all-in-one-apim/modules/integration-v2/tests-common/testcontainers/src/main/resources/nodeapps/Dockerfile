@@ -72,6 +72,8 @@ COPY sse-emitter ./sse-emitter
 COPY websub-receiver ./websub-receiver
 COPY tls-backend ./tls-backend
 COPY custom-status-backend ./custom-status-backend
+# network-access-control-fixtures is dependency-free (pure Node http), so it needs no package.json COPY / npm install above.
+COPY network-access-control-fixtures ./network-access-control-fixtures
 
 # 6. Copy PM2 ecosystem config file
 COPY ecosystem.config.js .
