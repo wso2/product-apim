@@ -565,7 +565,12 @@ public class BlockLifecycleListener implements ITestListener {
             TestContext.removeShared(BLOCK_NETWORK_KEY);
             if (Boolean.TRUE.equals(TestContext.get(BACKEND_ATTACHED_KEY))) {
                 TestContext.removeShared(BACKEND_ATTACHED_KEY);
-                NodeAppServer.getInstance().detachFromNetwork(network);
+                try {
+                    NodeAppServer.getInstance().detachFromNetwork(network);
+                } catch (Throwable e) {
+                    logger.warn("Block '" + label + "' NodeAppServer detach failed (network may leak): "
+                            + e.getMessage());
+                }
             }
             try {
                 network.close();

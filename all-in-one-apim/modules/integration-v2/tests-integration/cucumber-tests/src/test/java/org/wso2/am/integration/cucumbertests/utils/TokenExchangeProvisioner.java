@@ -361,6 +361,8 @@ public final class TokenExchangeProvisioner {
     private static void addOrReplaceIdp(IdpScope scope, String idpName, String alias, String extraBody)
             throws IOException {
         deleteIdpIfExists(scope, idpName);
+        Assert.assertFalse(idpExists(scope, idpName),
+                "Trusted IdP '" + idpName + "' still exists after deletion");
         String body = SOAP_ENV_OPEN
                 + "<soapenv:Body><ns:addIdP xmlns:ns=\"http://mgt.idp.carbon.wso2.org\" "
                 + "xmlns:m=\"http://model.common.application.identity.carbon.wso2.org/xsd\">"

@@ -38,8 +38,9 @@ import java.util.List;
  * Provisioning steps for the external-IdP console-SSO block: registers the APIM-side OIDC identity provider
  * against an IS OIDC app, wires the multi-option (local + federated) authentication step onto the Publisher,
  * Admin and DevPortal console service providers, and creates the JIT-provisioned federated user on IS. These
- * are the {@code Background} prerequisites; the federated-login journey itself is the browser-client layer
- * (a later addition), stubbed here so the feature has no undefined step.
+ * are the {@code Background} prerequisites for the fully implemented federated-login journey, which runs through
+ * {@link PlaywrightSsoClient} and performs API creation, deployment, subscription, and gateway invocation in
+ * the authenticated browser session.
  *
  * <p>Per CLAUDE.md §14 these prerequisites drive SOAP admin services with no REST equivalent (IdP registration,
  * console SP authentication-step editing) via {@link SsoProvisioner}, run super-tenant admin/admin.

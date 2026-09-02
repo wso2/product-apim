@@ -100,7 +100,7 @@ Feature: Multi-tenant console SSO via an external Identity Server
 
     Given a real browser session for the multi-tenant SSO journey
     When I open the "devportal" console login page for multi-tenant SSO
-    Then the DevPortal login page must offer local plus broker authentication
+    Then the multi-tenant console login page must carry "multiOptionURI" and offer local plus broker authentication
     When I select the multi-tenant broker federated authenticator
     And I select the tenant "abc.com" on the broker's tenant-selection page
     And I authenticate at the identity server as the tenant's SSO user

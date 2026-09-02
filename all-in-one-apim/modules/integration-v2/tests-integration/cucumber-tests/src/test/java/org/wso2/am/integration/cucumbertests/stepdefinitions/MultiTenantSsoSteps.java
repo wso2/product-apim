@@ -242,8 +242,25 @@ public class MultiTenantSsoSteps {
 
     @When("I authenticate with the local authenticator as the {string} tenant administrator")
     public void iAuthenticateWithLocalTenantAdministrator(String tenantDomain) {
-        String username = "abc.com".equals(tenantDomain) ? "admin@abc.com" : Constants.SUPER_TENANT_ADMIN_USERNAME;
-        String password = "abc.com".equals(tenantDomain) ? "Admin@12345" : Constants.SUPER_TENANT_ADMIN_PASSWORD;
+        String username;
+        String password;
+        if (Constants.SUPER_TENANT_DOMAIN.equals(tenantDomain)) {
+            username = Constants.SUPER_TENANT_ADMIN_USERNAME;
+            password = Constants.SUPER_TENANT_ADMIN_PASSWORD;
+        } else if ("abc.com".equals(tenantDomain)) {
+            username = "admin@abc.com";
+            password = "Admin@12345";
+        } else {
+            Object provisionedDomain = TestContext.get("mtTenantDomain");
+            Assert.assertEquals(tenantDomain, provisionedDomain,
+                    "Unknown multi-tenant SSO local-authentication domain; expected carbon.super, abc.com, "
+                            + "or the provisioned tenant domain");
+            username = TestContext.resolve("mtTenantAdmin").toString();
+            if (!username.contains("@")) {
+                username = username + "@" + tenantDomain;
+            }
+            password = TestContext.resolve("mtTenantAdminPassword").toString();
+        }
         browser.authenticateWithLocalAuthenticator(username, password);
         TestContext.set("mtLocalUser", username);
     }

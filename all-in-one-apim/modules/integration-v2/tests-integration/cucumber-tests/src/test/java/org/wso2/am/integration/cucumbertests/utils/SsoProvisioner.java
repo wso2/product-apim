@@ -281,6 +281,8 @@ public final class SsoProvisioner {
     public static void registerOidcIdp(String idpName, String isClientId, String isClientSecret)
             throws IOException {
         deleteIdp(idpName);
+        Assert.assertFalse(getIdpExists(idpName),
+                "OIDC identity provider '" + idpName + "' still exists after deletion");
 
         String isServer = isServerBase();
 

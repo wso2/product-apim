@@ -42,13 +42,13 @@ import java.time.Duration;
 public class DynamicApimContainer extends GenericContainer<DynamicApimContainer> implements ApimRuntime {
 
     private static final Logger logger = LoggerFactory.getLogger(DynamicApimContainer.class);
-    private static final String DEFAULT_APIM_IMAGE = "wso2am:4.7.0-SNAPSHOT-jdk21";
+    private static final String APIM_IMAGE_PROPERTY = "apim.docker.image.name";
     /** Fixed shared-network alias for the IS→APIM reverse channel; see {@link #withExternalIsNotificationAlias}. */
     private static final String APIM_NETWORK_ALIAS = "wso2am";
 
     public DynamicApimContainer(String containerLabel, String deploymentTomlContent) {
 
-        super(System.getProperty("apim.docker.image.name", DEFAULT_APIM_IMAGE));
+        super(requiredImage(APIM_IMAGE_PROPERTY));
 
         String apimDbUrl = System.getenv(Constants.API_MANAGER_DATABASE_URL).replace("&", "&amp;");
         String sharedDbUrl = System.getenv(Constants.SHARED_DATABASE_URL).replace("&", "&amp;");
@@ -123,6 +123,15 @@ public class DynamicApimContainer extends GenericContainer<DynamicApimContainer>
 
         withLogConsumer(logConsumer);
         waitingFor(Wait.forListeningPort().withStartupTimeout(Duration.ofMinutes(20)));
+    }
+
+    private static String requiredImage(String property) {
+        String image = System.getProperty(property);
+        if (image == null || image.isBlank()) {
+            throw new IllegalStateException(property
+                    + " is not set; resolve the image from the all-in-one product POM");
+        }
+        return image;
     }
 
     /**

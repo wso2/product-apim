@@ -108,7 +108,7 @@ jobs:
         with:
           report_paths: 'reports/**/TEST-*.xml'
   # Builds the distribution + Docker images ONCE, then shares the non-public images (docker save ->
-  # artifact), the testcontainers target/is7 staging (IS truststores + default toml + notification jar,
+  # artifact), the testcontainers target/is7 and distributed-apim staging (image defaults + schemas,
   # produced by the same pre-integration-test execs), and the Maven repo (run-scoped cache) with the
   # integration-v2 matrix. The execs bind to pre-integration-test, which `mvn install` runs but `mvn test`
   # does not - so matrix entries `docker load` the images and unpack the staging, and never rebuild either.
@@ -192,25 +192,39 @@ jobs:
           path: ~/.m2/repository
           key: m2-v2-${{ github.run_id }}
           restore-keys: ${{ runner.os }}-m2
+      - name: Resolve APIM product versions
+        run: |
+          echo "APIM_VERSION=$(mvn -q -f all-in-one-apim/pom.xml help:evaluate -Dexpression=project.version -DforceStdout)" >> "$GITHUB_ENV"
+          echo "CP_VERSION=$(mvn -q -f api-control-plane/pom.xml help:evaluate -Dexpression=project.version -DforceStdout)" >> "$GITHUB_ENV"
+          echo "TM_VERSION=$(mvn -q -f traffic-manager/pom.xml help:evaluate -Dexpression=project.version -DforceStdout)" >> "$GITHUB_ENV"
+          echo "GATEWAY_VERSION=$(mvn -q -f gateway/pom.xml help:evaluate -Dexpression=project.version -DforceStdout)" >> "$GITHUB_ENV"
       - name: Build APIM distributions (skip tests)
         run: >
           mvn clean install
           -Dmaven.test.skip=true -DskipBenchMarkTest=true -DskipRestartTests=true
+          -Dapim.server.version="$APIM_VERSION"
+          -Ddistributed.apim.cp.image.name="distributed-apim-cp:${CP_VERSION}-jdk21"
+          -Ddistributed.apim.tm.image.name="distributed-apim-tm:${TM_VERSION}-jdk21"
+          -Ddistributed.apim.gateway.image.name="distributed-apim-gateway:${GATEWAY_VERSION}-jdk21"
       - name: Build integration Docker images (no suite)
         working-directory: all-in-one-apim/modules/integration-v2
         run: >
           mvn install -pl tests-integration/cucumber-tests -am -DskipTests
+          -Dapim.server.version="$APIM_VERSION"
+          -Ddistributed.apim.cp.image.name="distributed-apim-cp:${CP_VERSION}-jdk21"
+          -Ddistributed.apim.tm.image.name="distributed-apim-tm:${TM_VERSION}-jdk21"
+          -Ddistributed.apim.gateway.image.name="distributed-apim-gateway:${GATEWAY_VERSION}-jdk21"
           -Ddocker.extra.hosts="--add-host=host.docker.internal:host-gateway"
       # Resolve image names from the same pom properties used by the build.
       - name: Resolve Docker image names
         working-directory: all-in-one-apim/modules/integration-v2
         run: |
-          echo "APIM_IMAGE=$(mvn -q -N help:evaluate -Dexpression=apim.docker.image.name -DforceStdout)" >> "$GITHUB_ENV"
+          echo "APIM_IMAGE=$(mvn -q -N help:evaluate -Dexpression=apim.docker.image.name -Dapim.server.version="$APIM_VERSION" -DforceStdout)" >> "$GITHUB_ENV"
           echo "SOLACE_SHIM_IMAGE=$(mvn -q -N help:evaluate -Dexpression=solace.shim.docker.image.name -DforceStdout)" >> "$GITHUB_ENV"
           echo "SQUID_IMAGE=$(mvn -q -N help:evaluate -Dexpression=squid.docker.image.name -DforceStdout)" >> "$GITHUB_ENV"
-          echo "DISTRIBUTED_CP_IMAGE=distributed-apim-cp:4.7.0-SNAPSHOT" >> "$GITHUB_ENV"
-          echo "DISTRIBUTED_TM_IMAGE=distributed-apim-tm:4.7.0-SNAPSHOT" >> "$GITHUB_ENV"
-          echo "DISTRIBUTED_GATEWAY_IMAGE=distributed-apim-gateway:4.7.0-SNAPSHOT" >> "$GITHUB_ENV"
+          echo "DISTRIBUTED_CP_IMAGE=distributed-apim-cp:${CP_VERSION}-jdk21" >> "$GITHUB_ENV"
+          echo "DISTRIBUTED_TM_IMAGE=distributed-apim-tm:${TM_VERSION}-jdk21" >> "$GITHUB_ENV"
+          echo "DISTRIBUTED_GATEWAY_IMAGE=distributed-apim-gateway:${GATEWAY_VERSION}-jdk21" >> "$GITHUB_ENV"
       # Only locally built images travel by tar; public images are pulled by the matrix.
       - name: Save Docker images and IS staging
         run: |
@@ -227,6 +241,8 @@ jobs:
           # DynamicApimContainer#withExternalKmTrust); they exist only where pre-integration-test ran.
           tar -C all-in-one-apim/modules/integration-v2/tests-common/testcontainers/target -czf \
             /tmp/v2-images/is7-staging.tar.gz is7
+          tar -C all-in-one-apim/modules/integration-v2/tests-common/testcontainers/target -czf \
+            /tmp/v2-images/distributed-apim-staging.tar.gz distributed-apim/defaults
       - name: Upload Docker images
         uses: actions/upload-artifact@v4
         with:
@@ -235,9 +251,6 @@ jobs:
           # 3 days so a failed-only re-run of integration-v2 within a few days still finds the prebuilt images
           retention-days: 3
           if-no-files-found: error
-      # NOTE: coverage report rendering needs the product class files, but we do NOT ship the ~538 MB distribution
-      # zip as a second artifact — the integration-v2 job extracts them from the already-shared image via docker cp
-      # (see docs/devs/v2-coverage-architecture.md §8). The image IS what ran, so its classes are byte-identical.
   integration-v2:
     needs: v2-build-images
     runs-on: ubuntu-latest
@@ -280,6 +293,12 @@ jobs:
           path: /tmp/v2-images
       - name: Load Docker images
         run: docker load < /tmp/v2-images/images.tar.gz
+      - name: Resolve APIM product versions
+        run: |
+          echo "APIM_VERSION=$(mvn -q -f all-in-one-apim/pom.xml help:evaluate -Dexpression=project.version -DforceStdout)" >> "$GITHUB_ENV"
+          echo "CP_VERSION=$(mvn -q -f api-control-plane/pom.xml help:evaluate -Dexpression=project.version -DforceStdout)" >> "$GITHUB_ENV"
+          echo "TM_VERSION=$(mvn -q -f traffic-manager/pom.xml help:evaluate -Dexpression=project.version -DforceStdout)" >> "$GITHUB_ENV"
+          echo "GATEWAY_VERSION=$(mvn -q -f gateway/pom.xml help:evaluate -Dexpression=project.version -DforceStdout)" >> "$GITHUB_ENV"
       # The IS-booting blocks fail fast without the pre-integration-test staging (truststores, IS default
       # toml, notification jar), and `mvn test` deliberately never runs those execs - restore the builder's.
       - name: Restore IS staging (target/is7)
@@ -287,6 +306,11 @@ jobs:
           mkdir -p all-in-one-apim/modules/integration-v2/tests-common/testcontainers/target
           tar -C all-in-one-apim/modules/integration-v2/tests-common/testcontainers/target -xzf \
             /tmp/v2-images/is7-staging.tar.gz
+      - name: Restore distributed image defaults (target/distributed-apim/defaults)
+        run: |
+          mkdir -p all-in-one-apim/modules/integration-v2/tests-common/testcontainers/target
+          tar -C all-in-one-apim/modules/integration-v2/tests-common/testcontainers/target -xzf \
+            /tmp/v2-images/distributed-apim-staging.tar.gz
       # Pull the product class files out of the already-loaded image instead of shipping the ~538 MB distribution
       # zip (docker cp is a LOCAL copy — zero extra artifact transfer). The image is what ran, so its classes are
       # byte-identical to the executed ones → exact JaCoCo class-id match. The suite reads them via
@@ -312,6 +336,10 @@ jobs:
         run: >
           mvn test -pl tests-integration/cucumber-tests -am
           -Dsurefire.suite.xml=${{ matrix.suite }}
+          -Dapim.server.version="$APIM_VERSION"
+          -Ddistributed.apim.cp.image.name="distributed-apim-cp:${CP_VERSION}-jdk21"
+          -Ddistributed.apim.tm.image.name="distributed-apim-tm:${TM_VERSION}-jdk21"
+          -Ddistributed.apim.gateway.image.name="distributed-apim-gateway:${GATEWAY_VERSION}-jdk21"
           -Dapim.coverage=true
           -Dapim.coverage.classfiles="$APIM_COVERAGE_CLASSFILES"
           -Ddocker.extra.hosts="--add-host=host.docker.internal:host-gateway"

@@ -344,7 +344,8 @@ public final class MultiTenantSsoProvisioner {
     private static String resolveTemplateId(String tenantDomain, Map<String, String> headers) throws IOException {
         String url = isBase() + tenantPrefix(tenantDomain) + "api/server/v1/extensions/applications";
         HttpResponse resp = SimpleHTTPClient.getInstance().doGet(url, headers);
-        Assert.assertTrue(resp != null && resp.getResponseCode() == 200 && resp.getData() != null,
+        Assert.assertTrue(resp != null && resp.getResponseCode() == 200 && resp.getData() != null
+                        && !resp.getData().isBlank(),
                 "Could not list application templates at " + url + ": got="
                         + (resp == null ? "null" : resp.getResponseCode() + "/" + resp.getData()));
         JSONArray templates = templatesOf(resp.getData());
