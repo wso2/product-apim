@@ -132,6 +132,7 @@ Feature: Console SSO via an external Identity Server survives the multi-option O
   Scenario: A federated user starts in DevPortal, uses Publisher and Admin, then logs out from DevPortal
 
     When I open the "devportal" console login page
+    Then the login page must be multi-option carrying "multiOptionURI"
     Then the login page must offer both a local authenticator and the "ISIDP" federated authenticator
     When I select the "ISIDP" federated identity provider
     And I authenticate at the external Identity Server as "sso_admin"

@@ -61,12 +61,17 @@
         <apim.database.password>apimpass</apim.database.password>
         <apim.database.validationQuery>SELECT 1</apim.database.validationQuery>
 
-        <!-- APIM server version: must match zip built by workflow (wso2am-${apim.server.version}.zip) -->
-        <apim.server.version>4.7.0-SNAPSHOT</apim.server.version>
+        <!-- APIM server version is supplied from the all-in-one product POM by the build workflow. -->
+        <apim.server.version>${project.version}</apim.server.version>
         <apim.server.name>wso2am-${apim.server.version}</apim.server.name>
 
         <!-- APIM docker image (jdk21 to align with workflow) -->
         <apim.docker.image.name>wso2am:${apim.server.version}-jdk21</apim.docker.image.name>
+        <!-- Distributed APIM image names are supplied from the corresponding product POM versions by the
+             build workflow. Defaults support local Maven runs against the same-version reactor. -->
+        <distributed.apim.cp.image.name>distributed-apim-cp:${project.version}-jdk21</distributed.apim.cp.image.name>
+        <distributed.apim.tm.image.name>distributed-apim-tm:${project.version}-jdk21</distributed.apim.tm.image.name>
+        <distributed.apim.gateway.image.name>distributed-apim-gateway:${project.version}-jdk21</distributed.apim.gateway.image.name>
         <!--Node app servers docker image-->
         <node.docker.image.name>node-app-server:latest</node.docker.image.name>
         <!-- Solace: a REAL event broker (data plane) plus a mock of the Solace Cloud Event-Portal API that
@@ -104,8 +109,7 @@
 
         <!-- Dependency versions (defined here so the integration-v2 reactor is self-contained) -->
         <testcontainers.version>2.0.2</testcontainers.version>
-        <jackson.databind.version>2.16.1</jackson.databind.version>
-        <jackson.dataformat.toml.version>2.17.1</jackson.dataformat.toml.version>
+        <jackson.version>2.21.2</jackson.version>
         <javax.ws.rs.version>2.1.1</javax.ws.rs.version>
         <glassfish.jaxb.version>2.3.1</glassfish.jaxb.version>
         <findbugs.jsr305.version>3.0.2</findbugs.jsr305.version>
@@ -113,7 +117,7 @@
         <carbon.apimgt.api.version>9.31.94</carbon.apimgt.api.version>
         <carbon.utils.version>4.10.44</carbon.utils.version>
         <commons.io.version>2.18.0</commons.io.version>
-        <commons.lang3.version>3.0</commons.lang3.version>
+        <commons.lang3.version>3.18.0</commons.lang3.version>
         <cucumber.version>7.0.0</cucumber.version>
         <cucumber.picocontainer.version>7.22.0</cucumber.picocontainer.version>
         <gson.version>2.10.1</gson.version>
@@ -122,6 +126,18 @@
         <org.skyscreamer.version>1.5.0</org.skyscreamer.version>
         <testng.version>7.4.0</testng.version>
     </properties>
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>com.fasterxml.jackson</groupId>
+                <artifactId>jackson-bom</artifactId>
+                <version>${jackson.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
     <dependencies>
         <dependency>
             <groupId>commons-logging</groupId>
@@ -139,12 +155,10 @@
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
-            <version>${jackson.databind.version}</version>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.dataformat</groupId>
             <artifactId>jackson-dataformat-toml</artifactId>
-            <version>${jackson.dataformat.toml.version}</version>
         </dependency>
         <dependency>
             <groupId>javax.ws.rs</groupId>
@@ -208,6 +222,9 @@
                                 <apim.debug.port>${apim.debug.port}</apim.debug.port>
                                 <apim.coverage>${apim.coverage}</apim.coverage>
                                 <apim.coverage.sources>${apim.coverage.sources}</apim.coverage.sources>
+                                <distributed.apim.cp.image.name>${distributed.apim.cp.image.name}</distributed.apim.cp.image.name>
+                                <distributed.apim.tm.image.name>${distributed.apim.tm.image.name}</distributed.apim.tm.image.name>
+                                <distributed.apim.gateway.image.name>${distributed.apim.gateway.image.name}</distributed.apim.gateway.image.name>
                                 <active.profile>migration</active.profile>
                             </systemPropertyVariables>
                             <environmentVariables>
@@ -278,6 +295,9 @@
                                 <apim.debug.port>${apim.debug.port}</apim.debug.port>
                                 <apim.coverage>${apim.coverage}</apim.coverage>
                                 <apim.coverage.sources>${apim.coverage.sources}</apim.coverage.sources>
+                                <distributed.apim.cp.image.name>${distributed.apim.cp.image.name}</distributed.apim.cp.image.name>
+                                <distributed.apim.tm.image.name>${distributed.apim.tm.image.name}</distributed.apim.tm.image.name>
+                                <distributed.apim.gateway.image.name>${distributed.apim.gateway.image.name}</distributed.apim.gateway.image.name>
                                 <active.profile>default</active.profile>
                             </systemPropertyVariables>
                             <environmentVariables>

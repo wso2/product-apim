@@ -36,7 +36,9 @@ The distributed replacement must publish the same keys with the same meanings. P
 
 ## 3. Findings from the developer distributed setup
 
-Reference: /Users/nimsara/patch-packs/rrt/PRs/apim-distributed-dev-setup.
+The feasibility study also used a developer distributed setup that is outside this repository. Its original
+machine-local source is intentionally not recorded here; the durable in-repository implementation references are
+the distributed container resources and README listed in Section 16.
 
 The setup contains:
 
@@ -298,12 +300,9 @@ Only then should Admin, DevPortal, SSO, and the remaining blocks be added.
 * Current lifecycle: all-in-one-apim/modules/integration-v2/tests-integration/cucumber-tests/src/test/java/org/wso2/am/integration/cucumbertests/utils/listeners/BlockLifecycleListener.java
 * Current container: all-in-one-apim/modules/integration-v2/tests-common/testcontainers/src/main/java/org/wso2/am/testcontainers/DynamicApimContainer.java
 * Composite gateway example: all-in-one-apim/modules/integration-v2/tests-common/testcontainers/src/main/java/org/wso2/am/testcontainers/DynamicPlatformGatewayContainer.java
-* Developer setup README: /Users/nimsara/patch-packs/rrt/PRs/apim-distributed-dev-setup/README.md
-* Developer setup compose: /Users/nimsara/patch-packs/rrt/PRs/apim-distributed-dev-setup/docker-compose.yaml
-* Developer setup startup script: /Users/nimsara/patch-packs/rrt/PRs/apim-distributed-dev-setup/run.sh
-* Developer ACP TOML: /Users/nimsara/patch-packs/rrt/PRs/apim-distributed-dev-setup/conf/apim-acp/repository/conf/deployment.toml
-* Developer TM TOML: /Users/nimsara/patch-packs/rrt/PRs/apim-distributed-dev-setup/conf/apim-tm/repository/conf/deployment.toml
-* Developer Gateway TOML: /Users/nimsara/patch-packs/rrt/PRs/apim-distributed-dev-setup/conf/apim-universal-gw/repository/conf/deployment.toml
+* Original developer distributed setup: unavailable in this repository; its machine-local paths are intentionally not
+  documented. The durable implementation references are the distributed Dockerfile, component overlays, startup
+  script, and README under `all-in-one-apim/modules/integration-v2/tests-common/testcontainers/src/main/resources/distributed-apim/`.
 
 ## 17. Phase 0 evidence record
 
@@ -333,12 +332,9 @@ contract facts are:
   routes, host port offsets, and full TOMLs therefore cannot be copied into
   the Testcontainers implementation.
 
-Baseline command, run with the required Colima/Testcontainers environment:
+Baseline command, run after setting the Docker/Testcontainers environment appropriate for the local host:
 
     cd all-in-one-apim/modules/integration-v2/tests-integration/cucumber-tests
-    export DOCKER_HOST=unix:///Users/nimsara/.colima/default/docker.sock
-    export TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE=/var/run/docker.sock
-    export TESTCONTAINERS_HOST_OVERRIDE=192.168.64.2
     ./src/test/scripts/verification/verify-7.2.sh
 
 Result: `VERIFY 7.2: PASS`. The focused suite verified tenant/actor setup,
@@ -400,9 +396,9 @@ the builder fails before invoking Docker when any component ZIP or connector
 is absent. The real component ZIPs were subsequently found in the sibling
 CP/Gateway/TM build outputs and all three images were built successfully:
 
-* `distributed-apim-cp:4.7.0-SNAPSHOT`
-* `distributed-apim-tm:4.7.0-SNAPSHOT`
-* `distributed-apim-gateway:4.7.0-SNAPSHOT`
+* `distributed-apim-cp:<cp-version>-jdk21`
+* `distributed-apim-tm:<tm-version>-jdk21`
+* `distributed-apim-gateway:<gateway-version>-jdk21`
 
 Image-level smoke checks passed for each image: JDK 21 is available, the
 expected component startup script is executable, the server home is

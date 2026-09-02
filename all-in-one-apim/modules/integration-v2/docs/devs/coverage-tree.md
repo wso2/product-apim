@@ -870,7 +870,7 @@ integration-v2 product tests
 │       ├── [external-idp-sso] A federated user single-signs-on across the Publisher, Admin and DevPortal and does real work in each  (admin/external_idp_console_sso.feature:50)
 │       ├── [external-idp-sso] A federated user starts in Admin, uses Publisher and DevPortal, then logs out from Admin  (admin/external_idp_console_sso.feature:103)
 │       ├── [external-idp-sso] A federated user starts in DevPortal, uses Publisher and Admin, then logs out from DevPortal  (admin/external_idp_console_sso.feature:132)
-│       ├── [external-idp-sso] The multi-option login still authenticates a LOCAL user, in both tenants, as <actor>  (admin/external_idp_console_sso.feature:165)
+│       ├── [external-idp-sso] The multi-option login still authenticates a LOCAL user, in both tenants, as <actor>  (admin/external_idp_console_sso.feature:166)
 │       ├── [multitenant-sso] A tenant user signs in to the Publisher through the multi-tenant broker  (admin/multitenant_sso.feature:24)
 │       ├── [multitenant-sso] A tenant user starts in Admin and hands off to Publisher and DevPortal  (admin/multitenant_sso.feature:66)
 │       ├── [multitenant-sso] A tenant user starts in DevPortal and hands off to Publisher and Admin  (admin/multitenant_sso.feature:99)

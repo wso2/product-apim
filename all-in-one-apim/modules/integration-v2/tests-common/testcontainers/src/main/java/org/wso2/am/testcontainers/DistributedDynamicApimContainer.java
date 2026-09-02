@@ -22,7 +22,6 @@ import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import java.util.zip.ZipFile;
 
 /**
  * Composite distributed APIM runtime. It deliberately presents the same
@@ -36,19 +35,20 @@ import java.util.zip.ZipFile;
  */
 public class DistributedDynamicApimContainer implements ApimRuntime {
 
-    private static final String CP_IMAGE = "distributed-apim-cp:4.7.0-SNAPSHOT";
-    private static final String TM_IMAGE = "distributed-apim-tm:4.7.0-SNAPSHOT";
-    private static final String GATEWAY_IMAGE = "distributed-apim-gateway:4.7.0-SNAPSHOT";
-    private static final String CP_ZIP_PROPERTY = "distributed.apim.cp.zip";
-    private static final String TM_ZIP_PROPERTY = "distributed.apim.tm.zip";
-    private static final String GATEWAY_ZIP_PROPERTY = "distributed.apim.gateway.zip";
+    private static final String CP_IMAGE = requiredImage("distributed.apim.cp.image.name");
+    private static final String TM_IMAGE = requiredImage("distributed.apim.tm.image.name");
+    private static final String GATEWAY_IMAGE = requiredImage("distributed.apim.gateway.image.name");
     private static final String SERVER_HOME = "/opt/wso2";
     private static final String TOML_PATH = SERVER_HOME + "/repository/conf/deployment.toml";
+    private static final String DEFAULTS_DIRECTORY = "distributed-apim/defaults";
+    private static final String DEFAULTS_DIRECTORY_PROPERTY = "distributed.apim.defaults.directory";
 
     private final String label;
-    private final Path cpZip;
-    private final Path tmZip;
-    private final Path gatewayZip;
+    private final Path cpDefaults;
+    private final Path tmDefaults;
+    private final Path gatewayDefaults;
+    private final Path sharedDatabaseSchema;
+    private final Path apiManagerDatabaseSchema;
     private final Network network;
     private final boolean ownsNetwork;
     private final DistributedMySqlContainer mysql;
@@ -64,40 +64,71 @@ public class DistributedDynamicApimContainer implements ApimRuntime {
     private boolean solaceJwksAlias;
     private boolean started;
 
+    private static String requiredImage(String property) {
+        String image = System.getProperty(property);
+        if (image == null || image.isBlank()) {
+            throw new IllegalStateException(property
+                    + " is not set; resolve the image from the relevant product POM");
+        }
+        return image;
+    }
+
     public DistributedDynamicApimContainer(String label) throws IOException {
-        this(label, requiredZip(CP_ZIP_PROPERTY), requiredZip(TM_ZIP_PROPERTY),
-                requiredZip(GATEWAY_ZIP_PROPERTY));
+        this(label, defaultPath("cp/deployment.toml"), defaultPath("tm/deployment.toml"),
+                defaultPath("gateway/deployment.toml"), defaultPath("cp/mysql.sql"),
+                defaultPath("cp/apimgt-mysql.sql"));
     }
 
     public DistributedDynamicApimContainer(String label, Network network) throws IOException {
-        this(label, network, requiredZip(CP_ZIP_PROPERTY), requiredZip(TM_ZIP_PROPERTY),
-                requiredZip(GATEWAY_ZIP_PROPERTY));
+        this(label, network, defaultPath("cp/deployment.toml"), defaultPath("tm/deployment.toml"),
+                defaultPath("gateway/deployment.toml"), defaultPath("cp/mysql.sql"),
+                defaultPath("cp/apimgt-mysql.sql"));
     }
 
-    public DistributedDynamicApimContainer(String label, Path cpZip, Path tmZip, Path gatewayZip)
+    public DistributedDynamicApimContainer(String label, Path cpDefaults, Path tmDefaults, Path gatewayDefaults)
             throws IOException {
-        this(label, cpZip, tmZip, gatewayZip, Network.newNetwork(), true);
+        this(label, cpDefaults, tmDefaults, gatewayDefaults, defaultPath("cp/mysql.sql"),
+                defaultPath("cp/apimgt-mysql.sql"), Network.newNetwork(), true);
     }
 
-    public DistributedDynamicApimContainer(String label, Network network, Path cpZip, Path tmZip, Path gatewayZip)
+    public DistributedDynamicApimContainer(String label, Network network, Path cpDefaults, Path tmDefaults,
+                                            Path gatewayDefaults)
             throws IOException {
-        this(label, cpZip, tmZip, gatewayZip, network, false);
+        this(label, cpDefaults, tmDefaults, gatewayDefaults, defaultPath("cp/mysql.sql"),
+                defaultPath("cp/apimgt-mysql.sql"), network, false);
     }
 
-    private DistributedDynamicApimContainer(String label, Path cpZip, Path tmZip, Path gatewayZip,
+    private DistributedDynamicApimContainer(String label, Path cpDefaults, Path tmDefaults, Path gatewayDefaults,
+                                             Path sharedDatabaseSchema, Path apiManagerDatabaseSchema)
+            throws IOException {
+        this(label, cpDefaults, tmDefaults, gatewayDefaults, sharedDatabaseSchema, apiManagerDatabaseSchema,
+                Network.newNetwork(), true);
+    }
+
+    private DistributedDynamicApimContainer(String label, Network network, Path cpDefaults, Path tmDefaults,
+                                             Path gatewayDefaults, Path sharedDatabaseSchema,
+                                             Path apiManagerDatabaseSchema) throws IOException {
+        this(label, cpDefaults, tmDefaults, gatewayDefaults, sharedDatabaseSchema, apiManagerDatabaseSchema,
+                network, false);
+    }
+
+    private DistributedDynamicApimContainer(String label, Path cpDefaults, Path tmDefaults, Path gatewayDefaults,
+                                             Path sharedDatabaseSchema, Path apiManagerDatabaseSchema,
                                              Network network, boolean ownsNetwork) throws IOException {
         this.label = Objects.requireNonNull(label, "label");
-        this.cpZip = requireZip(cpZip, CP_ZIP_PROPERTY);
-        this.tmZip = requireZip(tmZip, TM_ZIP_PROPERTY);
-        this.gatewayZip = requireZip(gatewayZip, GATEWAY_ZIP_PROPERTY);
+        this.cpDefaults = requireFile(cpDefaults, "CP deployment.toml");
+        this.tmDefaults = requireFile(tmDefaults, "TM deployment.toml");
+        this.gatewayDefaults = requireFile(gatewayDefaults, "Gateway deployment.toml");
+        this.sharedDatabaseSchema = requireFile(sharedDatabaseSchema, "shared database schema");
+        this.apiManagerDatabaseSchema = requireFile(apiManagerDatabaseSchema, "API Manager database schema");
         this.network = Objects.requireNonNull(network, "network");
         this.ownsNetwork = ownsNetwork;
 
         this.mysql = new DistributedMySqlContainer(network)
                 .withSchema(DistributedMySqlContainer.SHARED_DATABASE,
-                        readZipEntry(cpZip, "dbscripts/mysql.sql"))
+                        Files.readString(this.sharedDatabaseSchema))
                 .withSchema(DistributedMySqlContainer.APIM_DATABASE,
-                        readZipEntry(cpZip, "dbscripts/apimgt/mysql.sql"));
+                        Files.readString(this.apiManagerDatabaseSchema));
     }
 
     /** Add a small overlay for one component; it is merged after the distributed base. */
@@ -350,9 +381,9 @@ public class DistributedDynamicApimContainer implements ApimRuntime {
     }
 
     private void createComponents() throws IOException {
-        String cpToml = buildToml(cpZip, DistributedApimTomlBuilder.Component.CP, "cp-base-overlay.toml");
-        String tmToml = buildToml(tmZip, DistributedApimTomlBuilder.Component.TM, "tm-base-overlay.toml");
-        String gatewayToml = buildToml(gatewayZip, DistributedApimTomlBuilder.Component.GATEWAY,
+        String cpToml = buildToml(cpDefaults, DistributedApimTomlBuilder.Component.CP, "cp-base-overlay.toml");
+        String tmToml = buildToml(tmDefaults, DistributedApimTomlBuilder.Component.TM, "tm-base-overlay.toml");
+        String gatewayToml = buildToml(gatewayDefaults, DistributedApimTomlBuilder.Component.GATEWAY,
                 "gateway-base-overlay.toml");
         cp = component(CP_IMAGE, "apim-cp", cpToml, 0, 9443, 9763, 5672);
         tm = component(TM_IMAGE, "apim-tm", tmToml, 0, 9443, 5672, 9611, 9711);
@@ -394,9 +425,9 @@ public class DistributedDynamicApimContainer implements ApimRuntime {
         }
     }
 
-    private String buildToml(Path zip, DistributedApimTomlBuilder.Component component, String resource)
+    private String buildToml(Path defaultsPath, DistributedApimTomlBuilder.Component component, String resource)
             throws IOException {
-        String defaults = readZipEntry(zip, "repository/conf/deployment.toml");
+        String defaults = Files.readString(defaultsPath);
         String baseOverlay;
         try (var input = getClass().getClassLoader().getResourceAsStream("distributed-apim/" + resource)) {
             if (input == null) {
@@ -406,22 +437,6 @@ public class DistributedDynamicApimContainer implements ApimRuntime {
         }
         return DistributedApimTomlBuilder.build(defaults, baseOverlay, null,
                 extraOverlays.get(component), new HashMap<>());
-    }
-
-    private static String readZipEntry(Path zip, String suffix) throws IOException {
-        try (ZipFile archive = new ZipFile(zip.toFile())) {
-            return archive.stream()
-                    .filter(entry -> !entry.isDirectory() && entry.getName().endsWith(suffix))
-                    .findFirst()
-                    .map(entry -> {
-                        try {
-                            return new String(archive.getInputStream(entry).readAllBytes(), StandardCharsets.UTF_8);
-                        } catch (IOException e) {
-                            throw new IllegalStateException("Unable to read ZIP entry " + suffix, e);
-                        }
-                    })
-                    .orElseThrow(() -> new IllegalStateException("ZIP entry not found: " + suffix));
-        }
     }
 
     private void copyToCp(String source, String target) {
@@ -467,17 +482,41 @@ public class DistributedDynamicApimContainer implements ApimRuntime {
         }
     }
 
-    private static Path requiredZip(String property) {
-        String value = System.getProperty(property);
-        if (value == null || value.isBlank()) {
-            throw new IllegalStateException("Set -D" + property + " to the built distributed component ZIP");
+    static Path defaultPath(String relativePath) {
+        String configuredDirectory = System.getProperty(DEFAULTS_DIRECTORY_PROPERTY);
+        if (configuredDirectory != null && !configuredDirectory.isBlank()) {
+            return Path.of(configuredDirectory).resolve(relativePath);
         }
-        return requireZip(Path.of(value), property);
+
+        Path[] starts = {
+                Path.of(System.getProperty("module.dir", ".")),
+                Path.of(System.getProperty("user.dir", "."))
+        };
+        for (Path start : starts) {
+            Path current = start.toAbsolutePath().normalize();
+            while (current != null) {
+                Path[] candidates = {
+                        current.resolve("tests-common/testcontainers/target").resolve(DEFAULTS_DIRECTORY),
+                        current.resolve("target").resolve(DEFAULTS_DIRECTORY)
+                };
+                for (Path candidate : candidates) {
+                    Path resolved = candidate.resolve(relativePath);
+                    if (Files.isRegularFile(resolved)) {
+                        return resolved;
+                    }
+                }
+                current = current.getParent();
+            }
+        }
+
+        return starts[0].toAbsolutePath().normalize()
+                .resolve("tests-common/testcontainers/target")
+                .resolve(DEFAULTS_DIRECTORY).resolve(relativePath);
     }
 
-    private static Path requireZip(Path path, String property) {
+    private static Path requireFile(Path path, String description) {
         if (path == null || !Files.isRegularFile(path)) {
-            throw new IllegalArgumentException("Distributed component ZIP for " + property
+            throw new IllegalArgumentException("Distributed image fixture " + description
                     + " does not exist: " + path);
         }
         return path;

@@ -11,8 +11,9 @@ images:
 The images are deliberately component-only. They do not contain the developer
 setup's full deployment TOML, a database, or a second backend service. The
 distributed composite creates a block-scoped MySQL container and generates the
-effective CP, TM, and Gateway TOMLs by merging each ZIP's product defaults with
-small topology overlays and any component-qualified test overlay.
+effective CP, TM, and Gateway TOMLs by merging defaults extracted from the
+component images with small topology overlays and any component-qualified test
+overlay.
 
 ## Inputs and prerequisites
 
@@ -45,24 +46,23 @@ From this directory, run:
 
 ```bash
 ./build-images.sh \
-  --cp-zip /path/to/wso2am-acp-4.7.0-SNAPSHOT.zip \
-  --tm-zip /path/to/wso2am-tm-4.7.0-SNAPSHOT.zip \
-  --gateway-zip /path/to/wso2am-universal-gw-4.7.0-SNAPSHOT.zip \
+  --cp-zip /path/to/wso2am-acp-<version>.zip \
+  --tm-zip /path/to/wso2am-tm-<version>.zip \
+  --gateway-zip /path/to/wso2am-universal-gw-<version>.zip \
   --connector /path/to/mysql-connector-j-8.4.0.jar
 ```
 
 The default output tags are:
 
 ```text
-distributed-apim-cp:4.7.0-SNAPSHOT
-distributed-apim-tm:4.7.0-SNAPSHOT
-distributed-apim-gateway:4.7.0-SNAPSHOT
+distributed-apim-cp:4.7.0-SNAPSHOT-jdk21
+distributed-apim-tm:4.7.0-SNAPSHOT-jdk21
+distributed-apim-gateway:4.7.0-SNAPSHOT-jdk21
 ```
 
-The script also accepts `--tag VERSION`. The current
-`DistributedDynamicApimContainer` uses the default `4.7.0-SNAPSHOT` image tags
-as constants, so a non-default tag is useful only when the runtime image names
-are updated or made configurable as part of a future change. Do not assume
+The script also accepts `--tag VERSION`. The Maven build passes the resolved
+image names to `DistributedDynamicApimContainer`; when using this standalone
+script, pass matching image names through the Maven properties. Do not assume
 that passing `--tag` alone changes the image used by the test suite.
 
 The build context is temporary and is removed after each image build. The
@@ -74,14 +74,12 @@ component through `start-component.sh`.
 ## Runtime wiring
 
 The images are consumed by `DistributedDynamicApimContainer`, normally
-selected by `DistributedLifecycleListener`. Supply the three component ZIPs
-to the test JVM when the container is constructed:
-
-```text
--Ddistributed.apim.cp.zip=/path/to/wso2am-acp-<version>.zip
--Ddistributed.apim.tm.zip=/path/to/wso2am-tm-<version>.zip
--Ddistributed.apim.gateway.zip=/path/to/wso2am-universal-gw-<version>.zip
-```
+selected by `DistributedLifecycleListener`. During Maven's
+`pre-integration-test` phase, the framework extracts each image's default
+`deployment.toml` and the CP database schemas into
+`target/distributed-apim/defaults`. Test execution reads those staged files;
+component ZIP paths are build-time inputs for image creation only and are not
+required by the test JVM.
 
 The composite owns and starts resources in this order:
 

@@ -8,12 +8,9 @@ import org.testng.Assert;
 import org.testng.SkipException;
 import org.testng.annotations.Test;
 
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
-import java.util.zip.ZipFile;
 
 /**
  * Focused CP/database integration probe. It is deliberately separate from the
@@ -22,28 +19,33 @@ import java.util.zip.ZipFile;
  */
 public class DistributedCpMySqlBootTest {
 
-    private static final String CP_IMAGE = "distributed-apim-cp:4.7.0-SNAPSHOT";
-    private static final String CP_ZIP_PROPERTY = "distributed.apim.cp.zip";
+    private static final String CP_IMAGE_PROPERTY = "distributed.apim.cp.image.name";
 
     @Test
     public void shouldBootControlPlaneAgainstProductMySqlSchemas() throws Exception {
-        Path cpZip = Path.of(System.getProperty(CP_ZIP_PROPERTY, ""));
-        if (!Files.isRegularFile(cpZip)) {
-            throw new SkipException("Distributed CP ZIP property is not configured");
+        if (!Boolean.getBoolean("distributed.apim.boot.probe")) {
+            throw new SkipException("Distributed CP/MySQL boot probe is opt-in");
         }
-        Assert.assertTrue(Files.isRegularFile(cpZip),
-                "Set -D" + CP_ZIP_PROPERTY + " to the built CP ZIP");
+        Path sharedSchemaPath = DistributedDynamicApimContainer.defaultPath("cp/mysql.sql");
+        Path apimSchemaPath = DistributedDynamicApimContainer.defaultPath("cp/apimgt-mysql.sql");
+        Path deploymentTomlPath = DistributedDynamicApimContainer.defaultPath("cp/deployment.toml");
+        Assert.assertTrue(Files.isRegularFile(sharedSchemaPath), "CP image shared schema is required");
+        Assert.assertTrue(Files.isRegularFile(apimSchemaPath), "CP image API Manager schema is required");
+        Assert.assertTrue(Files.isRegularFile(deploymentTomlPath), "CP image deployment.toml is required");
 
-        String sharedSchema = readZipEntry(cpZip, "dbscripts/mysql.sql");
-        String apimSchema = readZipEntry(cpZip, "dbscripts/apimgt/mysql.sql");
-        String deploymentToml = mysqlDeployment(readZipEntry(cpZip,
-                "repository/conf/deployment.toml"));
+        String sharedSchema = Files.readString(sharedSchemaPath);
+        String apimSchema = Files.readString(apimSchemaPath);
+        String deploymentToml = mysqlDeployment(Files.readString(deploymentTomlPath));
+
+        String cpImage = System.getProperty(CP_IMAGE_PROPERTY);
+        Assert.assertFalse(cpImage == null || cpImage.isBlank(),
+                "Set -D" + CP_IMAGE_PROPERTY + " from the CP product POM version");
 
         try (Network network = Network.newNetwork();
              DistributedMySqlContainer mysql = new DistributedMySqlContainer(network)
                      .withSchema(DistributedMySqlContainer.SHARED_DATABASE, sharedSchema)
                      .withSchema(DistributedMySqlContainer.APIM_DATABASE, apimSchema);
-             GenericContainer<?> cp = new GenericContainer<>(CP_IMAGE)
+             GenericContainer<?> cp = new GenericContainer<>(cpImage)
                      .withNetwork(network)
                      .withNetworkAliases("apim-cp")
                      .withExposedPorts(9443)
@@ -73,23 +75,6 @@ public class DistributedCpMySqlBootTest {
                     .getStdout().trim();
             Assert.assertTrue(Integer.parseInt(tableCount) > 0,
                     "The APIM schema contains no tables");
-        }
-    }
-
-    private static String readZipEntry(Path zip, String suffix) throws IOException {
-        try (ZipFile archive = new ZipFile(zip.toFile())) {
-            return archive.stream()
-                    .filter(entry -> !entry.isDirectory() && entry.getName().endsWith(suffix))
-                    .findFirst()
-                    .map(entry -> {
-                        try {
-                            return new String(archive.getInputStream(entry).readAllBytes(),
-                                    StandardCharsets.UTF_8);
-                        } catch (IOException e) {
-                            throw new IllegalStateException("Unable to read " + suffix, e);
-                        }
-                    })
-                    .orElseThrow(() -> new IllegalStateException("ZIP entry not found: " + suffix));
         }
     }
 

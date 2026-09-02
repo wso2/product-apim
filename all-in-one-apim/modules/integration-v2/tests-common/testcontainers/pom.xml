@@ -40,7 +40,6 @@
         <!-- Distributed APIM image inputs. These component ZIPs are produced by the repository-root reactor
              before the all-in-one-apim reactor reaches this module. -->
         <mysql.connector.version>8.4.0</mysql.connector.version>
-        <distributed.apim.image.tag>4.7.0-SNAPSHOT</distributed.apim.image.tag>
         <distributed.apim.build.directory>${project.build.directory}/distributed-apim</distributed.apim.build.directory>
         <distributed.apim.cp.zip>${project.basedir}/../../../../../api-control-plane/modules/distribution/product/target/wso2am-acp-${project.version}.zip</distributed.apim.cp.zip>
         <distributed.apim.tm.zip>${project.basedir}/../../../../../traffic-manager/modules/distribution/product/target/wso2am-tm-${project.version}.zip</distributed.apim.tm.zip>
@@ -51,12 +50,10 @@
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
-            <version>${jackson.databind.version}</version>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.dataformat</groupId>
             <artifactId>jackson-dataformat-toml</artifactId>
-            <version>${jackson.dataformat.toml.version}</version>
         </dependency>
         <dependency>
             <groupId>org.wso2.am</groupId>
@@ -249,12 +246,11 @@
                             </arguments>
                         </configuration>
                     </execution>
-                    <!-- Build the three distributed component images in the same Maven lifecycle as the
-                         all-in-one image. The script owns the per-component Docker context details; Maven owns
-                         the inputs, ordering, and reproducible connector resolution. This execution is reached
-                         by the repository-root reactor after ACP, TM, and Gateway have produced their ZIPs. -->
+                    <!-- Build the three distributed component images directly through Maven, just like the
+                         all-in-one image. Each execution creates an isolated Docker context containing the
+                         component ZIP and Maven-resolved MySQL connector, then removes that temporary context. -->
                     <execution>
-                        <id>build-distributed-apim-docker-images</id>
+                        <id>build-distributed-apim-cp-docker-image</id>
                         <phase>pre-integration-test</phase>
                         <goals>
                             <goal>exec</goal>
@@ -262,17 +258,52 @@
                         <configuration>
                             <executable>bash</executable>
                             <arguments>
-                                <argument>${project.basedir}/src/main/resources/distributed-apim/build-images.sh</argument>
-                                <argument>--cp-zip</argument>
-                                <argument>${distributed.apim.cp.zip}</argument>
-                                <argument>--tm-zip</argument>
-                                <argument>${distributed.apim.tm.zip}</argument>
-                                <argument>--gateway-zip</argument>
-                                <argument>${distributed.apim.gateway.zip}</argument>
-                                <argument>--connector</argument>
-                                <argument>${distributed.apim.build.directory}/mysql-connector-j.jar</argument>
-                                <argument>--tag</argument>
-                                <argument>${distributed.apim.image.tag}</argument>
+                                <argument>-c</argument>
+                                <argument>set -euo pipefail; work_dir=$(mktemp -d); trap 'rm -rf "$work_dir"' EXIT; mkdir "$work_dir/cp"; cp "${project.basedir}/src/main/resources/distributed-apim/Dockerfile" "$work_dir/cp/Dockerfile"; cp "${project.basedir}/src/main/resources/distributed-apim/start-component.sh" "$work_dir/cp/start-component.sh"; cp "${distributed.apim.cp.zip}" "$work_dir/cp/component.zip"; cp "${distributed.apim.build.directory}/mysql-connector-j.jar" "$work_dir/cp/mysql-connector-j.jar"; docker build --build-arg START_SCRIPT=api-cp.sh -t ${distributed.apim.cp.image.name} "$work_dir/cp"</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>build-distributed-apim-tm-docker-image</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>bash</executable>
+                            <arguments>
+                                <argument>-c</argument>
+                                <argument>set -euo pipefail; work_dir=$(mktemp -d); trap 'rm -rf "$work_dir"' EXIT; mkdir "$work_dir/tm"; cp "${project.basedir}/src/main/resources/distributed-apim/Dockerfile" "$work_dir/tm/Dockerfile"; cp "${project.basedir}/src/main/resources/distributed-apim/start-component.sh" "$work_dir/tm/start-component.sh"; cp "${distributed.apim.tm.zip}" "$work_dir/tm/component.zip"; cp "${distributed.apim.build.directory}/mysql-connector-j.jar" "$work_dir/tm/mysql-connector-j.jar"; docker build --build-arg START_SCRIPT=traffic-manager.sh -t ${distributed.apim.tm.image.name} "$work_dir/tm"</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>build-distributed-apim-gateway-docker-image</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>bash</executable>
+                            <arguments>
+                                <argument>-c</argument>
+                                <argument>set -euo pipefail; work_dir=$(mktemp -d); trap 'rm -rf "$work_dir"' EXIT; mkdir "$work_dir/gateway"; cp "${project.basedir}/src/main/resources/distributed-apim/Dockerfile" "$work_dir/gateway/Dockerfile"; cp "${project.basedir}/src/main/resources/distributed-apim/start-component.sh" "$work_dir/gateway/start-component.sh"; cp "${distributed.apim.gateway.zip}" "$work_dir/gateway/component.zip"; cp "${distributed.apim.build.directory}/mysql-connector-j.jar" "$work_dir/gateway/mysql-connector-j.jar"; docker build --build-arg START_SCRIPT=gateway.sh -t ${distributed.apim.gateway.image.name} "$work_dir/gateway"</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                    <!-- Extract runtime defaults from the images, matching the all-in-one image-based fixture
+                         preparation. ZIPs are build inputs only; test execution consumes this staging directory. -->
+                    <execution>
+                        <id>extract-distributed-apim-image-defaults</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>bash</executable>
+                            <arguments>
+                                <argument>-c</argument>
+                                <argument>set -euo pipefail; staging="${project.build.directory}/distributed-apim/defaults"; rm -rf "$staging"; mkdir -p "$staging/cp" "$staging/tm" "$staging/gateway"; cids=(); cleanup() { for cid in "${cids[@]:-}"; do docker rm "$cid" &gt; /dev/null 2&gt;&amp;1 || true; done; }; trap cleanup EXIT; cp_cid=$(docker create ${distributed.apim.cp.image.name}); cids+=("$cp_cid"); tm_cid=$(docker create ${distributed.apim.tm.image.name}); cids+=("$tm_cid"); gateway_cid=$(docker create ${distributed.apim.gateway.image.name}); cids+=("$gateway_cid"); docker cp "$cp_cid":/opt/wso2/repository/conf/deployment.toml "$staging/cp/deployment.toml"; docker cp "$tm_cid":/opt/wso2/repository/conf/deployment.toml "$staging/tm/deployment.toml"; docker cp "$gateway_cid":/opt/wso2/repository/conf/deployment.toml "$staging/gateway/deployment.toml"; docker cp "$cp_cid":/opt/wso2/dbscripts/mysql.sql "$staging/cp/mysql.sql"; docker cp "$cp_cid":/opt/wso2/dbscripts/apimgt/mysql.sql "$staging/cp/apimgt-mysql.sql"</argument>
                             </arguments>
                         </configuration>
                     </execution>
