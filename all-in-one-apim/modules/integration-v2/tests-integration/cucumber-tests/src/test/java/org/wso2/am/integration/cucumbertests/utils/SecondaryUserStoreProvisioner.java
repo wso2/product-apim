@@ -19,7 +19,7 @@ package org.wso2.am.integration.cucumbertests.utils;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.wso2.am.testcontainers.DynamicApimContainer;
+import org.wso2.am.testcontainers.ApimRuntime;
 
 /**
  * Framework facility that stands up a JDBC secondary user store ({@code SECONDARY.COM}) entirely at RUNTIME —
@@ -87,7 +87,7 @@ public final class SecondaryUserStoreProvisioner {
      * @param container     the block's running container (for the in-container schema RunScript)
      * @param tenantDomains tenants to register the store into (e.g. {@code carbon.super}, {@code tenant1.com})
      */
-    public static void provision(DynamicApimContainer container, String... tenantDomains) throws Exception {
+    public static void provision(ApimRuntime container, String... tenantDomains) throws Exception {
         container.createSecondaryUserStoreH2Schema(DB_RELATIVE_PATH);
         for (String tenant : tenantDomains) {
             TenantUserProvisioner.addSecondaryUserStore(tenant, SECONDARY_DOMAIN, JDBC_URL);

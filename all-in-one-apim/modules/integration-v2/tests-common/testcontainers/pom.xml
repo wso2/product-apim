@@ -37,9 +37,27 @@
         <!-- JaCoCo for the (opt-in) integration-coverage collector: agent jar to inject into the server
              container, core (tcp dump + analysis) and report (HTML/XML) to render coverage in-process. -->
         <jacoco.version>0.8.12</jacoco.version>
+        <!-- Distributed APIM image inputs. These component ZIPs are produced by the repository-root reactor
+             before the all-in-one-apim reactor reaches this module. -->
+        <mysql.connector.version>8.4.0</mysql.connector.version>
+        <distributed.apim.image.tag>4.7.0-SNAPSHOT</distributed.apim.image.tag>
+        <distributed.apim.build.directory>${project.build.directory}/distributed-apim</distributed.apim.build.directory>
+        <distributed.apim.cp.zip>${project.basedir}/../../../../../api-control-plane/modules/distribution/product/target/wso2am-acp-${project.version}.zip</distributed.apim.cp.zip>
+        <distributed.apim.tm.zip>${project.basedir}/../../../../../traffic-manager/modules/distribution/product/target/wso2am-tm-${project.version}.zip</distributed.apim.tm.zip>
+        <distributed.apim.gateway.zip>${project.basedir}/../../../../../gateway/modules/distribution/product/target/wso2am-universal-gw-${project.version}.zip</distributed.apim.gateway.zip>
     </properties>
 
     <dependencies>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>${jackson.databind.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.dataformat</groupId>
+            <artifactId>jackson-dataformat-toml</artifactId>
+            <version>${jackson.dataformat.toml.version}</version>
+        </dependency>
         <dependency>
             <groupId>org.wso2.am</groupId>
             <artifactId>integration-test-utils</artifactId>
@@ -67,10 +85,43 @@
             <version>${jacoco.version}</version>
             <scope>compile</scope>
         </dependency>
+        <dependency>
+            <groupId>org.testng</groupId>
+            <artifactId>testng</artifactId>
+            <version>${testng.version}</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
         <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <version>3.6.1</version>
+                <executions>
+                    <!-- Resolve the connector through Maven rather than requiring a manually downloaded JAR.
+                         The distributed image builder copies this generated file into each component image. -->
+                    <execution>
+                        <id>copy-distributed-mysql-connector</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>copy</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>com.mysql</groupId>
+                                    <artifactId>mysql-connector-j</artifactId>
+                                    <version>${mysql.connector.version}</version>
+                                    <outputDirectory>${distributed.apim.build.directory}</outputDirectory>
+                                    <destFileName>mysql-connector-j.jar</destFileName>
+                                </artifactItem>
+                            </artifactItems>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
@@ -198,6 +249,33 @@
                             </arguments>
                         </configuration>
                     </execution>
+                    <!-- Build the three distributed component images in the same Maven lifecycle as the
+                         all-in-one image. The script owns the per-component Docker context details; Maven owns
+                         the inputs, ordering, and reproducible connector resolution. This execution is reached
+                         by the repository-root reactor after ACP, TM, and Gateway have produced their ZIPs. -->
+                    <execution>
+                        <id>build-distributed-apim-docker-images</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>bash</executable>
+                            <arguments>
+                                <argument>${project.basedir}/src/main/resources/distributed-apim/build-images.sh</argument>
+                                <argument>--cp-zip</argument>
+                                <argument>${distributed.apim.cp.zip}</argument>
+                                <argument>--tm-zip</argument>
+                                <argument>${distributed.apim.tm.zip}</argument>
+                                <argument>--gateway-zip</argument>
+                                <argument>${distributed.apim.gateway.zip}</argument>
+                                <argument>--connector</argument>
+                                <argument>${distributed.apim.build.directory}/mysql-connector-j.jar</argument>
+                                <argument>--tag</argument>
+                                <argument>${distributed.apim.image.tag}</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
                     <!-- External Key Manager (WSO2 IS 7.x) support. -->
                     <!-- Pull the IS image up front (idempotent) so the container start doesn't stall on a first-use pull. -->
                     <execution>
@@ -214,7 +292,37 @@
                             </arguments>
                         </configuration>
                     </execution>
-                    <!-- Extract the IS image's OWN default deployment.toml to target/is7 so IdentityServerContainer
+                    <!-- API Platform Gateway support: pull BOTH gateway images up front (idempotent) so the
+                         DynamicPlatformGatewayContainer compose start doesn't stall on a first-use pull. -->
+                    <execution>
+                        <id>pull-pg-controller-docker-image</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>docker</executable>
+                            <arguments>
+                                <argument>pull</argument>
+                                <argument>${pg.gateway.controller.image.name}</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>pull-pg-runtime-docker-image</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>docker</executable>
+                            <arguments>
+                                <argument>pull</argument>
+                                <argument>${pg.gateway.runtime.image.name}</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                    <!-- Extract the IS image's OWN default deployment.toml to target/is7 so DynamicISContainer
                          can deep-merge the small is7/deployment-overlay.toml onto it (base+overlay pattern) instead
                          of shipping a full-file config. Runs after pull-is-docker-image (declaration order). -->
                     <execution>

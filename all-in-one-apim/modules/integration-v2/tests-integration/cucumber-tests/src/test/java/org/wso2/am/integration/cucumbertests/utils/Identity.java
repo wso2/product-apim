@@ -127,6 +127,17 @@ public final class Identity {
         return tenantOf(actingActor()).getTenantAdmin();
     }
 
+    /**
+     * Resolves credentials for the Gateway management artifact API.
+     *
+     * This is an SRE/controller-plane operation, so it uses the local Carbon super-tenant administrator in both
+     * all-in-one and distributed topologies. The target tenant is selected independently by the tenant-domain
+     * query parameter on the artifact request; super-tenant credentials do not change that target context.
+     */
+    public static User gatewayManagementAdmin() {
+        return resolveActor(null);
+    }
+
     public static String dcrCredentialsKey(User actor) {
         return qualify("dcrCredentials", actor);
     }

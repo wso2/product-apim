@@ -1059,7 +1059,7 @@ Feature: Gateway Security Enforcement
     And I put the response payload in context as "epoPayload"
     When I put the following JSON payload in context as "epoNewEndpoint"
     """
-    {"endpoint_type":"http","production_endpoints":{"url":"http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/"},"sandbox_endpoints":{"url":"http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/"},"endpoint_security":{"production":{"enabled":true,"type":"OAUTH","grantType":"CLIENT_CREDENTIALS","tokenUrl":"https://localhost:9443/oauth2/token","clientId":"{{epoProdBeClientId}}","clientSecret":"{{epoProdBeClientSecret}}","customParameters":{}},"sandbox":{"enabled":true,"type":"OAUTH","grantType":"CLIENT_CREDENTIALS","tokenUrl":"https://localhost:9443/oauth2/token","clientId":"{{epoSandBeClientId}}","clientSecret":"{{epoSandBeClientSecret}}","customParameters":{}}}}
+    {"endpoint_type":"http","production_endpoints":{"url":"http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/"},"sandbox_endpoints":{"url":"http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/"},"endpoint_security":{"production":{"enabled":true,"type":"OAUTH","grantType":"CLIENT_CREDENTIALS","tokenUrl":"{{backendOAuthTokenUrl}}","clientId":"{{epoProdBeClientId}}","clientSecret":"{{epoProdBeClientSecret}}","customParameters":{}},"sandbox":{"enabled":true,"type":"OAUTH","grantType":"CLIENT_CREDENTIALS","tokenUrl":"{{backendOAuthTokenUrl}}","clientId":"{{epoSandBeClientId}}","clientSecret":"{{epoSandBeClientSecret}}","customParameters":{}}}}
     """
     When I update the "apis" resource "epoApiId" and "epoPayload" with configuration type "endpointConfig" and value:
     """
@@ -1074,7 +1074,7 @@ Feature: Gateway Security Enforcement
     And The value of response field "endpointConfig.endpoint_security.sandbox.clientSecret" should be ""
     And The value of response field "endpointConfig.endpoint_security.production.type" should be "OAUTH"
     And The value of response field "endpointConfig.endpoint_security.production.grantType" should be "CLIENT_CREDENTIALS"
-    And The value of response field "endpointConfig.endpoint_security.production.tokenUrl" should be "https://localhost:9443/oauth2/token"
+    And The value of response field "endpointConfig.endpoint_security.production.tokenUrl" should be "{{backendOAuthTokenUrl}}"
     And The value of response field "endpointConfig.endpoint_security.production.clientId" should be "{{epoProdBeClientId}}"
     And The value of response field "endpointConfig.endpoint_security.sandbox.type" should be "OAUTH"
     And The value of response field "endpointConfig.endpoint_security.sandbox.grantType" should be "CLIENT_CREDENTIALS"
@@ -1179,7 +1179,7 @@ Feature: Gateway Security Enforcement
     And I put the response payload in context as "eppPayload"
     When I put the following JSON payload in context as "eppNewEndpoint"
     """
-    {"endpoint_type":"http","production_endpoints":{"url":"http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/"},"sandbox_endpoints":{"url":"http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/"},"endpoint_security":{"production":{"enabled":true,"type":"OAUTH","grantType":"PASSWORD","username":"{{eppRoUser}}","password":"{{eppRoPass}}","tokenUrl":"https://localhost:9443/oauth2/token","clientId":"{{eppProdBeClientId}}","clientSecret":"{{eppProdBeClientSecret}}","customParameters":{}},"sandbox":{"enabled":true,"type":"OAUTH","grantType":"PASSWORD","username":"{{eppRoUser}}","password":"{{eppRoPass}}","tokenUrl":"https://localhost:9443/oauth2/token","clientId":"{{eppSandBeClientId}}","clientSecret":"{{eppSandBeClientSecret}}","customParameters":{}}}}
+    {"endpoint_type":"http","production_endpoints":{"url":"http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/"},"sandbox_endpoints":{"url":"http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/"},"endpoint_security":{"production":{"enabled":true,"type":"OAUTH","grantType":"PASSWORD","username":"{{eppRoUser}}","password":"{{eppRoPass}}","tokenUrl":"{{backendOAuthTokenUrl}}","clientId":"{{eppProdBeClientId}}","clientSecret":"{{eppProdBeClientSecret}}","customParameters":{}},"sandbox":{"enabled":true,"type":"OAUTH","grantType":"PASSWORD","username":"{{eppRoUser}}","password":"{{eppRoPass}}","tokenUrl":"{{backendOAuthTokenUrl}}","clientId":"{{eppSandBeClientId}}","clientSecret":"{{eppSandBeClientSecret}}","customParameters":{}}}}
     """
     When I update the "apis" resource "eppApiId" and "eppPayload" with configuration type "endpointConfig" and value:
     """
@@ -1199,7 +1199,7 @@ Feature: Gateway Security Enforcement
     And The value of response field "endpointConfig.endpoint_security.sandbox.clientSecret" should be ""
     Then The value of response field "endpointConfig.endpoint_security.production.type" should be "OAUTH"
     And The value of response field "endpointConfig.endpoint_security.production.grantType" should be "PASSWORD"
-    And The value of response field "endpointConfig.endpoint_security.production.tokenUrl" should be "https://localhost:9443/oauth2/token"
+    And The value of response field "endpointConfig.endpoint_security.production.tokenUrl" should be "{{backendOAuthTokenUrl}}"
     And The value of response field "endpointConfig.endpoint_security.production.clientId" should be "{{eppProdBeClientId}}"
     And The value of response field "endpointConfig.endpoint_security.production.username" should be "{{eppRoUser}}"
     And The value of response field "endpointConfig.endpoint_security.sandbox.type" should be "OAUTH"

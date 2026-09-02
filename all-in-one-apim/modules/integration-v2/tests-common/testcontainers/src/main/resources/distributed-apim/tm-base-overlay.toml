@@ -1,0 +1,24 @@
+# Distributed TM delta from the product ZIP default. Runtime values are final.
+[server]
+hostname = "apim-tm"
+
+[database.apim_db]
+type = "mysql"
+url = "jdbc:mysql://mysql:3306/WSO2AM_DB?autoReconnect=true&amp;allowPublicKeyRetrieval=true&amp;useSSL=false"
+username = "wso2carbon"
+password = "wso2carbon"
+driver = "com.mysql.cj.jdbc.Driver"
+
+[database.shared_db]
+type = "mysql"
+url = "jdbc:mysql://mysql:3306/WSO2AM_SHARED_DB?autoReconnect=true&amp;allowPublicKeyRetrieval=true&amp;useSSL=false"
+username = "wso2carbon"
+password = "wso2carbon"
+driver = "com.mysql.cj.jdbc.Driver"
+
+[apim.event_hub]
+enable = true
+username = "$ref{super_admin.username}"
+password = "$ref{super_admin.password}"
+service_url = "https://apim-cp:9443/services/"
+event_listening_endpoints = ["tcp://apim-cp:5672"]

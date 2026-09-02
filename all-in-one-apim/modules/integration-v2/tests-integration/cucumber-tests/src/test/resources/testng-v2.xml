@@ -909,4 +909,35 @@
             <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayWebSocketProxySpecificOverCatchAllRunner"/>
         </classes>
     </test>
+    <!-- External-IdP console SSO: the publisher/admin/devportal consoles are federated through the external IS. -->
+    <test name="IntegrationV2-ExternalIdpConsoleSso" parallel="classes" thread-count="1">
+        <parameter name="blockLabel" value="external-idp-sso"/>
+        <parameter name="initTenantUsers" value="true"/>
+        <parameter name="initBackend" value="true"/>
+        <parameter name="bootExternalIdentityServer" value="true"/>
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.ExternalIdpConsoleSsoRunner"/>
+        </classes>
+    </test>
+    <!-- Multi-tenant broker SSO uses an isolated tenant-sync overlay and notification receiver. -->
+    <test name="IntegrationV2-MultiTenantSso" parallel="classes" thread-count="1">
+        <parameter name="blockLabel" value="mt-sso"/>
+        <parameter name="bootExternalIdentityServer" value="true"/>
+        <parameter name="initBackend" value="true"/>
+        <parameter name="receiveExternalIsNotifications" value="true"/>
+        <parameter name="isTomlExtraOverlayPath" value="src/test/resources/artifacts/configFiles/multiTenantSso/is-tenant-sync-overlay.toml"/>
+        <parameter name="tomlExtraOverlayPath" value="src/test/resources/artifacts/configFiles/multiTenantSso/deployment.toml"/>
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.MultiTenantSsoRunner"/>
+        </classes>
+    </test>
+    <test name="IntegrationV2-PlatformGateway" parallel="classes" thread-count="1">
+        <parameter name="blockLabel" value="platform-gateway"/>
+        <parameter name="initTenantUsers" value="true"/>
+        <parameter name="initBackend" value="true"/>
+        <parameter name="bootPlatformGateway" value="true"/>
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.PlatformGatewayRunner"/>
+        </classes>
+    </test>
 </suite>

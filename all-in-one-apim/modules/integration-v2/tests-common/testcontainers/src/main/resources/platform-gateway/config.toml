@@ -1,0 +1,51 @@
+# Platform-gateway controller + policy-engine config for the integration-v2 harness (adapted from the
+# wso2apip-api-gateway distribution's configs/config.toml). Values are env-overridable via APIP_GW_* so
+# DynamicPlatformGatewayContainer injects the control-plane connection at runtime. Only difference from the
+# shipped default: analytics defaults OFF (no external Moesif publish from tests).
+[analytics]
+enabled = '{{ env "APIP_GW_ANALYTICS_ENABLED" "false" }}'
+enabled_publishers = ["moesif"]
+
+[analytics.publishers.moesif]
+application_id = '{{ env "APIP_GW_ANALYTICS_PUBLISHERS_MOESIF_APPLICATION_ID" "<your-moesif-application-id>" }}'
+
+[router]
+gateway_host = "*"
+
+[router.access_logs]
+enabled = true
+
+[controller.server]
+gateway_id = '{{ env "APIP_GW_CONTROLLER_SERVER_GATEWAY_ID" "platform-gateway-id" }}'
+
+[controller.storage]
+type = '{{ env "APIP_GW_CONTROLLER_STORAGE_TYPE" "sqlite" }}'
+
+[controller.storage.sqlite]
+path = '{{ env "APIP_GW_CONTROLLER_STORAGE_SQLITE_PATH" "./data/gateway.db" }}'
+
+[policy_engine.logging]
+level = "info"
+
+[controller.logging]
+level = '{{ env "APIP_GW_CONTROLLER_LOGGING_LEVEL" "info" }}'
+
+[controller.controlplane]
+host = '{{ env "APIP_GW_CONTROLLER_CONTROLPLANE_HOST" "" }}'
+token = '{{ env "APIP_GW_CONTROLLER_CONTROLPLANE_TOKEN" "" }}'
+insecure_skip_verify = '{{ env "APIP_GW_CONTROLLER_CONTROLPLANE_INSECURE_SKIP_VERIFY" "true" }}'
+gateway_name = '{{ env "APIP_GW_CONTROLLER_CONTROLPLANE_GATEWAY_NAME" "default" }}'
+apim_oauth2_client_id = '{{ env "APIP_GW_CONTROLLER_CONTROLPLANE_APIM_OAUTH2_CLIENT_ID" "" }}'
+apim_oauth2_client_secret = '{{ env "APIP_GW_CONTROLLER_CONTROLPLANE_APIM_OAUTH2_CLIENT_SECRET" "" }}'
+
+[controller.policies]
+definitions_path = '{{ env "APIP_GW_CONTROLLER_POLICIES_DEFINITIONS_PATH" "./default-policies" }}'
+
+[controller.auth.basic]
+enabled = true
+
+[[controller.auth.basic.users]]
+username        = '{{ env "APIP_GW_CONTROLLER_AUTH_BASIC_ADMIN_USERNAME" "" }}'
+password        = '{{ env "APIP_GW_CONTROLLER_AUTH_BASIC_ADMIN_PASSWORD_HASH" "" }}'
+password_hashed = true
+roles           = ["admin"]

@@ -149,7 +149,7 @@ public final class TokenExchangeProvisioner {
 
     /** IS's advertised token issuer (the subject token's {@code iss}) on the shared network. */
     public static String isTokenIssuer() {
-        return "https://" + org.wso2.am.testcontainers.IdentityServerContainer.NETWORK_ALIAS + ":9443/oauth2/token";
+        return "https://" + org.wso2.am.testcontainers.DynamicISContainer.NETWORK_ALIAS + ":9443/oauth2/token";
     }
 
     /**
@@ -226,7 +226,7 @@ public final class TokenExchangeProvisioner {
             throws IOException {
         String body = idpProperty(IDP_ISSUER_NAME, isTokenIssuer())
                 + idpProperty(JWKS_URI, "https://"
-                        + org.wso2.am.testcontainers.IdentityServerContainer.NETWORK_ALIAS + ":9443/oauth2/jwks");
+                        + org.wso2.am.testcontainers.DynamicISContainer.NETWORK_ALIAS + ":9443/oauth2/jwks");
         addOrReplaceIdp(scope, idpName, isAppClientId, body);
     }
 

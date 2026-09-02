@@ -38,6 +38,7 @@ import org.wso2.am.integration.cucumbertests.utils.ServerReadiness;
 import org.wso2.am.integration.cucumbertests.utils.TestContext;
 import org.wso2.am.integration.test.utils.Constants;
 import org.wso2.am.integration.cucumbertests.utils.Utils;
+import org.wso2.am.testcontainers.DistributedDynamicApimContainer;
 import org.wso2.am.integration.cucumbertests.utils.clients.SimpleHTTPClient;
 import org.wso2.carbon.automation.engine.context.beans.User;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
@@ -440,6 +441,12 @@ public class BaseSteps {
         TestContext.set(Utils.normalizeContextKey(contextKey), resolvedValue.toString());
     }
 
+    /** Stores a literal Examples-table value for subsequent payload placeholder expansion. */
+    @When("I put literal value {string} in context as {string}")
+    public void iPutLiteralValueInContextAs(String value, String contextKey) {
+        TestContext.set(Utils.normalizeContextKey(contextKey), Utils.resolveContextPlaceholders(value));
+    }
+
     /**
      * Decodes the JWT stored under a context key (a {@code header.payload.signature} token) and asserts its
      * payload segment contains the expected substring. Used to verify token claims such as the internal API
@@ -477,7 +484,8 @@ public class BaseSteps {
                 throw new FileNotFoundException("File not found on classpath: " + jsonFilePath);
             }
             String jsonPayload = IOUtils.toString(inputStream, StandardCharsets.UTF_8);
-            TestContext.set(Utils.normalizeContextKey(key), Utils.resolvePayloadPlaceholders(jsonPayload));
+            TestContext.set(Utils.normalizeContextKey(key),
+                    Utils.resolveContextPlaceholders(Utils.resolvePayloadPlaceholders(jsonPayload)));
         }
     }
 
@@ -1635,7 +1643,10 @@ public class BaseSteps {
     @Then("I wait for the APIM server to be ready")
     public void waitForAPIMServerToBeReady() {
 
-        boolean isServerReady = ServerReadiness.awaitReady(getBaseUrl());
+        boolean distributed = TestContext.get("blockApimContainer") instanceof DistributedDynamicApimContainer;
+        boolean isServerReady = distributed
+                ? ServerReadiness.awaitHttpEndpoint(getBaseUrl() + "carbon/admin/login.jsp")
+                : ServerReadiness.awaitReady(getBaseUrl());
         // Report the window awaitReady ACTUALLY used (its no-arg overload passes SERVER_STARTUP_WAIT_TIME);
         // quoting the propagation timeout here understated the real wait and misled triage.
         Assert.assertTrue(isServerReady, "APIM server is not ready even after waiting for "
@@ -1669,15 +1680,17 @@ public class BaseSteps {
         // The deployed-revisions list is the publisher-plane distinguishing state — it flips as soon as the
         // revision is deployed, so it is available to the same actor that owns the API.
         String apiId = Utils.extractValueFromPayload(actualApiDetailsPayload, "id").toString();
-        // Use the tenant ADMIN (not the acting actor) — the gateway-artifact admin endpoint requires admin
-        // credentials, which a least-privilege publisher actor does not have.
+        // Use the Carbon super-tenant admin (not the acting actor) — the gateway-artifact controller endpoint is an
+        // SRE/admin operation. The target tenant remains selected by tenantDomain below.
         User tenantAdmin = Identity.actingTenantAdmin();
+        User gatewayManagementAdmin = Identity.gatewayManagementAdmin();
         String tenantDomain = tenantAdmin.getUserDomain();
 
         String artifactUrl = Utils.getAPIArtifactDeployedInGatewayURL(getBaseUrl(), apiName, apiVersion, tenantDomain);
 
         String encodedCredentials = Base64.getEncoder().encodeToString(
-                (tenantAdmin.getUserName() + ':' + tenantAdmin.getPassword()).getBytes(StandardCharsets.UTF_8));
+                (gatewayManagementAdmin.getUserName() + ':' + gatewayManagementAdmin.getPassword())
+                        .getBytes(StandardCharsets.UTF_8));
         Map<String, String> artifactHeaders = new HashMap<>();
         artifactHeaders.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Basic " + encodedCredentials);
 

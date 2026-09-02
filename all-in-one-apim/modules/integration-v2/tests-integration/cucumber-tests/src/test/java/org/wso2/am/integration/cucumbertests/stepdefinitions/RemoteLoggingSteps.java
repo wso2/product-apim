@@ -30,7 +30,7 @@ import org.wso2.am.integration.cucumbertests.utils.Requests;
 import org.wso2.am.integration.cucumbertests.utils.TestContext;
 import org.wso2.am.integration.cucumbertests.utils.Utils;
 import org.wso2.am.integration.test.utils.Constants;
-import org.wso2.am.testcontainers.DynamicApimContainer;
+import org.wso2.am.testcontainers.ApimRuntime;
 import org.wso2.carbon.automation.engine.context.beans.User;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
@@ -108,12 +108,12 @@ public class RemoteLoggingSteps {
         return TestContext.get("baseUrl").toString();
     }
 
-    private DynamicApimContainer container() {
+    private ApimRuntime container() {
         Object c = TestContext.get("blockApimContainer");
-        if (!(c instanceof DynamicApimContainer)) {
+        if (!(c instanceof ApimRuntime)) {
             throw new IllegalStateException("Block APIM container is not available in the test context");
         }
-        return (DynamicApimContainer) c;
+        return (ApimRuntime) c;
     }
 
     /** Enables remote logging for a log type (AUDIT/CARBON/API) by pointing its appender at {@code url}. */
