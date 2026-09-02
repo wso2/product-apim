@@ -53,11 +53,21 @@
 </class>
         #end
         #if($endpoint.authenticationType == "gcp" || $endpoint.authenticationType == "GCP")
-<class name="org.wso2.carbon.apimgt.gateway.mediators.GCPOAuth2TokenInjector">
-    <property name="serviceAccountKey" value="$util.escapeXml($endpoint.serviceAccountKey)" type="STRING"/>
+        ## The GCP service-account key is delivered as ordered base64 chunks that the mediator reassembles.
+        ## Secure-vault mode: resolve each chunk from the vault. Normal mode: each chunk is a literal value.
+        #if($endpoint.serviceAccountKeyChunkAliases && $endpoint.serviceAccountKeyChunkAliases.size() > 0)
+        #foreach($alias in $endpoint.serviceAccountKeyChunkAliases)
+<property name="_gcp_sak_chunk_$foreach.index" expression="wso2:vault-lookup('$alias')" scope="default" type="STRING"/>
+        #end
+        #elseif($endpoint.serviceAccountKeyChunks && $endpoint.serviceAccountKeyChunks.size() > 0)
+        #foreach($chunk in $endpoint.serviceAccountKeyChunks)
+<property name="_gcp_sak_chunk_$foreach.index" value="$chunk" scope="default" type="STRING"/>
+        #end
+        #end
+<class name="org.wso2.carbon.apimgt.gateway.mediators.GCPOAuth2Mediator">
+    <property name="serviceAccountKeyChunkPrefix" value="_gcp_sak_chunk_" type="STRING"/>
+    <property name="serviceAccountKeyChunkCount" value="$endpoint.serviceAccountKeyChunkCount" type="STRING"/>
 </class>
-<!-- Vertex AI rejects chunked request bodies; force a Content-Length header on the outbound call. -->
-<property name="DISABLE_CHUNKING" value="true" scope="axis2"/>
         #end
         #if( $endpoint.authenticationType == "APIKEY" || $endpoint.authenticationType == "apikey")
 <class name="org.wso2.carbon.apimgt.gateway.mediators.ApiKeyMediator">
