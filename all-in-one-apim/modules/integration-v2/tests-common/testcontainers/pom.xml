@@ -162,6 +162,22 @@
                         </configuration>
                     </execution>
                     <execution>
+                        <id>build-squid-proxy-docker-image</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>docker</executable>
+                            <arguments>
+                                <argument>build</argument>
+                                <argument>-t</argument>
+                                <argument>${squid.docker.image.name}</argument>
+                                <argument>${project.basedir}/src/main/resources/squid-proxy</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                    <execution>
                         <id>build-apim-docker-image</id>
                         <phase>pre-integration-test</phase>
                         <goals>

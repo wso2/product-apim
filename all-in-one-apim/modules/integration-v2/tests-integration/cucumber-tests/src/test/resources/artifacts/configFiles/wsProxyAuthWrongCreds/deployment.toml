@@ -1,0 +1,17 @@
+# Extra overlay for the IntegrationV2-WsProxyAuthWrongCreds block.
+#
+# Tests that the gateway is rejected by the authenticated Squid proxy when the proxy profile
+# carries incorrect credentials. The profile matches "nodebackend" and points at squid-proxy:3129
+# (the Basic-auth Squid instance), but the username/password are intentionally wrong.
+#
+# APIM's WS proxy client fails before sending CONNECT to Squid when the credentials are wrong,
+# so both Squid access logs receive zero CONNECT entries. The test asserts WS rejection plus
+# anon count = 0 and auth count = 0, distinguishing this failure from broken network, wrong
+# target host, or stale API state.
+
+[[transport.ws.proxy_profile]]
+target_hosts = ["nodebackend"]
+proxy_host = "squid-proxy"
+proxy_port = 3129
+proxy_username = "wronguser"
+proxy_password = "wrongpass"

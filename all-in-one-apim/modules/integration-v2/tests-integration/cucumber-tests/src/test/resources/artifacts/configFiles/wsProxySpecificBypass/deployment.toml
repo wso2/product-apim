@@ -1,0 +1,16 @@
+# Extra overlay for the IntegrationV2-WsProxySpecificBypass block.
+#
+# Tests bypass_hosts within a specific (non-catch-all) profile. A single profile is loaded:
+#
+#   Profile — target_hosts = ["nodebackend"], bypass_hosts = ["nodebackend"].
+#             The gateway matches nodebackend specifically but bypass_hosts takes precedence —
+#             the gateway connects directly to nodebackend without going through Squid.
+#             A passing echo proves the bypass path was taken; zero CONNECT entries in the Squid
+#             access log are the decisive proof (a passing echo alone cannot prove bypass because
+#             Squid can also reach nodebackend on the Docker network).
+
+[[transport.ws.proxy_profile]]
+target_hosts = ["nodebackend"]
+proxy_host = "squid-proxy"
+proxy_port = 3128
+bypass_hosts = ["nodebackend"]

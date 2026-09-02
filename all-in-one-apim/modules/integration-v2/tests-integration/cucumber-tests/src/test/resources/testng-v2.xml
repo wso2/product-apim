@@ -832,4 +832,81 @@
             <class name="org.wso2.am.integration.cucumbertests.runners.block.NewVersionNotificationRunner"/>
         </classes>
     </test>
+
+    <!-- WebSocket proxy profiles. Each block runs its own APIM container with a distinct TOML overlay
+         so the proxy scenarios can run concurrently. A JVM-wide SquidProxyServer (initProxy=true)
+         provides two Squid instances on the Docker network: anonymous on port 3128 and Basic-auth on
+         port 3129. CONNECT count assertions on the Squid access logs prove gateway routing behaviour;
+         because Squid can reach nodebackend, echo success alone would not prove bypass or no-match.
+         Needs the node WS echo backend (initBackend). Ports WebSocketProxyProfileTestCase. -->
+    <test name="IntegrationV2-WsProxySpecificBypass" parallel="classes" thread-count="1">
+        <parameter name="blockLabel" value="ws-proxy-specific-bypass"/>
+        <parameter name="initTenantUsers" value="true"/>
+        <parameter name="initBackend" value="true"/>
+        <parameter name="initProxy" value="true"/>
+        <parameter name="tomlExtraOverlayPath" value="src/test/resources/artifacts/configFiles/wsProxySpecificBypass/deployment.toml"/>
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayWebSocketProxySpecificBypassRunner"/>
+        </classes>
+    </test>
+    <test name="IntegrationV2-WsProxyCatchAll" parallel="classes" thread-count="1">
+        <parameter name="blockLabel" value="ws-proxy-catch-all"/>
+        <parameter name="initTenantUsers" value="true"/>
+        <parameter name="initBackend" value="true"/>
+        <parameter name="initProxy" value="true"/>
+        <parameter name="tomlExtraOverlayPath" value="src/test/resources/artifacts/configFiles/wsProxyCatchAll/deployment.toml"/>
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayWebSocketProxyCatchAllRunner"/>
+        </classes>
+    </test>
+    <test name="IntegrationV2-WsProxyNoMatch" parallel="classes" thread-count="1">
+        <parameter name="blockLabel" value="ws-proxy-no-match"/>
+        <parameter name="initTenantUsers" value="true"/>
+        <parameter name="initBackend" value="true"/>
+        <parameter name="initProxy" value="true"/>
+        <parameter name="tomlExtraOverlayPath" value="src/test/resources/artifacts/configFiles/wsProxyNoMatch/deployment.toml"/>
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayWebSocketProxyNoMatchRunner"/>
+        </classes>
+    </test>
+    <test name="IntegrationV2-WsProxyAnonRouting" parallel="classes" thread-count="1">
+        <parameter name="blockLabel" value="ws-proxy-anon-routing"/>
+        <parameter name="initTenantUsers" value="true"/>
+        <parameter name="initBackend" value="true"/>
+        <parameter name="initProxy" value="true"/>
+        <parameter name="tomlExtraOverlayPath" value="src/test/resources/artifacts/configFiles/wsProxyAnonRouting/deployment.toml"/>
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayWebSocketProxyAnonRoutingRunner"/>
+        </classes>
+    </test>
+    <test name="IntegrationV2-WsProxyAuthRouting" parallel="classes" thread-count="1">
+        <parameter name="blockLabel" value="ws-proxy-auth-routing"/>
+        <parameter name="initTenantUsers" value="true"/>
+        <parameter name="initBackend" value="true"/>
+        <parameter name="initProxy" value="true"/>
+        <parameter name="tomlExtraOverlayPath" value="src/test/resources/artifacts/configFiles/wsProxyAuthRouting/deployment.toml"/>
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayWebSocketProxyAuthRoutingRunner"/>
+        </classes>
+    </test>
+    <test name="IntegrationV2-WsProxyAuthWrongCreds" parallel="classes" thread-count="1">
+        <parameter name="blockLabel" value="ws-proxy-auth-wrong-creds"/>
+        <parameter name="initTenantUsers" value="true"/>
+        <parameter name="initBackend" value="true"/>
+        <parameter name="initProxy" value="true"/>
+        <parameter name="tomlExtraOverlayPath" value="src/test/resources/artifacts/configFiles/wsProxyAuthWrongCreds/deployment.toml"/>
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayWebSocketProxyAuthWrongCredsRunner"/>
+        </classes>
+    </test>
+    <test name="IntegrationV2-WsProxySpecificOverCatchAll" parallel="classes" thread-count="1">
+        <parameter name="blockLabel" value="ws-proxy-specific-over-catch-all"/>
+        <parameter name="initTenantUsers" value="true"/>
+        <parameter name="initBackend" value="true"/>
+        <parameter name="initProxy" value="true"/>
+        <parameter name="tomlExtraOverlayPath" value="src/test/resources/artifacts/configFiles/wsProxySpecificOverCatchAll/deployment.toml"/>
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayWebSocketProxySpecificOverCatchAllRunner"/>
+        </classes>
+    </test>
 </suite>

@@ -1,0 +1,15 @@
+# Extra overlay for the IntegrationV2-WsProxyAnonRouting block.
+#
+# Tests end-to-end WS routing through the anonymous Squid proxy. A single profile matches
+# "nodebackend" WITHOUT bypass_hosts — the gateway sends CONNECT nodebackend:3001 to
+# squid-proxy:3128. Squid resolves "nodebackend" on the shared Docker network and relays the
+# tunnel, and the echo arrives end-to-end through the proxy.
+#
+# A passing echo + exactly one CONNECT entry in the Squid anonymous access log (asserted via
+# SquidProxyServer.getAnonConnectCount()) proves the gateway correctly routed the connection
+# through the proxy rather than connecting directly.
+
+[[transport.ws.proxy_profile]]
+target_hosts = ["nodebackend"]
+proxy_host = "squid-proxy"
+proxy_port = 3128

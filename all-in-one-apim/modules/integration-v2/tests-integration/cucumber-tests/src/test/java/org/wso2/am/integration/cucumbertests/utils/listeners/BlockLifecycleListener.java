@@ -37,6 +37,7 @@ import org.wso2.am.testcontainers.IdentityServerContainer;
 import org.wso2.am.testcontainers.JacocoCoverage;
 import org.wso2.am.testcontainers.DynamicSolaceBroker;
 import org.wso2.am.testcontainers.NodeAppServer;
+import org.wso2.am.testcontainers.SquidProxyServer;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -172,6 +173,14 @@ public class BlockLifecycleListener implements ITestListener {
      */
     static final String PARAM_INIT_SOLACE_BROKER = "initSolaceBroker";
     /**
+     * When {@code true}, onStart ensures the shared {@link SquidProxyServer} (network alias {@code squid-proxy})
+     * is running before APIM boots and publishes it into the block's shared scope under {@value #SQUID_PROXY_KEY}.
+     * Use for proxy-profile tests that need a real HTTP CONNECT proxy reachable from the gateway container.
+     * The TOML overlay for such blocks sets {@code proxy_host = "squid-proxy"}.
+     */
+    static final String PARAM_INIT_PROXY = "initProxy";
+    static final String SQUID_PROXY_KEY = "blockSquidProxy";
+    /**
      * Optional comma-separated list of {@code <hostPath>::<serverRelativePath>} pairs copied into the block's
      * server directory tree BEFORE boot (host paths relative to the module working dir). For fixtures the
      * server only reads at startup — e.g. a secondary user-store XML under
@@ -249,6 +258,17 @@ public class BlockLifecycleListener implements ITestListener {
     /** Test-context attribute marking that this block holds {@link #SOLACE_JWKS_ALIAS_PERMIT}. */
     private static final String SOLACE_ALIAS_PERMIT_HELD_ATTRIBUTE = "solaceJwksAliasPermitHeld";
     /**
+     * JVM-wide permit serializing blocks that use {@link SquidProxyServer}. All proxy blocks share one
+     * Squid container and its two access-log files. Concurrent blocks can truncate logs mid-assertion or
+     * count another block's CONNECT requests, producing spurious failures. Serializing with this permit
+     * ensures at most one proxy block runs at a time; non-proxy blocks run fully concurrently.
+     * Acquire/release mirrors {@link #IS_NOTIFY_ALIAS_PERMIT} exactly — held marker prevents double-release
+     * from both the boot-failure catch and {@code onFinish}.
+     */
+    private static final Semaphore PROXY_PERMIT = new Semaphore(1);
+    /** Test-context attribute marking that this block holds {@link #PROXY_PERMIT} (single-release guard). */
+    private static final String PROXY_PERMIT_HELD_ATTRIBUTE = "proxyPermitHeld";
+    /**
      * Optional block param: module-relative path of an IS deployment.toml EXTRA overlay, appended AFTER the
      * built-in external-key-manager overlay (additive, mirroring the APIM {@code tomlExtraOverlayPath}
      * semantics) so a block can boot IS with block-specific config (e.g. the tenant-sync listener). Distinct
@@ -284,6 +304,18 @@ public class BlockLifecycleListener implements ITestListener {
             if (Boolean.parseBoolean(param(context, PARAM_INIT_BACKEND))) {
                 NodeAppServer.getInstance();
                 logger.info("Block '" + label + "' ensured NodeAppServer backend is running");
+            }
+            if (Boolean.parseBoolean(param(context, PARAM_INIT_PROXY))) {
+                try {
+                    PROXY_PERMIT.acquire();
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    throw new RuntimeException("Interrupted waiting for proxy permit in block '" + label + "'", e);
+                }
+                context.setAttribute(PROXY_PERMIT_HELD_ATTRIBUTE, Boolean.TRUE);
+                SquidProxyServer proxy = SquidProxyServer.getInstance();
+                TestContext.setShared(SQUID_PROXY_KEY, proxy);
+                logger.info("Block '" + label + "' acquired proxy permit and ensured SquidProxyServer is running");
             }
 
             // Solace: faked connector + real broker, up BEFORE APIM so the toml-declared solaceEnv
@@ -402,6 +434,7 @@ public class BlockLifecycleListener implements ITestListener {
             // A boot failure after the alias permit was acquired must free it here — onFinish also releases,
             // but only-if-held, so the two paths can't double-release (see releaseAliasPermitIfHeld).
             releaseAliasPermitIfHeld(context);
+            releaseProxyPermitIfHeld(context);
         } finally {
             // Defensive hygiene: never leave this block's scope bound to the (pooled) thread that ran
             // onStart. Per-invocation scoping in BlockScopeListener already resets scope before any body
@@ -445,6 +478,7 @@ public class BlockLifecycleListener implements ITestListener {
             // notification-alias permit to the next queued holder block. No-op if this block never held it or
             // the boot-failure path already released it.
             releaseAliasPermitIfHeld(context);
+            releaseProxyPermitIfHeld(context);
             TestContext.clear();
             TestContext.clearScope();
         }
@@ -465,6 +499,13 @@ public class BlockLifecycleListener implements ITestListener {
         if (Boolean.TRUE.equals(context.getAttribute(heldAttribute))) {
             context.setAttribute(heldAttribute, Boolean.FALSE);
             permit.release();
+        }
+    }
+
+    private static void releaseProxyPermitIfHeld(ITestContext context) {
+        if (Boolean.TRUE.equals(context.getAttribute(PROXY_PERMIT_HELD_ATTRIBUTE))) {
+            context.setAttribute(PROXY_PERMIT_HELD_ATTRIBUTE, Boolean.FALSE);
+            PROXY_PERMIT.release();
         }
     }
 
