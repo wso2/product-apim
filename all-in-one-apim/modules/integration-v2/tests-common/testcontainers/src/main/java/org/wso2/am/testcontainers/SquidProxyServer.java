@@ -20,8 +20,10 @@ package org.wso2.am.testcontainers;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.Container.ExecResult;
 import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.Network;
 import org.testcontainers.containers.wait.strategy.Wait;
 
 import java.time.Duration;
@@ -36,10 +38,10 @@ import java.time.Duration;
  *       {@code Proxy-Authorization: Basic testproxyuser:testproxypass}.</li>
  * </ul>
  *
- * <p>Both instances join {@link ContainerNetwork#SHARED_NETWORK} under the alias {@code squid-proxy},
- * so the APIM container (on the same network) can reach them at {@code squid-proxy:3128} and
- * {@code squid-proxy:3129} without any host networking. The TOML overlay for proxy-profile tests
- * uses {@code proxy_host = "squid-proxy"} with the appropriate port.
+ * <p>The container starts on {@link ContainerNetwork#BACKEND_HOME_NETWORK} under the alias {@code squid-proxy}.
+ * Proxy blocks additionally attach it to their private network before APIM boots, so the APIM container can reach
+ * {@code squid-proxy:3128} and {@code squid-proxy:3129} without host networking. The TOML overlay for
+ * proxy-profile tests uses {@code proxy_host = "squid-proxy"} with the appropriate port.
  *
  * <p>CONNECT tunnel counts are asserted by grepping the per-instance Squid access logs via
  * {@link #getAnonConnectCount()} and {@link #getAuthConnectCount()}. Call {@link #clearLogs()}
@@ -67,7 +69,7 @@ public class SquidProxyServer {
         logger.info("Initializing SquidProxyServer...");
         container = new GenericContainer<>(System.getProperty("squid.docker.image.name", "squid-proxy:latest"))
                 .withExposedPorts(ANON_PORT, AUTH_PORT)
-                .withNetwork(ContainerNetwork.SHARED_NETWORK)
+                .withNetwork(ContainerNetwork.BACKEND_HOME_NETWORK)
                 .withNetworkAliases("squid-proxy")
                 .waitingFor(Wait.forListeningPort().withStartupTimeout(Duration.ofMinutes(2)));
 
@@ -82,6 +84,26 @@ public class SquidProxyServer {
 
     public static SquidProxyServer getInstance() {
         return InstanceHolder.instance;
+    }
+
+    /** Attach the shared proxy to a block's private network under its fixed alias. */
+    public void attachToNetwork(Network network) {
+        DockerClientFactory.instance().client().connectToNetworkCmd()
+                .withContainerId(container.getContainerId())
+                .withNetworkId(network.getId())
+                .withContainerNetwork(new com.github.dockerjava.api.model.ContainerNetwork()
+                        .withAliases("squid-proxy"))
+                .exec();
+        logger.info("SquidProxyServer attached to network " + network.getId() + " as 'squid-proxy'");
+    }
+
+    /** Detach the shared proxy before the block's private network is closed. */
+    public void detachFromNetwork(Network network) {
+        DockerClientFactory.instance().client().disconnectFromNetworkCmd()
+                .withContainerId(container.getContainerId())
+                .withNetworkId(network.getId())
+                .exec();
+        logger.info("SquidProxyServer detached from network " + network.getId());
     }
 
     /**
