@@ -21,6 +21,7 @@ import io.cucumber.java.en.Given;
 import io.cucumber.java.en.When;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.testng.Assert;
 import org.wso2.am.integration.cucumbertests.utils.Identity;
 import org.wso2.am.integration.cucumbertests.utils.Requests;
 import org.wso2.am.integration.cucumbertests.utils.ResourceCleanup;
@@ -106,9 +107,9 @@ public class NetworkAccessControlSteps {
         JSONObject payload = keyManagerPayload("NacUpdateKM", host, null);
         HttpResponse create = Requests.post(Utils.getKeyManagersURL(Utils.getBaseUrl()), Identity.adminHeaders(),
                 payload.toString(), Constants.CONTENT_TYPES.APPLICATION_JSON);
-        if (create.getResponseCode() != 201) {
-            return;
-        }
+        // The update is the asserted call; fail loudly if the allow-listed create did not succeed, so the block
+        // is not falsely credited by a create that failed with the same error text.
+        assertResponse(create, 201, "Key Manager setup create");
         Object id = Utils.extractValueFromPayload(create.getData(), "id");
         ResourceCleanup.register(Constants.CREATED_KEY_MANAGER_IDS, id);
         JSONObject toUpdate = new JSONObject(create.getData());
@@ -171,6 +172,7 @@ public class NetworkAccessControlSteps {
         String apiId = TestContext.resolve(apiRef).toString();
         HttpResponse current = Requests.get(Utils.getResourceEndpointURL(Utils.getBaseUrl(), "apis", apiId),
                 Identity.publisherHeaders());
+        assertResponse(current, 200, "fetch API " + apiId);
         JSONObject api = new JSONObject(current.getData());
         api.put("endpointConfig", httpEndpointConfig(url));
         Requests.put(Utils.getResourceEndpointURL(Utils.getBaseUrl(), "apis", apiId), Identity.publisherHeaders(),
@@ -229,8 +231,12 @@ public class NetworkAccessControlSteps {
     public void iApplyTenantAllowPolicy(String hosts, String adminActor) throws IOException {
         Identity.setActingActor(adminActor);
         HttpResponse current = Requests.get(Utils.getTenantConfigURL(Utils.getBaseUrl()), Identity.adminHeaders());
+        assertResponse(current, 200, "fetch tenant configuration");
         TestContext.set(ORIGINAL_TENANT_CONFIG_KEY, current.getData());
         TestContext.set(POLICY_ADMIN_KEY, adminActor);
+        // Register the original so the @cleanup hook restores it even if a later step in the scenario fails
+        // before the matching "remove" step runs.
+        ResourceCleanup.registerTenantConfiguration(current.getData());
 
         JSONObject config = new JSONObject(current.getData());
         JSONObject accessControl = new JSONObject();
@@ -257,6 +263,14 @@ public class NetworkAccessControlSteps {
         Identity.setActingActor(adminActor.toString());
         Requests.put(Utils.getTenantConfigURL(Utils.getBaseUrl()), Identity.adminHeaders(), original.toString(),
                 Constants.CONTENT_TYPES.APPLICATION_JSON);
+    }
+
+    /** Asserts a management-plane response returned the expected status with a non-blank body before it is parsed. */
+    private void assertResponse(HttpResponse response, int expectedCode, String what) {
+        Assert.assertTrue(response != null && response.getResponseCode() == expectedCode
+                        && response.getData() != null && !response.getData().isBlank(),
+                what + " must return " + expectedCode + " with a body; got "
+                        + (response == null ? "no response" : response.getResponseCode() + " / " + response.getData()));
     }
 
     /** An HTTP endpoint-config block with the given production URL (sandbox mirrors production). */

@@ -28,7 +28,7 @@ Feature: Publisher Network Access Control - endpoint URL validation under an all
     And I have valid access tokens as "admin"
     And I apply a tenant allow policy for hosts "*.corp" as "admin"
     And I act as "publisherUser"
-    When I validate the endpoint url "http://evil.attacker.com/endpoint"
+    When I validate the endpoint url "http://api.corp/endpoint"
     Then The response status code should be 200
     And The response should contain "could not be resolved"
     And I remove the applied tenant policy
