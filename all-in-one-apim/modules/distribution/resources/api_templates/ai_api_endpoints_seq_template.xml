@@ -53,20 +53,15 @@
 </class>
         #end
         #if($endpoint.authenticationType == "gcp" || $endpoint.authenticationType == "GCP")
-        ## The GCP service-account key is delivered as ordered base64 chunks that the mediator reassembles.
-        ## Secure-vault mode: resolve each chunk from the vault. Normal mode: each chunk is a literal value.
-        #if($endpoint.serviceAccountKeyChunkAliases && $endpoint.serviceAccountKeyChunkAliases.size() > 0)
-        #foreach($alias in $endpoint.serviceAccountKeyChunkAliases)
-<property name="gcpServiceAccountKeyChunk_$foreach.index" expression="wso2:vault-lookup('$alias')" scope="default" type="STRING"/>
-        #end
-        #elseif($endpoint.serviceAccountKeyChunks && $endpoint.serviceAccountKeyChunks.size() > 0)
-        #foreach($chunk in $endpoint.serviceAccountKeyChunks)
-<property name="gcpServiceAccountKeyChunk_$foreach.index" value="$chunk" scope="default" type="STRING"/>
-        #end
-        #end
+        ## The GCP service-account key is delivered as a single base64 property the mediator base64-decodes.
+        ## Secure-vault mode: a concat of vault-lookups (pipe-separated chunks). Normal mode: the base64 literal.
+        ## Keyless (no key): neither is set, so no property is emitted and the mediator uses the metadata server.
 <class name="org.wso2.carbon.apimgt.gateway.mediators.GCPOAuth2Mediator">
-    <property name="serviceAccountKeyChunkPrefix" value="gcpServiceAccountKeyChunk_" type="STRING"/>
-    <property name="serviceAccountKeyChunkCount" value="$endpoint.serviceAccountKeyChunkCount" type="STRING"/>
+        #if($endpoint.serviceAccountKeyVaultExpression)
+    <property name="serviceAccountKey" expression="$endpoint.serviceAccountKeyVaultExpression" type="STRING"/>
+        #elseif($endpoint.serviceAccountKeyBase64)
+    <property name="serviceAccountKey" value="$endpoint.serviceAccountKeyBase64" type="STRING"/>
+        #end
 </class>
         #end
         #if( $endpoint.authenticationType == "APIKEY" || $endpoint.authenticationType == "apikey")
