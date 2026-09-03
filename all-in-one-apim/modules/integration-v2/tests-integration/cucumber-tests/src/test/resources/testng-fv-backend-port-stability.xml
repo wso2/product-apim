@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+<!--
+  Framework verification: the shared node backend's PUBLISHED HOST PORT survives block network churn.
+
+  One block, one class. initBackend=true starts the shared backend singleton (and attaches it to this block's
+  private network, which is itself part of what is being verified); the probe then drives three further
+  attach/detach cycles on throwaway networks and asserts the published port, the URL the tests would build,
+  and reachability all hold.
+
+  Deliberately its own suite rather than a block in testng-framework-verification.xml, whose gate asserts a
+  specific set of Phase-6.1 blocks and container counts.
+
+  Run: mvn test -pl tests-integration/cucumber-tests -am \
+         -Dsurefire.suite.xml=testng-fv-backend-port-stability.xml
+-->
+<suite name="Framework Verification - backend host port stability" parallel="tests" thread-count="1">
+    <listeners>
+        <listener class-name="org.wso2.am.integration.cucumbertests.utils.listeners.BlockLifecycleListener"/>
+        <listener class-name="org.wso2.am.integration.cucumbertests.utils.listeners.BlockScopeListener"/>
+    </listeners>
+    <test name="FV-BackendHostPortStability" parallel="classes" thread-count="1">
+        <parameter name="blockLabel" value="fv-backend-port-stability"/>
+        <parameter name="initBackend" value="true"/>
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.BackendHostPortStabilityRunner"/>
+        </classes>
+    </test>
+</suite>

@@ -37,9 +37,24 @@
         <!-- JaCoCo for the (opt-in) integration-coverage collector: agent jar to inject into the server
              container, core (tcp dump + analysis) and report (HTML/XML) to render coverage in-process. -->
         <jacoco.version>0.8.12</jacoco.version>
+        <!-- Distributed APIM image inputs. These component ZIPs are produced by the repository-root reactor
+             before the all-in-one-apim reactor reaches this module. -->
+        <mysql.connector.version>8.4.0</mysql.connector.version>
+        <distributed.apim.build.directory>${project.build.directory}/distributed-apim</distributed.apim.build.directory>
+        <distributed.apim.cp.zip>${project.basedir}/../../../../../api-control-plane/modules/distribution/product/target/wso2am-acp-${project.version}.zip</distributed.apim.cp.zip>
+        <distributed.apim.tm.zip>${project.basedir}/../../../../../traffic-manager/modules/distribution/product/target/wso2am-tm-${project.version}.zip</distributed.apim.tm.zip>
+        <distributed.apim.gateway.zip>${project.basedir}/../../../../../gateway/modules/distribution/product/target/wso2am-universal-gw-${project.version}.zip</distributed.apim.gateway.zip>
     </properties>
 
     <dependencies>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.dataformat</groupId>
+            <artifactId>jackson-dataformat-toml</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.wso2.am</groupId>
             <artifactId>integration-test-utils</artifactId>
@@ -67,10 +82,43 @@
             <version>${jacoco.version}</version>
             <scope>compile</scope>
         </dependency>
+        <dependency>
+            <groupId>org.testng</groupId>
+            <artifactId>testng</artifactId>
+            <version>${testng.version}</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
         <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <version>3.6.1</version>
+                <executions>
+                    <!-- Resolve the connector through Maven rather than requiring a manually downloaded JAR.
+                         The distributed image builder copies this generated file into each component image. -->
+                    <execution>
+                        <id>copy-distributed-mysql-connector</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>copy</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>com.mysql</groupId>
+                                    <artifactId>mysql-connector-j</artifactId>
+                                    <version>${mysql.connector.version}</version>
+                                    <outputDirectory>${distributed.apim.build.directory}</outputDirectory>
+                                    <destFileName>mysql-connector-j.jar</destFileName>
+                                </artifactItem>
+                            </artifactItems>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
@@ -198,6 +246,67 @@
                             </arguments>
                         </configuration>
                     </execution>
+                    <!-- Build the three distributed component images directly through Maven, just like the
+                         all-in-one image. Each execution creates an isolated Docker context containing the
+                         component ZIP and Maven-resolved MySQL connector, then removes that temporary context. -->
+                    <execution>
+                        <id>build-distributed-apim-cp-docker-image</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>bash</executable>
+                            <arguments>
+                                <argument>-c</argument>
+                                <argument>set -euo pipefail; work_dir=$(mktemp -d); trap 'rm -rf "$work_dir"' EXIT; mkdir "$work_dir/cp"; cp "${project.basedir}/src/main/resources/distributed-apim/Dockerfile" "$work_dir/cp/Dockerfile"; cp "${project.basedir}/src/main/resources/distributed-apim/start-component.sh" "$work_dir/cp/start-component.sh"; cp "${distributed.apim.cp.zip}" "$work_dir/cp/component.zip"; cp "${distributed.apim.build.directory}/mysql-connector-j.jar" "$work_dir/cp/mysql-connector-j.jar"; docker build --build-arg START_SCRIPT=api-cp.sh -t ${distributed.apim.cp.image.name} "$work_dir/cp"</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>build-distributed-apim-tm-docker-image</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>bash</executable>
+                            <arguments>
+                                <argument>-c</argument>
+                                <argument>set -euo pipefail; work_dir=$(mktemp -d); trap 'rm -rf "$work_dir"' EXIT; mkdir "$work_dir/tm"; cp "${project.basedir}/src/main/resources/distributed-apim/Dockerfile" "$work_dir/tm/Dockerfile"; cp "${project.basedir}/src/main/resources/distributed-apim/start-component.sh" "$work_dir/tm/start-component.sh"; cp "${distributed.apim.tm.zip}" "$work_dir/tm/component.zip"; cp "${distributed.apim.build.directory}/mysql-connector-j.jar" "$work_dir/tm/mysql-connector-j.jar"; docker build --build-arg START_SCRIPT=traffic-manager.sh -t ${distributed.apim.tm.image.name} "$work_dir/tm"</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>build-distributed-apim-gateway-docker-image</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>bash</executable>
+                            <arguments>
+                                <argument>-c</argument>
+                                <argument>set -euo pipefail; work_dir=$(mktemp -d); trap 'rm -rf "$work_dir"' EXIT; mkdir "$work_dir/gateway"; cp "${project.basedir}/src/main/resources/distributed-apim/Dockerfile" "$work_dir/gateway/Dockerfile"; cp "${project.basedir}/src/main/resources/distributed-apim/start-component.sh" "$work_dir/gateway/start-component.sh"; cp "${distributed.apim.gateway.zip}" "$work_dir/gateway/component.zip"; cp "${distributed.apim.build.directory}/mysql-connector-j.jar" "$work_dir/gateway/mysql-connector-j.jar"; docker build --build-arg START_SCRIPT=gateway.sh -t ${distributed.apim.gateway.image.name} "$work_dir/gateway"</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                    <!-- Extract runtime defaults from the images, matching the all-in-one image-based fixture
+                         preparation. ZIPs are build inputs only; test execution consumes this staging directory. -->
+                    <execution>
+                        <id>extract-distributed-apim-image-defaults</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>bash</executable>
+                            <arguments>
+                                <argument>-c</argument>
+                                <argument>set -euo pipefail; staging="${project.build.directory}/distributed-apim/defaults"; rm -rf "$staging"; mkdir -p "$staging/cp" "$staging/tm" "$staging/gateway"; cids=(); cleanup() { for cid in "${cids[@]:-}"; do docker rm "$cid" &gt; /dev/null 2&gt;&amp;1 || true; done; }; trap cleanup EXIT; cp_cid=$(docker create ${distributed.apim.cp.image.name}); cids+=("$cp_cid"); tm_cid=$(docker create ${distributed.apim.tm.image.name}); cids+=("$tm_cid"); gateway_cid=$(docker create ${distributed.apim.gateway.image.name}); cids+=("$gateway_cid"); docker cp "$cp_cid":/opt/wso2/repository/conf/deployment.toml "$staging/cp/deployment.toml"; docker cp "$tm_cid":/opt/wso2/repository/conf/deployment.toml "$staging/tm/deployment.toml"; docker cp "$gateway_cid":/opt/wso2/repository/conf/deployment.toml "$staging/gateway/deployment.toml"; docker cp "$cp_cid":/opt/wso2/dbscripts/mysql.sql "$staging/cp/mysql.sql"; docker cp "$cp_cid":/opt/wso2/dbscripts/apimgt/mysql.sql "$staging/cp/apimgt-mysql.sql"</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
                     <!-- External Key Manager (WSO2 IS 7.x) support. -->
                     <!-- Pull the IS image up front (idempotent) so the container start doesn't stall on a first-use pull. -->
                     <execution>
@@ -214,7 +323,37 @@
                             </arguments>
                         </configuration>
                     </execution>
-                    <!-- Extract the IS image's OWN default deployment.toml to target/is7 so IdentityServerContainer
+                    <!-- API Platform Gateway support: pull BOTH gateway images up front (idempotent) so the
+                         DynamicPlatformGatewayContainer compose start doesn't stall on a first-use pull. -->
+                    <execution>
+                        <id>pull-pg-controller-docker-image</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>docker</executable>
+                            <arguments>
+                                <argument>pull</argument>
+                                <argument>${pg.gateway.controller.image.name}</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>pull-pg-runtime-docker-image</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>docker</executable>
+                            <arguments>
+                                <argument>pull</argument>
+                                <argument>${pg.gateway.runtime.image.name}</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                    <!-- Extract the IS image's OWN default deployment.toml to target/is7 so DynamicISContainer
                          can deep-merge the small is7/deployment-overlay.toml onto it (base+overlay pattern) instead
                          of shipping a full-file config. Runs after pull-is-docker-image (declaration order). -->
                     <execution>

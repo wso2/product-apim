@@ -26,7 +26,7 @@ import org.wso2.am.integration.cucumbertests.utils.TenantUserProvisioner;
 import org.wso2.am.integration.cucumbertests.utils.TestContext;
 import org.wso2.am.integration.cucumbertests.utils.Utils;
 import org.wso2.am.integration.test.utils.Constants;
-import org.wso2.am.testcontainers.DynamicApimContainer;
+import org.wso2.am.testcontainers.ApimRuntime;
 import org.wso2.carbon.automation.engine.context.beans.Tenant;
 import org.wso2.carbon.automation.engine.context.beans.User;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
@@ -78,9 +78,9 @@ public class BlockProbeSteps {
     @Then("I stop the block container")
     public void iStopTheBlockContainer() {
         Object container = TestContext.get("blockApimContainer");
-        Assert.assertTrue(container instanceof DynamicApimContainer,
+        Assert.assertTrue(container instanceof ApimRuntime,
                 "no block container in scope to stop");
-        ((DynamicApimContainer) container).stop();
+        ((ApimRuntime) container).stop();
     }
 
     @Then("the shared gateway URL is present")
@@ -112,9 +112,9 @@ public class BlockProbeSteps {
 
     private String readInContainerToml() throws Exception {
         Object container = TestContext.get("blockApimContainer");
-        Assert.assertTrue(container instanceof DynamicApimContainer,
+        Assert.assertTrue(container instanceof ApimRuntime,
                 "no block container in scope to read the deployment.toml from");
-        DynamicApimContainer apim = (DynamicApimContainer) container;
+        ApimRuntime apim = (ApimRuntime) container;
         Container.ExecResult result = apim.execInContainer("cat", apim.getContainerTomlPath());
         Assert.assertEquals(result.getExitCode(), 0,
                 "cat of in-container deployment.toml failed: " + result.getStderr());
@@ -124,8 +124,8 @@ public class BlockProbeSteps {
     @Then("I record the block observation")
     public void iRecordTheBlockObservation() throws IOException {
         Object container = TestContext.get("blockApimContainer");
-        String containerId = container instanceof DynamicApimContainer dynamic
-                ? String.valueOf(dynamic.getContainerId()) : "none";
+        String containerId = container instanceof ApimRuntime runtime
+                ? String.valueOf(runtime.getContainerId()) : "none";
         String line = String.join("|",
                 Long.toString(System.currentTimeMillis()),
                 Thread.currentThread().getName(),

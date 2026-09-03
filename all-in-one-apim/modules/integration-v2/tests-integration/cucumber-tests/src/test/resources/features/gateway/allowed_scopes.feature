@@ -54,17 +54,13 @@ Feature: Gateway Allowed-Scopes Enforcement
     And I subscribe to API "allowedScopesApiId" using application "createdAppId" with payload "apiSubscriptionPayload" as "subscriptionId"
     Then The response status code should be 201
 
-    # scope1 — whitelisted AND satisfies the operation binding → 200. The ISSUED TOKEN is asserted too: legacy
-    # pins both the granted scope and the token lifetime (the values the whitelist path must not alter), so a token
-    # that invokes successfully while carrying the wrong scope or lifetime still fails here.
-    # expires_in is 86400, NOT the legacy's 3600: this harness's base configuration sets it explicitly
-    # (artifacts/configFiles/basic/deployment.toml, [oauth.token_validation] user_access_token_validity = 86400),
-    # whereas legacy ran on the distribution default of 3600. Pinned to the CONFIGURED value — the assertion's
-    # point is that the whitelist path issues a bounded token of exactly the configured lifetime.
+    # scope1 — whitelisted AND satisfies the operation binding → 200. The issued token must retain the requested
+    # scope and the product-default user-access-token lifetime; the whitelist path must not alter either value.
+    # The product-default user-access-token validity is 3600 seconds; the whitelist path must not alter it.
     When I request an OAuth access token for the current user using password grant with scope "scope1"
     Then The response status code should be 200
     And The issued token scope list should include "scope1" and exclude "scope2,scope3"
-    And The value of response field "expires_in" should be "86400"
+    And The value of response field "expires_in" should be "3600"
     And I copy context value "generatedAccessToken" to "scope1Token"
     And I invoke the API at gateway context "{{apiContext}}/1.0.0/customers/123/" with method "GET" using access token "scope1Token" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
@@ -75,7 +71,7 @@ Feature: Gateway Allowed-Scopes Enforcement
     When I request an OAuth access token for the current user using password grant with scope "scope2"
     Then The response status code should be 200
     And The issued token scope list should include "scope2" and exclude "scope1,scope3"
-    And The value of response field "expires_in" should be "86400"
+    And The value of response field "expires_in" should be "3600"
     And I invoke the API at gateway context "{{apiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
     And The value of response field "id" should be "123"
@@ -95,7 +91,7 @@ Feature: Gateway Allowed-Scopes Enforcement
     When I request an OAuth access token for the current user using password grant with scope "scope3"
     Then The response status code should be 200
     And The issued token scope list should include "scope3" and exclude "scope1,scope2"
-    And The value of response field "expires_in" should be "86400"
+    And The value of response field "expires_in" should be "3600"
     And I invoke the API at gateway context "{{apiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 403 within 60 seconds
     Then The response status code should be 403
 
@@ -103,7 +99,7 @@ Feature: Gateway Allowed-Scopes Enforcement
     When I request an OAuth access token for the current user using password grant with scope ""
     Then The response status code should be 200
     And The issued token scope list should include "default" and exclude "scope1,scope2,scope3"
-    And The value of response field "expires_in" should be "86400"
+    And The value of response field "expires_in" should be "3600"
     And I invoke the API at gateway context "{{apiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 403 within 60 seconds
     Then The response status code should be 403
 

@@ -845,10 +845,11 @@ public class PublisherBaseSteps {
         String version = dto.getString("version");
 
         User tenantAdmin = Identity.actingTenantAdmin();
-        String artifactUrl = Utils.getGatewayArtifactURL(Utils.getBaseUrl(), "api-artifact", name, version,
-                tenantAdmin.getUserDomain());
-        Map<String, String> gatewayAuth = Identity.basicAuthHeaders(tenantAdmin.getUserName(),
-                tenantAdmin.getPassword());
+        User gatewayManagementAdmin = Identity.gatewayManagementAdmin();
+        String artifactUrl = Utils.getGatewayArtifactURL(Utils.getBaseGatewayManagementUrl(), "api-artifact", name,
+                version, tenantAdmin.getUserDomain());
+        Map<String, String> gatewayAuth = Identity.basicAuthHeaders(gatewayManagementAdmin.getUserName(),
+                gatewayManagementAdmin.getPassword());
         String revisionId = TestContext.resolve("revisionId").toString();
         String redeployPayload = "[{\"name\":\"" + System.getenv(Constants.GATEWAY_ENVIRONMENT)
                 + "\",\"vhost\":\"localhost\",\"displayOnDevportal\":true}]";
@@ -867,7 +868,7 @@ public class PublisherBaseSteps {
                     // transient 900967 retry, so neither is worth waiting out.
                     if (code == 401 || code == 403) {
                         return new HealGate.Fatal("gateway artifact endpoint returned " + code
-                                + " for " + tenantAdmin.getUserName() + " — credentials/config, not propagation");
+                                + " for the super-tenant gateway management admin — credentials/config, not propagation");
                     }
                     if (code >= 500) {
                         return new HealGate.Fatal("gateway artifact endpoint returned " + code
@@ -1578,7 +1579,24 @@ public class PublisherBaseSteps {
         TestContext.set(Utils.normalizeContextKey("<apiConfigUpdate>"), updatedJsonPayload);
 
         iUpdateResourceWithJsonPayloadFromContext(resourceType, resourceID, "<apiConfigUpdate>");
-        Thread.sleep(3000);
+        if ("endpointConfig".equals(configType)) {
+            // The PUT is acknowledged before the publisher read path has necessarily observed the new endpoint.
+            // This is especially visible with the distributed CP/TM/Gateway topology, where the update event
+            // crosses the event hub. Poll the actual read-after-write condition instead of using a fixed sleep.
+            JSONObject endpoint = new JSONObject(configValue);
+            String expectedProductionUrl = endpoint.getJSONObject("production_endpoints").getString("url");
+            String actualResourceId = TestContext.resolve(resourceID).toString();
+            String resourceUrl = Utils.getResourceEndpointURL(Utils.getBaseUrl(), resourceType, actualResourceId);
+            HttpResponse latest = Utils.retryUntil(Constants.RUNTIME_PROPAGATION_TIMEOUT,
+                    () -> SimpleHTTPClient.getInstance().doGet(resourceUrl, Identity.publisherHeaders()),
+                    response -> response != null && response.getResponseCode() == 200
+                            && response.getData() != null && response.getData().contains(expectedProductionUrl));
+            Assert.assertTrue(latest != null && latest.getResponseCode() == 200
+                            && latest.getData() != null && latest.getData().contains(expectedProductionUrl),
+                    "Updated endpoint was not visible when reading " + resourceType + " " + actualResourceId
+                            + "; expected " + expectedProductionUrl + ", got="
+                            + (latest == null ? "null" : latest.getResponseCode() + "/" + latest.getData()));
+        }
     }
 
     /**
@@ -3472,8 +3490,8 @@ public class PublisherBaseSteps {
             // The additional-properties file carries the created API's name/context, so resolve any
             // ${UNIQUE:...} placeholders here (this file is uploaded as-is, not routed through the
             // context-payload steps) to keep every imported API unique-named across parallel runs.
-            String additionalProperties = Utils.resolvePayloadPlaceholders(
-                    IOUtils.toString(inputStream, StandardCharsets.UTF_8));
+            String additionalProperties = Utils.resolveContextPlaceholders(Utils.resolvePayloadPlaceholders(
+                    IOUtils.toString(inputStream, StandardCharsets.UTF_8)));
 
             // Create temporary file object
             additionalPropertiesFile = File.createTempFile("data", ".json");

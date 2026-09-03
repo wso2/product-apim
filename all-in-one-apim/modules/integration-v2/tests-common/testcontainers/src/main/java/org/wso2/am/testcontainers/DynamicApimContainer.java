@@ -39,16 +39,16 @@ import java.time.Duration;
  * {@code get*Url()} accessors. Because every container has its own network namespace, no offset
  * counter or per-container DB renaming is needed.
  */
-public class DynamicApimContainer extends GenericContainer<DynamicApimContainer> {
+public class DynamicApimContainer extends GenericContainer<DynamicApimContainer> implements ApimRuntime {
 
     private static final Logger logger = LoggerFactory.getLogger(DynamicApimContainer.class);
-    private static final String DEFAULT_APIM_IMAGE = "wso2am:4.7.0-SNAPSHOT-jdk21";
+    private static final String APIM_IMAGE_PROPERTY = "apim.docker.image.name";
     /** Fixed shared-network alias for the IS→APIM reverse channel; see {@link #withExternalIsNotificationAlias}. */
     private static final String APIM_NETWORK_ALIAS = "wso2am";
 
     public DynamicApimContainer(String containerLabel, String deploymentTomlContent) {
 
-        super(System.getProperty("apim.docker.image.name", DEFAULT_APIM_IMAGE));
+        super(requiredImage(APIM_IMAGE_PROPERTY));
 
         String apimDbUrl = System.getenv(Constants.API_MANAGER_DATABASE_URL).replace("&", "&amp;");
         String sharedDbUrl = System.getenv(Constants.SHARED_DATABASE_URL).replace("&", "&amp;");
@@ -88,7 +88,10 @@ public class DynamicApimContainer extends GenericContainer<DynamicApimContainer>
         // Add host.docker.internal mapping for Linux compatibility (needed for accessing host services)
         withExtraHost("host.docker.internal", "host-gateway");
 
-        withNetwork(ContainerNetwork.SHARED_NETWORK);
+        // The docker network is assigned by the CALLER: BlockLifecycleListener creates one private network per
+        // block and joins APIM plus that block's IS/Solace to it, so the wso2am / wso2is / apimforsolace aliases
+        // are network-scoped and cannot collide across concurrent blocks. Direct constructions (the
+        // framework-verification boot probes) run standalone on the default bridge — they have no peers to resolve.
         // Copy the modified deployment.toml to the container
         withCopyToContainer(Transferable.of(deploymentTomlContent), getContainerTomlPath());
 
@@ -120,6 +123,15 @@ public class DynamicApimContainer extends GenericContainer<DynamicApimContainer>
 
         withLogConsumer(logConsumer);
         waitingFor(Wait.forListeningPort().withStartupTimeout(Duration.ofMinutes(20)));
+    }
+
+    private static String requiredImage(String property) {
+        String image = System.getProperty(property);
+        if (image == null || image.isBlank()) {
+            throw new IllegalStateException(property
+                    + " is not set; resolve the image from the all-in-one product POM");
+        }
+        return image;
     }
 
     /**
@@ -208,12 +220,12 @@ public class DynamicApimContainer extends GenericContainer<DynamicApimContainer>
      * tenant-sync events in the SSO overlay). Without a live alias holder the IS EventSender fails with
      * {@code UnknownHostException: wso2am} (harmless unless a test asserts on the delivered notification).
      *
-     * <p>Deliberately separate from {@link #withExternalKmTrust()}: the alias is fixed (it is baked into the IS
-     * toml and the wso2am.p12 cert), so AT MOST ONE live container may hold it — duplicate holders make Docker
-     * DNS resolve {@code wso2am} arbitrarily and notifications land on the wrong APIM. Most external-KM blocks
-     * only make APIM→IS calls and never consume the reverse channel; they skip this and can therefore run
-     * concurrently. Only the block whose tests assert on IS→APIM notifications binds it (via the
-     * {@code receiveExternalIsNotifications} block param).
+     * <p>Deliberately separate from {@link #withExternalKmTrust()}: the alias name is fixed (baked into the IS
+     * toml and the wso2am.p12 cert), so at most one container may hold it PER NETWORK. Since every block runs on
+     * its own private network, that is satisfied by construction and any number of blocks may bind it
+     * concurrently — which is why the JVM-wide permit this used to require is gone. Most external-KM blocks only
+     * make APIM→IS calls and never consume the reverse channel, so they skip it; only the block whose tests
+     * assert on IS→APIM notifications binds it (via the {@code receiveExternalIsNotifications} block param).
      */
     public DynamicApimContainer withExternalIsNotificationAlias() {
         withNetworkAliases(APIM_NETWORK_ALIAS);
@@ -230,15 +242,13 @@ public class DynamicApimContainer extends GenericContainer<DynamicApimContainer>
      *
      * <p>APIM has NO network alias by default (nothing normally calls IN to it), and this deliberately does not
      * reuse the {@code wso2am} notification alias: that one is baked into the IS toml and the wso2am.p12 cert,
-     * so it is SINGLE-HOLDER and permit-guarded ({@link #withExternalIsNotificationAlias}) — binding it here
-     * would make a Solace block contend with, and be able to steal notifications from, an external-IS block.
-     * A separate name avoids that contention, but it is NOT unguarded: this alias is bound by EACH block that
-     * opts into Solace, so it is single-holder too, and for a reason on the broker side rather than the cert's.
-     * {@code DynamicSolaceBroker} is a shared singleton whose OAuth profile carries a SINGLE {@code endpointJwks},
-     * configured once per JVM — so exactly one live APIM may answer this name, or Docker round-robins the broker's
-     * key fetch between containers. The listener enforces that with its own permit
-     * ({@code SOLACE_JWKS_ALIAS_PERMIT}), queueing Solace blocks among themselves exactly as the {@code wso2am}
-     * holders queue. Do not bind this without taking that permit.
+     * so binding it here would let a Solace block receive — and steal — an external-IS block's notifications if
+     * the two ever shared a network. A separate name keeps the two channels independent regardless.
+     *
+     * <p>No permit is needed. This alias, the block's Solace broker and the block's APIM all live on the SAME
+     * private per-block network, so the broker's single {@code endpointJwks} resolves to exactly one APIM by
+     * construction. (On the old shared network each opting-in block bound this same name on one network, so the
+     * listener had to serialize those blocks on a JVM-wide permit; per-block networks removed that.)
      */
     public DynamicApimContainer withSolaceJwksAlias() {
         withNetworkAliases(DynamicSolaceBroker.APIM_JWKS_ALIAS);
@@ -265,8 +275,18 @@ public class DynamicApimContainer extends GenericContainer<DynamicApimContainer>
         return String.format("http://%s:%d/", getHost(), getMappedPort(Constants.HTTP_PORT));
     }
 
+    @Override
+    public String getBackendOAuthTokenUrl() {
+        return getServletHttpsUrl() + "oauth2/token";
+    }
+
     public String getGatewayHttpsUrl() {
         return String.format("https://%s:%d/", getHost(), getMappedPort(Constants.GATEWAY_HTTPS_PORT));
+    }
+
+    @Override
+    public String getGatewayManagementHttpsUrl() {
+        return getServletHttpsUrl();
     }
 
     public String getGatewayHttpUrl() {
@@ -311,6 +331,12 @@ public class DynamicApimContainer extends GenericContainer<DynamicApimContainer>
     public String getContainerTomlPath() {
         return Constants.APIM_CONTAINER_USER_HOME + "/" + requireServerName() +
                 Constants.DEPLOYMENT_TOML_PATH;
+    }
+
+    /** Explicit contract bridge; Testcontainers supplies this method through {@code ContainerState}. */
+    @Override
+    public Container.ExecResult execInContainer(String... command) throws IOException, InterruptedException {
+        return super.execInContainer(command);
     }
 
     /**
@@ -394,6 +420,11 @@ public class DynamicApimContainer extends GenericContainer<DynamicApimContainer>
      */
     public String getContainerLogFilePath(String fileName) {
         return Constants.APIM_CONTAINER_USER_HOME + "/" + requireServerName() + "/repository/logs/" + fileName;
+    }
+
+    @Override
+    public String readGatewayLogFile(String fileName) {
+        return readContainerFile(getContainerLogFilePath(fileName));
     }
 
     /**

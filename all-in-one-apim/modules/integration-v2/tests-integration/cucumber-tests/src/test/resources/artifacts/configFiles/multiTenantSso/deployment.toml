@@ -1,0 +1,43 @@
+# API Manager overlay for the multi-tenant console-SSO block, merged on top of base+basic.
+#
+# Carries the multi-tenant SSO configuration: tenant-qualified URLs and tenanted sessions (the broker chain
+# authorizes inside /t/<tenant>/), and the tenant-selection page served unauthenticated because the broker
+# redirects the browser there BEFORE any login has happened.
+#
+# The [keystore.tls] pin is required for identity-server -> API Manager tenant synchronization: the identity
+# server's listener posts to https://wso2am:9443 with strict hostname verification, so API Manager must present
+# a certificate whose subject alternative names cover 'wso2am', and must also trust it (the handler creates the
+# tenant through a SOAP self-call).
+#
+# The event_listener and jit_provisioning_handler entries below are the ones the multi-tenant SSO guide
+# prescribes, reproduced as documented.
+
+[keystore.tls]
+file_name = "wso2am.p12"
+type = "PKCS12"
+password = "wso2carbon"
+alias = "wso2carbon"
+key_password = "wso2carbon"
+
+[tenant_context]
+enable_tenant_qualified_urls = true
+enable_tenanted_sessions = true
+skip_tenant_validation_for_oauth_endpoints = true
+session_manager = "org.apache.catalina.session.StandardManager"
+
+# Disabled so it does not provision the federated user into the service provider's own tenant, which is the
+# super tenant here.
+[event.default_listener.jit_provisioning_handler]
+enable = false
+
+# The organization-aware provisioning handler that replaces the default one, at the same order.
+[[event_listener]]
+id = "org_jit_provisioning_handler"
+type = "org.wso2.carbon.identity.core.handler.AbstractIdentityHandler"
+name = "org.wso2.carbon.identity.outbound.organization.auth.OrganizationJITProvisioningHandler"
+order = 20
+
+[[resource.access_control]]
+context = "(.*)/select-tenant(.*)"
+secure = false
+http_method = "all"
