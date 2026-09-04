@@ -1432,6 +1432,7 @@ components:
         - 94566543-d21b-34d5-b678-912345678900
         - 94566543-d21b-34d5-b678-912345678900
         updatedBy: admin@wso2.com
+        complianceAffectingSeverities: ERROR,WARN
         createdBy: admin@wso2.com
         name: API Security Policy
         description: Policy for enforcing security standards across all APIs.
@@ -1519,6 +1520,17 @@ components:
           example: 2024-08-02T12:00:00Z
           readOnly: true
           type: string
+        complianceAffectingSeverities:
+          description: |
+            Comma separated rule severities that make this policy fail. Violations of other severities are still
+            reported but do not affect the policy adherence status.
+
+            Three states are meaningful. Null means per policy severity filtering is not enabled on this
+            deployment, and clients should not offer it. An empty string means it is enabled but nothing has been
+            configured for this policy, so every severity affects compliance. A value lists the severities that do.
+          example: ERROR,WARN
+          nullable: true
+          type: string
       required:
       - actions
       - governableStates
@@ -1583,6 +1595,7 @@ components:
           - 94566543-d21b-34d5-b678-912345678900
           - 94566543-d21b-34d5-b678-912345678900
           updatedBy: admin@wso2.com
+          complianceAffectingSeverities: ERROR,WARN
           createdBy: admin@wso2.com
           name: API Security Policy
           description: Policy for enforcing security standards across all APIs.
@@ -1605,6 +1618,7 @@ components:
           - 94566543-d21b-34d5-b678-912345678900
           - 94566543-d21b-34d5-b678-912345678900
           updatedBy: admin@wso2.com
+          complianceAffectingSeverities: ERROR,WARN
           createdBy: admin@wso2.com
           name: API Security Policy
           description: Policy for enforcing security standards across all APIs.
