@@ -1,0 +1,13 @@
+[
+  {
+    "Type": "new_api_version",
+    "Notifiers": [
+      {
+        "Class": "org.wso2.carbon.apimgt.impl.notification.NewAPIVersionEmailNotifier",
+        "ClaimsRetrieverImplClass": "org.wso2.carbon.apimgt.impl.token.DefaultClaimsRetriever",
+        "Title": "Version $2 of $1 Released",
+        "Template": "<html><body><h3>Version $2 of the $1 API is now available in the API Store.</h3></body></html>"
+      }
+    ]
+  }
+]

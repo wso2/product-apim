@@ -45,7 +45,10 @@ module.exports = {
       script: "./duplicate-header-backend/server.js",
       cwd: "./",
       env: {
-        PORT: 3005
+        PORT: 3005,
+        // SMTP capture sink (see duplicate-header-backend/controllers/mailSinkController.js). In-network only —
+        // deliberately absent from NodeAppServer#exposedPorts; captured mail is read back over PORT above.
+        SMTP_PORT: 3025
       }
     },
     {
@@ -182,6 +185,22 @@ module.exports = {
     cwd: "./",
     env: {
       PORT: 3022
+    }
+  },
+  {
+    name: "tls-backend",
+    script: "./tls-backend/server.js",
+    cwd: "./",
+    env: {
+      PORT: 3023
+    }
+  },
+  {
+    name: "custom-status-backend",
+    script: "./custom-status-backend/server.js",
+    cwd: "./",
+    env: {
+      PORT: 3024
     }
   }
   ]

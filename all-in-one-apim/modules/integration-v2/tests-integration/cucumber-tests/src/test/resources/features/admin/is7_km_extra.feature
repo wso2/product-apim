@@ -16,7 +16,7 @@ Feature: External Key Manager Coexistence, Permissions and Grant Handling
   Scenario Outline: An IS7-KM application and a resident-KM application both invoke the same API independently as <actor>
     Given The system is ready
     And I have valid access tokens as "<actor>"
-    When I create a key manager from payload "artifacts/payloads/keymanagers/wso2is7.json" as "coexKm"
+    When I create a key manager from payload "artifacts/payloads/keymanagers/wso2is7.json" as "coexKm" and wait until it is operational
     And I have created an api from "artifacts/payloads/create_apim_test_api.json" as "multiApiId" and deployed it
     When I publish the "apis" resource with id "multiApiId"
     Then The lifecycle status of API "multiApiId" should be "Published"
@@ -42,7 +42,8 @@ Feature: External Key Manager Coexistence, Permissions and Grant Handling
     Then The response status code should be 200
     And I invoke the API at gateway context "{{multiApiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
-
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
     # --- Resident-KM application (token issued by APIM) ---
     When I put JSON payload from file "artifacts/payloads/create_apim_test_app_oauth.json" in context as "resAppPayload"
     And I create an application with payload "resAppPayload"
@@ -66,6 +67,8 @@ Feature: External Key Manager Coexistence, Permissions and Grant Handling
     And I request an access token for application id "createdAppId" using payload "resTokenPayload"
     And I invoke the API at gateway context "{{multiApiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
 
     Examples:
       | actor             |

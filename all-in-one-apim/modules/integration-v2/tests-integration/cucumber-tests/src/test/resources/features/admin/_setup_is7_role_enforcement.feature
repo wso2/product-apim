@@ -13,7 +13,7 @@ Feature: Setup - WSO2 IS 7.x scope-protected API for role-based authorization
     # Register the external key manager first (admin capability): the shared-scope create below fans
     # registerScope to the tenant's key managers, which is what creates the IS-side role.
     And I have valid access tokens as "admin"
-    When I create a key manager from payload "artifacts/payloads/keymanagers/wso2is7.json" as "roleEnfKm"
+    When I create a key manager from payload "artifacts/payloads/keymanagers/wso2is7.json" as "roleEnfKm" and wait until it is operational
     Then The response status code should be 201
     When I create a shared scope bound to a new IS7 role, storing the expected IS7 role name as "is7IsRole"
     Then The response status code should be 201

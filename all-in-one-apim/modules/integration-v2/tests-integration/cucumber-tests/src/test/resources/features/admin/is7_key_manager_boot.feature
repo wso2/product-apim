@@ -15,7 +15,7 @@ Feature: External Key Manager End-to-End Token Flow
   Scenario Outline: Obtain a token from IS7 (<kmAuthMode> client auth) and invoke a deployed API through the gateway
     Given The system is ready
     And I have valid access tokens as "admin"
-    When I create a key manager from payload "<kmPayload>" as "bootKm"
+    When I create a key manager from payload "<kmPayload>" as "bootKm" and wait until it is operational
     And I have created an api from "artifacts/payloads/create_apim_test_api.json" as "createdApiId" and deployed it
     When I publish the "apis" resource with id "createdApiId"
     Then The lifecycle status of API "createdApiId" should be "Published"
@@ -40,6 +40,8 @@ Feature: External Key Manager End-to-End Token Flow
     Then The response status code should be 200
     And I invoke the API at gateway context "{{apiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
     # --- Self-validate-JWT token revocation (both outline rows are self-validate mode) ---
     # Revoke the IS-issued token at IS; the gateway self-validates the JWT locally and does NOT re-contact IS per
     # request, so it learns of the revocation via the IS->APIM notification pipeline (IS event handler jar ->

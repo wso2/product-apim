@@ -45,6 +45,9 @@ Feature: External IdP Self-Validated JWT and Key Manager Token Type Lifecycle
     And The reflected backend JWT should not contain claim "http://idp.org/claims/mobileno"
     # The mapped remote names must not ALSO survive alongside their local translations.
     And The reflected backend JWT should not contain claim "http://idp.org/claims/givenname"
+    # typ pins the JOSE header declares a JWT — legacy checked typ/alg = JWT/RS256; the claim assertions above
+    # read the payload only, so a header that stopped declaring its type would slip past them.
+    And The reflected backend JWT header should contain "typ" with value "JWT"
     # The assertion is SIGNED, and with the algorithm the block's overlay leaves at its default. Every claim
     # assertion above reads the PAYLOAD, which is byte-identical whether or not the gateway signed the assertion -
     # so without this the backend would silently lose the ability to trust the injected identity while the whole
@@ -75,6 +78,9 @@ Feature: External IdP Self-Validated JWT and Key Manager Token Type Lifecycle
     And The reflected backend JWT should contain claim "http://wso2.org/claims/email" with value "first@gmail.com"
     And The reflected backend JWT should contain claim "http://idp2.org/claims/mobileno" with value "424479772294778"
     And The reflected backend JWT should not contain claim "http://idp2.org/claims/givenname"
+    # typ pins the JOSE header declares a JWT — the claim assertions above read the payload only, so a header that
+    # stopped declaring its type would slip past them.
+    And The reflected backend JWT header should contain "typ" with value "JWT"
 
     Examples:
       | actor             |

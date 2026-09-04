@@ -19,19 +19,29 @@ package org.wso2.am.integration.cucumbertests.utils;
 
 import org.json.JSONObject;
 
+import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.security.KeyFactory;
 import java.security.PrivateKey;
+import java.security.PublicKey;
 import java.security.Signature;
 import java.security.spec.PKCS8EncodedKeySpec;
+import java.security.spec.RSAPublicKeySpec;
 import java.util.Base64;
 
 /**
  * Test-side JWT plumbing shared by the grant/token-exchange/key-manager glue: base64url segment handling,
- * RS256 assertion signing, and signature-invalidating tamper helpers. This is ASSEMBLY and MUTATION of test
- * tokens only — never validation (the product under test does that). Consolidates the per-file copies that
- * previously lived in ApplicationBaseSteps, TokenExchangeSteps and JwtGrantSteps.
+ * RS256 assertion signing, signature-invalidating tamper helpers, and SIGNATURE VERIFICATION of a
+ * product-issued assertion. Consolidates the per-file copies that previously lived in ApplicationBaseSteps,
+ * TokenExchangeSteps and JwtGrantSteps.
+ *
+ * <p>Verification lives here beside the assembly helpers because both operate on the same segment/key
+ * primitives. It is NOT a re-implementation of the product's validation: it exists so a test can prove the
+ * gateway-issued backend JWT is cryptographically sound, which no payload/header assertion can do (a token
+ * with {@code alg=RS256} and a garbage signature satisfies every one of them). The verification key must be
+ * obtained at RUNTIME from the product under test (its JWKS endpoint) — never a committed PEM/keystore
+ * copy, which would drift from the key the product actually signs with.
  */
 public final class JwtTestUtils {
 
@@ -94,6 +104,68 @@ public final class JwtTestUtils {
     public static String buildRs256Jwt(String headerJson, String claimsJson, PrivateKey privateKey) {
         String signingInput = base64Url(headerJson) + "." + base64Url(claimsJson);
         return signingInput + "." + signRs256(signingInput, privateKey);
+    }
+
+    /**
+     * Builds an RSA public key from a JWKS entry's base64url modulus/exponent ({@code n}/{@code e}) — the
+     * runtime way to obtain a product's signing key without committing any key material to the repo.
+     */
+    public static PublicKey rsaPublicKeyFromJwk(String modulusBase64Url, String exponentBase64Url) {
+        BigInteger modulus = new BigInteger(1, Base64.getUrlDecoder().decode(modulusBase64Url));
+        BigInteger exponent = new BigInteger(1, Base64.getUrlDecoder().decode(exponentBase64Url));
+        try {
+            return KeyFactory.getInstance("RSA").generatePublic(new RSAPublicKeySpec(modulus, exponent));
+        } catch (GeneralSecurityException e) {
+            throw new IllegalStateException("Failed to build an RSA public key from the JWKS modulus/exponent", e);
+        }
+    }
+
+    /**
+     * Verifies a three-segment JWS: checks that {@code signature} really is the given key's signature over the
+     * transmitted {@code <header>.<payload>} string. Returns {@code false} for a bad signature (the caller
+     * asserts), and THROWS for a structurally impossible token or an algorithm this helper cannot verify — a
+     * silent {@code false} there would read as "tampered" and hide the real cause.
+     *
+     * <p>The signature segment is decoded url-safe first then standard, because the gateway's
+     * {@code [apim.jwt] encoding} option emits either alphabet while the signing input is always the segment
+     * text exactly as transmitted.
+     *
+     * @param jwt            the complete assertion
+     * @param joseAlgorithm  the JOSE {@code alg} header value (e.g. {@code RS256})
+     * @param publicKey      the verification key
+     * @return whether the signature verifies
+     */
+    public static boolean verifyJwsSignature(String jwt, String joseAlgorithm, PublicKey publicKey) {
+        String[] parts = jwt.split("\\.");
+        if (parts.length != 3 || parts[2].isEmpty()) {
+            throw new IllegalArgumentException("Not a 3-part SIGNED JWT (an unsigned assertion has an empty "
+                    + "signature segment): " + jwt);
+        }
+        String jcaAlgorithm;
+        switch (joseAlgorithm) {
+            case "RS256": jcaAlgorithm = "SHA256withRSA"; break;
+            case "RS384": jcaAlgorithm = "SHA384withRSA"; break;
+            case "RS512": jcaAlgorithm = "SHA512withRSA"; break;
+            default:
+                throw new IllegalArgumentException("Cannot verify JOSE algorithm '" + joseAlgorithm + "'");
+        }
+        try {
+            Signature verifier = Signature.getInstance(jcaAlgorithm);
+            verifier.initVerify(publicKey);
+            verifier.update((parts[0] + "." + parts[1]).getBytes(StandardCharsets.US_ASCII));
+            return verifier.verify(decodeBase64Segment(parts[2]));
+        } catch (GeneralSecurityException e) {
+            throw new IllegalStateException("Failed to verify the JWT signature with " + jcaAlgorithm, e);
+        }
+    }
+
+    /** Base64-decodes a JWT segment, url-safe alphabet first then standard (the gateway emits either). */
+    private static byte[] decodeBase64Segment(String segment) {
+        try {
+            return Base64.getUrlDecoder().decode(segment);
+        } catch (IllegalArgumentException e) {
+            return Base64.getDecoder().decode(segment);
+        }
     }
 
     /**

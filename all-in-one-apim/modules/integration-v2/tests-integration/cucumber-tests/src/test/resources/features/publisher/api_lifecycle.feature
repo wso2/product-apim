@@ -31,10 +31,9 @@ Feature: Publisher API Lifecycle
     Then The response status code should be 200
     When I retrieve the "apis" resource with id "createdApiId"
     Then The response status code should be 200
-    And The response should contain "Updated description for the created API"
-    And The response should contain "Gold"
-    And The response should contain "Bronze"
-    And The response should contain "Silver"
+    And The value of response field "description" should be "Updated description for the created API"
+    And The response array field "policies" should have exactly 3 entries
+    And The response field "policies[*]" should be exactly the list "Gold,Bronze,Silver"
 
     # Updating must not rename the API
     When I put JSON payload from file "artifacts/payloads/rename_apim_test_api.json" in context as "apiRenamePayload"
@@ -177,13 +176,9 @@ Feature: Publisher API Lifecycle
     And The response field "policies[*]" should be exactly the list ""
     # The PUBLISH is what fails, and it fails as a proper validation response naming the missing tiers.
     When I attempt to change the lifecycle of API "noTierApiId" with action "Publish"
-    # The error body is asserted with `should contain`, not the field-value step: that step deliberately refuses
-    # to read fields off a non-2xx body (so a success-shaped assertion can never be satisfied by an error
-    # payload), which is exactly the guard that makes it unusable for pinning an error DTO. Same approach as the
-    # deny-policy negatives, which likewise pin the exact status and body the product returns.
+    # Error envelope, not the field-value step: that one refuses a non-2xx body by design.
     Then The response status code should be 400
-    And The response should contain "\"code\":903224"
-    And The response should contain "\"message\":\"Failed to publish service to API store. No Tiers selected\""
+    And The error response should have code "903224" and message "Failed to publish service to API store. No Tiers selected"
     And The response should contain "No Tiers selected for API with UUID"
     # A rejected transition must not half-apply — the API stays in its pre-publish state.
     And The lifecycle status of API "noTierApiId" should be "Created"
@@ -207,6 +202,40 @@ Feature: Publisher API Lifecycle
     And I set the field "context" to "{{dupContext}}" in the payload "dupCtxB"
     And I attempt to create an "apis" resource with payload "dupCtxB"
     Then The response status code should be 409
+
+    Examples:
+      | actor                     |
+      | publisherUser             |
+      | publisherUser@tenant1.com |
+
+  # Ports DAOTestCase#testDAOTestCase — an API deleted via DELETE /apis/{id} can be re-created by a PLAIN POST
+  # with the SAME name and context. v2 today only re-creates via IMPORT (definitions.feature:import-export), which
+  # resolves a name/context collision through APIImportExportManager — a different code path — so the plain
+  # POST /apis uniqueness path after a delete was unguarded. Catches DAO residue that would leave the name/context
+  # reserved and 409 the re-create. Least-privilege publisher in both tenants (×2).
+  @cap:publisher @feat:api-lifecycle @type:regression @legacy:DAOTestCase
+  Scenario Outline: A deleted API can be re-created by the same name and context as <actor>
+    Given The system is ready and I have valid publisher access tokens as "<actor>"
+    # Resolve the ${UNIQUE:...} name+context ONCE (put-time) so the re-create targets the SAME identity, not a
+    # fresh unique value.
+    And I put JSON payload from file "artifacts/payloads/create_apim_test_api.json" in context as "recreatePayload"
+    When I create an "apis" resource with payload "recreatePayload" as "firstApiId"
+    Then The response status code should be 201
+    And I extract response field "name" and store it as "recreateName"
+    And I extract response field "context" and store it as "recreateContext"
+    And I extract response field "provider" and store it as "recreateProvider"
+    When I delete the "apis" resource with id "firstApiId"
+    Then The response status code should be 200
+    # Re-create with the SAME payload (identical name+context) through a plain POST /apis — must be accepted.
+    When I attempt to create an "apis" resource with payload "recreatePayload" as "recreatedApiId"
+    Then The response status code should be 201
+    # The re-created API echoes back the original identity (name/context/version/provider).
+    When I retrieve the "apis" resource with id "recreatedApiId"
+    Then The response status code should be 200
+    And The value of response field "name" should be "{{recreateName}}"
+    And The value of response field "context" should be "{{recreateContext}}"
+    And The value of response field "version" should be "1.0.0"
+    And The value of response field "provider" should be "{{recreateProvider}}"
 
     Examples:
       | actor                     |

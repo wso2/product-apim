@@ -1,0 +1,34 @@
+{
+  "name": "${UNIQUE:UriFullUrlPath}",
+  "context": "${UNIQUE:uriFullUrlPathCtx}",
+  "version": "1.0.0",
+  "endpointConfig": {
+    "endpoint_type": "http",
+    "production_endpoints": {
+      "template_not_supported": false,
+      "config": null,
+      "url": "http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/echo/sub{+uri.var.val}"
+    },
+    "sandbox_endpoints": {
+      "template_not_supported": false,
+      "config": null,
+      "url": "http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/echo/sub{+uri.var.val}"
+    }
+  },
+  "description": "reserved-expansion RESOURCE /special_case/{+val} + escape {+uri.var.val} endpoint - full URL as path param",
+  "policies": [
+    "Gold",
+    "Bronze",
+    "Unlimited"
+  ],
+  "operations": [
+    {
+      "verb": "GET",
+      "target": "/special_case/{+val}",
+      "scopes": []
+    }
+  ],
+  "isDefaultVersion": true,
+  "additionalProperties": [],
+  "additionalPropertiesMap": {}
+}

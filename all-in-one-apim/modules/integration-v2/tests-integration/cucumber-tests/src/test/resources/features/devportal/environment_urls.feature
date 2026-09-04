@@ -99,6 +99,70 @@ Feature: DevPortal Environment URLs
       | admin             |
       | admin@tenant1.com |
 
+  # The devportal endpointURLs advertise a versionless URL surface (defaultVersionURLs) ONLY once the API is the
+  # default version. Ports DefaultVersionAPITestCase#testDefaultVersionAPI's store-side assertions, which are
+  # exercised NOWHERE else. Two things are pinned by contrast that either alone would understate:
+  #   - BEFORE vs AFTER: before the API is default, the defaultVersionURLs object is PRESENT but every member is
+  #     null (observed — the object is NOT absent, correcting legacy's "null before" wording); after, http/https
+  #     populate while ws/wss stay null for a REST API. Asserting all four at both states catches a regression that
+  #     either stopped populating http/https or started emitting ws/wss.
+  #   - defaultVersionURLs vs URLs: defaultVersionURLs.http carries NO /1.0.0 version suffix, whereas the sibling
+  #     URLs.http (same payload) does. That missing version segment IS the versionless semantic the field exists
+  #     for, so both are pinned here to make the contrast explicit. ×2 tenant.
+  @cap:devportal @feat:discovery @rule:default-version @type:regression @dep:publisher @legacy:DefaultVersionAPITestCase
+  Scenario Outline: The devportal endpointURLs advertise defaultVersionURLs only once the API is the default version as <actor>
+    Given The system is ready
+    And I have valid access tokens as "<actor>"
+
+    # A versioned API created WITHOUT a default version, deployed and published. The context is a controlled unique
+    # base so the versionless defaultVersionURLs can be asserted exactly: a non-default API's stored context keeps
+    # its /1.0.0 suffix (verified: it stays /<base>/1.0.0 even after the API is later made default), so the versionless
+    # URL cannot be derived from the extracted context — it is <base> without the version.
+    When I generate a unique alphanumeric value and store it as "ndvCtxBase"
+    And I put JSON payload from file "artifacts/payloads/create_non_default_version_api.json" in context as "ndvPayload"
+    And I set the field "context" to "{{ndvCtxBase}}" in the payload "ndvPayload"
+    When I create an "apis" resource with payload "ndvPayload" as "ndvApiId"
+    Then The response status code should be 201
+    When I deploy the API with id "ndvApiId"
+    Then The response status code should be 201
+    When I publish the "apis" resource with id "ndvApiId"
+    Then The lifecycle status of API "ndvApiId" should be "Published"
+
+    # BEFORE it is default: the defaultVersionURLs object is present but every member is null.
+    When I retrieve the devportal API "ndvApiId"
+    Then The response status code should be 200
+    And The response field "endpointURLs[0].defaultVersionURLs.http" should be null
+    And The response field "endpointURLs[0].defaultVersionURLs.https" should be null
+    And The response field "endpointURLs[0].defaultVersionURLs.ws" should be null
+    And The response field "endpointURLs[0].defaultVersionURLs.wss" should be null
+
+    # Make it the default version and redeploy so the store reflects the change.
+    When I retrieve the "apis" resource with id "ndvApiId"
+    And I put the response payload in context as "ndvUpdatePayload"
+    When I update the "apis" resource "ndvApiId" and "ndvUpdatePayload" with configuration type "isDefaultVersion" and value:
+    """
+    true
+    """
+    Then The response status code should be 200
+    When I deploy the API with id "ndvApiId"
+    Then The response status code should be 201
+    When I wait until "apis" "ndvApiId" revision is deployed in the gateway
+
+    # AFTER: http/https carry the VERSIONLESS URL — note it is the sibling URLs.http (asserted alongside) MINUS the
+    # /1.0.0 version segment; that missing segment IS the whole point of the field. ws/wss stay null for a REST API.
+    When I retrieve the devportal API "ndvApiId"
+    Then The response status code should be 200
+    And The value of response field "endpointURLs[0].URLs.http" should be "http://localhost:8280<tenantPrefix>/{{ndvCtxBase}}/1.0.0"
+    And The value of response field "endpointURLs[0].defaultVersionURLs.http" should be "http://localhost:8280<tenantPrefix>/{{ndvCtxBase}}"
+    And The value of response field "endpointURLs[0].defaultVersionURLs.https" should be "https://localhost:8243<tenantPrefix>/{{ndvCtxBase}}"
+    And The response field "endpointURLs[0].defaultVersionURLs.ws" should be null
+    And The response field "endpointURLs[0].defaultVersionURLs.wss" should be null
+
+    Examples:
+      | actor             | tenantPrefix   |
+      | admin             |                |
+      | admin@tenant1.com | /t/tenant1.com |
+
   # The advertised gateway host AND PORT an API is deployed behind are what the DevPortal tells a consumer to
   # call. Ports APIMANAGER5869WSGayewatURLTestCase.testApiGatewayUrlsAfterConfigChangeTest — the legacy-disabled
   # config-override case — and asserts the URLs EXACTLY (scheme, host, port and the full /<context>/<version>

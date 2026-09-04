@@ -86,6 +86,15 @@
             <artifactId>toml4j</artifactId>
             <version>${toml4j.version}</version>
         </dependency>
+        <!-- YAML (and JSON, a YAML subset) parser used to assert exported operation-policy specs match their
+             source spec content structurally (not as brittle text). No YAML parser was otherwise on the
+             cucumber-tests classpath. Version inherited from the parent's dependencyManagement
+             (${version.snake.yaml}) — a test-scope declaration of an already-managed dependency, not a new one. -->
+        <dependency>
+            <groupId>org.yaml</groupId>
+            <artifactId>snakeyaml</artifactId>
+            <scope>test</scope>
+        </dependency>
         <dependency>
             <groupId>org.wso2.orbit.javax.xml.bind</groupId>
             <artifactId>jaxb-api</artifactId>

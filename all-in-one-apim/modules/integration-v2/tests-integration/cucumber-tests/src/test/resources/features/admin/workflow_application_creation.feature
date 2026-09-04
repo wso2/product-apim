@@ -72,7 +72,12 @@ Feature: Approval workflow - application creation
   # self-approving its own pending request), so its 401 is asserted against a REAL pending reference - and the
   # admin then approves that same reference for 200, which is what proves the 401s were the scope guard firing
   # rather than an unknown-reference rejection.
-  @cap:admin @feat:workflows @dep:devportal @legacy:WorkflowApprovalExecutorTest @type:negative
+  # Also carries the wrong-scope half of APIStateChangeWorkflowTestCase#testWorkflowCallbackRestAPI: that legacy
+  # method posts to the very same update-workflow-status endpoint with a token lacking the workflow scope. Legacy
+  # asserted 401 against the publisher API of the day; MEASURED on this build the admin endpoint answers 401 too,
+  # so the case is this scenario and is not duplicated. Its unknown-reference half (404) lives in
+  # workflow_api_state_change.feature.
+  @cap:admin @feat:workflows @dep:devportal @legacy:WorkflowApprovalExecutorTest @legacy:APIStateChangeWorkflowTestCase @type:negative
   Scenario Outline: A non-admin token cannot read or decide a pending workflow by its external reference as <requester>
     Given The system is ready with an admin approver and "<requester>" as the requester
 

@@ -15,7 +15,7 @@ Feature: Deny Policy Enforcement For Email-Form Principals
   recorded in gateway/deny_policy_enforcement.feature and docs/devs/email-username-findings.md: on 4.7.0 it does
   not block for ANY username form, plain or email, so it is a candidate product defect rather than coverage.
 
-  @cap:gateway @feat:throttling @rule:deny-enforcement @type:regression @dep:admin @dep:publisher
+  @cap:gateway @feat:throttling-enforcement @rule:deny-enforcement @type:regression @dep:admin @dep:publisher
   Scenario Outline: An API-context deny refuses an email-form principal's invocation as <actor>
     Given The system is ready
     And I have valid access tokens as "<actor>"

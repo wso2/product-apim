@@ -100,6 +100,7 @@ Feature: Admin Throttling Policy Export / Import
     And The value of response field "data.defaultLimit.requestCount.requestCount" should be "1000"
     And The value of response field "data.defaultLimit.requestCount.timeUnit" should be "min"
     And The value of response field "data.defaultLimit.requestCount.unitTime" should be "1"
+    And The response array field "data.conditionalGroups" should have exactly 0 entries
     And The response field "data.conditionalGroups[*].description" should be exactly the list ""
     When I import the throttling policy from "eiAdvExport" with overwrite "false"
     Then The response status code should be 409

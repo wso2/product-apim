@@ -31,8 +31,11 @@ import org.wso2.carbon.automation.engine.context.beans.User;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Step definitions for API comments and per-user ratings — features not previously ported to integration-v2.
@@ -47,31 +50,64 @@ public class CommentRatingSteps {
 
     /**
      * The acting actor's token for the given plane. For {@code devportal}, the standard devportal token
-     * ({@code apim:subscribe}) covers comment add/list. For {@code publisher}, comment management needs the
-     * dedicated {@code apim:comment_view}/{@code apim:comment_manage} scopes, which the shared publisher token
-     * does NOT carry — so a comment-scoped publisher token is minted here (self-contained in this class, keyed by
-     * the acting actor's DCR credentials) rather than by widening the shared publisher-token scope list.
+     * ({@code apim:subscribe}) covers comment add/list. For {@code publisher}, a comment-scoped token is minted
+     * here (see {@link #PUBLISHER_COMMENT_SCOPES}).
      */
     private Map<String, String> planeAuthHeaders(String plane) throws IOException {
+        return planeAuthHeaders(plane, false);
+    }
+
+    /**
+     * Auth headers for a comment operation on the given plane. When {@code asModerator} is set, the token also
+     * carries {@code apim:admin} — the "special scope added to moderate other comments" declared on the comment
+     * PATCH/DELETE operations of both the publisher and devportal API definitions. Without it the ownership check
+     * refuses a non-owner with 403 even when the caller is the tenant admin, so moderation is a property of the
+     * TOKEN's scopes, not of the actor's role alone. It reaches DELETE only: the edit handlers on both planes gate
+     * on ownership alone, with no admin-scope branch.
+     */
+    private Map<String, String> planeAuthHeaders(String plane, boolean asModerator) throws IOException {
         Map<String, String> headers = new HashMap<>();
-        String token = "publisher".equals(plane) ? publisherCommentToken() : Identity.devportalToken();
+        String token;
+        if ("publisher".equals(plane)) {
+            token = commentToken(PUBLISHER_COMMENT_SCOPES, asModerator);
+        } else {
+            token = asModerator ? commentToken(DEVPORTAL_COMMENT_SCOPES, true) : Identity.devportalToken();
+        }
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + token);
         return headers;
     }
 
-    /** Context key for the cached comment-scoped publisher token of an actor. */
-    private static String commentTokenKey(User actor) {
-        return "publisherCommentToken_" + actor.getUserName();
+    /**
+     * Publisher-plane comment scopes. Comment management needs the dedicated {@code apim:comment_view}/
+     * {@code apim:comment_manage} scopes, which the shared publisher token does NOT carry — so a comment-scoped
+     * token is minted in this class rather than by widening the shared publisher-token scope list.
+     */
+    private static final String PUBLISHER_COMMENT_SCOPES = "apim:api_view apim:comment_view apim:comment_manage";
+
+    /**
+     * Devportal-plane comment scopes — the same set the shared devportal token carries. Only ever used with the
+     * moderator scope appended; the plain devportal token comes from {@link Identity#devportalToken()}.
+     */
+    private static final String DEVPORTAL_COMMENT_SCOPES = "apim:app_manage apim:sub_manage apim:subscribe";
+
+    /** The extra scope that authorises editing/deleting a comment owned by ANOTHER user. */
+    private static final String MODERATOR_SCOPE = "apim:admin";
+
+    /** Context key for a cached comment token of an actor, keyed by the exact scope set it was minted with. */
+    private static String commentTokenKey(User actor, String scopes) {
+        return "commentToken_" + actor.getUserName() + "_" + scopes;
     }
 
     /**
-     * Mints (and caches) a publisher-plane token carrying {@code apim:comment_view apim:comment_manage} for the
-     * acting actor, using the actor's DCR credentials (registered by the {@code I have valid access tokens as}
-     * composite). Kept local to comments so the shared publisher-token scope list is untouched.
+     * Mints (and caches) a comment token for the acting actor over the given scope set, using the actor's DCR
+     * credentials (registered by the {@code I have valid access tokens as} composite). With
+     * {@code asModerator} the moderator scope is appended — the actor must be an admin, since a non-admin is
+     * denied {@code apim:admin} and would end up with a token the comment endpoints reject as unauthenticated.
      */
-    private String publisherCommentToken() throws IOException {
+    private String commentToken(String scopes, boolean asModerator) throws IOException {
+        String requestedScopes = asModerator ? scopes + " " + MODERATOR_SCOPE : scopes;
         User actor = Identity.actingActor();
-        Object cached = TestContext.get(commentTokenKey(actor));
+        Object cached = TestContext.get(commentTokenKey(actor, requestedScopes));
         if (cached != null) {
             return cached.toString();
         }
@@ -82,12 +118,25 @@ public class CommentRatingSteps {
         json.addProperty("grant_type", "password");
         json.addProperty("username", actor.getUserName());
         json.addProperty("password", actor.getPassword());
-        json.addProperty("scope", "apim:api_view apim:comment_view apim:comment_manage");
+        json.addProperty("scope", requestedScopes);
         HttpResponse response = SimpleHTTPClient.getInstance().doPost(Utils.getAPIMTokenEndpointURL(Utils.getBaseUrl()),
                 headers, json.toString(), Constants.CONTENT_TYPES.APPLICATION_JSON);
         Assert.assertEquals(response.getResponseCode(), 200, response.getData());
+        // A scope the actor's roles do not permit is silently DROPPED from the issued token, and the endpoint then
+        // answers 403 (the token still carries apim:comment_manage, so it authenticates and reaches the ownership
+        // check). Asserting the grant here turns that misleading 403 into a clear "the actor cannot hold this scope".
+        if (asModerator) {
+            String granted = String.valueOf(Utils.extractValueFromPayload(response.getData(), "scope"));
+            // Exact membership over the space-separated list, not a substring: `apim:admin` is a prefix of
+            // `apim:admin_settings`, `apim:admin_operations` and 8 more real scopes, any of which would satisfy
+            // a contains() check while bare `apim:admin` was actually withheld.
+            Set<String> grantedScopes = new HashSet<>(Arrays.asList(granted.trim().split("\\s+")));
+            Assert.assertTrue(grantedScopes.contains(MODERATOR_SCOPE), "The " + MODERATOR_SCOPE + " scope was NOT granted "
+                    + "to " + actor.getUserName() + " — comment moderation cannot be exercised with this token. "
+                    + "Granted scopes: " + granted);
+        }
         String token = Utils.extractValueFromPayload(response.getData(), "access_token").toString();
-        TestContext.set(commentTokenKey(actor), token);
+        TestContext.set(commentTokenKey(actor, requestedScopes), token);
         return token;
     }
 
@@ -168,18 +217,47 @@ public class CommentRatingSteps {
     @When("I edit the {string} comment {string} of API {string} to content {string} category {string}")
     public void iEditComment(String plane, String commentKey, String apiKey, String content, String category)
             throws IOException {
+        editComment(plane, commentKey, apiKey, content, category, false);
+    }
+
+    /**
+     * Edits a comment as a MODERATOR — the same PATCH, but authenticated with a token that additionally carries
+     * {@code apim:admin}. Exists to prove the scope does NOT extend to editing: both planes' comment-edit handlers
+     * gate on ownership alone, so a non-owner is refused 403 even holding it (unlike delete, which does honour it).
+     */
+    @When("I edit the {string} comment {string} of API {string} to content {string} category {string} as a comment moderator")
+    public void iEditCommentAsModerator(String plane, String commentKey, String apiKey, String content,
+                                        String category) throws IOException {
+        editComment(plane, commentKey, apiKey, content, category, true);
+    }
+
+    private void editComment(String plane, String commentKey, String apiKey, String content, String category,
+                             boolean asModerator) throws IOException {
         String apiId = TestContext.resolve(apiKey).toString();
         String commentId = TestContext.resolve(commentKey).toString();
-        Requests.patch(Utils.getAPIComment(Utils.getBaseUrl(), plane, apiId, commentId), planeAuthHeaders(plane),
-                commentBody(content, category), Constants.CONTENT_TYPES.APPLICATION_JSON);
+        Requests.patch(Utils.getAPIComment(Utils.getBaseUrl(), plane, apiId, commentId),
+                planeAuthHeaders(plane, asModerator), commentBody(content, category),
+                Constants.CONTENT_TYPES.APPLICATION_JSON);
     }
 
     /** Deletes a comment on the given plane; publishes the response for assertion (delete cascades to replies). */
     @When("I delete the {string} comment {string} of API {string}")
     public void iDeleteComment(String plane, String commentKey, String apiKey) throws IOException {
+        deleteComment(plane, commentKey, apiKey, false);
+    }
+
+    /** Deletes a comment as a MODERATOR — see {@link #iEditCommentAsModerator} for why the scope differs. */
+    @When("I delete the {string} comment {string} of API {string} as a comment moderator")
+    public void iDeleteCommentAsModerator(String plane, String commentKey, String apiKey) throws IOException {
+        deleteComment(plane, commentKey, apiKey, true);
+    }
+
+    private void deleteComment(String plane, String commentKey, String apiKey, boolean asModerator)
+            throws IOException {
         String apiId = TestContext.resolve(apiKey).toString();
         String commentId = TestContext.resolve(commentKey).toString();
-        Requests.delete(Utils.getAPIComment(Utils.getBaseUrl(), plane, apiId, commentId), planeAuthHeaders(plane));
+        Requests.delete(Utils.getAPIComment(Utils.getBaseUrl(), plane, apiId, commentId),
+                planeAuthHeaders(plane, asModerator));
     }
 
     // ------------------------------ Ratings (devportal only) ------------------------------

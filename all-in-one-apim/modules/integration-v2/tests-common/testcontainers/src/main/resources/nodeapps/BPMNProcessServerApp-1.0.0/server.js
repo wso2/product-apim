@@ -24,6 +24,10 @@ const port = process.env.PORT || 3004;
 
 app.use(bodyParser.json());
 
+// APIStateChangeWSWorkflowExecutor posts to <serviceEndpoint> + "/runtime/process-instances" (its hardcoded
+// RUNTIME_INSTANCE_RESOURCE_PATH), so the same routes are mounted there too; the bare mount is kept for callers
+// that address the collection directly.
+app.use('/runtime/process-instances', processInstanceRoutes);
 app.use('/process-instances', processInstanceRoutes);
 
 app.listen(port, () => {

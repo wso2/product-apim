@@ -119,6 +119,9 @@ public class OrganizationSteps {
     private void setOrganizationClaim(String username, String orgId, String adminUser, String adminPass)
             throws IOException {
 
+        // The claim is set on the PHYSICAL username, which in an email-mode block carries the mail domain the
+        // provisioner appended — so pass the base name through the same single-owner transform addUser used.
+        username = TenantUserProvisioner.physicalUserName(username);
         String payload =
                 "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" "
                         + "xmlns:ser=\"http://service.ws.um.carbon.wso2.org\">"
@@ -379,12 +382,11 @@ public class OrganizationSteps {
         // Cleared first so a throw leaves httpResponse ABSENT rather than stale (§7 stale-response trap).
         TestContext.remove("httpResponse");
         HttpResponse last = Utils.retryUntil(timeoutSeconds * 1000L,
-                () -> SimpleHTTPClient.getInstance()
-                        .doGet(Utils.getDevportalApiDetailURL(Utils.getBaseUrl(), apiId), headers),
+                () -> Requests.get(Utils.getDevportalApiDetailURL(Utils.getBaseUrl(), apiId), headers),
                 // A 200 with no body counts as still-pending, not a match.
                 response -> response.getResponseCode() == 200 && response.getData() != null
                         && response.getData().contains(expected));
-        TestContext.set("httpResponse", last);
+        Requests.publishPollResult(last);
         Assert.assertNotNull(last, "No devportal response received for API " + apiId);
         Assert.assertTrue(last.getResponseCode() == 200 && last.getData() != null,
                 "DevPortal API " + apiId + " did not return a 200 with a body within " + timeoutSeconds
@@ -442,14 +444,29 @@ public class OrganizationSteps {
      *                  reference like {@code {{subOrg1}}})
      */
     @Then("The visible organizations of API {string} should be exactly {string}")
-    public void theVisibleOrganizationsOfApiShouldBeExactly(String apiIdKey, String expected) throws IOException {
+    public void theVisibleOrganizationsOfApiShouldBeExactly(String apiIdKey, String expected)
+            throws IOException, InterruptedException {
 
         String apiId = TestContext.resolve(apiIdKey).toString();
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
 
-        HttpResponse response = Requests.get(
-                Utils.getResourceEndpointURL(Utils.getBaseUrl(), "apis", apiId), headers);
+        List<String> expectedValues = new ArrayList<>();
+        for (String value : Utils.resolveContextPlaceholders(expected).split(",")) {
+            expectedValues.add(value.trim());
+        }
+        Collections.sort(expectedValues);
+
+        // Read-after-write: the publisher plane can serve the PRE-update document after the setter's PUT already
+        // answered 200, so poll (§7/§15). Only the read is retried — the assertions below still pin the exact set.
+        String url = Utils.getResourceEndpointURL(Utils.getBaseUrl(), "apis", apiId);
+        TestContext.remove("httpResponse");
+        HttpResponse response = Utils.retryUntil(Constants.RUNTIME_PROPAGATION_TIMEOUT,
+                () -> Requests.get(url, headers),
+                r -> r != null && r.getResponseCode() == 200 && r.getData() != null && !r.getData().isBlank()
+                        && expectedValues.equals(sortedVisibleOrganizations(r.getData())));
+        Requests.publishPollResult(response);
+
         Assert.assertTrue(response != null && response.getResponseCode() == 200 && response.getData() != null
                         && !response.getData().isBlank(),
                 "Failed to fetch API '" + apiId + "' to read its visible organizations: got "
@@ -463,14 +480,27 @@ public class OrganizationSteps {
         for (int i = 0; i < visible.length(); i++) {
             actual.add(visible.getString(i));
         }
-        List<String> expectedValues = new ArrayList<>();
-        for (String value : Utils.resolveContextPlaceholders(expected).split(",")) {
-            expectedValues.add(value.trim());
-        }
         Collections.sort(actual);
-        Collections.sort(expectedValues);
         Assert.assertEquals(actual, expectedValues,
                 "visibleOrganizations mismatch for API '" + apiId + "'. Body: " + response.getData());
+    }
+
+    /**
+     * The API's {@code visibleOrganizations}, sorted; null when the field is absent so a body without it reads as
+     * "not settled yet" rather than matching an empty expectation.
+     */
+    private static List<String> sortedVisibleOrganizations(String body) {
+
+        JSONArray visible = new JSONObject(body).optJSONArray("visibleOrganizations");
+        if (visible == null) {
+            return null;
+        }
+        List<String> values = new ArrayList<>();
+        for (int i = 0; i < visible.length(); i++) {
+            values.add(visible.getString(i));
+        }
+        Collections.sort(values);
+        return values;
     }
 
     /**
@@ -533,11 +563,11 @@ public class OrganizationSteps {
         // Cleared first so a throw leaves httpResponse ABSENT rather than stale (the §7 stale-response trap).
         TestContext.remove("httpResponse");
         HttpResponse last = Utils.retryUntil(timeoutSeconds * 1000L,
-                () -> SimpleHTTPClient.getInstance().doGet(Utils.getDevportalApisURL(Utils.getBaseUrl()), headers),
+                () -> Requests.get(Utils.getDevportalApisURL(Utils.getBaseUrl()), headers),
                 // A 200 with no body counts as still-pending, not a match.
                 response -> response.getResponseCode() == 200 && response.getData() != null
                         && response.getData().contains(apiId) == shouldContain);
-        TestContext.set("httpResponse", last);
+        Requests.publishPollResult(last);
         Assert.assertNotNull(last, "No devportal API-list response received");
         Assert.assertTrue(last.getResponseCode() == 200 && last.getData() != null,
                 "DevPortal API listing did not return a 200 with a body within " + timeoutSeconds + "s; got "
@@ -618,12 +648,11 @@ public class OrganizationSteps {
         // Cleared first so a throw leaves httpResponse ABSENT rather than stale (§7 stale-response trap).
         TestContext.remove("httpResponse");
         HttpResponse last = Utils.retryUntil(timeoutSeconds * 1000L,
-                () -> SimpleHTTPClient.getInstance()
-                        .doGet(Utils.getDevportalKeyManagersURL(Utils.getBaseUrl()), headers),
+                () -> Requests.get(Utils.getDevportalKeyManagersURL(Utils.getBaseUrl()), headers),
                 // A 200 with no body counts as still-pending, not a match.
                 response -> response.getResponseCode() == 200 && response.getData() != null
                         && response.getData().contains(kmId) == shouldContain);
-        TestContext.set("httpResponse", last);
+        Requests.publishPollResult(last);
         Assert.assertNotNull(last, "No devportal key-manager response received");
         Assert.assertTrue(last.getResponseCode() == 200 && last.getData() != null,
                 "DevPortal key-manager listing did not return a 200 with a body within " + timeoutSeconds
@@ -641,10 +670,9 @@ public class OrganizationSteps {
         // Cleared first so a throw leaves httpResponse ABSENT rather than stale (§7 stale-response trap).
         TestContext.remove("httpResponse");
         HttpResponse last = Utils.retryUntil(timeoutSeconds * 1000L,
-                () -> SimpleHTTPClient.getInstance()
-                        .doGet(Utils.getDevportalApiDetailURL(Utils.getBaseUrl(), apiId), headers),
+                () -> Requests.get(Utils.getDevportalApiDetailURL(Utils.getBaseUrl(), apiId), headers),
                 response -> response.getResponseCode() == expectedStatus);
-        TestContext.set("httpResponse", last);
+        Requests.publishPollResult(last);
         Assert.assertNotNull(last, "No devportal response received for API " + apiId);
         Assert.assertEquals(last.getResponseCode(), expectedStatus,
                 "DevPortal API visibility did not reach " + expectedStatus + " within " + timeoutSeconds

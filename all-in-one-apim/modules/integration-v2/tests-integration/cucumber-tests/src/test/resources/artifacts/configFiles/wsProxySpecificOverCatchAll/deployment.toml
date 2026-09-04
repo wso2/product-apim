@@ -1,0 +1,27 @@
+# Extra overlay for the IntegrationV2-WsProxySpecificOverCatchAll block.
+#
+# Tests that a specific profile takes precedence over a catch-all profile when both match the
+# backend hostname. Two profiles are loaded:
+#
+#   Profile 1 — catch-all: target_hosts = ["*"], bypass_hosts = ["nodebackend"].
+#               Declared FIRST. A first-match implementation would select this and bypass the
+#               proxy for nodebackend (CONNECT count = 0).
+#
+#   Profile 2 — specific: target_hosts = ["nodebackend"], no bypass_hosts.
+#               Declared SECOND. A most-specific-match implementation selects this regardless
+#               of declaration order, routing nodebackend through the proxy (CONNECT count = 1).
+#
+# The CONNECT count is the decisive assertion: count = 1 proves the specific profile was chosen
+# over the catch-all even though the catch-all appears first in the TOML. A first-match
+# implementation would produce count = 0 (catch-all bypass wins) and fail the test.
+
+[[transport.ws.proxy_profile]]
+target_hosts = ["*"]
+bypass_hosts = ["nodebackend"]
+proxy_host = "squid-proxy"
+proxy_port = 3128
+
+[[transport.ws.proxy_profile]]
+target_hosts = ["nodebackend"]
+proxy_host = "squid-proxy"
+proxy_port = 3128

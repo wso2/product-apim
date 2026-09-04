@@ -14,7 +14,7 @@ Feature: External Key Manager Tenant Token Revocation
   Scenario: A tenant-org IS7 token invokes through the gateway and is rejected after revocation at IS
     Given The system is ready
     And I have valid access tokens as "admin@tenant1.com"
-    When I create a key manager from payload "artifacts/payloads/keymanagers/wso2is7.json" as "tenantKmId"
+    When I create a key manager from payload "artifacts/payloads/keymanagers/wso2is7.json" as "tenantKmId" and wait until it is operational
     And I have created an api from "artifacts/payloads/create_apim_test_api.json" as "createdApiId" and deployed it
     When I publish the "apis" resource with id "createdApiId"
     Then The lifecycle status of API "createdApiId" should be "Published"
@@ -40,6 +40,8 @@ Feature: External Key Manager Tenant Token Revocation
     # The tenant API's context already carries the /t/tenant1.com prefix - invoke it verbatim.
     And I invoke the API at gateway context "{{apiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
     # Revoke at IS; prove IS itself reflects it, then that the tenant-org gateway context enforces it.
     When I revoke the access token at the external key manager
     Then The response status code should be 200

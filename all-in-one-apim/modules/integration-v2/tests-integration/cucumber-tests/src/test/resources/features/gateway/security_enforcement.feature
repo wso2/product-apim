@@ -2,9 +2,10 @@
 Feature: Gateway Security Enforcement
 
   Gateway-plane runtime security enforcement (negatives), in both the super tenant and tenant1.com:
-  an invalid bearer token is rejected (401), and a valid token from an application that is NOT subscribed
-  to the API is refused access (403). The valid-token happy path is covered by gateway/rest-invocation.
-  Teardown via the per-scenario cleanup hook.
+  an invalid bearer token is rejected (401), a valid token from an application that is NOT subscribed
+  to the API is refused access (403), and a role-bound operation scope is granted to a user carrying the role
+  (200) while withheld from one who does not (403). The valid-token happy path is covered by
+  gateway/rest-invocation. Teardown via the per-scenario cleanup hook.
 
   @cap:gateway @feat:security-enforcement @type:negative @rule:invalid-token @dep:publisher @legacy:APIMANAGERInvocationTestCase @legacy:InvalidTokenTestCase
   Scenario Outline: Invoke a published API with an invalid token is rejected as <actor>
@@ -100,6 +101,8 @@ Feature: Gateway Security Enforcement
     # Subscribed -> invocation succeeds
     And I invoke the API at gateway context "{{apiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
 
     # Block the subscription -> gateway refuses the same token (401, code 900907 "temporarily blocked")
     When I block the subscription with "subscriptionId" for the resource
@@ -112,6 +115,8 @@ Feature: Gateway Security Enforcement
     Then The response status code should be 200
     And I invoke the API at gateway context "{{apiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
 
     Examples:
       | actor             |
@@ -228,7 +233,8 @@ Feature: Gateway Security Enforcement
     # against.
     When I invoke the API at gateway context "{{apiContext}}/1.0.0/customers/123/" with method "GET" using basic auth for actor "<actor>" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
-    And The response should contain "\"name\":\"John\""
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
 
     # Email-form usernames as a gateway Basic credential (legacy's users[] fan-out, apisecUser2@wso2.com /
     # apisecUser2@abc.com) are COVERED in gateway/basic_auth_email_username.feature, not here: they need
@@ -246,14 +252,12 @@ Feature: Gateway Security Enforcement
     # A valid user with the WRONG password → 401 / 900901.
     When I invoke the API at gateway context "{{apiContext}}/1.0.0/customers/123/" with method "GET" using basic auth for actor "<actor>" with password "totallyWrongPassword" until response status code becomes 401 within 60 seconds
     Then The response status code should be 401
-    And The response should contain "900901"
-    And The response should contain "Invalid Credentials"
+    And The error response should have code "900901" message "Invalid Credentials" and description containing "Make sure you have provided the correct security credentials"
     # An entirely UNKNOWN user (no such account in the tenant) → also 401 / 900901. Fully qualified with the tenant
     # domain: a domainless made-up name resolves against the super tenant and answers 403 on a tenant API instead.
     When I invoke the API at gateway context "{{apiContext}}/1.0.0/customers/123/" with method "GET" using basic auth username "noSuchUser@<domain>" password "randomPassword" until response status code becomes 401 within 60 seconds
     Then The response status code should be 401
-    And The response should contain "900901"
-    And The response should contain "Invalid Credentials"
+    And The error response should have code "900901" message "Invalid Credentials" and description containing "Make sure you have provided the correct security credentials"
 
     Examples:
       | actor             | domain       |
@@ -323,8 +327,7 @@ Feature: Gateway Security Enforcement
     Then The response status code should be 500
     # Pin the ROOT CAUSE, not just the status: the fault body carries Synapse error code 601000 and the exact
     # Woodstox parser message, proving the 500 is the malformed-XML build failure (not some incidental 500).
-    And The response should contain "601000"
-    And The response should contain "Unexpected EOF; was expecting a close tag for element <request>"
+    And The error response should have code "601000" message "Runtime Error" and description containing "Unexpected EOF; was expecting a close tag for element <request>"
 
     Examples:
       | actor             |
@@ -362,6 +365,59 @@ Feature: Gateway Security Enforcement
     And I invoke the API at gateway context "{{erContext}}/1.0.0/customers/123/" with method "GET" using access token "erBadToken" and payload "" until response status code becomes 401 within 60 seconds
     Then The response status code should be 401
     And The response should not contain "erSecretTokenValue12345"
+
+    Examples:
+      | actor             |
+      | admin             |
+      | admin@tenant1.com |
+
+  # Ports ErrorMessageTypeTestCase — the gateway's DEFAULT error message TYPE, asserted on a request the gateway
+  # cannot dispatch to any resource.
+  #
+  # MEASURED on this build (wso2am 4.7.0-SNAPSHOT / carbon-apimgt 9.33.171) before writing this scenario, by
+  # deploying an API with only GET|DELETE /customers/{id} and hitting an undefined path under its context, over
+  # HTTP :8280 and HTTPS :8243, with no credential and with a bogus bearer — all four give the SAME answer:
+  #   404, Content-Type application/json; charset=UTF-8, body
+  #   {"code":"404","type":"Status report","message":"Runtime Error","description":"No matching resource found for given API Request"}
+  # Legacy expected 403 with a body opening {"fault":{ — BOTH are stale: 4.x emits a flat {"code":...} error
+  # document, not the 2.x/3.x {"fault":{...}} wrapper, and an unmatched resource is 404 rather than 403. Legacy's
+  # own testng.xml:188 entry is commented out, so that expectation never actually ran. The ACTUAL values are
+  # pinned here exactly rather than the legacy ones being carried over unverified.
+  #
+  # This is a DIFFERENT axis from the unknown-CONTEXT 404 above, and the measurement is what proves it: an unknown
+  # context answers message "Not Found" / description "The requested resource is not available.", whereas a known
+  # context with an unmatched RESOURCE answers "Runtime Error" / "No matching resource found for given API
+  # Request". Asserting the absence of the unknown-context wording is therefore the discriminating gate that makes
+  # this a resource-dispatch assertion and not an accidental "the API was never deployed" 404.
+  @cap:gateway @feat:fault-handling @rule:error-message-type @type:negative @dep:publisher @legacy:ErrorMessageTypeTestCase
+  Scenario Outline: An unmatched resource path returns the JSON fault error document as <actor>
+    Given The system is ready
+    And I have valid access tokens as "<actor>"
+    And I have created an api from "artifacts/payloads/create_apim_test_api.json" as "emtApiId" and deployed it
+    When I publish the "apis" resource with id "emtApiId"
+    Then The lifecycle status of API "emtApiId" should be "Published"
+    When I retrieve the "apis" resource with id "emtApiId"
+    And I extract response field "context" and store it as "emtContext"
+    And the "apis" resource "emtApiId" should be live on the gateway, redeploying if propagation is lost
+
+    # Control: the DEFINED resource, invoked with no credential, is refused by the security handler (401/900902).
+    # That answer is only reachable once the context is routable at the gateway, so it establishes the API really
+    # is deployed before the unmatched-path assertion below is read.
+    When I invoke the API at gateway context "{{emtContext}}/1.0.0/customers/123/" with method "GET" without authentication until response status code becomes 401 within 60 seconds
+    Then The response status code should be 401
+    And The value of error response field "code" should be "900902"
+
+    # The unmatched resource path under the SAME (live) context: 404, JSON media type, and the exact fault document.
+    When I invoke the API at gateway context "{{emtContext}}/1.0.0/emtNoSuchResource/" with method "GET" without authentication until response status code becomes 404 within 60 seconds
+    Then The response status code should be 404
+    And The response header "Content-Type" should contain "application/json"
+    # The typed fault step parses the envelope and compares EXACTLY, so a body that merely happens to contain
+    # these strings elsewhere cannot satisfy it. "message" has no typed counterpart, so it stays a substring.
+    And The fault response should have code "404" type "Status report" and description "No matching resource found for given API Request"
+    And The response should contain "\"message\":\"Runtime Error\""
+    # The discriminator: this is resource-level dispatch, NOT the unknown-context 404 (whose body reads
+    # "The requested resource is not available.").
+    And The response should not contain "The requested resource is not available."
 
     Examples:
       | actor             |
@@ -432,7 +488,8 @@ Feature: Gateway Security Enforcement
     # unauthenticated call went through to node-customer-service" from any gateway-produced 200.
     When I invoke the API at gateway context "{{atContext}}/1.0.0/customers/123/" with method "GET" without authentication until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
-    And The response should contain "\"name\":\"John\""
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
 
     Examples:
       | actor             |
@@ -887,9 +944,13 @@ Feature: Gateway Security Enforcement
     """
     And I request an access token for application id "createdAppId" using payload "epsSandboxToken"
     Then The response status code should be 200
+    # Sandbox key → routed to the unsecured SANDBOX endpoint → the backend must receive NO Authorization
+    # header at all. Asserted via the marker the /sec route emits when the header is absent: a bare
+    # should-not-contain "Basic" would also pass on an empty body, i.e. if the request never reached the
+    # backend, so it could not distinguish "no credential injected" from "never arrived".
     When I invoke the API at gateway context "{{epsCtx}}/1.0.0/sec" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
-    And The response should not contain "Basic"
+    And The response should contain "no-authorization-header-received"
 
     Examples:
       | creator                   | consumer          |
@@ -920,13 +981,14 @@ Feature: Gateway Security Enforcement
     # The API is genuinely authored by <creator> (see the per-type scenario above).
     And The provider of API "epsApiId" should match actor "<creator>"
 
-    # Production key → routed to the unsecured production endpoint → no Basic header.
+    # Production key → routed to the unsecured production endpoint → the backend must receive NO
+    # Authorization header at all (see the marker rationale on the production-only scenario above).
     When I act as "<consumer>"
     And I have set up application with keys, subscribed to API "epsApiId", and obtained access token for "epsSubId"
     Then The response status code should be 200
     When I invoke the API at gateway context "{{epsCtx}}/1.0.0/sec" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
-    And The response should not contain "Basic"
+    And The response should contain "no-authorization-header-received"
 
     # Sandbox key on the SAME application → backend receives the sandbox Basic credential.
     When I put the following JSON payload in context as "epsSandboxKeys"
@@ -1248,28 +1310,28 @@ Feature: Gateway Security Enforcement
     # The OAuth2 access token in the api-key header -> refused.
     When I invoke the API at gateway context "{{xcContext}}/1.0.0/customers/123/" with method "GET" presenting credential "generatedAccessToken" verbatim in header "apikey" until response status code becomes 401 within 60 seconds
     Then The response status code should be 401
-    And The response should contain "900901"
+    And The error response should have code "900901" message "Invalid Credentials" and description containing "Make sure you have provided the correct security credentials"
     # The publisher internal key in the api-key header -> refused.
     When I invoke the API at gateway context "{{xcContext}}/1.0.0/customers/123/" with method "GET" presenting credential "xcInternalKey" verbatim in header "apikey" until response status code becomes 401 within 60 seconds
     Then The response status code should be 401
-    And The response should contain "900901"
+    And The error response should have code "900901" message "Invalid Credentials" and description containing "Make sure you have provided the correct security credentials"
     # The devportal api key as an Authorization bearer -> refused (testInvokeApiKeyAsJWTNegative). Uses the same
     # bearer step as the token control above, so the ONLY difference from that passing case is the credential kind.
     When I invoke the API at gateway context "{{xcContext}}/1.0.0/customers/123/" with method "GET" using access token "apiKey" and payload "" until response status code becomes 401 within 60 seconds
     Then The response status code should be 401
-    And The response should contain "900901"
+    And The error response should have code "900901" message "Invalid Credentials" and description containing "Make sure you have provided the correct security credentials"
     # The publisher internal key as an Authorization bearer -> refused.
     When I invoke the API at gateway context "{{xcContext}}/1.0.0/customers/123/" with method "GET" using access token "xcInternalKey" and payload "" until response status code becomes 401 within 60 seconds
     Then The response status code should be 401
-    And The response should contain "900901"
+    And The error response should have code "900901" message "Invalid Credentials" and description containing "Make sure you have provided the correct security credentials"
     # The OAuth2 access token in the Internal-Key header -> refused.
     When I invoke the API at gateway context "{{xcContext}}/1.0.0/customers/123/" with method "GET" presenting credential "generatedAccessToken" verbatim in header "Internal-Key" until response status code becomes 401 within 60 seconds
     Then The response status code should be 401
-    And The response should contain "900901"
+    And The error response should have code "900901" message "Invalid Credentials" and description containing "Make sure you have provided the correct security credentials"
     # The devportal api key in the Internal-Key header -> refused.
     When I invoke the API at gateway context "{{xcContext}}/1.0.0/customers/123/" with method "GET" presenting credential "apiKey" verbatim in header "Internal-Key" until response status code becomes 401 within 60 seconds
     Then The response status code should be 401
-    And The response should contain "900901"
+    And The error response should have code "900901" message "Invalid Credentials" and description containing "Make sure you have provided the correct security credentials"
 
     Examples:
       | actor             |
@@ -1315,8 +1377,7 @@ Feature: Gateway Security Enforcement
     # A WELL-FORMED Basic credential for a real user, on an API that does not permit basic_auth -> refused (401).
     When I invoke the API at gateway context "{{boContext}}/1.0.0/customers/123/" with method "GET" using basic auth for actor "<actor>" until response status code becomes 401 within 60 seconds
     Then The response status code should be 401
-    And The response should contain "900902"
-    And The response should contain "Missing Credentials"
+    And The error response should have code "900902" message "Missing Credentials" and description containing "Make sure your API invocation call has a header"
 
     Examples:
       | actor             |
@@ -1362,13 +1423,11 @@ Feature: Gateway Security Enforcement
     # A VALID OAuth2 bearer token on a basic_auth-only API -> refused (401).
     When I invoke the API at gateway context "{{baContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 401 within 60 seconds
     Then The response status code should be 401
-    And The response should contain "900902"
-    And The response should contain "Missing Credentials"
+    And The error response should have code "900902" message "Missing Credentials" and description containing "Make sure your API invocation call has a header"
     # A VALID api key on a basic_auth-only API -> refused (401).
     When I invoke the API at gateway context "{{baContext}}/1.0.0/customers/123/" with method "GET" using api key "apiKey" until response status code becomes 401 within 60 seconds
     Then The response status code should be 401
-    And The response should contain "900902"
-    And The response should contain "Missing Credentials"
+    And The error response should have code "900902" message "Missing Credentials" and description containing "Make sure your API invocation call has a header"
     # The publisher internal key BYPASSES the declared scheme -> 200 from the backend. The payload matters here
     # more than anywhere else in this scenario: the claim is that a credential the API's declared scheme does NOT
     # permit still reaches the upstream, and only the backend body shows that it did.
@@ -1507,12 +1566,12 @@ Feature: Gateway Security Enforcement
     # it. This is the assertion the whole arc exists for; it is NOT a re-run of the token grant.
     When I invoke the API at gateway context "{{pcContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 401 within 60 seconds
     Then The response status code should be 401
-    And The response should contain "900901"
+    And The error response should have code "900901" message "Invalid Credentials" and description containing "Make sure you have provided the correct security credentials"
     # Basic with the OLD password is refused (401) and Basic with the NEW password is accepted (200) — proof the
     # reset landed in the user store, so the token rejection above is credential invalidation.
     When I invoke the API at gateway context "{{pcContext}}/1.0.0/customers/123/" with method "GET" using basic auth username "{{pcUsernameLoginName}}" password "Password@123" until response status code becomes 401 within 60 seconds
     Then The response status code should be 401
-    And The response should contain "900901"
+    And The error response should have code "900901" message "Invalid Credentials" and description containing "Make sure you have provided the correct security credentials"
     When I invoke the API at gateway context "{{pcContext}}/1.0.0/customers/123/" with method "GET" using basic auth username "{{pcUsernameLoginName}}" password "Changed@456" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
 
@@ -1520,3 +1579,278 @@ Feature: Gateway Security Enforcement
       | actor             |
       | admin             |
       | admin@tenant1.com |
+
+  # Ports the complex-password half of ChangeEndPointSecurityOfAPITestCase
+  # (testInvokeGETResourceWithSecuredEndPointComplexPassword). The legacy loops 28 symbolic characters through the
+  # endpoint_security password, redeploying the API for each — 28 redeploys for one escaping property. Ported as
+  # THREE redeploys of one API, each carrying a password that packs the characters significant to ONE escaping
+  # LAYER, so a failure still localises to the layer that broke:
+  #
+  #   1. XML-significant   — abcd&<>'efg   the API is published to the gateway as a synapse XML artifact, so an
+  #                                        unescaped & or < in the password breaks artifact parsing outright;
+  #   2. base64 alphabet   — abcd+/=efg    the credential is base64'd into the Authorization header, so +, / and the
+  #                                        padding = are the bytes a double-encode, a URL-safe encode or a trim at
+  #                                        "=" would corrupt;
+  #   3. separator & meta  — abcd:;$%|efg  ":" is the user:pass separator itself and must NOT be read as one, and
+  #                                        $ % | are placeholder / percent-encoding / pipe metacharacters.
+  #
+  # Every character is drawn from the legacy's own 28-character set, so this ports its coverage rather than widening
+  # it; the two characters a JSON payload would itself have to escape (" and \) are legacy-absent too and are NOT
+  # asserted here, since they would be new ground rather than a port (noted for the backlog).
+  #
+  # Each phase polls until the backend echoes the NEW base64 credential — that is the propagation gate (the
+  # invocation is 200 with the old credential too, so an until-200 poll would race the redeploy) — and then asserts
+  # the PREVIOUS phase's credential is gone, which is what proves the redeploy replaced the injected header rather
+  # than the gateway serving a stale artifact or two credentials at once.
+  #
+  # Runs x2 tenants, extending the legacy class's single SUPER_TENANT_ADMIN data provider, so byte-level escaping
+  # in the artifact and header is pinned independently for each tenant.
+  @cap:gateway @feat:security-enforcement @rule:endpoint-security @type:regression @dep:publisher @legacy:ChangeEndPointSecurityOfAPITestCase
+  Scenario Outline: Endpoint-security passwords containing special characters are injected intact as <actor>
+    Given The system is ready
+    And I have valid access tokens as "<actor>"
+    And I have created an api from "artifacts/payloads/create_apim_endpoint_basicauth_api.json" as "spApiId" and deployed it
+    When I publish the "apis" resource with id "spApiId"
+    Then The lifecycle status of API "spApiId" should be "Published"
+    When I retrieve the "apis" resource with id "spApiId"
+    And I extract response field "context" and store it as "spContext"
+    When I have set up application with keys, subscribed to API "spApiId", and obtained access token for "spSubId"
+    Then The response status code should be 200
+
+    # BASELINE — the fixture's simple credential (admin1:admin123) is injected.
+    When I invoke the API at gateway context "{{spContext}}/1.0.0/sec" with method "GET" using access token "generatedAccessToken" and payload "" until response body contains "YWRtaW4xOmFkbWluMTIz" within 60 seconds
+    Then The response status code should be 200
+
+    # --- 1. XML-significant characters: user:abcd&<>'efg -> dXNlcjphYmNkJjw+J2VmZw==
+    When I retrieve the "apis" resource with id "spApiId"
+    Then The response status code should be 200
+    And I put the response payload in context as "spPayload1"
+    When I put the following JSON payload in context as "spEndpointConfig1"
+    """
+    {"endpoint_type":"http","production_endpoints":{"url":"http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/"},"sandbox_endpoints":{"url":"http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/"},"endpoint_security":{"production":{"enabled":true,"type":"BASIC","username":"user","password":"abcd&<>'efg"},"sandbox":{"enabled":true,"type":"BASIC","username":"user","password":"abcd&<>'efg"}}}
+    """
+    And I update the "apis" resource "spApiId" and "spPayload1" with configuration type "endpointConfig" and value:
+    """
+    spEndpointConfig1
+    """
+    Then The response status code should be 200
+    When I deploy the API with id "spApiId"
+    Then The response status code should be 201
+    When I invoke the API at gateway context "{{spContext}}/1.0.0/sec" with method "GET" using access token "generatedAccessToken" and payload "" until response body contains "dXNlcjphYmNkJjw+J2VmZw==" within 90 seconds
+    Then The response status code should be 200
+    # The stale baseline credential is no longer injected.
+    And The response should not contain "YWRtaW4xOmFkbWluMTIz"
+
+    # --- 2. base64 alphabet and padding: user:abcd+/=efg -> dXNlcjphYmNkKy89ZWZn
+    When I retrieve the "apis" resource with id "spApiId"
+    Then The response status code should be 200
+    And I put the response payload in context as "spPayload2"
+    When I put the following JSON payload in context as "spEndpointConfig2"
+    """
+    {"endpoint_type":"http","production_endpoints":{"url":"http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/"},"sandbox_endpoints":{"url":"http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/"},"endpoint_security":{"production":{"enabled":true,"type":"BASIC","username":"user","password":"abcd+/=efg"},"sandbox":{"enabled":true,"type":"BASIC","username":"user","password":"abcd+/=efg"}}}
+    """
+    And I update the "apis" resource "spApiId" and "spPayload2" with configuration type "endpointConfig" and value:
+    """
+    spEndpointConfig2
+    """
+    Then The response status code should be 200
+    When I deploy the API with id "spApiId"
+    Then The response status code should be 201
+    When I invoke the API at gateway context "{{spContext}}/1.0.0/sec" with method "GET" using access token "generatedAccessToken" and payload "" until response body contains "dXNlcjphYmNkKy89ZWZn" within 90 seconds
+    Then The response status code should be 200
+    And The response should not contain "dXNlcjphYmNkJjw+J2VmZw=="
+
+    # --- 3. separator and metacharacters: user:abcd:;$%|efg -> dXNlcjphYmNkOjskJXxlZmc=
+    # The ":" inside the PASSWORD must not be taken for the user:pass separator — the decoded credential is still
+    # user / abcd:;$%|efg, not user / abcd and a truncated remainder.
+    When I retrieve the "apis" resource with id "spApiId"
+    Then The response status code should be 200
+    And I put the response payload in context as "spPayload3"
+    When I put the following JSON payload in context as "spEndpointConfig3"
+    """
+    {"endpoint_type":"http","production_endpoints":{"url":"http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/"},"sandbox_endpoints":{"url":"http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/"},"endpoint_security":{"production":{"enabled":true,"type":"BASIC","username":"user","password":"abcd:;$%|efg"},"sandbox":{"enabled":true,"type":"BASIC","username":"user","password":"abcd:;$%|efg"}}}
+    """
+    And I update the "apis" resource "spApiId" and "spPayload3" with configuration type "endpointConfig" and value:
+    """
+    spEndpointConfig3
+    """
+    Then The response status code should be 200
+    When I deploy the API with id "spApiId"
+    Then The response status code should be 201
+    When I invoke the API at gateway context "{{spContext}}/1.0.0/sec" with method "GET" using access token "generatedAccessToken" and payload "" until response body contains "dXNlcjphYmNkOjskJXxlZmc=" within 90 seconds
+    Then The response status code should be 200
+    And The response should not contain "dXNlcjphYmNkKy89ZWZn"
+
+    Examples:
+      | actor |
+      | admin |
+      | admin@tenant1.com |
+
+  # Ports the role-bound-scope ENFORCEMENT half of APIScopeTestCase#testSetScopeToResourceTestCase, which v2 had
+  # only in its publisher-plane form (a scope can be attached to an operation) with no runtime consequence and no
+  # second principal. Here ONE scope bound to ONE scenario-unique role is requested by TWO users of DIFFERENT
+  # roles using the SAME application credentials and the SAME gated operation: the user carrying the role is
+  # granted the scope and gets 200; the user without it receives a token whose scope list is EXACTLY "default"
+  # and is refused with 403. Because every other variable is shared between the two legs, the 403 can only be
+  # caused by the role -> scope binding. The role, the scope and both users are scenario-unique (roles and scopes
+  # are tenant-global).
+  @cap:gateway @feat:security-enforcement @rule:role-bound-scope @type:regression @dep:publisher @legacy:APIScopeTestCase
+  Scenario Outline: A role-bound operation scope is granted to one user and withheld from another in <tenant>
+    Given The system is ready
+    And I have valid access tokens as "admin<suffix>"
+    And I generate a unique value and store it as "rbsRole"
+    And I generate a unique value and store it as "rbsScope"
+    And I provision role "{{rbsRole}}" in tenant "<tenant>"
+    And I provision user "rbsWithRole" with roles "Internal/subscriber,{{rbsRole}}" in tenant "<tenant>"
+    And I provision user "rbsWithoutRole" with roles "Internal/subscriber" in tenant "<tenant>"
+
+    # An API whose GET /customers/{id} operation requires the role-bound scope.
+    And I have created an api from "artifacts/payloads/create_apim_test_api.json" as "rbsApiId" and deployed it
+    When I retrieve the "apis" resource with id "rbsApiId"
+    And I put the response payload in context as "rbsApiPayload"
+    When I update the "apis" resource "rbsApiId" and "rbsApiPayload" with configuration type "scopes" and value:
+      """
+      [{"shared":false,"scope":{"name":"{{rbsScope}}","displayName":"{{rbsScope}}","description":"role-bound operation scope","bindings":["{{rbsRole}}"]}}]
+      """
+    Then The response status code should be 200
+    When I retrieve the "apis" resource with id "rbsApiId"
+    And I put the response payload in context as "rbsApiPayload"
+    When I update the "apis" resource "rbsApiId" and "rbsApiPayload" with configuration type "operations" and value:
+      """
+      [{"target":"/customers/{id}","verb":"GET","authType":"Application & Application User","throttlingPolicy":"Unlimited","scopes":["{{rbsScope}}"],"operationPolicies":{"request":[],"response":[],"fault":[]}}]
+      """
+    Then The response status code should be 200
+    When I deploy the API with id "rbsApiId"
+    Then The response status code should be 201
+    When I publish the "apis" resource with id "rbsApiId"
+    Then The lifecycle status of API "rbsApiId" should be "Published"
+    When I retrieve the "apis" resource with id "rbsApiId"
+    And I extract response field "context" and store it as "rbsApiContext"
+
+    # One subscribed, keyed application — both users' tokens are minted with ITS credentials.
+    When I put JSON payload from file "artifacts/payloads/create_apim_test_app.json" in context as "rbsAppPayload"
+    And I create an application with payload "rbsAppPayload"
+    Then The response status code should be 201
+    When I put the following JSON payload in context as "rbsKeysPayload"
+    """
+    {"keyType": "PRODUCTION", "grantTypesToBeSupported": ["client_credentials", "password"]}
+    """
+    And I generate client credentials for application id "createdAppId" with payload "rbsKeysPayload"
+    Then The response status code should be 200
+    When I put the following JSON payload in context as "rbsSubPayload"
+    """
+    {"applicationId": "{{applicationId}}", "apiId": "{{apiId}}", "throttlingPolicy": "Unlimited"}
+    """
+    And I subscribe to API "rbsApiId" using application "createdAppId" with payload "rbsSubPayload" as "rbsSubId"
+    Then The response status code should be 201
+
+    # GRANTED — the user carrying the bound role receives the scope and invokes the gated operation.
+    When I request an OAuth access token using password grant as "rbsWithRole<suffix>" with scope "{{rbsScope}}"
+    Then The response status code should be 200
+    And The issued token scope list should include "{{rbsScope}}" and exclude ""
+    And I invoke the API at gateway context "{{rbsApiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
+
+    # WITHHELD — the user without the role gets EXACTLY the default scope and is refused at the gateway.
+    When I request an OAuth access token using password grant as "rbsWithoutRole<suffix>" with scope "{{rbsScope}}"
+    Then The response status code should be 200
+    And I extract response field "scope" and store it as "rbsWithheldScope"
+    And the actual value of "rbsWithheldScope" should match the expected value:
+      """
+      default
+      """
+    And I invoke the API at gateway context "{{rbsApiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 403 within 60 seconds
+    Then The response status code should be 403
+
+    Examples:
+      | tenant       | suffix       |
+      | carbon.super |              |
+      | tenant1.com  | @tenant1.com |
+
+  # Ports DigestAuthenticationTestCase#testDigestAuthentication — the GATEWAY half of DIGEST endpoint security.
+  # (The publisher-plane contract — type round-trip + password redaction — is already covered by
+  # publisher/api-config, so nothing of it is repeated here.) The nodebackend /digest resource speaks HTTP Digest
+  # (RFC 2617, MD5, qop=auth): the gateway's first backend call is answered 401 + WWW-Authenticate, and
+  # DigestAuthMediator derives the response hash from the configured endpoint-security credential and replays the
+  # request. A 200 naming the authenticated principal PROVES the handshake completed with THAT credential — the
+  # backend has no allow-all route, so nothing else reaches 200. Each Examples row configures its OWN backend
+  # principal (digestUser vs digestTenantUser) so the tenant1.com row asserts a DISTINCT authenticated user
+  # instead of re-running the super-tenant assertion.
+  @cap:gateway @feat:security-enforcement @rule:endpoint-security @type:regression @dep:publisher @legacy:DigestAuthenticationTestCase
+  Scenario Outline: A backend secured with HTTP Digest auth is authenticated by the gateway as <digestUser> for <actor>
+    Given The system is ready
+    And I have valid access tokens as "<actor>"
+    And I put the following JSON payload in context as "epdgPayload"
+    """
+    {"name":"${UNIQUE:EndpointDigestAPI}","context":"${UNIQUE:endpointDigestContext}","version":"1.0.0","endpointConfig":{"endpoint_type":"http","production_endpoints":{"url":"http://nodebackend:3005/digest"},"sandbox_endpoints":{"url":"http://nodebackend:3005/digest"},"endpoint_security":{"production":{"enabled":true,"type":"DIGEST","username":"<digestUser>","password":"<digestPass>"},"sandbox":{"enabled":true,"type":"DIGEST","username":"<digestUser>","password":"<digestPass>"}}},"policies":["Gold","Bronze","Unlimited"],"operations":[{"verb":"GET","target":"/auth","authType":"Application & Application User","throttlingPolicy":"Unlimited","scopes":[]}]}
+    """
+    And I create an "apis" resource with payload "epdgPayload" as "epdgApiId"
+    Then The response status code should be 201
+    When I deploy the API with id "epdgApiId"
+    Then The response status code should be 201
+    When I publish the "apis" resource with id "epdgApiId"
+    Then The lifecycle status of API "epdgApiId" should be "Published"
+    # Deploy-readiness gate: a lost runtime propagation event cannot be recovered by retrying the request.
+    And the "apis" resource "epdgApiId" should be live on the gateway, redeploying if propagation is lost
+    When I retrieve the "apis" resource with id "epdgApiId"
+    Then The response status code should be 200
+    And I extract response field "context" and store it as "epdgCtx"
+    When I have set up application with keys, subscribed to API "epdgApiId", and obtained access token for "epdgSubId"
+    Then The response status code should be 200
+
+    When I invoke the API at gateway context "{{epdgCtx}}/1.0.0/auth" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    # WHICH principal completed the handshake — not merely that something succeeded.
+    And The value of response field "authenticatedUser" should be "<digestUser>"
+    And The value of response field "scheme" should be "Digest"
+    And The value of response field "realm" should be "wso2-digest-backend"
+    # The digest-uri the gateway signed is the backend path (endpoint path + REST_URL_POSTFIX), not the gateway one.
+    And The value of response field "digestUri" should be "/digest/auth"
+
+    Examples:
+      | actor             | digestUser       | digestPass       |
+      | admin             | digestUser       | digestPass       |
+      | admin@tenant1.com | digestTenantUser | digestTenantPass |
+
+  # Negative half of the same arc: the DIGEST endpoint-security credential is configured with a WRONG password, so
+  # the response hash the gateway computes does not match and the backend refuses the replayed request. MEASURED,
+  # not guessed: the gateway relays the backend's refusal verbatim — HTTP 401 with the backend's plain-text body
+  # (it does not translate it into a gateway 500 or an APIM error code). The gate is discriminating on both sides:
+  # the deploy-readiness gate proves the artifact really is on the gateway (so a never-routable API cannot pass as
+  # a rejection), and the invoke waits for the exact refusal status rather than for a 200. The backend names the
+  # principal it rejected, so each tenant row asserts a DISTINCT rejection.
+  @cap:gateway @feat:security-enforcement @rule:endpoint-security @type:negative @dep:publisher @legacy:DigestAuthenticationTestCase
+  Scenario Outline: A wrong HTTP Digest endpoint-security password is refused at the backend for <digestUser> as <actor>
+    Given The system is ready
+    And I have valid access tokens as "<actor>"
+    And I put the following JSON payload in context as "epdgnPayload"
+    """
+    {"name":"${UNIQUE:EndpointDigestBadAPI}","context":"${UNIQUE:endpointDigestBadContext}","version":"1.0.0","endpointConfig":{"endpoint_type":"http","production_endpoints":{"url":"http://nodebackend:3005/digest"},"sandbox_endpoints":{"url":"http://nodebackend:3005/digest"},"endpoint_security":{"production":{"enabled":true,"type":"DIGEST","username":"<digestUser>","password":"notTheDigestPassword"},"sandbox":{"enabled":true,"type":"DIGEST","username":"<digestUser>","password":"notTheDigestPassword"}}},"policies":["Gold","Bronze","Unlimited"],"operations":[{"verb":"GET","target":"/auth","authType":"Application & Application User","throttlingPolicy":"Unlimited","scopes":[]}]}
+    """
+    And I create an "apis" resource with payload "epdgnPayload" as "epdgnApiId"
+    Then The response status code should be 201
+    When I deploy the API with id "epdgnApiId"
+    Then The response status code should be 201
+    When I publish the "apis" resource with id "epdgnApiId"
+    Then The lifecycle status of API "epdgnApiId" should be "Published"
+    # Discriminating gate: the artifact is confirmed present on the gateway BEFORE the negative invoke, so the
+    # refusal below cannot be an unrouted API in disguise.
+    And the "apis" resource "epdgnApiId" should be live on the gateway, redeploying if propagation is lost
+    When I retrieve the "apis" resource with id "epdgnApiId"
+    Then The response status code should be 200
+    And I extract response field "context" and store it as "epdgnCtx"
+    When I have set up application with keys, subscribed to API "epdgnApiId", and obtained access token for "epdgnSubId"
+    Then The response status code should be 200
+
+    When I invoke the API at gateway context "{{epdgnCtx}}/1.0.0/auth" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 401 within 60 seconds
+    Then The response status code should be 401
+    # The refusal is the BACKEND's digest rejection of this row's principal, not a gateway auth failure.
+    And The response should contain "response hash mismatch for <digestUser>"
+    And The response should not contain "900901"
+
+    Examples:
+      | actor             | digestUser       |
+      | admin             | digestUser       |
+      | admin@tenant1.com | digestTenantUser |

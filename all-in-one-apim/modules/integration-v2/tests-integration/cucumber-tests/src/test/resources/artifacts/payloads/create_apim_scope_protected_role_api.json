@@ -1,0 +1,43 @@
+{
+  "name": "${UNIQUE:C14ScopeInvokeAPI}",
+  "context": "${UNIQUE:c14ScopeInvokeContext}",
+  "version": "1.0.0",
+  "endpointConfig": {
+    "endpoint_type": "http",
+    "production_endpoints": {
+      "template_not_supported": false,
+      "config": null,
+      "url": "http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/"
+    },
+    "sandbox_endpoints": {
+      "url": "http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/",
+      "config": null,
+      "template_not_supported": false
+    }
+  },
+  "description": "API whose GET /customers/{id} operation requires a scope bound to the provisioned role c14scoperole — drives non-admin role-based scope enforcement (ports the invoke facet of APIImportExportTestCase#testNewAPIInvoke).",
+  "policies": ["Unlimited"],
+  "scopes": [
+    {
+      "scope": {
+        "name": "c14scope",
+        "displayName": "c14scope",
+        "description": "Operation scope bound to the non-admin role c14scoperole",
+        "bindings": ["c14scoperole"]
+      },
+      "shared": false
+    }
+  ],
+  "operations": [
+    {
+      "verb": "GET",
+      "target": "/customers/{id}",
+      "authType": "Application & Application User",
+      "throttlingPolicy": "Unlimited",
+      "scopes": ["c14scope"]
+    }
+  ],
+  "isDefaultVersion": true,
+  "additionalProperties": [],
+  "additionalPropertiesMap": {}
+}

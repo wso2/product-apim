@@ -38,6 +38,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -134,8 +135,14 @@ public class MCPServerSteps {
         }
         Assert.assertNotNull(op, "No stored operation for tool '" + tool + "': " + ops);
 
+        // Guarded before parsing (§7): a missing or blank schemaDefinition IS the metadata-loss regression this
+        // scenario exists to catch, so it must fail as that — not as an opaque JSONException from the parse.
+        String schemaDefinition = op.optString("schemaDefinition", null);
+        Assert.assertTrue(schemaDefinition != null && !schemaDefinition.isBlank(),
+                "Stored operation for tool '" + tool + "' carries no schemaDefinition, so the tool metadata was "
+                        + "not preserved to storage: " + op);
         // Assert exact VALUES (not just key presence) against the mock's get_weather definition.
-        JSONObject schema = new JSONObject(op.getString("schemaDefinition"));
+        JSONObject schema = new JSONObject(schemaDefinition);
         Assert.assertEquals(schema.optString("title"), "Weather Lookup", "stored title mismatch: " + schema);
         JSONObject annotations = schema.getJSONObject("annotations");
         Assert.assertTrue(annotations.optBoolean("readOnlyHint", false),
@@ -148,14 +155,24 @@ public class MCPServerSteps {
         assertStoredObjectSchema(schema.getJSONObject("inputSchema"), "city", "string", "inputSchema", schema);
     }
 
-    /** Asserts a stored object schema: {@code type} object, {@code prop} present with {@code propType}, in required. */
+    /**
+     * Asserts a stored object schema: {@code type} object, {@code properties} EXACTLY {@code prop} with
+     * {@code propType}, and {@code required} exactly that one entry. Same exact-set reasoning as the
+     * invocation-side check — the persisted schema must round-trip the mock's clean schema unchanged.
+     */
     private void assertStoredObjectSchema(JSONObject schema, String prop, String propType, String label, Object ctx) {
         Assert.assertEquals(schema.optString("type"), "object", "stored " + label + ".type must be object: " + ctx);
-        Assert.assertEquals(schema.getJSONObject("properties").getJSONObject(prop).optString("type"), propType,
+        JSONObject props = schema.getJSONObject("properties");
+        Assert.assertEquals(props.keySet(), Set.of(prop),
+                "stored " + label + ".properties must be exactly [" + prop + "]: " + ctx);
+        Assert.assertEquals(props.getJSONObject(prop).optString("type"), propType,
                 "stored " + label + ".properties." + prop + ".type mismatch: " + ctx);
         JSONArray required = schema.optJSONArray("required");
-        Assert.assertTrue(required != null && required.toList().contains(prop),
-                "stored " + label + ".required must contain " + prop + ": " + ctx);
+        Assert.assertNotNull(required, "stored " + label + ".required missing: " + ctx);
+        Assert.assertEquals(required.length(), 1,
+                "stored " + label + ".required must have exactly one entry: " + ctx);
+        Assert.assertEquals(required.optString(0), prop,
+                "stored " + label + ".required must be [" + prop + "]: " + ctx);
     }
 
     /**
@@ -737,6 +754,13 @@ public class MCPServerSteps {
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
         HttpResponse response = Requests.delete(Utils.getMCPServerByIdURL(Utils.getBaseUrl(), id.toString()), headers);
+        // Deregister on a confirmed 2xx: without this the sweep re-deletes the already-gone server and logs
+        // "resource NOT deleted; it may leak" for a resource that is genuinely gone — 14 such WARNs in one
+        // full-suite run, which is noise that hides real leaks. Only a SUCCESSFUL delete deregisters; a failed one
+        // means the server still exists and must stay queued for teardown.
+        if (response != null && response.getResponseCode() >= 200 && response.getResponseCode() < 300) {
+            ResourceCleanup.deregister(ResourceCleanup.CREATED_MCP_SERVER_IDS, id.toString());
+        }
     }
 
     // ---- MCP backend-endpoint management (/mcp-servers/{id}/backends) ----

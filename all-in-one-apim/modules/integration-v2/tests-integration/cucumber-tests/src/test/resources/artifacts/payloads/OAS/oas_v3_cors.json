@@ -1,0 +1,81 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "TestCORSAPI",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "/"
+    }
+  ],
+  "security": [
+    {
+      "default": []
+    }
+  ],
+  "paths": {
+    "/customers/{id}": {
+      "get": {
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "default": []
+          }
+        ],
+        "x-auth-type": "Application & Application User",
+        "x-throttling-tier": "Unlimited"
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "default": {
+        "type": "oauth2",
+        "flows": {
+          "implicit": {
+            "authorizationUrl": "https://test.com",
+            "scopes": {}
+          }
+        }
+      }
+    }
+  },
+  "x-wso2-cors": {
+    "corsConfigurationEnabled": true,
+    "accessControlAllowOrigins": [
+      "http://localhost"
+    ],
+    "accessControlAllowCredentials": false,
+    "accessControlAllowHeaders": [
+      "authorization",
+      "Access-Control-Allow-Origin",
+      "Content-Type",
+      "SOAPAction",
+      "apikey",
+      "X-BrowserSessionID"
+    ],
+    "accessControlAllowMethods": [
+      "GET",
+      "PUT",
+      "POST",
+      "DELETE",
+      "PATCH",
+      "OPTIONS"
+    ]
+  }
+}

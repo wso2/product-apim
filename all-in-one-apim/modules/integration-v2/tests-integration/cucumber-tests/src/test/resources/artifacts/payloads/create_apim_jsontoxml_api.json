@@ -6,17 +6,37 @@
     "endpoint_type": "http",
     "production_endpoints": {
       "template_not_supported": false,
-      "config": null,
+      "config": {
+        "actionDuration": "30000",
+        "actionSelect": "fault",
+        "factor": "1",
+        "retryDelay": "0",
+        "retryErroCode": [],
+        "suspendDuration": "0",
+        "suspendMaxDuration": "0"
+      },
       "url": "http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/"
     },
     "sandbox_endpoints": {
       "url": "http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/",
-      "config": null,
+      "config": {
+        "actionDuration": "30000",
+        "actionSelect": "fault",
+        "factor": "1",
+        "retryDelay": "0",
+        "retryErroCode": [],
+        "suspendDuration": "0",
+        "suspendMaxDuration": "0"
+      },
       "template_not_supported": false
     }
   },
   "description": "API referencing the shipped jsonToXML operation policy on its POST operation (ESBJAVA3380 colon-key)",
-  "policies": ["Gold", "Bronze", "Unlimited"],
+  "policies": [
+    "Gold",
+    "Bronze",
+    "Unlimited"
+  ],
   "operations": [
     {
       "verb": "POST",

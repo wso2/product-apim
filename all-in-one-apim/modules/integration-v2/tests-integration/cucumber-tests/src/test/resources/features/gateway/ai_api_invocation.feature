@@ -419,9 +419,10 @@ Feature: Gateway AI API Invocation
     Then The response status code should be 201
     When I retrieve the models of AI service provider "aiProviderId"
     Then The response status code should be 200
-    And The response should contain "mistral-small-latest"
-    And The response should contain "mistral-medium-latest"
-    And The response should contain "mistral-large-latest"
+    # The three models the create step REGISTERED via modelProviders come back, exactly -- a round-trip on
+    # scenario-owned state, so the flattened count is pinned too (a second vendor group would exceed it).
+    And The response array field "[*].models[*]" should have exactly 3 entries
+    And The response field "[*].models[*]" should be exactly the list "mistral-small-latest,mistral-medium-latest,mistral-large-latest"
 
     Examples:
       | actor             |

@@ -18,7 +18,7 @@ Feature: Deny Policy Enforcement At The Gateway
 
   The pre-deny 200 matters: without it a later 403 could mean the API was never reachable at all.
 
-  @cap:gateway @feat:throttling @rule:deny-enforcement @type:regression @dep:admin @dep:publisher
+  @cap:gateway @feat:throttling-enforcement @rule:deny-enforcement @type:regression @dep:admin @dep:publisher
   Scenario Outline: An API-context deny policy refuses invocation of that API as <actor>
     Given The system is ready
     And I have valid access tokens as "<actor>"

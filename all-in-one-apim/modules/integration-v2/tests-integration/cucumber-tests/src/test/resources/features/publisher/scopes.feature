@@ -11,19 +11,22 @@ Feature: Publisher API Shared Scopes
   @cap:publisher @feat:scopes @type:smoke @legacy:SharedScopeTestCase @legacy:SharedScopeTestWithRestart
   Scenario Outline: Create and retrieve a shared scope as <admin>
     Given The system is ready and I have valid publisher access tokens as "<admin>"
+    # The name is a BASE — the step uniquifies it (a shared scope is tenant-wide, so a literal would 409 a
+    # re-run whose teardown could not complete). Capture the created name and assert against that.
     When I create a new shared scope as "scope-create-test"
     Then The response status code should be 201
-    And The response should contain "scope-create-test"
-    When I fetch the shared scope with name "scope-create-test" into context as "fetchedScopeId"
+    And I extract response field "name" and store it as "createScopeName"
+    And The response should contain "{{createScopeName}}"
+    When I fetch the shared scope with name "{{createScopeName}}" into context as "fetchedScopeId"
     Then The response status code should be 200
-    And The response should contain "scope-create-test"
+    And The response should contain "{{createScopeName}}"
     # Retrieve THAT scope by id and assert its stored fields, including the role bindings the create payload
     # requested. Ports SharedScopeTestWithRestart.testGetAndUpdateSharedScope's name/displayName/bindings
     # assertions; the by-name list read above could otherwise be satisfied by another scope's bindings.
     When I retrieve the shared scope with id "fetchedScopeId"
     Then The response status code should be 200
-    And The value of response field "name" should be "scope-create-test"
-    And The value of response field "displayName" should be "scope-create-test"
+    And The value of response field "name" should be "{{createScopeName}}"
+    And The value of response field "displayName" should be "{{createScopeName}}"
     And The response field "bindings" should be exactly the list "admin"
 
     Examples:
@@ -36,36 +39,46 @@ Feature: Publisher API Shared Scopes
     And I have created an api from "artifacts/payloads/create_apim_test_api.json" as "scopeApiId" and deployed it
     When I create a new shared scope as "scope-assign-test"
     Then The response status code should be 201
+    And I extract response field "name" and store it as "assignScopeName"
     When I retrieve the "apis" resource with id "scopeApiId"
     And I put the response payload in context as "scopeApiPayload"
 
     # Register the shared scope on the API (adds it to the API's scope list).
     When I update the "apis" resource "scopeApiId" and "scopeApiPayload" with configuration type "scopes" and value:
       """
-      [{"shared":true,"scope":{"name":"scope-assign-test","displayName":"scope-assign-test","description":"This Scope is to test the creation of new scope","bindings":["admin"]}}]
+      [{"shared":true,"scope":{"name":"{{assignScopeName}}","displayName":"{{assignScopeName}}","description":"This Scope is to test the creation of new scope","bindings":["admin"]}}]
       """
     Then The response status code should be 200
     When I retrieve the "apis" resource with id "scopeApiId"
-    Then The response should contain "scope-assign-test"
+    Then The response should contain "{{assignScopeName}}"
     And I put the response payload in context as "scopeApiPayload"
 
     # Attach the scope to a specific operation (the APIScopeTestCase behaviour): the operation now requires
     # the scope. Asserted by re-fetch containing the scope on the operation.
     When I update the "apis" resource "scopeApiId" and "scopeApiPayload" with configuration type "operations" and value:
       """
-      [{"target":"/customers/{id}","verb":"GET","authType":"Application & Application User","throttlingPolicy":"Unlimited","scopes":["scope-assign-test"],"operationPolicies":{"request":[],"response":[],"fault":[]}}]
+      [{"target":"/customers/{id}","verb":"GET","authType":"Application & Application User","throttlingPolicy":"Unlimited","scopes":["{{assignScopeName}}"],"operationPolicies":{"request":[],"response":[],"fault":[]}}]
       """
     Then The response status code should be 200
     When I retrieve the "apis" resource with id "scopeApiId"
-    Then The response should contain "scope-assign-test"
+    # Asserted on the OPERATION, not on the payload as a whole: the scope is already in the API-level scopes array
+    # from the step above, so a bare "response contains" would pass even if the operation carried no scope at all.
+    Then The response field "operations[?(@.target=='/customers/{id}' && @.verb=='GET')].scopes[*]" should be exactly the list "{{assignScopeName}}"
+    And The response array field "operations[?(@.target=='/customers/{id}' && @.verb=='GET')].scopes[*]" should have exactly 1 entries
     And I put the response payload in context as "scopeApiPayload"
 
-    # Detach the scope from the operation again (scopes array cleared) — the update must succeed.
+    # Detach the scope from the operation again (scopes array cleared).
     When I update the "apis" resource "scopeApiId" and "scopeApiPayload" with configuration type "operations" and value:
       """
       [{"target":"/customers/{id}","verb":"GET","authType":"Application & Application User","throttlingPolicy":"Unlimited","scopes":[],"operationPolicies":{"request":[],"response":[],"fault":[]}}]
       """
     Then The response status code should be 200
+    # Re-read: a 200 on the PUT only says the request was accepted, not that the scope is gone. The verb pin comes
+    # first so the empty-scope assertion cannot pass vacuously by the operation having disappeared entirely.
+    When I retrieve the "apis" resource with id "scopeApiId"
+    Then The response status code should be 200
+    And The response field "operations[?(@.target=='/customers/{id}' && @.verb=='GET')].verb" should be exactly the list "GET"
+    And The response field "operations[?(@.target=='/customers/{id}' && @.verb=='GET')].scopes[*]" should be exactly the list ""
 
     Examples:
       | admin             |
@@ -92,6 +105,7 @@ Feature: Publisher API Shared Scopes
     Given The system is ready and I have valid publisher access tokens as "<admin>"
     When I create a new shared scope as "scope-update-test"
     Then The response status code should be 201
+    And I extract response field "name" and store it as "updateScopeName"
     When I update the shared scope "scopeID" setting its description to "Updated shared scope description"
     Then The response status code should be 200
     And The value of response field "description" should be "Updated shared scope description"
@@ -104,7 +118,7 @@ Feature: Publisher API Shared Scopes
     When I retrieve the shared scope with id "scopeID"
     Then The response status code should be 200
     And The value of response field "description" should be "Updated shared scope description 2"
-    And The value of response field "name" should be "scope-update-test"
+    And The value of response field "name" should be "{{updateScopeName}}"
     And The response field "bindings" should be exactly the list "admin"
 
     Examples:

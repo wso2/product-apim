@@ -21,6 +21,12 @@ Feature: Publisher API Versioning
     Then The response status code should be 201
     And The response should contain "2.0.0"
     And The lifecycle status of API "newVersionId" should be "Created"
+    # The create-version primitive must carry the CREATOR's identity onto the copy — the provider is the
+    # authorization key for every later publisher operation on the new version, and versioning is the one publisher
+    # primitive that mints a second artifact from a first. Asserted on BOTH the base API and the copy so the third
+    # Examples row proves a store-qualified provider survives the copy verbatim, store domain and all.
+    And The provider of API "createdApiId" should match actor "<actor>"
+    And The provider of API "newVersionId" should match actor "<actor>"
 
     When I retrieve the "apis" resource with id "newVersionId"
     Then The response status code should be 200
@@ -47,13 +53,73 @@ Feature: Publisher API Versioning
     When I publish the "apis" resource with id "newVersionId"
     Then The lifecycle status of API "newVersionId" should be "Published"
 
+    # The THIRD row runs the whole arc as a SECONDARY.COM user-store creator (CLAUDE.md §12), closing the legacy
+    # SUPER_TENANT_USER_STORE_USER mode for the provider-identity facet. Super tenant only: the store domain, not
+    # the tenant, is the variable, and the row above already varies the tenant.
     Examples:
-      | actor                      |
-      | publisherUser              |
-      | publisherUser@tenant1.com  |
+      | actor                         |
+      | publisherUser                 |
+      | publisherUser@tenant1.com     |
+      | SECONDARY.COM/publisherUser1  |
+
+  # Ports the ODD VERSION-STRING ordering matrix of APIMANAGER4081PaginationCountTestCase (api3Versions:
+  # 1.0.0b, 2.0.1a, 2.0.1c — read ~:121-123). The legacy class's global publisher/devportal COUNT assertions are
+  # deliberately NOT ported: they are unportable under parallel isolation (§4 — a sibling class may add rows
+  # mid-scenario). What IS portable and was missing: the product's non-semver version comparator
+  # (ComparableVersion) and the devportal's latest-version promotion. With display_multiple_versions unset (the
+  # v2 default → false; APIUtil#isAllowDisplayMultipleVersions), the devportal marketplace listing groups by
+  # name and surfaces only the LATEST published version per name via APIVersionComparator, so the listing is a
+  # clean by-name comparator probe: 2.0.1c > 2.0.1a > 1.0.0b. All list assertions are scoped BY the family's
+  # own uniquely-generated ids — never a raw count or unfiltered list (§12). Runs as one publisher (super
+  # tenant); a single family suffices to exercise the comparator, so it is not outlined over tenants.
+  @cap:publisher @feat:versioning @type:regression @dep:devportal @legacy:APIMANAGER4081PaginationCountTestCase
+  Scenario: The devportal surfaces the comparator-latest non-semver version and re-promotes when it is deleted
+    Given The system is ready and I have valid publisher access tokens as "publisherUser"
+    # v1 = 1.0.0b (the comparator-lowest of the family).
+    And I put JSON payload from file "artifacts/payloads/create_apim_test_api.json" in context as "cmpPayload"
+    And I set the field "version" to "1.0.0b" in the payload "cmpPayload"
+    And I create an "apis" resource with payload "cmpPayload" as "cmpV1Id"
+    Then The response status code should be 201
+    When I deploy the API with id "cmpV1Id"
+    Then The response status code should be 201
+    When I publish the "apis" resource with id "cmpV1Id"
+    Then The lifecycle status of API "cmpV1Id" should be "Published"
+
+    # v2 = 2.0.1a (comparator-greater than 1.0.0b).
+    When I create a new version "2.0.1a" of "apis" resource "cmpV1Id" with default version "false" as "cmpV2Id"
+    Then The response status code should be 201
+    When I deploy the API with id "cmpV2Id"
+    Then The response status code should be 201
+    When I publish the "apis" resource with id "cmpV2Id"
+    Then The lifecycle status of API "cmpV2Id" should be "Published"
+
+    # v3 = 2.0.1c (the comparator-latest of the family).
+    When I create a new version "2.0.1c" of "apis" resource "cmpV1Id" with default version "false" as "cmpV3Id"
+    Then The response status code should be 201
+    When I deploy the API with id "cmpV3Id"
+    Then The response status code should be 201
+    When I publish the "apis" resource with id "cmpV3Id"
+    Then The lifecycle status of API "cmpV3Id" should be "Published"
+
+    # The grouped devportal listing shows the comparator-latest (v3=2.0.1c) and hides the older versions. Poll
+    # for v3's presence FIRST (it must index and become the latest-shown entry) before asserting the older ids
+    # are filtered out, so the checks never race the index.
+    When I retrieve the devportal API list until it contains "cmpV3Id" within 60 seconds
+    And I retrieve the devportal API list until it does not contain "cmpV2Id" within 30 seconds
+    And I retrieve the devportal API list until it does not contain "cmpV1Id" within 30 seconds
+
+    # Delete the latest → the devportal PROMOTES the previous version by the comparator (2.0.1a), not the oldest.
+    # Same ordering rationale as above: poll for the promoted v2 FIRST, then assert the absences. The deleted v3 is
+    # asserted gone explicitly — v2's presence only implies it while the one-entry-per-family grouping holds, so a
+    # grouping regression that listed BOTH would otherwise satisfy every check here unnoticed.
+    When I delete the "apis" resource with id "cmpV3Id"
+    Then The response status code should be 200
+    When I retrieve the devportal API list until it contains "cmpV2Id" within 60 seconds
+    And I retrieve the devportal API list until it does not contain "cmpV3Id" within 30 seconds
+    And I retrieve the devportal API list until it does not contain "cmpV1Id" within 30 seconds
 
   @cap:publisher @feat:versioning @type:negative @legacy:APIVersioningTestCase
-  Scenario Outline: A subscriber-role user cannot create a new API version as <actor>
+  Scenario Outline: A subscriber-role user cannot create a new API version as <subscriber>
     # Create the base API as a publisher, then re-authenticate as a subscriber whose token lacks the
     # api_create scope and confirm the version-create is rejected (401), in both tenants.
     Given The system is ready and I have valid publisher access tokens as "<publisher>"
@@ -80,24 +146,36 @@ Feature: Publisher API Versioning
     And I have created an api from "artifacts/payloads/create_apim_test_api.json" as "sameVerApiId" and deployed it
     When I attempt to create a new version "1.0.0" of "apis" resource "sameVerApiId" with default version "false"
     Then The response status code should be 409
-    And The response should contain "900252"
+    And The error response should have code "900252" and message "The API version already exists."
 
     Examples:
       | actor                     |
       | publisherUser             |
       | publisherUser@tenant1.com |
 
-  # Ports NewVersionUpdateTestCase. Two facets: (1) a copied (new) version can be independently updated — change the
-  # copied version's production endpoint URL and confirm the new URL is reflected in its endpointConfig (the copy
-  # has its own endpoint config, decoupled from the source version); (2) both published versions of an API are
-  # surfaced in the devportal — after copying v1 -> v2 and publishing both, a devportal search by the API name lists
-  # BOTH entries (v1 AND v2). NOTE: the legacy test asserted a count of 1 ("only the latest version"), but that
-  # relies on DisplayMultipleVersions=false, which is NOT the default config of this v2 lane — the default lists
-  # every published version. We therefore assert the ACTUAL default-config behaviour (both versions listed), pinned
-  # live: count:2 with both 1.0.0 and 2.0.0. The devportal search is a cross-plane read (@dep:devportal); the subject
-  # is the publisher versioning behaviour. ×2 tenant.
+  # Ports NewVersionUpdateTestCase. Three facets: (1) a copied (new) version can be independently updated — change
+  # the copied version's production endpoint URL and confirm the new URL is reflected in its endpointConfig (the copy
+  # has its own endpoint config, decoupled from the source version); (2) a devportal SEARCH by the API name lists
+  # BOTH published versions (count 2, 1.0.0 and 2.0.0); (3) the devportal's UNFILTERED listing lists the API ONCE,
+  # at its LATEST version — which is what NewVersionUpdateTestCase#testCheckMultipleVersionedAPIsCount asserted.
+  #
+  # (2) and (3) are BOTH true at once, and the reason is not a config difference — this lane runs the product
+  # DEFAULT `apim.devportal.display_multiple_versions = false` (nothing overrides it). Traced in carbon-apimgt
+  # 9.33.162: RegistrySearchUtil.getDevPortalSearchQuery appends the Solr grouping clause
+  # `&group=true&group.field=name&group.ngroups=true&group.sort=versionComparable desc` when the flag is false, but
+  # ONLY when the effective query is EMPTY or is EXACTLY the devportal type-filter constant. The devportal REST layer
+  # (ApisApiServiceImpl.apisGet) APPENDS that constant to any user-supplied query, so `?query=<name>` can never
+  # satisfy the equality test and is never grouped — which is why a name search legitimately returns both versions
+  # while the unfiltered listing returns only the latest. So the flag is NOT dead config; it governs a DIFFERENT
+  # endpoint, and both behaviours are pinned here rather than one being relaxed to make room for the other.
+  # (The in-memory APIConsumerImpl.filterMultipleVersionedAPIs, the pre-Solr implementation, is dead code — private
+  # with no callers.) The listing assertion counts occurrences of THIS API's uniquely-generated name, not the
+  # tenant-wide total the legacy test pinned, which can only hold in an empty tenant.
+  #
+  # The devportal reads are cross-plane (@dep:devportal); the subject is the publisher versioning behaviour.
+  # ×2 tenant.
   @cap:publisher @feat:versioning @type:regression @dep:devportal @legacy:NewVersionUpdateTestCase
-  Scenario Outline: A copied API version is independently updatable and both versions are listed in the devportal as <actor>
+  Scenario Outline: A copied API version is independently updatable and the devportal groups its versions as <actor>
     Given The system is ready and I have valid publisher access tokens as "<actor>"
     And I have created an api from "artifacts/payloads/create_apim_test_api.json" as "verUpdApiId" and deployed it
     When I retrieve the "apis" resource with id "verUpdApiId"
@@ -140,7 +218,13 @@ Feature: Publisher API Versioning
     When I search DevPortal APIs with query "{{verUpdName}}" until it contains "2.0.0" within 60 seconds
     Then The response should contain "1.0.0"
     And The response should contain "2.0.0"
-    And The response should contain "\"count\":2"
+    And The value of response field "count" should be "2"
+
+    # The UNFILTERED devportal listing — the one read path that applies the DisplayMultipleVersions grouping —
+    # carries this API exactly ONCE, at its latest version (2.0.0). The count-2 search above is the control: it
+    # proves both versions really are published and devportal-visible, so a single entry here is version grouping
+    # and not a missing publish.
+    Then the devportal API listing should list API "{{verUpdName}}" exactly 1 time with version "2.0.0" within 60 seconds
 
     Examples:
       | actor                     |

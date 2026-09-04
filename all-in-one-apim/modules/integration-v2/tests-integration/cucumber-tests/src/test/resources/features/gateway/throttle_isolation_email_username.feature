@@ -45,7 +45,7 @@ Feature: Gateway Throttle Isolation Across Email-Form And Plain Usernames
   #
   # Add the tenant row only if either account form becomes able to authenticate.
 
-  @cap:gateway @feat:throttling @rule:email-username @type:regression @dep:admin @dep:devportal
+  @cap:gateway @feat:throttling-enforcement @rule:email-username @type:regression @dep:admin @dep:devportal
   Scenario: An email-form principal does not share an application throttle bucket with the plain user of the same name
     Given The system is ready
     And I have valid access tokens as "admin"
@@ -122,3 +122,76 @@ Feature: Gateway Throttle Isolation Across Email-Form And Plain Usernames
     # whole measurement above is VOID — not evidence of anything.
     When I invoke the API at gateway context "{{bCtx}}/1.0.0/customers/123/" with method "GET" using access token "tokenPlain" and payload "" until response status code becomes 429 within 5 seconds
     Then The response status code should be 429
+
+  # OWNER-RESETS-OWN reset with an EMAIL-FORM owner: an application owned by an email-form principal (its username
+  # IS an email address, so its application throttle key is built from the email-form authorizedUser) is cleared by
+  # THAT OWNER via the DevPortal reset endpoint. The reset authorizes on the CALLER's ownership
+  # (APIConsumerImpl#resetApplicationThrottlePolicy validates the caller owns the app — there is no admin
+  # override), so an admin CANNOT clear another principal's application; the owner performs its own reset. Ports
+  # the TENANT_EMAIL_USER owner of ApplicationThrottlingResetTestCase, whose reset was driven by each fanned owner
+  # over their OWN application. The owner's PHYSICAL username is PINNED first (the two-at-sign email form) so the
+  # scenario cannot silently pass while exercising a plain-username throttle key — which is the whole point of
+  # running this arc for an email-form principal.
+  @cap:gateway @feat:throttling-enforcement @rule:email-username @type:regression @dep:admin @dep:publisher @dep:devportal @legacy:ApplicationThrottlingResetTestCase
+  Scenario Outline: An email-form principal resets their own application's throttle counter clearing the 429 as <ownerActor>
+    Given The system is ready
+    And I have valid access tokens as "<adminActor>"
+
+    # A bespoke application policy allowing only 3 requests/min (admin-only op).
+    When I create an application throttling policy "${UNIQUE:emResetThrottle3}" allowing 3 requests per minute
+    Then The response status code should be 201
+    And I have created an api from "artifacts/payloads/create_apim_test_api.json" as "emResetApiId" and deployed it
+    And the "apis" resource "emResetApiId" should be live on the gateway, redeploying if propagation is lost
+    When I publish the "apis" resource with id "emResetApiId"
+    Then The lifecycle status of API "emResetApiId" should be "Published"
+    When I retrieve the "apis" resource with id "emResetApiId"
+    And I extract response field "context" and store it as "emResetContext"
+
+    # SWITCH to the EMAIL-FORM principal, who OWNS the application. Pin its PHYSICAL username first (the two-at-sign
+    # email form) — if the block ever provisioned plain usernames this pin fails loudly instead of the scenario
+    # passing while testing a plain-username throttle key.
+    Given The system is ready and I have valid devportal access token as "<ownerActor>"
+    When I store the acting actor credentials as "emOwnerName" and "emOwnerPassword"
+    Then the actual value of "emOwnerName" should match the expected value:
+      """
+      <ownerPhysical>
+      """
+    When I create an application "${UNIQUE:EmResetApp}" with throttling policy from "appThrottlePolicyName"
+    Then The response status code should be 201
+    When I put the following JSON payload in context as "generateApplicationKeysPayload"
+    """
+    {"keyType": "PRODUCTION", "grantTypesToBeSupported": ["client_credentials", "password"]}
+    """
+    And I generate client credentials for application id "createdAppId" with payload "generateApplicationKeysPayload"
+    Then The response status code should be 200
+    When I put the following JSON payload in context as "apiSubscriptionPayload"
+    """
+    {"applicationId": "{{applicationId}}", "apiId": "{{apiId}}", "throttlingPolicy": "Unlimited"}
+    """
+    And I subscribe to API "emResetApiId" using application "createdAppId" with payload "apiSubscriptionPayload" as "emResetSubId"
+    Then The response status code should be 201
+    When I request an OAuth access token for the current user using password grant with scope "PRODUCTION"
+    Then The response status code should be 200
+
+    # Drive the email-form owner's token past the 3/min limit -> 429 code 900803 (APPLICATION-level), the limit the reset clears.
+    When I invoke the API at gateway context "{{emResetContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 429 within 60 seconds
+    Then The response status code should be 429
+    And The value of error response field "code" should be "900803"
+
+    # Reset the EMAIL-FORM owner's own application counter AS that owner (the reset authorizes on the caller's
+    # ownership, so this must be the owner and not an admin).
+    When I reset the application throttle policy for "createdAppId" owned by "<ownerActor>"
+    Then The response status code should be 200
+    # Post-reset invocation uses the same email-form owner's token -> succeeds again, proving the owner cleared
+    # their own bucket even though the throttle key is built from a two-at-sign email username.
+    When I invoke the API at gateway context "{{emResetContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    # Re-drive -> 429 with the same application code: proves the reset CLEARED the counter (not disabled throttling).
+    When I invoke the API at gateway context "{{emResetContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 429 within 60 seconds
+    Then The response status code should be 429
+    And The value of error response field "code" should be "900803"
+
+    Examples:
+      | adminActor        | ownerActor             | ownerPhysical                     |
+      | admin             | emailAdmin             | emailAdmin@email.com@carbon.super |
+      | admin@tenant1.com | emailAdmin@tenant1.com | emailAdmin@email.com@tenant1.com  |

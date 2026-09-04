@@ -1,0 +1,32 @@
+{
+  "name": "${UNIQUE:APIMCustomStatus}",
+  "context": "${UNIQUE:apiCustomStatusContext}",
+  "version": "1.0.0",
+  "endpointConfig": {
+    "endpoint_type": "http",
+    "production_endpoints": {
+      "template_not_supported": false,
+      "config": null,
+      "url": "http://nodebackend:3024"
+    },
+    "sandbox_endpoints": {
+      "url": "http://nodebackend:3024",
+      "config": null,
+      "template_not_supported": false
+    }
+  },
+  "description": "API fronting the raw-socket custom-status backend on :3024, which answers every request with the non-standard status line 'HTTP/1.1 400 Custom response'. Used to assert the gateway relays the backend's reason phrase verbatim.",
+  "policies": ["Gold", "Bronze", "Unlimited"],
+  "operations": [
+    {
+      "verb": "GET",
+      "target": "/custom-status",
+      "authType": "Application & Application User",
+      "throttlingPolicy": "Unlimited",
+      "scopes": []
+    }
+  ],
+  "isDefaultVersion": true,
+  "additionalProperties": [],
+  "additionalPropertiesMap": {}
+}

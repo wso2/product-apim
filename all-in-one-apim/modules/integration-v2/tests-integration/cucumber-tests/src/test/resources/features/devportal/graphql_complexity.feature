@@ -31,6 +31,7 @@ Feature: DevPortal GraphQL Complexity Discovery
     # The consumer-side complexity read must carry the weights the publisher stored — each field its own value.
     When I retrieve the devportal GraphQL complexity of API "gqlDpApiId"
     Then The response status code should be 200
+    And The response array field "list" should have exactly 4 entries
     And The response field "list[*].field" should be exactly the list "languages,language,code,name"
     And The response field "list[?(@.type=='Query' && @.field=='languages')].complexityValue" should be exactly the list "2"
     And The response field "list[?(@.type=='Query' && @.field=='language')].complexityValue" should be exactly the list "3"
@@ -40,6 +41,7 @@ Feature: DevPortal GraphQL Complexity Discovery
     # The consumer-side type list must describe the uploaded schema exactly (Language and Query and no others).
     When I retrieve the devportal GraphQL schema type list of API "gqlDpApiId"
     Then The response status code should be 200
+    And The response array field "typeList" should have exactly 2 entries
     And The response field "typeList[*].type" should be exactly the list "Language,Query"
     And The response field "typeList[?(@.type=='Language')].fieldList[*]" should be exactly the list "code,name"
     And The response field "typeList[?(@.type=='Query')].fieldList[*]" should be exactly the list "languages,language"

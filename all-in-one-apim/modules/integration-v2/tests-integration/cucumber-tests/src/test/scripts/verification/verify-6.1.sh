@@ -8,7 +8,8 @@
 # classes at once on the block's single shared container):
 #   * Phase6.1-BlockA      - default tenant set provisioned in onStart; TWO probe classes share its container.
 #   * Phase6.1-BlockB      - default tenant set provisioned in onStart; TWO probe classes share its container.
-#   * Phase6.1-BrokenBlock - tenantSet=adpsample on a FRESH container; provisioning throws in onStart and is
+#   * Phase6.1-BrokenBlock - injectProvisioningFailure=true (provisions into a never-created tenant domain);
+#                            provisioning throws in onStart and is
 #                            recorded as bootError, so BaseBlockRunner FAILS the class (build red).
 # Each non-failed probe records an observation (millis|thread|containerId|baseUrl|baseGatewayUrl).
 #

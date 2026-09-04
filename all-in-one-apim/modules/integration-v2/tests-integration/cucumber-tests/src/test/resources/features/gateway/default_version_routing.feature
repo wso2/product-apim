@@ -17,6 +17,7 @@ Feature: Gateway Default Version Routing
 
     # v1.0.0 → "File 1" backend, created as the default version, then published.
     And I have created an api from "artifacts/payloads/create_default_version_api.json" as "dvV1Id" and deployed it
+    And the "apis" resource "dvV1Id" should be live on the gateway, redeploying if propagation is lost
     When I publish the "apis" resource with id "dvV1Id"
     Then The lifecycle status of API "dvV1Id" should be "Published"
     When I retrieve the "apis" resource with id "dvV1Id"
@@ -108,6 +109,97 @@ Feature: Gateway Default Version Routing
     # Versionless invoke of the ".../v1" context (no version segment appended) routes to the default version → 200.
     When I invoke the API at gateway context "{{cvcContext}}/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
+
+    Examples:
+      | actor             |
+      | admin             |
+      | admin@tenant1.com |
+
+  # Management-plane/data-plane decoupling for the versionless route, and flipping the default BACK to the older
+  # version. The scenario at :14 walks the default FORWARD (v1 → v2) with v2 marked default while still in CREATED;
+  # this pins the two arms that one does not: (1) a new default version that is PUBLISHED but NOT YET DEPLOYED must
+  # NOT take over the versionless route — the gateway runs the DEPLOYED revision, so marking-default + publishing
+  # alone leave the live route on v1 until v2 is actually deployed (mirrors the throttling invariant that a policy
+  # change is not enforced until the API is redeployed); and (2) re-marking v1 the default routes the versionless
+  # context back to v1's File 1 backend. Ports DefaultVersionAPITestCase#createNewVersionWithDefaultVersionOption...
+  # (the published-not-deployed mid-assertion) and #changeNewVersionBacktoV1AndVerify. ×2 tenant.
+  @cap:gateway @feat:rest-invocation @type:regression @dep:publisher @legacy:DefaultVersionAPITestCase
+  Scenario Outline: A published-but-undeployed new default version holds the versionless route on v1, and the default flips back as <actor>
+    Given The system is ready
+    And I have valid access tokens as "<actor>"
+
+    # v1.0.0 → "File 1" backend, created as the default version, deployed, then published.
+    And I have created an api from "artifacts/payloads/create_default_version_api.json" as "pdV1Id" and deployed it
+    And the "apis" resource "pdV1Id" should be live on the gateway, redeploying if propagation is lost
+    When I publish the "apis" resource with id "pdV1Id"
+    Then The lifecycle status of API "pdV1Id" should be "Published"
+    When I retrieve the "apis" resource with id "pdV1Id"
+    And I extract response field "context" and store it as "pdContext"
+
+    # An application subscribed to v1, with an access token.
+    When I have set up application with keys, subscribed to API "pdV1Id", and obtained access token for "pdSubV1"
+    Then The response status code should be 200
+
+    # Baseline: the versionless context routes to the default version → the File 1 backend.
+    When I invoke the API at gateway context "{{pdContext}}/name" with method "GET" using access token "generatedAccessToken" and payload "" until response body contains "File 1" within 60 seconds
+    Then The response status code should be 200
+    And The response should contain "Hello WSO2 from File 1"
+
+    # Create v2.0.0 as the new default version and repoint it at the "File 2" backend.
+    When I create a new version "2.0.0" of "apis" resource "pdV1Id" with default version "true" as "pdV2Id"
+    Then The response status code should be 201
+    When I retrieve the "apis" resource with id "pdV2Id"
+    And I put the response payload in context as "pdV2Payload"
+    When I put the following JSON payload in context as "pdV2Endpoint"
+    """
+    {"endpoint_type":"http","production_endpoints":{"url":"http://nodebackend:3015/"},"sandbox_endpoints":{"url":"http://nodebackend:3015/"}}
+    """
+    When I update the "apis" resource "pdV2Id" and "pdV2Payload" with configuration type "endpointConfig" and value:
+    """
+    pdV2Endpoint
+    """
+    Then The response status code should be 200
+
+    # PUBLISH v2 but DO NOT deploy it yet.
+    When I publish the "apis" resource with id "pdV2Id"
+    Then The lifecycle status of API "pdV2Id" should be "Published"
+
+    # PUBLISHED-BUT-NOT-DEPLOYED arm (ports DefaultVersionAPITestCase mid-assertion): v2 is now marked the default
+    # version AND published, but its revision is NOT deployed — the gateway serves the DEPLOYED revision, so the
+    # versionless context must STILL route to the OLD default (v1 / "File 1"). This proves the management-plane
+    # state (marked-default + published) does not move the live route before v2 becomes routable.
+    When I invoke the API at gateway context "{{pdContext}}/name" with method "GET" using access token "generatedAccessToken" and payload "" until response body contains "File 1" within 60 seconds
+    Then The response status code should be 200
+    And The response should contain "Hello WSO2 from File 1"
+
+    # Now DEPLOY v2 and gate on the revision actually being deployed before asserting the data-plane moved.
+    When I deploy the API with id "pdV2Id"
+    Then The response status code should be 201
+    When I wait until "apis" "pdV2Id" revision is deployed in the gateway
+
+    # Post-deploy: the SAME versionless context now routes to the new default (v2) → the File 2 backend.
+    When I invoke the API at gateway context "{{pdContext}}/name" with method "GET" using access token "generatedAccessToken" and payload "" until response body contains "File 2" within 60 seconds
+    Then The response status code should be 200
+    And The response should contain "Hello WSO2 from File 2"
+
+    # Flip the default BACK to v1: re-mark v1 the default version and redeploy it.
+    When I retrieve the "apis" resource with id "pdV1Id"
+    And I put the response payload in context as "pdV1Payload"
+    When I update the "apis" resource "pdV1Id" and "pdV1Payload" with configuration type "isDefaultVersion" and value:
+    """
+    true
+    """
+    Then The response status code should be 200
+    When I deploy the API with id "pdV1Id"
+    Then The response status code should be 201
+    When I wait until "apis" "pdV1Id" revision is deployed in the gateway
+
+    # The versionless context routes back to v1 → the File 1 backend once more.
+    When I invoke the API at gateway context "{{pdContext}}/name" with method "GET" using access token "generatedAccessToken" and payload "" until response body contains "File 1" within 60 seconds
+    Then The response status code should be 200
+    And The response should contain "Hello WSO2 from File 1"
 
     Examples:
       | actor             |

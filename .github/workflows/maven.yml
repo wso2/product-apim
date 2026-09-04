@@ -126,6 +126,20 @@ jobs:
         run: sudo echo "127.0.0.1 $(hostname)" | sudo tee -a /etc/hosts
       - name: Checkout
         uses: actions/checkout@v4
+      # Placed before the image build so a broken v2 taxonomy fails in seconds, and integration-v2 (which needs
+      # this job) never starts.
+      - name: Lint integration-v2 scenario tags
+        working-directory: all-in-one-apim/modules/integration-v2
+        run: python3 docs/devs/render_coverage_tree.py
+      # The lint step rewrites coverage-tree.md in place, so a diff means it was committed stale.
+      - name: Verify coverage-tree.md was regenerated
+        working-directory: all-in-one-apim/modules/integration-v2
+        run: |
+          if ! git diff --quiet -- docs/devs/coverage-tree.md; then
+            echo "::error file=all-in-one-apim/modules/integration-v2/docs/devs/coverage-tree.md::Stale coverage tree. Run 'python3 docs/devs/render_coverage_tree.py' from all-in-one-apim/modules/integration-v2 and commit the regenerated file."
+            git --no-pager diff -- docs/devs/coverage-tree.md
+            exit 1
+          fi
       - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
@@ -154,11 +168,12 @@ jobs:
         run: |
           echo "APIM_IMAGE=$(mvn -q -N help:evaluate -Dexpression=apim.docker.image.name -DforceStdout)" >> "$GITHUB_ENV"
           echo "SOLACE_SHIM_IMAGE=$(mvn -q -N help:evaluate -Dexpression=solace.shim.docker.image.name -DforceStdout)" >> "$GITHUB_ENV"
+          echo "SQUID_IMAGE=$(mvn -q -N help:evaluate -Dexpression=squid.docker.image.name -DforceStdout)" >> "$GITHUB_ENV"
       # Only locally built images travel by tar; public images are pulled by the matrix.
       - name: Save Docker images and IS staging
         run: |
           mkdir -p /tmp/v2-images
-          docker save "$APIM_IMAGE" node-app-server:latest "$SOLACE_SHIM_IMAGE" | gzip > /tmp/v2-images/images.tar.gz
+          docker save "$APIM_IMAGE" node-app-server:latest "$SOLACE_SHIM_IMAGE" "$SQUID_IMAGE" | gzip > /tmp/v2-images/images.tar.gz
           # The external-KM blocks read these staged files at runtime (see BlockLifecycleListener /
           # DynamicApimContainer#withExternalKmTrust); they exist only where pre-integration-test ran.
           tar -C all-in-one-apim/modules/integration-v2/tests-common/testcontainers/target -czf \

@@ -19,7 +19,11 @@
     <!-- Publisher features sharing the default container config run as parallel classes in one block,
          so a single container boots for all of them instead of one boot per feature. Split into a second
          block only when this one accumulates too many classes for the block's thread-count, or when a
-         feature needs a different container config (then it gets its own block). -->
+         feature needs a different container config (then it gets its own block).
+         initSecondaryUserStore stands up SECONDARY.COM and seeds its publisher/subscriber actors at boot; it is
+         purely additive (nothing here reads that store unless a scenario names a SECONDARY.COM actor) and closes
+         the legacy SUPER_TENANT_USER_STORE_USER mode for the provider-identity and subscriber-identity facets —
+         see the store-actor Examples rows in publisher/versioning and publisher/docs. -->
     <test name="IntegrationV2-Publisher" parallel="classes" thread-count="2">
         <parameter name="blockLabel" value="publisher"/>
         <parameter name="initTenantUsers" value="true"/>
@@ -37,25 +41,45 @@
             <class name="org.wso2.am.integration.cucumbertests.runners.block.PublisherAPIRevisionsRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.PublisherApiProductsRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.PublisherAccessControlRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.PublisherApiVisibilityDomainsRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.PublisherApiProviderChangeRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.PublisherDefaultEndpointRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.PublisherEndpointCertificatesRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.PublisherServiceCatalogRunner"/>
         </classes>
     </test>
-    <!-- DevPortal features share their own container (separate capability, consumer-plane actors). -->
+    <!-- The deployment-acknowledgement contract runs in its own Publisher-configured block so its strict
+         gateway acknowledgement assertion is isolated from the high-churn Publisher runner classes. -->
+    <test name="IntegrationV2-Publisher-Acknowledgement" parallel="classes" thread-count="2">
+        <parameter name="blockLabel" value="publisher-acknowledgement"/>
+        <parameter name="initTenantUsers" value="true"/>
+        <parameter name="initSecondaryUserStore" value="true"/>
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.PublisherAPIRevisionAcknowledgementRunner"/>
+        </classes>
+    </test>
+    <!-- DevPortal features share their own container (separate capability, consumer-plane actors).
+         initSecondaryUserStore: additive, as on the publisher block above — it backs the SECONDARY.COM
+         subscriber row on devportal/subscribe and the store-creator row on devportal/comments_2_thread_mutations
+         (comment authorship), closing the legacy SUPER_TENANT_USER_STORE_USER mode for those facets. -->
     <test name="IntegrationV2-DevPortal" parallel="classes" thread-count="2">
         <parameter name="blockLabel" value="devportal"/>
         <parameter name="initTenantUsers" value="true"/>
+        <parameter name="initSecondaryUserStore" value="true"/>
         <classes>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.DevPortalApplicationsRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.DevPortalSearchRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.DevPortalUnifiedSearchRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.DevPortalEnvironmentUrlsRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.DevPortalSubscriptionManagementRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.DevPortalSubscribeRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.DevPortalSdkGenerationRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.DevPortalVisibilityRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.DevPortalVisibilityDomainsRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.DevPortalCommentsRunner"/>
+            <!-- Separate runner from DevPortalCommentsRunner: that one's feature is @cleanup, whose per-scenario
+                 sweep would delete this suite's shared _setup_comment_threads fixture mid-run. -->
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.DevPortalCommentThreadsRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.DevPortalRatingsRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.DevPortalGraphqlComplexityRunner"/>
         </classes>
@@ -71,6 +95,8 @@
             <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewaySoapInvocationRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayGraphQLInvocationRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewaySecurityEnforcementRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayCredentialTypeConfusionRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayBasicAuthSecurityRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayThrottlingEnforcementRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayGraphQLScopeEnforcementRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayDefaultVersionRoutingRunner"/>
@@ -99,6 +125,9 @@
             <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayGraphqlSubscriptionThrottlingRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayGraphqlSubQueryLimitsRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayGraphqlSubscriptionTenantIsolationRunner"/>
+            <!-- Runtime half of the provider-change port: hosted here (not in the publisher block) because a
+                 gateway invocation needs this block's initBackend. -->
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayProviderChangeInvocationRunner"/>
         </classes>
     </test>
     <!-- Key-manager features (token/key issuance). initBackend for the refresh/sandbox gateway invocations. -->
@@ -106,8 +135,14 @@
         <parameter name="blockLabel" value="keymanager"/>
         <parameter name="initTenantUsers" value="true"/>
         <parameter name="initBackend" value="true"/>
+        <!-- Purely additive SECONDARY.COM store (own H2 DB, no primary user/role/config change) — seeds the store
+             actors the token_issuance store-principal token arcs act as (§12). -->
+        <parameter name="initSecondaryUserStore" value="true"/>
         <classes>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.KeyManagerTokenIssuanceRunner"/>
+            <!-- The SECONDARY.COM store-principal arcs live here ONLY: token_issuance.feature itself is also run by
+                 IntegrationV2-EmailUserName, where a single-"@" store principal cannot resolve to a tenant. -->
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.KeyManagerTokenIssuanceStorePrincipalRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.KeyManagerTokenRevocationRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.KeyManagerApiKeyRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.KeyManagerOAuthKeysRunner"/>
@@ -136,6 +171,7 @@
             <class name="org.wso2.am.integration.cucumbertests.runners.block.AdminKeyManagerConfigRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.AdminDenyPolicyRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.AdminTenantConfigRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.AdminTenantDomainValidationRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.AdminSystemScopesRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.AdminThrottlePolicyExportImportRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.AdminApiCategoriesRunner"/>
@@ -169,8 +205,9 @@
          stays a separate suite until IS aliases/payload endpoints are parameterized. -->
 
     <!-- API Governance plane (rulesets / policies / compliance) — its own product API (/api/am/governance/v1)
-         with its own apim:gov_* token scopes. Default config (compliance evaluates API definitions, not runtime,
-         so no gateway backend needed). Concurrent block. -->
+         with its own apim:gov_* token scopes. Default config. Compliance evaluates API definitions rather than
+         runtime traffic, but the block still needs the node backend: the MCP-proxy scenarios are validated
+         against the live MCP server at create time — see initBackend below. Concurrent block. -->
     <test name="IntegrationV2-Governance" parallel="classes" thread-count="2">
         <parameter name="blockLabel" value="governance"/>
         <parameter name="initTenantUsers" value="true"/>
@@ -299,12 +336,10 @@
         </classes>
     </test>
 
-    <!-- Mutual-SSL invocation + WebSocket CORS share ONE block: their overlays are orthogonal (mTLS shrinks the
-         SSL-profile read interval with client auth still "optional"; WS-CORS enables the WS origin allow-list —
-         different TOML tables, neither breaks the other's flows), so they co-locate on one container instead of
-         two. Needs the node backend. Runs the two runners as parallel classes (thread-count=2): they use
-         different data planes — mTLS on the 8243 HTTPS passthrough, WS-CORS on the ws:// inbound — so they don't
-         interfere. -->
+    <!-- Three features on one container: their overlays touch different TOML tables (mTLS shortens the
+         SSL-profile read interval, WS-CORS enables the WS origin allow-list), so neither changes the other's
+         behaviour (§13). Parallel-safe: WS-CORS is on the ws:// inbound rather than the 8243 passthrough, and
+         each mutual-SSL runner owns its APIs and a per-tenant-unique certificate alias. -->
     <test name="IntegrationV2-MutualSslWsCors" parallel="classes" thread-count="2">
         <parameter name="blockLabel" value="mtls-ws-cors"/>
         <parameter name="initTenantUsers" value="true"/>
@@ -312,7 +347,26 @@
         <parameter name="tomlExtraOverlayPath" value="src/test/resources/artifacts/configFiles/mtlsWsCors/deployment.toml"/>
         <classes>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayMutualSslInvocationRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayMutualSslSecurityMatrixRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayWebSocketCorsRunner"/>
+        </classes>
+    </test>
+    <!-- Endpoint-certificate TLS invocation: an API whose backend is the tls-backend HTTPS app on
+         nodebackend:3023 (self-signed certificate the gateway does not trust), asserting the
+         500 -> upload -> 200 -> delete -> 500 transition. It cannot ride in the MutualSslWsCors block above: that
+         overlay shortens the LISTENER's ssl_profile.read_interval (the client-certificate side), which does nothing
+         for a backend certificate — this needs the HTTPS SENDER's ssl_profile.interval plus the certificate
+         reloader period, both 10 minutes by default, which would put the post-upload 200 leg out of reach.
+         thread-count=1 and a single scenario by design: an endpoint certificate lands in the gateway's SHARED trust
+         store, so a sibling class holding the same backend's certificate would keep the backend trusted after this
+         one deleted its own copy and the post-delete 500 leg could never be observed. Needs the node backend. -->
+    <test name="IntegrationV2-EndpointCertificateTls" parallel="classes" thread-count="1">
+        <parameter name="blockLabel" value="endpoint-cert-tls"/>
+        <parameter name="initTenantUsers" value="true"/>
+        <parameter name="initBackend" value="true"/>
+        <parameter name="tomlExtraOverlayPath" value="src/test/resources/artifacts/configFiles/endpointCertificateReload/deployment.toml"/>
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayEndpointCertificateInvocationRunner"/>
         </classes>
     </test>
     <!-- Features needing extra (non-default) server config share one container via a feature-specific TOML
@@ -524,15 +578,34 @@
             <class name="org.wso2.am.integration.cucumbertests.runners.block.TenantSharingOffRunner"/>
         </classes>
     </test>
-    <!-- Email as username. MUST stay its own block, and it is the only block that may set emailUserMode: the mode
-         changes the PHYSICAL username of every provisioned user (see BlockLifecycleListener.PARAM_EMAIL_USER_MODE)
-         and the overlay's enable_email_domain changes how the whole container resolves an '@' in ANY username, so
-         neither is co-hostable with a runner that expects the plain actor usernames. The parameter and the overlay
-         must be set TOGETHER: the overlay alone breaks the framework's own boot provisioning (a plain,
-         single-'@' tenant actor resolves to a non-existent super-tenant user), and the parameter alone provisions
-         email usernames the product then refuses to resolve. No backend needed — the scenarios exercise the
-         management planes only, with no gateway invocation. -->
-    <test name="IntegrationV2-EmailUserName" parallel="classes" thread-count="1">
+    <!-- DEPRECATED-API DISCOVERABILITY. Closes the TRUE direction of apim.devportal.display_deprecated_apis,
+         which renders <APIStore><DisplayAllAPIs> (api-manager.xml.j2:640) and ships as FALSE. With it on,
+         RegistrySearchUtil.getDevPortalSearchQuery includes DEPRECATED in the lcState filter it appends to every
+         devportal query, so a deprecated API stays discoverable; the shipped-default direction (filtered out) is
+         asserted in devportal/subscribe.feature. Both sides are needed because the facet legacy
+         (AccessibilityOfDeprecatedOldAPIAndPublishedCopyAPITestCase) left commented out is config-gated, not
+         unconditional.
+         Its own block ON PURPOSE, not co-hosted (§13): the flag alters the result set of EVERY devportal search
+         and listing in the container, so any block carrying such a feature would have its counts changed. -->
+    <test name="IntegrationV2-DisplayDeprecatedApis" parallel="classes" thread-count="1">
+        <parameter name="blockLabel" value="display-deprecated-apis"/>
+        <parameter name="initTenantUsers" value="true"/>
+        <parameter name="tomlExtraOverlayPath" value="src/test/resources/artifacts/configFiles/displayDeprecatedApis/deployment.toml"/>
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.DevPortalDeprecatedApiDiscoverabilityRunner"/>
+        </classes>
+    </test>
+    <!-- Email as username: its own block, and the only one that may set emailUserMode. The parameter and the
+         overlay must be set TOGETHER — the overlay alone breaks boot provisioning (a plain tenant actor resolves
+         to a non-existent super-tenant user), the parameter alone provisions usernames the product then refuses
+         to resolve. Neither is co-hostable with runners that expect the plain actor usernames.
+         The runners after the dedicated email ones are MODE FAN-OUT: existing classes re-run under the mode,
+         which is how legacy obtained SUPER_TENANT_EMAIL_USER / TENANT_EMAIL_USER coverage. A class is listed
+         only where the PHYSICAL username is load-bearing for an assertion it already makes.
+         thread-count=2 is measured, not assumed: 13 runners / 100 scenarios pass at both tc=2 and tc=3 with no
+         cross-class interference. Not higher — the block is propagation-bound, so tc=3 bought 4% wall-clock
+         while pushing gateway deploy waits from 131s to 150s against the 180s RUNTIME_PROPAGATION_TIMEOUT. -->
+    <test name="IntegrationV2-EmailUserName" parallel="classes" thread-count="2">
         <parameter name="blockLabel" value="email-username"/>
         <parameter name="initTenantUsers" value="true"/>
         <parameter name="emailUserMode" value="true"/>
@@ -540,6 +613,12 @@
         <!-- Gateway invocation in this block needs the node backend; without it Basic auth reaches a SUSPENDED
              endpoint (500) and a 200 would be unreachable (CLAUDE.md §11). -->
         <parameter name="initBackend" value="true"/>
+        <!-- Deliberately NO initSecondaryUserStore: the SECONDARY.COM store-principal token arcs live in their own
+             feature/runner (KeyManagerTokenIssuanceStorePrincipalRunner, KeyManager block only) because they
+             CANNOT pass here. Measured: with emailUserMode the carbon.super row passes but
+             SECONDARY.COM/subscriberUser1@tenant1.com is refused 401 — EnableEmailUserName splits on the LAST "@"
+             only when a name carries TWO or more, so a single-"@" store principal resolves to carbon.super and
+             never to tenant1. That is the specified rule this block exists to exercise, not a defect to seed around. -->
         <classes>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayBasicAuthEmailUserNameRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.DevPortalApplicationEmailUserNameRunner"/>
@@ -547,6 +626,13 @@
             <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayDenyEnforcementEmailUserNameRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.KeyManagerEmailUserNameLoginRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.PublisherApiProductEmailUserNameRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.DevPortalCommentsRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.DevPortalRatingsRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.DevPortalVisibilityRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.DevPortalVisibilityDomainsRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.DevPortalSearchRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.PublisherAccessControlRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.KeyManagerTokenIssuanceRunner"/>
         </classes>
     </test>
     <!-- Single-client-secret credential model. The overlay carries ONE key,
@@ -582,10 +668,12 @@
          and restores it per scenario, while the UnlimitedTierDisabled runner asserts the EXACT fall-through tier
          that those same keys override. Sequential classes make the two safe in either order; at thread-count=2
          they would interleave and a configured default would silently replace the fall-through the sibling pins.
-         No gateway backend and no external IS — both features assert the management planes only. -->
+         No external IS. The two throttling runners assert the management planes only, but the Gemini runner
+         invokes the gateway, so the block needs the node backend — see initBackend below. -->
     <test name="IntegrationV2-UnlimitedTierDisabled" parallel="classes" thread-count="1">
         <parameter name="blockLabel" value="unlimited-tier-disabled"/>
         <parameter name="initTenantUsers" value="true"/>
+        <!-- initBackend: GatewayGeminiUnlimitedTier invokes the gateway; without it the endpoint is SUSPENDED (500). -->
         <parameter name="initBackend" value="true"/>
         <parameter name="tomlExtraOverlayPath" value="src/test/resources/artifacts/configFiles/unlimitedTierDisabled/deployment.toml"/>
         <classes>
@@ -623,8 +711,6 @@
         </classes>
     </test>
 
-
-
     <!-- Devops logging plane: correlation logging (per-component) and per-API / per-resource log levels.
          The two CO-HOST because their config is genuinely orthogonal — different devops resources
          (/config/correlation vs /tenant-logs), different appenders, different files (correlation.log vs
@@ -658,15 +744,41 @@
         </classes>
     </test>
 
-
-
+    <!-- ELK analytics metric log (APIMAnalyticsTest, ELKAnalyticsWithRespondMediatorTestCase). Own block for the
+         overlay, which is server-global in the loudest way: [apim.analytics] enable/type switches analytics
+         publishing on for the WHOLE container, so from boot every invocation any class made would write an event
+         into apim_metrics.log. It therefore cannot be co-hosted onto an existing block without changing what that
+         block's gateway traffic does.
+         initBackend is load-bearing for the first scenario, which must get a real 200 from the upstream before its
+         metric event can carry proxyResponseCode 200 (the respond-mediator scenario never reaches an upstream by
+         construction, which is its point).
+         thread-count=1 because the block holds exactly one class; the log-mark/appended-since window it asserts on
+         is container-global, so a sibling class's traffic would land inside it. -->
+    <test name="IntegrationV2-ElkAnalytics" parallel="classes" thread-count="1">
+        <parameter name="blockLabel" value="elk-analytics"/>
+        <parameter name="initTenantUsers" value="true"/>
+        <parameter name="initBackend" value="true"/>
+        <parameter name="tomlExtraOverlayPath" value="src/test/resources/artifacts/configFiles/elkAnalytics/deployment.toml"/>
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.AnalyticsElkMetricsRunner"/>
+        </classes>
+    </test>
 
     <!-- Approval-workflow suite (ports WorkflowApprovalExecutorTest). MUST stay thread-count=1: the _setup_
          feature flips the workflow executors to the Approval variants by writing workflow-extensions.xml into the
          governance registry (via ResourceAdminService SOAP), which is server-global for the container; a sibling
          class sharing the container would see the flipped executors. The overlay declares the three custom
-         devportal application_attributes the pending tasks surface. The runner's AfterClass restores the original
-         executors. -->
+         devportal application_attributes the pending tasks surface. Each runner's AfterClass restores the original
+         executors. initBackend is REQUIRED, not optional: WorkflowWsApiStateChangeRunner points the external
+         APIStateChangeWSWorkflowExecutor at the BPMNProcessServerApp double the NodeAppServer hosts on
+         nodebackend:3004.
+         THE TWO RUNNERS SHARE THIS CONTAINER, which is safe ONLY at thread-count=1: each flips the server-global
+         workflow-extensions.xml and undoes it in its OWN AfterClass, and serialised classes mean one runner's
+         restore completes before the next class starts — in either order, because the shared helper keys captured
+         originals by container and clears them on restore, so the next flip re-captures the pristine config.
+         Raising thread-count here would interleave the two flips; split WorkflowWsApiStateChangeRunner into its
+         own block before doing that. -->
+
     <test name="IntegrationV2-ApprovalWorkflow" parallel="classes" thread-count="1">
         <parameter name="blockLabel" value="approval-workflow"/>
         <parameter name="initTenantUsers" value="true"/>
@@ -674,6 +786,7 @@
         <parameter name="tomlExtraOverlayPath" value="src/test/resources/artifacts/configFiles/approveWorkflow/deployment.toml"/>
         <classes>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.WorkflowApprovalRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.WorkflowWsApiStateChangeRunner"/>
         </classes>
     </test>
 
@@ -700,6 +813,100 @@
         <classes>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.CrossTenantSubscriptionRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.CrossTenantInvocationRunner"/>
+        </classes>
+    </test>
+    <!-- New-API-version subscriber notification email (NotificationTestCase). Own block for the
+         [output_adapter.email] overlay, which repoints the carbon email output-event adapter at the node
+         backend's SMTP capture sink (nodebackend:3025) — server-wide config that would misdirect every other
+         block's mail, so it cannot be co-hosted.
+         initBackend is MANDATORY here, not a gateway-invocation convenience: the SMTP sink IS the node backend,
+         so without it the product has nothing to deliver to and the arc fails as "the product never notifies".
+         thread-count=1: the feature mutates the container-wide tenant configuration (NotificationsEnabled plus
+         the Notifications notifier list), so no sibling class may share the container mid-scenario. -->
+    <test name="IntegrationV2-NewVersionNotification" parallel="classes" thread-count="1">
+        <parameter name="blockLabel" value="new-version-notification"/>
+        <parameter name="initTenantUsers" value="true"/>
+        <parameter name="initBackend" value="true"/>
+        <parameter name="tomlExtraOverlayPath" value="src/test/resources/artifacts/configFiles/newVersionNotification/deployment.toml"/>
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.NewVersionNotificationRunner"/>
+        </classes>
+    </test>
+
+    <!-- WebSocket proxy profiles. Each block runs its own APIM container with a distinct TOML overlay
+         so the proxy scenarios can run concurrently. A JVM-wide SquidProxyServer (initProxy=true)
+         provides two Squid instances on the Docker network: anonymous on port 3128 and Basic-auth on
+         port 3129. CONNECT count assertions on the Squid access logs prove gateway routing behaviour;
+         because Squid can reach nodebackend, echo success alone would not prove bypass or no-match.
+         Needs the node WS echo backend (initBackend). Ports WebSocketProxyProfileTestCase. -->
+    <test name="IntegrationV2-WsProxySpecificBypass" parallel="classes" thread-count="1">
+        <parameter name="blockLabel" value="ws-proxy-specific-bypass"/>
+        <parameter name="initTenantUsers" value="true"/>
+        <parameter name="initBackend" value="true"/>
+        <parameter name="initProxy" value="true"/>
+        <parameter name="tomlExtraOverlayPath" value="src/test/resources/artifacts/configFiles/wsProxySpecificBypass/deployment.toml"/>
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayWebSocketProxySpecificBypassRunner"/>
+        </classes>
+    </test>
+    <test name="IntegrationV2-WsProxyCatchAll" parallel="classes" thread-count="1">
+        <parameter name="blockLabel" value="ws-proxy-catch-all"/>
+        <parameter name="initTenantUsers" value="true"/>
+        <parameter name="initBackend" value="true"/>
+        <parameter name="initProxy" value="true"/>
+        <parameter name="tomlExtraOverlayPath" value="src/test/resources/artifacts/configFiles/wsProxyCatchAll/deployment.toml"/>
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayWebSocketProxyCatchAllRunner"/>
+        </classes>
+    </test>
+    <test name="IntegrationV2-WsProxyNoMatch" parallel="classes" thread-count="1">
+        <parameter name="blockLabel" value="ws-proxy-no-match"/>
+        <parameter name="initTenantUsers" value="true"/>
+        <parameter name="initBackend" value="true"/>
+        <parameter name="initProxy" value="true"/>
+        <parameter name="tomlExtraOverlayPath" value="src/test/resources/artifacts/configFiles/wsProxyNoMatch/deployment.toml"/>
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayWebSocketProxyNoMatchRunner"/>
+        </classes>
+    </test>
+    <test name="IntegrationV2-WsProxyAnonRouting" parallel="classes" thread-count="1">
+        <parameter name="blockLabel" value="ws-proxy-anon-routing"/>
+        <parameter name="initTenantUsers" value="true"/>
+        <parameter name="initBackend" value="true"/>
+        <parameter name="initProxy" value="true"/>
+        <parameter name="tomlExtraOverlayPath" value="src/test/resources/artifacts/configFiles/wsProxyAnonRouting/deployment.toml"/>
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayWebSocketProxyAnonRoutingRunner"/>
+        </classes>
+    </test>
+    <test name="IntegrationV2-WsProxyAuthRouting" parallel="classes" thread-count="1">
+        <parameter name="blockLabel" value="ws-proxy-auth-routing"/>
+        <parameter name="initTenantUsers" value="true"/>
+        <parameter name="initBackend" value="true"/>
+        <parameter name="initProxy" value="true"/>
+        <parameter name="tomlExtraOverlayPath" value="src/test/resources/artifacts/configFiles/wsProxyAuthRouting/deployment.toml"/>
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayWebSocketProxyAuthRoutingRunner"/>
+        </classes>
+    </test>
+    <test name="IntegrationV2-WsProxyAuthWrongCreds" parallel="classes" thread-count="1">
+        <parameter name="blockLabel" value="ws-proxy-auth-wrong-creds"/>
+        <parameter name="initTenantUsers" value="true"/>
+        <parameter name="initBackend" value="true"/>
+        <parameter name="initProxy" value="true"/>
+        <parameter name="tomlExtraOverlayPath" value="src/test/resources/artifacts/configFiles/wsProxyAuthWrongCreds/deployment.toml"/>
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayWebSocketProxyAuthWrongCredsRunner"/>
+        </classes>
+    </test>
+    <test name="IntegrationV2-WsProxySpecificOverCatchAll" parallel="classes" thread-count="1">
+        <parameter name="blockLabel" value="ws-proxy-specific-over-catch-all"/>
+        <parameter name="initTenantUsers" value="true"/>
+        <parameter name="initBackend" value="true"/>
+        <parameter name="initProxy" value="true"/>
+        <parameter name="tomlExtraOverlayPath" value="src/test/resources/artifacts/configFiles/wsProxySpecificOverCatchAll/deployment.toml"/>
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayWebSocketProxySpecificOverCatchAllRunner"/>
         </classes>
     </test>
 </suite>

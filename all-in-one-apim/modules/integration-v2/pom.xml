@@ -82,6 +82,8 @@
              amd64-only, i.e. emulated/slow on arm64). Drives both the image tag and the in-container IS_HOME. -->
         <is.server.version>7.3.0</is.server.version>
         <is.docker.image.name>wso2/wso2is:${is.server.version}</is.docker.image.name>
+        <!--Squid HTTP proxy docker image (anonymous + authenticated instances)-->
+        <squid.docker.image.name>squid-proxy:latest</squid.docker.image.name>
 
         <!-- Debug API Manager instance-->
         <apim.debug.enabled>False</apim.debug.enabled>
@@ -194,6 +196,7 @@
                                 <solace.shim.docker.image.name>${solace.shim.docker.image.name}</solace.shim.docker.image.name>
                                 <is.docker.image.name>${is.docker.image.name}</is.docker.image.name>
                                 <is.server.version>${is.server.version}</is.server.version>
+                                <squid.docker.image.name>${squid.docker.image.name}</squid.docker.image.name>
                                 <apim.debug.enabled>${apim.debug.enabled}</apim.debug.enabled>
                                 <apim.debug.port>${apim.debug.port}</apim.debug.port>
                                 <apim.coverage>${apim.coverage}</apim.coverage>
@@ -263,6 +266,7 @@
                                 <solace.shim.docker.image.name>${solace.shim.docker.image.name}</solace.shim.docker.image.name>
                                 <is.docker.image.name>${is.docker.image.name}</is.docker.image.name>
                                 <is.server.version>${is.server.version}</is.server.version>
+                                <squid.docker.image.name>${squid.docker.image.name}</squid.docker.image.name>
                                 <apim.debug.enabled>${apim.debug.enabled}</apim.debug.enabled>
                                 <apim.debug.port>${apim.debug.port}</apim.debug.port>
                                 <apim.coverage>${apim.coverage}</apim.coverage>

@@ -1,0 +1,37 @@
+{
+  "name": "${UNIQUE:APIMForceContentLength}",
+  "context": "${UNIQUE:forceContentLength}",
+  "version": "1.0.0",
+  "endpointConfig": {
+    "endpoint_type": "http",
+    "production_endpoints": {
+      "template_not_supported": false,
+      "config": null,
+      "url": "http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/"
+    },
+    "sandbox_endpoints": {
+      "url": "http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/",
+      "config": null,
+      "template_not_supported": false
+    }
+  },
+  "description": "API POSTing to the header-reflecting backend, for the FORCE_HTTP_CONTENT_LENGTH transfer-encoding regression. Created with NO operation policy so the gateway default is measurable first; the policy is attached in-scenario.",
+  "tags": [
+    "mediation"
+  ],
+  "policies": [
+    "Gold",
+    "Bronze",
+    "Unlimited"
+  ],
+  "operations": [
+    {
+      "verb": "POST",
+      "target": "/reflect-headers",
+      "scopes": []
+    }
+  ],
+  "isDefaultVersion": true,
+  "additionalProperties": [],
+  "additionalPropertiesMap": {}
+}

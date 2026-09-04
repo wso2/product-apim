@@ -54,7 +54,7 @@ Feature: API Governance Policies
     Then The response status code should be 201
     When I delete the governance ruleset "attachedRulesetId"
     Then The response status code should be 409
-    And The response should contain "990101"
+    And The error response should have code "990101" and message "Ruleset is currently in use by some governance policies"
 
     Examples:
       | actor            |

@@ -30,6 +30,7 @@ import org.wso2.am.integration.test.utils.bean.APIRequest;
 import org.wso2.am.integration.test.utils.base.APIManagerLifecycleBaseTest;
 import org.wso2.carbon.automation.test.utils.http.client.HttpRequestUtil;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
+import org.wso2.carbon.tenant.mgt.stub.TenantMgtAdminServiceExceptionException;
 
 import java.net.URL;
 import java.util.ArrayList;
@@ -38,7 +39,9 @@ import java.util.List;
 import java.util.Map;
 
 import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertTrue;
+import static org.testng.Assert.fail;
 
 public class TenantDomainValidationTestCase extends APIManagerLifecycleBaseTest {
 
@@ -47,15 +50,20 @@ public class TenantDomainValidationTestCase extends APIManagerLifecycleBaseTest 
     private final String TENANT_ADMIN_PASSWORD = "password1";
     private final String API_NAME = "ABC_API";
     private final String API_VERSION = "1.0.0";
-    private final String API_DESC = "This is a test API Created by API Manager Integration Test";
     private final String APP_NAME = "TenantABCApp";
     private final String TENANT_ADMIN_USER = TENANT_ADMIN_USERNAME + "@" + TENANT_DOMAIN;
     private final String API_CONTEXT = "testABC_API";
     private final String INVALID_TENANT_DOMAIN = "Abc.com";
+    private final String RESOURCE_NOT_AVAILABLE_MESSAGE = "The requested resource is not available";
+    private final String ILLEGAL_TENANT_DOMAIN_MESSAGE = "The tenant domain " + INVALID_TENANT_DOMAIN
+            + " contains one or more illegal characters. The valid characters are lowercase letters, "
+            + "numbers, '.', '-' and '_'.";
     private final String API_END_POINT_POSTFIX_URL = "jaxrs_basic/services/customers/customerservice/";
     private String apiProductionEndPointUrl;
     private String apiID;
     private String appID;
+    private boolean invalidTenantDomainCreated;
+    private boolean tenantDomainCreated;
 
     @BeforeClass(alwaysRun = true)
     public void setEnvironment() throws Exception {
@@ -71,9 +79,27 @@ public class TenantDomainValidationTestCase extends APIManagerLifecycleBaseTest 
         try {
             tenantManagementServiceClient.addTenant(INVALID_TENANT_DOMAIN, TENANT_ADMIN_PASSWORD, TENANT_ADMIN_USERNAME,
                     "demo");
+            // Recorded before failing so destroy() can remove the tenant this call should never have created;
+            // the server is shared for the whole module run, so it would otherwise persist.
+            invalidTenantDomainCreated = true;
+            fail("Tenant creation was expected to be rejected for the invalid domain " + INVALID_TENANT_DOMAIN
+                    + ", but it succeeded.");
         } catch (Exception e) {
-            assertTrue(e.getMessage().contains("The tenant domain " + INVALID_TENANT_DOMAIN + " contains one or more illegal " +
-                            "characters. The valid characters are lowercase letters, numbers, '.', '-' and '_'."));
+            // The rejection can surface two ways. When the stub maps the fault it throws the typed exception,
+            // built through its no-arg constructor, so getMessage() is only the class name and the server's text
+            // lives in the fault bean. Otherwise the fault travels as an AxisFault/RemoteException whose message
+            // IS the fault reason. Read whichever carries the detail rather than assuming one shape.
+            String faultMessage = e.getMessage();
+            if (e instanceof TenantMgtAdminServiceExceptionException) {
+                TenantMgtAdminServiceExceptionException fault = (TenantMgtAdminServiceExceptionException) e;
+                if (fault.getFaultMessage() != null
+                        && fault.getFaultMessage().getTenantMgtAdminServiceException() != null) {
+                    faultMessage = fault.getFaultMessage().getTenantMgtAdminServiceException().getMessage();
+                }
+            }
+            assertTrue(faultMessage != null && faultMessage.contains(ILLEGAL_TENANT_DOMAIN_MESSAGE),
+                    "Expected the message '" + ILLEGAL_TENANT_DOMAIN_MESSAGE + "' when creating a tenant with an "
+                            + "invalid domain but received : " + faultMessage);
         }
     }
 
@@ -83,6 +109,7 @@ public class TenantDomainValidationTestCase extends APIManagerLifecycleBaseTest 
 
         // Add a new tenant
         tenantManagementServiceClient.addTenant(TENANT_DOMAIN, TENANT_ADMIN_PASSWORD, TENANT_ADMIN_USERNAME, "demo");
+        tenantDomainCreated = true;
 
         restAPIPublisher = new RestAPIPublisherImpl(TENANT_ADMIN_USERNAME, TENANT_ADMIN_PASSWORD, TENANT_DOMAIN,
                 publisherURLHttps);
@@ -92,7 +119,7 @@ public class TenantDomainValidationTestCase extends APIManagerLifecycleBaseTest 
 
         //Create the Application and the API
         HttpResponse applicationResponse = restAPIStore.createApplication(APP_NAME,
-                "Test Application RevokeOneTimeToken", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED,
+                "Application to test tenant domain validation", APIMIntegrationConstants.APPLICATION_TIER.UNLIMITED,
                 ApplicationDTO.TokenTypeEnum.JWT);
         appID = applicationResponse.getData();
 
@@ -100,19 +127,27 @@ public class TenantDomainValidationTestCase extends APIManagerLifecycleBaseTest 
         apiRequest.setVersion(API_VERSION);
         apiRequest.setTiersCollection(APIMIntegrationConstants.API_TIER.UNLIMITED);
         apiRequest.setTier(APIMIntegrationConstants.API_TIER.UNLIMITED);
-        apiID = createPublishAndSubscribeToAPIUsingRest(apiRequest, restAPIPublisher, restAPIStore, appID,
-                APIMIntegrationConstants.API_TIER.UNLIMITED);
+        apiID = createAndPublishAPIUsingRest(apiRequest, restAPIPublisher, false);
+
+        // Not createPublishAndSubscribeToAPIUsingRest(): its waitForAPIDeploymentSync() probe is scoped to the
+        // tenant fixed at init() (carbon.super), so it can never see an API in this runtime-created tenant.
+        assertTrue(waitForAPIRevisionDeploymentSync(apiID, null, restAPIPublisher),
+                "API " + API_NAME + " was not deployed to the gateway of tenant " + TENANT_DOMAIN);
+
+        HttpResponse subscriptionResponse = subscribeToAPIUsingRest(apiID, appID,
+                APIMIntegrationConstants.API_TIER.UNLIMITED, restAPIStore);
+        assertEquals(subscriptionResponse.getResponseCode(), 200,
+                "Failed to subscribe to API " + API_NAME + " : " + subscriptionResponse.getData());
 
         //Create the JWT access token
         List<String> grantTypes = new ArrayList<>();
         grantTypes.add("client_credentials");
         ArrayList<String> scopes = new ArrayList<>();
-        scopes.add("OTT");
 
         ApplicationKeyDTO applicationKeyDTO = restAPIStore
                 .generateKeys(appID, "3600", null,
                         ApplicationKeyGenerateRequestDTO.KeyTypeEnum.PRODUCTION, scopes, grantTypes);
-        assert applicationKeyDTO.getToken() != null;
+        assertNotNull(applicationKeyDTO.getToken(), "No token was issued for application " + APP_NAME);
         String accessToken = applicationKeyDTO.getToken().getAccessToken();
 
         // Invoke the API with a valid tenant domain
@@ -126,9 +161,12 @@ public class TenantDomainValidationTestCase extends APIManagerLifecycleBaseTest 
         gatewayUrl = gatewayUrlsWrk.getWebAppURLNhttp() + "t/" + INVALID_TENANT_DOMAIN + "/";
         response = invokeAPI(accessToken, gatewayUrl);
 
-        assertEquals(response.getResponseCode(), 500,
-                "Expected response code 500 but received " + response.getResponseCode() + " when invoking API with " +
+        assertEquals(response.getResponseCode(), 404,
+                "Expected response code 404 but received " + response.getResponseCode() + " when invoking API with " +
                         "invalid tenant domain");
+        assertTrue(response.getData().contains(RESOURCE_NOT_AVAILABLE_MESSAGE),
+                "Expected the message '" + RESOURCE_NOT_AVAILABLE_MESSAGE + "' when invoking API with invalid tenant " +
+                        "domain but received : " + response.getData());
 
         // Invoke the API with a valid tenant domain again to check nothing have broken
         gatewayUrl = gatewayUrlsWrk.getWebAppURLNhttp() + "t/" + TENANT_DOMAIN + "/";
@@ -160,6 +198,12 @@ public class TenantDomainValidationTestCase extends APIManagerLifecycleBaseTest 
         if (apiID != null) {
             restAPIPublisher.deleteAPI(apiID);
         }
-        tenantManagementServiceClient.deleteTenant(TENANT_DOMAIN);
+        if (tenantDomainCreated) {
+            tenantManagementServiceClient.deleteTenant(TENANT_DOMAIN);
+        }
+        // Last, so a failure here cannot skip the cleanup above. Only reachable if domain validation regressed.
+        if (invalidTenantDomainCreated) {
+            tenantManagementServiceClient.deleteTenant(INVALID_TENANT_DOMAIN);
+        }
     }
 }

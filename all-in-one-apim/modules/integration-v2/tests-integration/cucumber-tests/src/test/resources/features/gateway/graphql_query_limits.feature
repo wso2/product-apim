@@ -46,7 +46,7 @@ Feature: Gateway GraphQL Query Limits (HTTP)
     # renumbered code would go unnoticed. 900821 / "QUERY TOO COMPLEX" are the
     # GraphQLConstants.GRAPHQL_QUERY_TOO_COMPLEX pair.
     And The response should contain "QUERY TOO COMPLEX"
-    And The response should contain "900821"
+    And The error response should have code "900821" message "QUERY TOO COMPLEX" and description containing "maximum query complexity exceeded"
 
     Examples:
       | actor             |
@@ -87,7 +87,7 @@ Feature: Gateway GraphQL Query Limits (HTTP)
     # Whole message + code, for the reason given on the complexity scenario. 900820 / "QUERY TOO DEEP" are the
     # GraphQLConstants.GRAPHQL_QUERY_TOO_DEEP pair.
     And The response should contain "QUERY TOO DEEP"
-    And The response should contain "900820"
+    And The error response should have code "900820" message "QUERY TOO DEEP" and description containing "maximum query depth exceeded"
 
     Examples:
       | actor             |
@@ -174,7 +174,7 @@ Feature: Gateway GraphQL Query Limits (HTTP)
     And I invoke the API at gateway context "{{gqlLimContext}}/1.0.0" with method "POST" using access token "generatedAccessToken" and payload "gqlLimOverCapQuery" until response status code becomes 400 within 60 seconds
     Then The response status code should be 400
     And The response should contain "QUERY TOO COMPLEX"
-    And The response should contain "900821"
+    And The error response should have code "900821" message "QUERY TOO COMPLEX" and description containing "maximum query complexity exceeded"
 
     # The verbatim #11773 query: cost 1001, rejected.
     When I put the following JSON payload in context as "gqlLimRegressionQuery"
@@ -184,7 +184,7 @@ Feature: Gateway GraphQL Query Limits (HTTP)
     And I invoke the API at gateway context "{{gqlLimContext}}/1.0.0" with method "POST" using access token "generatedAccessToken" and payload "gqlLimRegressionQuery" until response status code becomes 400 within 60 seconds
     Then The response status code should be 400
     And The response should contain "QUERY TOO COMPLEX"
-    And The response should contain "900821"
+    And The error response should have code "900821" message "QUERY TOO COMPLEX" and description containing "maximum query complexity exceeded"
 
     Examples:
       | tokenType |

@@ -51,6 +51,7 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
@@ -488,6 +489,15 @@ public class Utils {
         return baseUrl + SERVICE_CATALOG_BASE + "services/import?overwrite=" + overwrite;
     }
 
+    /**
+     * Service Catalog — export a service as a zipped archive: {@code /services/export?name=&version=} (GET). The
+     * service is addressed by name+version (NOT id), so a wrong name yields a 404 even when the version exists.
+     */
+    public static String getServiceCatalogExportURL(String baseUrl, String name, String version) {
+        return baseUrl + SERVICE_CATALOG_BASE + "services/export?name=" + urlEncode(name)
+                + "&version=" + urlEncode(version);
+    }
+
     /** Service Catalog — a single service by id: {@code /services/{id}} (GET/PUT/DELETE). */
     public static String getServiceCatalogByIdURL(String baseUrl, String serviceId) {
         return baseUrl + SERVICE_CATALOG_BASE + "services/" + serviceId;
@@ -563,6 +573,23 @@ public class Utils {
 
     public static String getResourceEndpointURL(String baseUrl, String resourceType, String resourceId) {
         return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + resourceType + "/" + resourceId;
+    }
+
+    /**
+     * Publisher SOAP-to-REST conversion resource-policy list: {@code /apis/{apiId}/resource-policies?sequenceType=}
+     * (GET). {@code sequenceType} is the one required query param (in|out); returns the {@code {list:[...]}} of
+     * generated in/out sequences. The generic resource GET ({@link #getResourceEndpointURL}) cannot express this
+     * sub-path plus required query param, so it has its own builder.
+     */
+    public static String getApiResourcePoliciesURL(String baseUrl, String apiId, String sequenceType) {
+        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "apis/" + apiId
+                + "/resource-policies?sequenceType=" + urlEncode(sequenceType);
+    }
+
+    /** Single resource policy by id: {@code /apis/{apiId}/resource-policies/{resourcePolicyId}} (GET/PUT). */
+    public static String getApiResourcePolicyByIdURL(String baseUrl, String apiId, String resourcePolicyId) {
+        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "apis/" + apiId
+                + "/resource-policies/" + resourcePolicyId;
     }
 
     /** Publisher API endpoints sub-resource collection: {@code /apis/{apiId}/endpoints} (POST add, GET list). */
@@ -845,6 +872,38 @@ public class Utils {
     public static String getPublisherApiSearchURL(String baseUrl, String query) {
         return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "apis?query="
                 + URLEncoder.encode(query, StandardCharsets.UTF_8);
+    }
+
+    /**
+     * UNIFIED SEARCH — {@code /search?query=} on the given plane. A DIFFERENT endpoint from
+     * {@link #getApiSearchURL}/{@link #getPublisherApiSearchURL} and not interchangeable with them: {@code /apis}
+     * returns an {@code APIListDTO} (APIs only), whereas {@code /search} returns a {@code SearchResultList} of
+     * MIXED types — {@code APISearchResult} and {@code DocumentSearchResult} — and is the only surface that can
+     * report a match inside a DOCUMENT's content. Its OAS tag is literally "Unified Search", summarised
+     * "Retrieve/Search APIs and API Documents by Content".
+     *
+     * <p>Getting this wrong is why document-content search was once recorded here as unavailable on this build: the
+     * probes went to {@code /apis?query=}, where a document match CANNOT appear because the response carries API
+     * objects. Zero results there is correct behaviour, not a defect. Legacy searched the right place all along —
+     * {@code RestAPIStoreImpl/RestAPIPublisherImpl.searchAPIs} call {@code unifiedSearchApi.searchGetWithHttpInfo}.
+     *
+     * @param plane {@code "devportal"} or {@code "publisher"}
+     */
+    public static String getUnifiedSearchURL(String baseUrl, String plane, String query) {
+
+        String prefix;
+        switch (plane) {
+            case "devportal":
+                prefix = Constants.DEFAULT_DEVPORTAL;
+                break;
+            case "publisher":
+                prefix = Constants.DEFAULT_APIM_API_DEPLOYER;
+                break;
+            default:
+                throw new IllegalArgumentException("Unknown search plane '" + plane
+                        + "' (expected devportal | publisher)");
+        }
+        return baseUrl + prefix + "search?query=" + URLEncoder.encode(query, StandardCharsets.UTF_8);
     }
 
     public static String getDevportalApiDetailURL(String baseUrl, String apiId) {
@@ -1247,6 +1306,19 @@ public class Utils {
         return baseUrl + Constants.DEFAULT_APIM_ADMIN + "apis/" + apiId + "/change-provider?provider=" + providerName;
     }
 
+    /**
+     * Publisher — list the SOAP-to-REST conversion (resource policy) sequences of one resource path/verb.
+     * {@code sequenceType} is {@code in} or {@code out}; the id may be an API id OR a revision UUID (a revision's
+     * sequences are read through the same path). Narrows the sequence-wide
+     * {@link #getApiResourcePoliciesURL(String, String, String)} rather than rebuilding the path, so the endpoint
+     * is spelled in exactly one place.
+     */
+    public static String getApiResourcePoliciesURL(String baseUrl, String apiId, String sequenceType,
+                                                  String resourcePath, String verb) {
+        return getApiResourcePoliciesURL(baseUrl, apiId, sequenceType)
+                + "&resourcePath=" + urlEncode(resourcePath) + "&verb=" + urlEncode(verb);
+    }
+
     public static String getProductSearchEndpointURL(String baseUrl, String productName) {
         return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "api-products?query=" + productName;
     }
@@ -1503,6 +1575,20 @@ public class Utils {
     /** Admin REST API — system-scope role-alias mappings (get/put). */
     public static String getRoleAliasesURL(String baseUrl) {
         return baseUrl + Constants.DEFAULT_APIM_ADMIN + "system-scopes/role-aliases";
+    }
+
+    /**
+     * Admin REST API — the scope settings of a scope FOR A PARTICULAR USER
+     * ({@code GET system-scopes/{base64(scopeName)}?username=…}). The path segment is base64-encoded because the
+     * scope name contains a colon ({@code apim:subscribe}); the admin API decodes it (same encoding the legacy
+     * {@code RestAPIAdminImpl.retrieveScopesForParticularUser} applies). This is the lookup change-owner performs
+     * to decide whether a candidate owner is a valid subscriber.
+     */
+    public static String getSystemScopeForUserURL(String baseUrl, String scopeName, String username) {
+        String encodedScope = Base64.getEncoder().encodeToString(scopeName.getBytes(StandardCharsets.UTF_8));
+        return baseUrl + Constants.DEFAULT_APIM_ADMIN + "system-scopes/"
+                + URLEncoder.encode(encodedScope, StandardCharsets.UTF_8) + "?username="
+                + URLEncoder.encode(username, StandardCharsets.UTF_8);
     }
 
     /** Admin REST API — export a throttling policy by name + type ({@code sub}/{@code app}/{@code api}/{@code global}). */
@@ -2161,6 +2247,32 @@ public class Utils {
     }
 
     /**
+     * The UTF-8 CONTENT of the first zip entry whose base file name equals any of {@code fileNames}, or null when
+     * no entry matches or the archive is unreadable. The counterpart of {@link #zipContainsEntryNamed} for the
+     * case where presence is not enough: that check returns true for a ZERO-BYTE entry, so an export that wrote
+     * the right file names with no content reads as complete. Callers assert the returned text is non-blank.
+     */
+    public static String zipEntryText(File zipFile, String... fileNames) {
+        try (ZipInputStream zis = new ZipInputStream(new BufferedInputStream(new FileInputStream(zipFile)))) {
+            ZipEntry entry;
+            while ((entry = zis.getNextEntry()) != null) {
+                String name = entry.getName();
+                int slash = name.lastIndexOf('/');
+                String base = slash < 0 ? name : name.substring(slash + 1);
+                for (String fn : fileNames) {
+                    if (base.equals(fn)) {
+                        return new String(zis.readAllBytes(), StandardCharsets.UTF_8);
+                    }
+                }
+                zis.closeEntry();
+            }
+        } catch (IOException corruptOrUnreadable) {
+            return null;
+        }
+        return null;
+    }
+
+    /**
      * Extracts a zip archive into {@code destDir} (creating parent directories). Used by the export-archive
      * content-assertion steps (operation policy / API export) to read files out of a downloaded zip. Guards
      * against zip-slip by rejecting entries that would escape {@code destDir}.
@@ -2211,4 +2323,67 @@ public class Utils {
             }
         }
     }
+
+    /**
+     * A trust-all {@link javax.net.ssl.SSLContext} for talking to the suite's self-signed containers.
+     *
+     * <p>{@link javax.net.ssl.X509ExtendedTrustManager}, NOT {@code X509TrustManager}: the JDK performs HOSTNAME
+     * verification inside the extended check, so a plain trust-all manager still rejects a host the certificate
+     * does not name (e.g. an IP, as when {@code TESTCONTAINERS_HOST_OVERRIDE} hands out the VM address).
+     * Supplying {@code SSLParameters} with a null endpoint-identification algorithm does NOT work --
+     * {@code HttpClient} overrides it.
+     *
+     * <p>TEST-ONLY, and the reason it is centralised: three step classes had hand-rolled copies of this, so a
+     * correction to the hostname-verification subtlety above had to be made in three places or not at all.
+     */
+    public static javax.net.ssl.SSLContext trustAllSslContext() throws java.security.NoSuchAlgorithmException,
+            java.security.KeyManagementException {
+
+        javax.net.ssl.SSLContext sslContext = javax.net.ssl.SSLContext.getInstance("TLS");
+        sslContext.init(null, new javax.net.ssl.TrustManager[]{new javax.net.ssl.X509ExtendedTrustManager() {
+            public void checkClientTrusted(java.security.cert.X509Certificate[] chain, String authType) { }
+
+            public void checkServerTrusted(java.security.cert.X509Certificate[] chain, String authType) { }
+
+            public void checkClientTrusted(java.security.cert.X509Certificate[] chain, String authType,
+                                           java.net.Socket socket) { }
+
+            public void checkServerTrusted(java.security.cert.X509Certificate[] chain, String authType,
+                                           java.net.Socket socket) { }
+
+            public void checkClientTrusted(java.security.cert.X509Certificate[] chain, String authType,
+                                           javax.net.ssl.SSLEngine engine) { }
+
+            public void checkServerTrusted(java.security.cert.X509Certificate[] chain, String authType,
+                                           javax.net.ssl.SSLEngine engine) { }
+
+            public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+                return new java.security.cert.X509Certificate[0];
+            }
+        }}, new java.security.SecureRandom());
+        return sslContext;
+    }
+
+
+    /**
+     * The {@code count} of a paginated/list response, or -1 when it is not a 200 with a body.
+     *
+     * <p>-1 rather than 0 or an exception on purpose: a poll comparing against an expected count must be able to
+     * tell "not a readable listing yet" from "a readable listing that genuinely reports zero".
+     */
+    public static int listCountOf(HttpResponse response) {
+
+        if (response == null || response.getResponseCode() != 200
+                || response.getData() == null || response.getData().isBlank()) {
+            return -1;
+        }
+        try {
+            return new JSONObject(response.getData()).optInt("count", -1);
+        } catch (JSONException malformedDuringWarmup) {
+            // Callers use this inside a retryUntil predicate, which retries only IOException -- an unchecked
+            // JSONException would escape and kill the poll on the first malformed 200. -1 = not readable yet.
+            return -1;
+        }
+    }
+
 }

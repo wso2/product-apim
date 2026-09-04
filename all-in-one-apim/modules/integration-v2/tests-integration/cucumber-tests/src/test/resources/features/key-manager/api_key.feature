@@ -54,7 +54,14 @@ Feature: Key Manager API Key
     # node-customer-service (the API's other operation, DELETE /customers/{id}, answers 200 with an empty body).
     When I invoke the API at gateway context "{{apiContext}}/1.0.0/customers/123/" with method "GET" using api key "apiKey" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
-    And The response should contain "\"name\":\"John\""
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
+
+    # Auth-bypass guard: this API uses the DEFAULT api-key header (ApiKey), so the SAME valid key presented in an
+    # UNCONFIGURED custom header ("Unconfigured-ApiKey-Header") must be REJECTED (401) — the gateway must honour
+    # the key only in the configured header. Ports CustomHeaderTestCase#testInvokeAPIWIthDefaultApiKeyHeaderWithOpaqueKey.
+    When I invoke the API at gateway context "{{apiContext}}/1.0.0/customers/123/" with method "GET" using api key "apiKey" in header "Unconfigured-ApiKey-Header" until response status code becomes 401 within 60 seconds
+    Then The response status code should be 401
 
     Examples:
       | actor             |
@@ -76,9 +83,18 @@ Feature: Key Manager API Key
     Then The response status code should be 200
     When I retrieve the "apis" resource with id "createdApiId"
     And I extract response field "context" and store it as "apiContext"
+    And I extract response field "name" and store it as "invalidKeyApiName"
+    # Hot-swap gate. The only invocation below presents a GARBAGE key expecting 401, and the OLD (default-security)
+    # artifact rejects an unknown api-key header with 401 too — so the assertion could be satisfied before api_key
+    # security ever reached synapse, proving nothing. There is no valid-key probe available here that would not
+    # change what the scenario tests, so gate on synapse's own re-add line for this artifact.
+    And I mark the current end of the server log file "wso2carbon.log"
     When I deploy the API with id "createdApiId"
     Then The response status code should be 201
     And I wait until "apis" "createdApiId" revision is deployed in the gateway
+    And The server log file "wso2carbon.log" should gain a line containing all of the following within 60 seconds
+      | {{invalidKeyApiName}}                               |
+      | was added to the Synapse configuration successfully |
     When I publish the "apis" resource with id "createdApiId"
     Then The lifecycle status of API "createdApiId" should be "Published"
 
@@ -138,6 +154,8 @@ Feature: Key Manager API Key
     # A matching X-Forwarded-For is authorised (200)
     When I invoke the API at gateway context "{{apiContext}}/1.0.0/customers/123/" with method "GET" using api key "apiKey" and forwarded-for "1.2.3.4" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
     # A non-matching X-Forwarded-For is forbidden (403)
     When I invoke the API at gateway context "{{apiContext}}/1.0.0/customers/123/" with method "GET" using api key "apiKey" and forwarded-for "5.6.7.8" until response status code becomes 403 within 60 seconds
     Then The response status code should be 403
@@ -231,6 +249,8 @@ Feature: Key Manager API Key
     # A matching exact referer path is authorised (200)
     When I invoke the API at gateway context "{{apiContext}}/1.0.0/customers/123/" with method "GET" using api key "apiKey" and referer "www.abc.com/path" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
     # A non-matching referer is forbidden (403)
     When I invoke the API at gateway context "{{apiContext}}/1.0.0/customers/123/" with method "GET" using api key "apiKey" and referer "www.abc.com/path2" until response status code becomes 403 within 60 seconds
     Then The response status code should be 403
@@ -241,6 +261,8 @@ Feature: Key Manager API Key
     # A wildcard subdomain pattern matches (200)
     When I invoke the API at gateway context "{{apiContext}}/1.0.0/customers/123/" with method "GET" using api key "apiKey" and referer "example.gef.com/path1" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
 
     Examples:
       | actor             |
@@ -287,6 +309,8 @@ Feature: Key Manager API Key
     # The key works first (positive control)
     When I invoke the API at gateway context "{{apiContext}}/1.0.0/customers/123/" with method "GET" using api key "apiKey" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
     # Revoke the (opaque) key by its keyUUID
     When I retrieve the api key UUID for application id "createdAppId" as "revokeKeyUuid"
     Then The response status code should be 200
@@ -354,6 +378,8 @@ Feature: Key Manager API Key
     # The key in the API's configured custom header -> accepted (200).
     When I invoke the API at gateway context "{{apiContext}}/1.0.0/customers/123/" with method "GET" using api key "apiKey" in header "Custom-ApiKey-Header" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
     # The same key in the default ApiKey header -> rejected (401).
     When I invoke the API at gateway context "{{apiContext}}/1.0.0/customers/123/" with method "GET" using api key "apiKey" in header "ApiKey" until response status code becomes 401 within 60 seconds
     Then The response status code should be 401
@@ -419,6 +445,74 @@ Feature: Key Manager API Key
     # The API key invokes the subscriptionless API with NO subscription -> 200 (gateway checks key->API, not a sub).
     When I invoke the API at gateway context "{{slApiContext}}/1.0.0/customers/123/" with method "GET" using api key "apiKey" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
+
+    Examples:
+      | actor             |
+      | admin             |
+      | admin@tenant1.com |
+
+  # Ports testInvocationWithApiKeysWithoutSubscription: an API key that WORKS becomes refused once the
+  # application's subscription to the API is removed, and the refusal is 403 (subscription validation failed) —
+  # NOT the 401 an invalid key gets. This is the api-key counterpart of the unsubscribed-OAuth-token case in
+  # gateway/security_enforcement.feature, and it is the exact opposite of the subscriptionless scenario above:
+  # there the API's business plans were cleared so no subscription is required, here the API requires one and it
+  # has been taken away. Both directions must hold, so both are asserted.
+  #
+  # The 403 is reached by POLLING: the gateway's subscription cache is invalidated through a JMS event, so the
+  # key keeps working for a moment after the DELETE. The retry envelope waits for the exact expected status.
+  @cap:key-manager @feat:api-key @rule:no-subscription @type:negative @dep:gateway @dep:devportal @legacy:APISecurityTestCase
+  Scenario Outline: An API key is refused once the application's subscription is removed as <actor>
+    Given The system is ready
+    And I have valid access tokens as "<actor>"
+    And I have created an api from "artifacts/payloads/create_apim_test_api.json" as "nsApiId" and deployed it
+    When I retrieve the "apis" resource with id "nsApiId"
+    Then The response status code should be 200
+    And I put the response payload in context as "nsApiPayload"
+    When I update the "apis" resource "nsApiId" and "nsApiPayload" with configuration type "securityScheme" and value:
+      """
+      ["api_key", "oauth_basic_auth_api_key_mandatory", "oauth2"]
+      """
+    Then The response status code should be 200
+    When I retrieve the "apis" resource with id "nsApiId"
+    And I extract response field "context" and store it as "nsApiContext"
+    When I deploy the API with id "nsApiId"
+    Then The response status code should be 201
+    And I wait until "apis" "nsApiId" revision is deployed in the gateway
+    When I publish the "apis" resource with id "nsApiId"
+    Then The lifecycle status of API "nsApiId" should be "Published"
+
+    # Subscribe an application and generate an API key on it.
+    When I put JSON payload from file "artifacts/payloads/create_apim_test_app.json" in context as "nsAppPayload"
+    And I create an application with payload "nsAppPayload"
+    Then The response status code should be 201
+    When I put the following JSON payload in context as "nsSubscriptionPayload"
+    """
+    {"applicationId": "{{applicationId}}", "apiId": "{{apiId}}", "throttlingPolicy": "Unlimited"}
+    """
+    And I subscribe to API "nsApiId" using application "createdAppId" with payload "nsSubscriptionPayload" as "nsSubscriptionId"
+    Then The response status code should be 201
+    When I put the following JSON payload in context as "nsApiKeyGenPayload"
+    """
+    {"keyName": "NoSubscriptionKey", "validityPeriod": 3600, "additionalProperties": {"permittedIP": "", "permittedReferer": ""}}
+    """
+    And I request an api key for application id "createdAppId" using payload "nsApiKeyGenPayload"
+    Then The response status code should be 200
+
+    # Positive control: WITH the subscription the key invokes successfully.
+    When I invoke the API at gateway context "{{nsApiContext}}/1.0.0/customers/123/" with method "GET" using api key "apiKey" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
+
+    # Remove the subscription — the key itself is untouched and still valid.
+    When I delete the subscription with id "nsSubscriptionId"
+    Then The response status code should be 200
+
+    # The same key now settles on 403 (subscription validation failed), not 401.
+    When I invoke the API at gateway context "{{nsApiContext}}/1.0.0/customers/123/" with method "GET" using api key "apiKey" until response status code becomes 403 within 60 seconds
+    Then The response status code should be 403
 
     Examples:
       | actor             |
@@ -475,8 +569,7 @@ Feature: Key Manager API Key
     # A WELL-FORMED Basic credential for a real user, on an API that does not permit basic_auth → refused (401).
     When I invoke the API at gateway context "{{koContext}}/1.0.0/customers/123/" with method "GET" using basic auth for actor "<actor>" until response status code becomes 401 within 60 seconds
     Then The response status code should be 401
-    And The response should contain "900902"
-    And The response should contain "Missing Credentials"
+    And The error response should have code "900902" message "Missing Credentials" and description containing "Make sure your API invocation call has a header"
 
     Examples:
       | actor             |

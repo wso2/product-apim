@@ -25,9 +25,13 @@ Feature: Key Manager Multiple Client Secrets
     And I generate client credentials for application id "createdAppId" with payload "generateApplicationKeysPayload"
     Then The response status code should be 200
 
+    # Ports ApplicationTestCase#testFetchKeyDetailsByKeyMappingID's actual assertion: the key fetched BY KEY-MAPPING
+    # ID carries the SAME consumerKey the key generation returned. Asserting only that the field NAME appears would
+    # pass on any value (including a key belonging to a different mapping), which is the whole point of the legacy
+    # assertEquals — so the exact value is pinned against the generated one.
     When I fetch the oauth key details for application "createdAppId" with key mapping "keyMappingId"
     Then The response status code should be 200
-    And The response should contain "consumerKey"
+    And The value of response field "consumerKey" should be "{{consumerKey}}"
 
     When I generate a consumer secret with description "primary extra secret" for application "createdAppId" with key mapping "keyMappingId" as "secretA"
     Then The response status code should be 201
@@ -165,7 +169,7 @@ Feature: Key Manager Multiple Client Secrets
   # invocation, then revokes ONE and shows that exactly that one stops working while the sibling keeps working.
   # The surviving-secret leg is what makes the revocation meaningful: without it, a revoke that broke ALL the
   # application's secrets would pass just as happily.
-  @cap:key-manager @feat:token-issuance @rule:multiple-secrets @type:regression @dep:devportal @legacy:ApplicationTestCase
+  @cap:key-manager @feat:token-issuance @rule:multiple-secrets @type:regression @dep:devportal @legacy:ApplicationTestCase @legacy:MultipleClientSecretsTokenTestCase
   Scenario Outline: Every consumer secret authenticates at the gateway and a revoked one stops as <actor>
     Given The system is ready
     And I have valid access tokens as "<actor>"
@@ -235,6 +239,44 @@ Feature: Key Manager Multiple Client Secrets
     And I extract response field "access_token" and store it as "generatedAccessToken"
     When I invoke the API at gateway context "{{mcsApiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
+
+    Examples:
+      | actor             |
+      | admin             |
+      | admin@tenant1.com |
+
+  # Ports ApplicationTestCase#testSecretListCountMatchesGenerated + #testGenerateMultipleSecretsForSameKeyMapping +
+  # #testGenerateSecretAdditionalPropertiesReturnedInList. The first scenario above asserts only that secretA is
+  # present in the list — and it does so BEFORE secretB exists, so it cannot catch a list that drops an entry or a
+  # `count` that disagrees with the entries it returns. Here TWO secrets are generated first, then the ONE list read
+  # must satisfy all three properties: count EQUALS the number of entries, EVERY generated secretId is present, and
+  # each secret's generation-time `additionalProperties.description` round-trips verbatim.
+  @cap:key-manager @feat:multiple-client-secrets @rule:secret-listing @type:regression @legacy:ApplicationTestCase
+  Scenario Outline: The consumer secrets list reports every generated secret with a matching count and description as <actor>
+    Given The system is ready
+    And I have valid access tokens as "<actor>"
+    When I put JSON payload from file "artifacts/payloads/create_apim_test_app.json" in context as "slAppPayload"
+    And I create an application with payload "slAppPayload"
+    Then The response status code should be 201
+    When I put the following JSON payload in context as "slKeysPayload"
+    """
+    {"keyType": "PRODUCTION", "grantTypesToBeSupported": ["client_credentials"]}
+    """
+    And I generate client credentials for application id "createdAppId" with payload "slKeysPayload"
+    Then The response status code should be 200
+
+    When I generate a consumer secret with description "multi-secret-1" for application "createdAppId" with key mapping "keyMappingId" as "slSecret1"
+    Then The response status code should be 201
+    When I generate a consumer secret with description "multi-secret-2" for application "createdAppId" with key mapping "keyMappingId" as "slSecret2"
+    Then The response status code should be 201
+
+    When I retrieve the consumer secrets for application "createdAppId" with key mapping "keyMappingId"
+    Then The response status code should be 200
+    And The consumer secrets list count should equal the number of listed secrets
+    And The response should contain "{{slSecret1}}"
+    And The response should contain "{{slSecret2}}"
+    And The listed consumer secret "slSecret1" should have description "multi-secret-1"
+    And The listed consumer secret "slSecret2" should have description "multi-secret-2"
 
     Examples:
       | actor             |

@@ -22,6 +22,20 @@ import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.http.Header;
+import org.apache.http.client.config.CookieSpecs;
+import org.apache.http.client.config.RequestConfig;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.conn.ssl.NoopHostnameVerifier;
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.BasicCookieStore;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.util.EntityUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -45,9 +59,17 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Base64;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.IntStream;
 
 public class ApplicationBaseSteps {
@@ -103,16 +125,25 @@ public class ApplicationBaseSteps {
     /**
      * Resets (clears) an application's throttle counters via the DevPortal reset-throttle-policy endpoint, so an
      * application that was just throttled (429) can invoke successfully (200) again without waiting out the window.
-     * The endpoint takes the application-owner's username in the body; {@code owner} is the acting actor reference
-     * (e.g. {@code admin@tenant1.com}), resolved to a bare username. Publishes the response for assertion.
+     * The endpoint takes the application-OWNER's username in the body; {@code owner} is the owning actor's
+     * reference (e.g. {@code subscriberUser} / {@code admin@tenant1.com}), resolved to its on-the-wire username
+     * via {@link Identity#apiUsername} — the same super-tenant-unqualified form the product stores as the app
+     * owner (see the owner-search steps). A raw actor ref must NOT be sent verbatim: a non-admin actor's ref
+     * (e.g. {@code subscriberUser}) differs from its physical username ({@code subscriberUser1}), so the reset
+     * would target the wrong throttle key. NOTE the caller must OWN the application: the product authorizes this
+     * endpoint on the CALLER, not on the body — {@code APIConsumerImpl.resetApplicationThrottlePolicy} evaluates
+     * {@code validateApplication(loggedInUser, ...)} and throws {@code APIMgtAuthorizationFailedException} with no
+     * admin override, while the body's username only populates the reset EVENT. So an admin CANNOT reset another
+     * user's application (observed: HTTP 500 "Application is not accessible to user  admin"); the acting actor
+     * must be the owner. Publishes the response for assertion.
      *
      * @param appId context key holding the application id
-     * @param owner the application owner's username (the acting actor)
+     * @param owner the owning actor's reference (resolved to the on-the-wire owner username)
      */
     @When("I reset the application throttle policy for {string} owned by {string}")
     public void iResetApplicationThrottlePolicy(String appId, String owner) throws IOException {
         String actualAppId = TestContext.resolve(appId).toString();
-        String ownerName = Utils.resolveContextPlaceholders(owner);
+        String ownerName = Identity.apiUsername(Identity.resolveActor(owner));
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
         String body = "{\"userName\": \"" + ownerName + "\"}";
@@ -1653,10 +1684,11 @@ public class ApplicationBaseSteps {
         // Cross-tenant API visibility propagates ASYNCHRONOUSLY (the legacy test polled 15×5s for the API to
         // appear in the other tenant's listing). Poll until the listing is non-empty; the funnel's last response
         // is left as httpResponse for the following assertion (which checks the specific API id).
-        Utils.retryUntil(Constants.RUNTIME_PROPAGATION_TIMEOUT,
+        HttpResponse lastPoll = Utils.retryUntil(Constants.RUNTIME_PROPAGATION_TIMEOUT,
                 () -> Requests.get(url, headers),
                 resp -> resp != null && resp.getResponseCode() == 200 && resp.getData() != null
                         && resp.getData().contains("\"count\":") && !resp.getData().contains("\"count\":0"));
+        Requests.publishPollResult(lastPoll);
     }
 
     /**
@@ -1777,7 +1809,18 @@ public class ApplicationBaseSteps {
     }
 
     /**
-     * Retrieves a subscription between a specific API and application.
+     * Retrieves the subscription binding ONE api to ONE application, and publishes that application's
+     * subscription list as the step's assertion target.
+     *
+     * <p>Queries by APPLICATION and filters the api out client-side, because the devportal DROPS
+     * {@code applicationId} whenever {@code apiId} is also supplied — {@code
+     * SubscriptionsApiServiceImpl.subscriptionsGet} branches {@code if (apiId) … else if (applicationId)}
+     * (verified live). Sending both, as this step used to, returned EVERY subscription of the api. That made the
+     * step's name a lie, and worse: it stored {@code list[0]}'s id into {@code subscriptionId}, so with two
+     * applications on one api a caller could be handed ANOTHER application's subscription and act on it.
+     *
+     * <p>Fails clearly when this application has no subscription to this api, rather than reporting the first
+     * subscription of whoever else is subscribed.
      *
      * @param apiId Context key containing the API ID
      * @param appId Context key containing the application ID
@@ -1791,19 +1834,37 @@ public class ApplicationBaseSteps {
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
 
-        HttpResponse response = Requests.get(Utils.getAllSubscriptionsURL(Utils.getBaseUrl(), actualApiId, actualAppId, null, null,
-                        null), headers);
+        HttpResponse response = Requests.get(
+                Utils.getAllSubscriptionsURL(Utils.getBaseUrl(), null, actualAppId, null, null, null), headers);
 
+        // Guarded through the shared helper rather than a local copy of the 2xx-with-body check (§15).
         JSONObject responseJson = Utils.requireJsonBody(response, "Retrieving the subscription");
-        if (responseJson.has("list") && !responseJson.getJSONArray("list").isEmpty()) {
-            String subscriptionId = responseJson
-                    .getJSONArray("list")
-                    .getJSONObject(0)
-                    .getString("subscriptionId");
-            TestContext.set("subscriptionId", subscriptionId);
-        } else {
-            throw new IOException("No subscription found");
+        JSONArray list = responseJson.optJSONArray("list");
+        String subscriptionId = null;
+        for (int i = 0; list != null && i < list.length(); i++) {
+            JSONObject subscription = list.getJSONObject(i);
+            if (actualApiId.equals(subscriptionIdOfApi(subscription))) {
+                subscriptionId = subscription.optString("subscriptionId", null);
+                break;
+            }
         }
+        Assert.assertNotNull(subscriptionId, "Application '" + actualAppId
+                + "' has no subscription to API '" + actualApiId + "'; its subscriptions: " + responseJson);
+        TestContext.set("subscriptionId", subscriptionId);
+    }
+
+    /**
+     * The api a devportal subscription entry refers to, tolerating both shapes the DTO can take: the flat
+     * {@code apiId} field, or the nested {@code apiInfo.id} the list projection uses.
+     */
+    private static String subscriptionIdOfApi(JSONObject subscription) {
+
+        String flat = subscription.optString("apiId", null);
+        if (flat != null && !flat.isBlank()) {
+            return flat;
+        }
+        JSONObject apiInfo = subscription.optJSONObject("apiInfo");
+        return apiInfo == null ? null : apiInfo.optString("apiId", apiInfo.optString("id", null));
     }
 
     /**
@@ -1845,17 +1906,26 @@ public class ApplicationBaseSteps {
     }
 
     /**
-     * Updates the keys (OAuth2 credentials) for an application.
-     * The update payload should be stored in the test context under the key "updateKeysPayload".
+     * Updates an application key mapping's OAuth2 key configuration ({@code PUT
+     * applications/{id}/oauth-keys/{keyMappingId}}) with the given payload, as the acting actor. Non-asserting.
      *
-     * @param appId Context key containing the application ID
+     * <p>The key mapping and payload are EXPLICIT context keys rather than the implicit {@code keyMappingId} /
+     * {@code updateKeysPayload} this step previously read: a scenario that generates keys for TWO applications
+     * (the cross-owner callback-URL isolation regression) overwrites {@code keyMappingId} on each key-gen, so an
+     * implicit read silently updates whichever key was generated last. It had no feature callers when made
+     * explicit.
+     *
+     * @param appId           context key holding the application id
+     * @param keyMappingIdKey context key holding the key-mapping id to update
+     * @param payloadKey      context key holding the key-update JSON payload
      */
-    @And("I update the keys for application with {string}")
-    public void iUpdateTheKeysForApplicationWith(String appId) throws IOException {
+    @And("I update the keys for application {string} with key mapping {string} using payload {string}")
+    public void iUpdateTheKeysForApplicationWith(String appId, String keyMappingIdKey, String payloadKey)
+            throws IOException {
 
         String actualAppId = TestContext.resolve(appId).toString();
-        String keyMappingId = TestContext.resolve("keyMappingId").toString();
-        String jsonPayload =TestContext.resolve("updateKeysPayload").toString();
+        String keyMappingId = TestContext.resolve(keyMappingIdKey).toString();
+        String jsonPayload = Utils.resolveContextPlaceholders(TestContext.resolve(payloadKey).toString());
 
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
@@ -2026,9 +2096,10 @@ public class ApplicationBaseSteps {
     public void iMapOAuthClientOnceKeyManagerOperational(String idKey, String appId, String keyManager)
             throws Exception {
 
-        Utils.retryUntil(60_000L,
+        HttpResponse lastPoll = Utils.retryUntil(60_000L,
                 () -> postMapKeys(idKey, appId, keyManager),
                 resp -> resp != null && resp.getResponseCode() >= 200 && resp.getResponseCode() < 300);
+        Requests.publishPollResult(lastPoll);
     }
 
     /**
@@ -2247,10 +2318,116 @@ public class ApplicationBaseSteps {
      */
     @Then("The reflected backend JWT should be signed with algorithm {string}")
     public void theReflectedBackendJwtShouldBeSignedWithAlgorithm(String expectedAlgorithm) {
+        // Kept as its own phrasing because "signed with algorithm" carries the signing semantics documented above
+        // (alg=NONE disables signing); it delegates to the shared header-field assertion so both read one code path.
+        assertReflectedBackendJwtHeaderField("alg", expectedAlgorithm);
+    }
+
+    /**
+     * Asserts the gateway-injected backend JWT is CRYPTOGRAPHICALLY sound: its signature verifies against the
+     * public key the gateway's own JWKS endpoint publishes, and its {@code kid} names that published key.
+     *
+     * <p>This is what the {@code alg}/{@code kid} header assertions cannot do. Those read two strings out of the
+     * JOSE header, so an assertion carrying {@code alg=RS256}, the right {@code kid} and a GARBAGE signature
+     * satisfies every other backend-JWT check in this suite — a backend trusting the injected identity would be
+     * trusting nothing. Ports BackendJWTUtil#verifySignature + the JWKS-kid half of #verifyJWTHeader.
+     *
+     * <p>The verification key is fetched at RUNTIME from the product under test (the gateway's {@code /jwks}
+     * API, tenant-scoped for a tenant actor), never from committed key material: the test must verify against
+     * the key the gateway is ACTUALLY signing with, and a checked-in PEM/keystore would silently go stale.
+     * The JWKS read is an intermediate read consumed inside this step, so it uses the raw client and does not
+     * touch {@code httpResponse} — the reflected invocation response stays the assertion target for the steps
+     * that follow.
+     */
+    @Then("The reflected backend JWT should be verifiably signed by the key the gateway JWKS endpoint publishes")
+    public void theReflectedBackendJwtShouldVerifyAgainstJwks() throws IOException {
+        String jwt = reflectedBackendJwtAssertion();
         String headerJson = decodeReflectedBackendJwtSegment(0);
         JSONObject header = new JSONObject(headerJson);
-        Assert.assertEquals(header.optString("alg"), Utils.resolveContextPlaceholders(expectedAlgorithm),
-                "Unexpected backend JWT signing algorithm. Header: " + headerJson);
+        String kid = header.optString("kid");
+        String alg = header.optString("alg");
+        Assert.assertFalse(kid.isEmpty(), "Backend JWT JOSE header carries no kid: " + headerJson);
+
+        // The gateway serves the JWKS API at /jwks, and at /t/<domain>/jwks for a tenant (both resolve to the
+        // super-tenant keystore unless tenant-based signing is on, which is why the kid is tenant-invariant).
+        String tenantDomain = Identity.actingTenantDomain();
+        String gatewayBase = Utils.getBaseGatewayUrl();
+        String jwksUrl = (gatewayBase.endsWith("/") ? gatewayBase.substring(0, gatewayBase.length() - 1)
+                : gatewayBase)
+                + (Constants.SUPER_TENANT_DOMAIN.equals(tenantDomain) ? "" : "/t/" + tenantDomain) + "/jwks";
+        HttpResponse jwks = SimpleHTTPClient.getInstance().doGet(jwksUrl, new HashMap<>());
+        Assert.assertTrue(jwks != null && jwks.getResponseCode() == 200
+                        && jwks.getData() != null && !jwks.getData().isBlank(),
+                "Gateway JWKS fetch failed at " + jwksUrl + ": got="
+                        + (jwks == null ? "null" : jwks.getResponseCode() + "/" + jwks.getData()));
+
+        JSONArray keys = new JSONObject(jwks.getData()).optJSONArray("keys");
+        Assert.assertTrue(keys != null && keys.length() > 0,
+                "Gateway JWKS at " + jwksUrl + " publishes no keys: " + jwks.getData());
+        // The JWKS repeats one certificate once per configured signing algorithm, so the published KEY IDENTITY
+        // is the DISTINCT kid set. Pinning that set to exactly the JWT's kid is the exact form of legacy's
+        // "kid equals the JWKS kid": it fails both if the gateway signs with a key JWKS does not publish and if
+        // a second, different signing key appears.
+        Set<String> publishedKids = new LinkedHashSet<>();
+        JSONObject matching = null;
+        for (int i = 0; i < keys.length(); i++) {
+            JSONObject jwk = keys.getJSONObject(i);
+            publishedKids.add(jwk.optString("kid"));
+            if (kid.equals(jwk.optString("kid")) && matching == null) {
+                matching = jwk;
+            }
+        }
+        Assert.assertEquals(publishedKids, Collections.singleton(kid),
+                "Backend JWT kid does not match the kid set the gateway JWKS publishes at " + jwksUrl
+                        + ": " + jwks.getData());
+
+        PublicKey publicKey = JwtTestUtils.rsaPublicKeyFromJwk(
+                matching.getString("n"), matching.getString("e"));
+        Assert.assertTrue(JwtTestUtils.verifyJwsSignature(jwt, alg, publicKey),
+                "Backend JWT signature does NOT verify against the JWKS key '" + kid + "' from " + jwksUrl
+                        + ". Assertion: " + jwt);
+    }
+
+    /**
+     * Asserts an arbitrary field of the gateway-injected backend JWT's JOSE header (segment 0). The general
+     * counterpart of the signing-algorithm assertion above: used to pin {@code typ} == {@code JWT}, which
+     * discriminates a well-formed JOSE header from one that stopped declaring the assertion is a JWT — a change
+     * every payload-claim assertion is blind to, since they read the payload segment only. Both this and the
+     * signing-algorithm step route through {@link #assertReflectedBackendJwtHeaderField} so there is one place
+     * that decodes the header and compares a field.
+     *
+     * @param fieldName     the JOSE header field name (e.g. {@code typ})
+     * @param expectedValue the exact expected value (e.g. {@code JWT})
+     */
+    @Then("The reflected backend JWT header should contain {string} with value {string}")
+    public void theReflectedBackendJwtHeaderShouldContain(String fieldName, String expectedValue) {
+        assertReflectedBackendJwtHeaderField(fieldName, expectedValue);
+    }
+
+    /** Decodes the JOSE header (segment 0) and asserts a field equals the (placeholder-resolved) expected value. */
+    private void assertReflectedBackendJwtHeaderField(String fieldName, String expectedValue) {
+        String headerJson = decodeReflectedBackendJwtSegment(0);
+        JSONObject header = new JSONObject(headerJson);
+        Assert.assertEquals(header.optString(fieldName), Utils.resolveContextPlaceholders(expectedValue),
+                "Unexpected backend JWT header field '" + fieldName + "'. Header: " + headerJson);
+    }
+
+    /**
+     * Asserts every segment of the gateway-injected {@code X-JWT-Assertion} is URL-safe base64 — i.e. contains none
+     * of {@code '+'}, {@code '/'} or {@code '='} (the standard-alphabet chars and padding that base64url replaces
+     * with {@code '-'}/{@code '_'} and omits). This is the ONLY assertion that actually tests the {@code encoding =
+     * base64url} config: the claim/header assertions decode through {@link #decodeReflectedBackendJwtSegment}, which
+     * falls back to a standard decoder (load-bearing for the non-urlsafe features), so they stay green even if the
+     * gateway reverted to standard base64. Checking the RAW segment BEFORE any decode, with no fallback, is what
+     * lets the url-safe feature fail at the thing it exists to prove.
+     */
+    @Then("The reflected backend JWT should be URL-safe base64 encoded")
+    public void theReflectedBackendJwtShouldBeUrlSafeBase64Encoded() {
+        String jwt = reflectedBackendJwtAssertion();
+        for (String segment : jwt.split("\\.")) {
+            Assert.assertFalse(segment.contains("+") || segment.contains("/") || segment.contains("="),
+                    "X-JWT-Assertion segment is not URL-safe base64 (contains '+', '/', or '='): " + segment);
+        }
     }
 
     /**
@@ -2264,14 +2441,16 @@ public class ApplicationBaseSteps {
     }
 
     /**
-     * Shared extractor for the reflected {@code X-JWT-Assertion}: pulls the header out of the echoed headers object
-     * and base64-decodes the requested segment (0 = JOSE header, 1 = claims payload), URL-safe first then standard
-     * because the gateway config uses {@code encoding = "base64"}. Each step is guarded so a missing header or a
-     * malformed assertion fails with a clear message rather than an opaque decode error.
+     * Extracts the RAW gateway-injected {@code X-JWT-Assertion} value from the reflected /reflect-headers response,
+     * with no decoding. Shared by the segment decoder and the URL-safe-encoding assertion (which must see the raw,
+     * still-encoded segments). Guarded so a missing response / headers object / assertion header fails clearly.
      */
-    private String decodeReflectedBackendJwtSegment(int segmentIndex) {
+    private String reflectedBackendJwtAssertion() {
         HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
-        Assert.assertNotNull(response, "No invocation response captured");
+        Assert.assertTrue(response != null && response.getResponseCode() >= 200 && response.getResponseCode() < 300
+                        && response.getData() != null && !response.getData().isBlank(),
+                "Expected a successful reflected invocation response with a body, got: "
+                        + (response == null ? "null" : response.getResponseCode() + " / " + response.getData()));
         JSONObject body = new JSONObject(response.getData());
         Assert.assertTrue(body.has("headers"),
                 "Reflected response has no 'headers' object: " + response.getData());
@@ -2285,7 +2464,18 @@ public class ApplicationBaseSteps {
             }
         }
         Assert.assertNotNull(jwt, "No X-JWT-Assertion header reached the backend: " + headers);
+        return jwt;
+    }
 
+    /**
+     * Base64-decodes the requested segment of the reflected {@code X-JWT-Assertion} (0 = JOSE header,
+     * 1 = claims payload), URL-safe first then standard because the non-urlsafe blocks use {@code encoding =
+     * "base64"}. The standard fallback is load-bearing for those callers; the url-safe feature does NOT rely on it
+     * to prove url-safety (see {@code theReflectedBackendJwtShouldBeUrlSafeBase64Encoded}). Guarded so a malformed
+     * assertion fails with a clear message rather than an opaque decode error.
+     */
+    private String decodeReflectedBackendJwtSegment(int segmentIndex) {
+        String jwt = reflectedBackendJwtAssertion();
         String[] segments = jwt.split("\\.");
         Assert.assertTrue(segments.length > segmentIndex,
                 "Malformed JWT assertion (expected > " + segmentIndex + " segments): " + jwt);
@@ -2353,22 +2543,31 @@ public class ApplicationBaseSteps {
     public void iRequestOAuthAccessTokenWithScope(String scope) throws Exception {
 
         User currentUser = Identity.actingActor();
-        // Resolve any {{contextKey}} placeholders so a scenario can request a scope whose name is generated at
-        // runtime (per-URI-template API-local scopes must be unique per runner — CLAUDE.md §4). A literal scope
-        // name with no placeholder passes through unchanged, which is every other caller of this step.
-        String resolvedScope = scope == null ? null : Utils.resolveContextPlaceholders(scope);
-
-        StringBuilder body = new StringBuilder("grant_type=password")
-                .append("&username=").append(Utils.urlEncode(currentUser.getUserName()))
-                .append("&password=").append(Utils.urlEncode(currentUser.getPassword()));
-        if (resolvedScope != null && !resolvedScope.isBlank()) {
-            body.append("&scope=").append(Utils.urlEncode(resolvedScope));
-        }
-
-        HttpResponse response = Requests.post(Utils.getAPIMTokenEndpointURL(Utils.getBaseUrl()),
-                clientCredentialsHeader(), body.toString(), Constants.CONTENT_TYPES.APPLICATION_X_WWW_FORM_URLENCODED);
-        captureTokens(response);
+        requestPasswordGrantTokenForUser(currentUser.getUserName(), currentUser.getPassword(), scope);
     }
+
+    /**
+     * As the acting-actor password-grant step, but for a NAMED actor (resolved through {@link Identity}) — so the
+     * resource owner of the token is somebody OTHER than whoever the scenario is acting as, while the request is
+     * still authenticated with the acting scenario's application credentials. This is the shape legacy
+     * APIScopeTestCase uses: ONE keyed application mints tokens for several users of different roles so the
+     * per-role scope filtering and the gateway's role-bound-scope enforcement can be compared on identical
+     * credentials. Resolving through {@code Identity} (rather than passing a literal username) keeps the
+     * tenant-qualification correct for a {@code <actor>@<domain>} reference.
+     *
+     * @param actorRef actor reference (e.g. {@code subscriberUser}, {@code publisherUser@tenant1.com})
+     * @param scope    OAuth scope to request (may be empty; may carry {@code {{contextKey}}} placeholders)
+     */
+    @When("I request an OAuth access token using password grant as {string} with scope {string}")
+    public void iRequestOAuthAccessTokenAsActorWithScope(String actorRef, String scope) throws Exception {
+
+        User actor = Identity.resolveActor(Utils.resolveContextPlaceholders(actorRef));
+        // The scope MUST be placeholder-resolved: a scenario-unique API scope name only exists in context, and IS
+        // echoes an unregistered scope back verbatim in the token, so an unresolved "{{key}}" is granted silently
+        // and the role-filtering assertion then compares against a scope that was never the API's.
+        requestPasswordGrantTokenForUser(actor.getUserName(), actor.getPassword(), scope);
+    }
+
 
     /**
      * Requests an OAuth2 access token from APIM's own token endpoint using the password grant for an EXPLICIT
@@ -2573,7 +2772,6 @@ public class ApplicationBaseSteps {
             String password, String scope, String codeVerifier) throws Exception {
 
         String key = TestContext.resolve("consumerKey").toString();
-        java.net.http.HttpClient http = trustAllHttpClientWithCookies();
 
         StringBuilder authz = new StringBuilder(base).append("oauth2/authorize?response_type=code&client_id=")
                 .append(Utils.urlEncode(key)).append("&redirect_uri=").append(Utils.urlEncode(redirectUri));
@@ -2584,7 +2782,10 @@ public class ApplicationBaseSteps {
             authz.append("&code_challenge=").append(Utils.urlEncode(pkceS256Challenge(codeVerifier)))
                     .append("&code_challenge_method=S256");
         }
-        String granted = authorizeThroughLoginAndConsent(http, base, authz.toString(), username, password);
+        String granted;
+        try (CloseableHttpClient http = trustAllHttpClientWithCookies()) {
+            granted = authorizeThroughLoginAndConsent(http, base, authz.toString(), username, password);
+        }
         String code = Utils.queryParam(granted, "code");
         Assert.assertNotNull(code, "No authorization code in the final authorize redirect: " + granted);
 
@@ -2615,13 +2816,13 @@ public class ApplicationBaseSteps {
      * application name the consent redirect carries as {@code consentApplicationName} plus the rendered consent
      * page HTML as {@code consentPageBody}.
      */
-    private String authorizeThroughLoginAndConsent(java.net.http.HttpClient http, String base, String authorizeUrl,
+    private String authorizeThroughLoginAndConsent(CloseableHttpClient http, String base, String authorizeUrl,
             String username, String password) throws Exception {
 
         // Step 1: /oauth2/authorize -> 302 to login; carry sessionDataKey.
-        java.net.http.HttpResponse<String> authzResp = sendNoRedirect(http, "GET", authorizeUrl, null);
+        BrowserResponse authzResp = sendNoRedirect(http, "GET", authorizeUrl, null);
         String afterAuthz = locationHeader(authzResp, authorizeUrl);
-        TestContext.set("authorizeSetCookies", String.join("\n", authzResp.headers().allValues("Set-Cookie")));
+        TestContext.set("authorizeSetCookies", String.join("\n", authzResp.allValues("Set-Cookie")));
         String sdk = Utils.queryParam(afterAuthz, "sessionDataKey");
         Assert.assertNotNull(sdk, "No sessionDataKey in the authorize redirect: " + afterAuthz);
 
@@ -2646,6 +2847,7 @@ public class ApplicationBaseSteps {
         // Step 4: read the consent page the product would show the user, then approve it.
         TestContext.set("consentApplicationName", Utils.queryParam(afterResume, "application"));
         TestContext.set("consentPageBody", fetchConsentPage(http, base, afterResume));
+        TestContext.set("spOwnerName", serviceProviderOwnerName());
         String consentForm = "consent=approve&hasApprovedAlways=false&sessionDataKeyConsent="
                 + Utils.urlEncode(consentKey);
         return redirectLocation(http, "POST", base + "oauth2/authorize", consentForm);
@@ -2657,13 +2859,13 @@ public class ApplicationBaseSteps {
      * JVM, so only its path and query are used and the origin is rebuilt from the host-mapped {@code base} —
      * the same rule the rest of this flow follows for Locations.
      */
-    private String fetchConsentPage(java.net.http.HttpClient http, String base, String consentRedirect)
+    private String fetchConsentPage(CloseableHttpClient http, String base, String consentRedirect)
             throws Exception {
 
         java.net.URI redirect = java.net.URI.create(consentRedirect);
         String url = base + redirect.getPath().replaceFirst("^/", "")
                 + (redirect.getRawQuery() == null ? "" : "?" + redirect.getRawQuery());
-        java.net.http.HttpResponse<String> resp = sendNoRedirect(http, "GET", url, null);
+        BrowserResponse resp = sendNoRedirect(http, "GET", url, null);
         Assert.assertEquals(resp.statusCode(), 200,
                 "Consent page fetch failed at " + url + ": HTTP " + resp.statusCode());
         return resp.body();
@@ -2681,50 +2883,117 @@ public class ApplicationBaseSteps {
     }
 
     /** Sends one request WITHOUT following redirects and returns its Location header (asserts a redirect). */
-    private String redirectLocation(java.net.http.HttpClient http, String method, String url, String formBody)
+    private String redirectLocation(CloseableHttpClient http, String method, String url, String formBody)
             throws Exception {
         return locationHeader(sendNoRedirect(http, method, url, formBody), url);
     }
 
     /** Sends one request WITHOUT following redirects and returns the raw response (headers included). */
-    private java.net.http.HttpResponse<String> sendNoRedirect(java.net.http.HttpClient http, String method,
-            String url, String formBody) throws Exception {
-        java.net.http.HttpRequest.Builder b = java.net.http.HttpRequest.newBuilder(java.net.URI.create(url));
+    private BrowserResponse sendNoRedirect(CloseableHttpClient http, String method, String url, String formBody)
+            throws Exception {
+        HttpUriRequest request;
         if ("POST".equals(method)) {
-            b.header("Content-Type", "application/x-www-form-urlencoded")
-                    .POST(java.net.http.HttpRequest.BodyPublishers.ofString(formBody == null ? "" : formBody));
+            HttpPost post = new HttpPost(url);
+            post.setHeader("Content-Type", "application/x-www-form-urlencoded");
+            post.setEntity(new StringEntity(formBody == null ? "" : formBody, StandardCharsets.UTF_8));
+            request = post;
         } else {
-            b.GET();
+            request = new HttpGet(url);
         }
-        return http.send(b.build(), java.net.http.HttpResponse.BodyHandlers.ofString());
+        try (CloseableHttpResponse resp = http.execute(request)) {
+            String body = resp.getEntity() == null ? ""
+                    : EntityUtils.toString(resp.getEntity(), StandardCharsets.UTF_8);
+            return new BrowserResponse(resp.getStatusLine().getStatusCode(), body, resp.getAllHeaders());
+        }
+    }
+
+    /**
+     * The owner prefix APIM builds a service-provider name from, for the ACTING actor — published as
+     * {@code spOwnerName} so a consent-page assertion never hardcodes it.
+     *
+     * <p>Derived, not literal, because it varies along two axes a feature cannot see: the TENANT suffix is
+     * dropped (a {@code tenant1.com} admin still owns SPs as plain {@code admin}), and in email-username mode
+     * the physical name carries an {@code @email.com} local part which the registry encodes as {@code -AT-}
+     * (the same encoding as {@code apiProviderEncoded}). A static value is therefore right in at most one
+     * block: {@code admin} normally, {@code admin-AT-email.com} under {@code emailUserMode}.
+     */
+    private static String serviceProviderOwnerName() {
+
+        User actor = Identity.actingActor();
+        String userName = actor.getUserName();
+        String tenantSuffix = "@" + actor.getUserDomain();
+        if (userName != null && userName.toLowerCase(java.util.Locale.ROOT)
+                .endsWith(tenantSuffix.toLowerCase(java.util.Locale.ROOT))) {
+            userName = userName.substring(0, userName.length() - tenantSuffix.length());
+        }
+        return userName == null ? null : userName.replace("@", "-AT-");
     }
 
     /** Returns a no-redirect response's Location header, asserting the response actually was a redirect. */
-    private String locationHeader(java.net.http.HttpResponse<String> resp, String url) {
-        java.util.Optional<String> loc = resp.headers().firstValue("Location");
+    private String locationHeader(BrowserResponse resp, String url) {
+        java.util.Optional<String> loc = resp.firstValue("Location");
         Assert.assertTrue(loc.isPresent(), "Expected a redirect with a Location header from " + url
                 + " but got HTTP " + resp.statusCode() + " / body=" + resp.body());
         return loc.get();
     }
 
-    /** Builds an HttpClient that trusts IS's self-signed cert, keeps a cookie jar, and never auto-redirects. */
-    private java.net.http.HttpClient trustAllHttpClientWithCookies() throws Exception {
-        javax.net.ssl.TrustManager[] trustAll = new javax.net.ssl.TrustManager[]{
-                new javax.net.ssl.X509TrustManager() {
-                    public void checkClientTrusted(java.security.cert.X509Certificate[] c, String a) { }
-                    public void checkServerTrusted(java.security.cert.X509Certificate[] c, String a) { }
-                    public java.security.cert.X509Certificate[] getAcceptedIssuers() {
-                        return new java.security.cert.X509Certificate[0];
-                    }
-                }
-        };
-        javax.net.ssl.SSLContext ssl = javax.net.ssl.SSLContext.getInstance("TLS");
-        ssl.init(null, trustAll, new java.security.SecureRandom());
-        return java.net.http.HttpClient.newBuilder()
-                .sslContext(ssl)
-                .cookieHandler(new java.net.CookieManager())
-                .followRedirects(java.net.http.HttpClient.Redirect.NEVER)
+    /**
+     * Builds the browser-like client the OAuth legs drive: trust-all certs AND no hostname verification, a
+     * per-client cookie jar (the login/consent legs carry the IS session across redirects) and redirects NOT
+     * followed (the flow reads each Location itself). Hostname verification must go too, not just chain trust:
+     * the shipped wso2carbon cert is CN=localhost with no IP SAN, so addressing the container by the colima VM
+     * IP (TESTCONTAINERS_HOST_OVERRIDE) otherwise fails with "No subject alternative names matching IP address".
+     * Apache HttpClient rather than java.net.http, which re-forces endpoint identification to "HTTPS" internally
+     * and so cannot express that. Caller closes it.
+     */
+    private CloseableHttpClient trustAllHttpClientWithCookies() throws Exception {
+        // Chain trust comes from the shared Utils.trustAllSslContext(); the hostname verifier is disabled
+        // separately below, because an SSLContext alone cannot express it.
+        javax.net.ssl.SSLContext ssl = Utils.trustAllSslContext();
+        return HttpClients.custom()
+                .setSSLSocketFactory(new SSLConnectionSocketFactory(ssl, NoopHostnameVerifier.INSTANCE))
+                .setDefaultCookieStore(new BasicCookieStore())
+                .setDefaultRequestConfig(RequestConfig.custom()
+                        .setRedirectsEnabled(false)
+                        .setCookieSpec(CookieSpecs.STANDARD)
+                        .build())
                 .build();
+    }
+
+    /** A no-redirect response reduced to what the OAuth legs read: status, body and (repeatable) headers. */
+    private static final class BrowserResponse {
+
+        private final int statusCode;
+        private final String body;
+        private final Header[] headers;
+
+        private BrowserResponse(int statusCode, String body, Header[] headers) {
+            this.statusCode = statusCode;
+            this.body = body;
+            this.headers = headers;
+        }
+
+        private int statusCode() {
+            return statusCode;
+        }
+
+        private String body() {
+            return body;
+        }
+
+        private java.util.List<String> allValues(String name) {
+            java.util.List<String> values = new java.util.ArrayList<>();
+            for (Header header : headers) {
+                if (header.getName().equalsIgnoreCase(name)) {
+                    values.add(header.getValue());
+                }
+            }
+            return values;
+        }
+
+        private java.util.Optional<String> firstValue(String name) {
+            return allValues(name).stream().findFirst();
+        }
     }
 
     /** Computes the PKCE S256 code_challenge (base64url, no padding) for a verifier. */
@@ -2761,7 +3030,6 @@ public class ApplicationBaseSteps {
     public void iRequestDeviceCodeTokenFromExternalKm(String username, String password) throws Exception {
 
         String base = IntegrationActors.baseUrl(IntegrationActors.IS);
-        java.net.http.HttpClient http = trustAllHttpClientWithCookies();
 
         // 1. device_authorize -> device_code + user_code.
         HttpResponse da = Requests.post(base + "oauth2/device_authorize", clientCredentialsHeader(),
@@ -2773,20 +3041,23 @@ public class ApplicationBaseSteps {
         String deviceCode = daj.getString("device_code");
         String userCode = daj.getString("user_code");
 
-        // 2. submit the user_code -> 302 to login (carries sessionDataKey).
-        String sdk = Utils.queryParam(
-                redirectLocation(http, "POST", base + "oauth2/device", "user_code=" + Utils.urlEncode(userCode)),
-                "sessionDataKey");
-        Assert.assertNotNull(sdk, "No sessionDataKey after submitting the device user_code");
+        try (CloseableHttpClient http = trustAllHttpClientWithCookies()) {
+            // 2. submit the user_code -> 302 to login (carries sessionDataKey).
+            String sdk = Utils.queryParam(
+                    redirectLocation(http, "POST", base + "oauth2/device", "user_code=" + Utils.urlEncode(userCode)),
+                    "sessionDataKey");
+            Assert.assertNotNull(sdk, "No sessionDataKey after submitting the device user_code");
 
-        // 3. authenticate -> 302 back to /oauth2/authorize with a fresh sessionDataKey.
-        String loginForm = "username=" + Utils.urlEncode(username) + "&password=" + Utils.urlEncode(password)
-                + "&sessionDataKey=" + Utils.urlEncode(sdk);
-        String sdk2 = Utils.queryParam(redirectLocation(http, "POST", base + "commonauth", loginForm), "sessionDataKey");
-        Assert.assertNotNull(sdk2, "Device login did not redirect back to /oauth2/authorize (bad credentials?)");
+            // 3. authenticate -> 302 back to /oauth2/authorize with a fresh sessionDataKey.
+            String loginForm = "username=" + Utils.urlEncode(username) + "&password=" + Utils.urlEncode(password)
+                    + "&sessionDataKey=" + Utils.urlEncode(sdk);
+            String sdk2 = Utils.queryParam(redirectLocation(http, "POST", base + "commonauth", loginForm),
+                    "sessionDataKey");
+            Assert.assertNotNull(sdk2, "Device login did not redirect back to /oauth2/authorize (bad credentials?)");
 
-        // 4. resume /oauth2/authorize to commit the device approval.
-        redirectLocation(http, "GET", base + "oauth2/authorize?sessionDataKey=" + Utils.urlEncode(sdk2), null);
+            // 4. resume /oauth2/authorize to commit the device approval.
+            redirectLocation(http, "GET", base + "oauth2/authorize?sessionDataKey=" + Utils.urlEncode(sdk2), null);
+        }
 
         // 5. exchange the device_code for a token (approval already committed -> no polling wait needed).
         HttpResponse response = Requests.post(IntegrationActors.tokenEndpoint(IntegrationActors.IS), clientCredentialsHeader(),
@@ -3235,8 +3506,11 @@ public class ApplicationBaseSteps {
                 + "&redirect_uri=" + Utils.urlEncode(RESIDENT_AUTHZ_REDIRECT_URI)
                 + "&scope=" + Utils.urlEncode(Utils.resolveContextPlaceholders(scope));
 
-        String granted = authorizeThroughLoginAndConsent(trustAllHttpClientWithCookies(), base, authorizeUrl,
-                actor.getUserName(), actor.getPassword());
+        String granted;
+        try (CloseableHttpClient http = trustAllHttpClientWithCookies()) {
+            granted = authorizeThroughLoginAndConsent(http, base, authorizeUrl,
+                    actor.getUserName(), actor.getPassword());
+        }
         String fragment = java.net.URI.create(granted).getRawFragment();
         Assert.assertNotNull(fragment, "The implicit grant redirect carried no fragment: " + granted);
         String token = fragmentParam(fragment, "access_token");
@@ -3260,7 +3534,10 @@ public class ApplicationBaseSteps {
                 + Utils.urlEncode(TestContext.resolve("consumerKey").toString())
                 + "&redirect_uri=" + Utils.urlEncode(redirectUri);
 
-        String location = redirectLocation(trustAllHttpClientWithCookies(), "GET", url, null);
+        String location;
+        try (CloseableHttpClient http = trustAllHttpClientWithCookies()) {
+            location = redirectLocation(http, "GET", url, null);
+        }
         String errorCode = Utils.queryParam(location, "oauthErrorCode");
         Assert.assertNotNull(errorCode, "The authorize request with redirect_uri '" + redirectUri
                 + "' was not redirected to an OAuth error page: " + location);
@@ -3348,6 +3625,70 @@ public class ApplicationBaseSteps {
         JSONObject header = new JSONObject(headerJson);
         Assert.assertTrue(header.has("alg"),
                 "JWT header does not contain an 'alg' claim: " + headerJson);
+    }
+
+    /**
+     * Asserts the WHOLE-TOKEN membership of the {@code scope} field in the last token-endpoint response: every
+     * scope in {@code included} is present and every scope in {@code excluded} is absent, comparing against the
+     * response's space-delimited scope list split into exact entries.
+     *
+     * <p>Whole-entry comparison (not substring) is the point: {@code The response should contain "apim:api_create"}
+     * would also be satisfied by a hypothetical {@code apim:api_create_x}, and a "should not contain" written that
+     * way is even worse — it can be defeated by any scope that merely embeds the name. Legacy APIScopeTestCase
+     * asserts exactly this per-role filtering of the requested {@code apim:*} scopes, so the granted/withheld
+     * distinction must be exact.
+     *
+     * @param included comma-separated scopes that MUST appear (may be empty)
+     * @param excluded comma-separated scopes that MUST NOT appear (may be empty)
+     */
+    @Then("The issued token scope list should include {string} and exclude {string}")
+    public void theIssuedTokenScopeListShouldIncludeAndExclude(String included, String excluded) {
+
+        HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
+        Assert.assertTrue(response != null && response.getResponseCode() >= 200 && response.getResponseCode() < 300
+                        && response.getData() != null && !response.getData().isBlank(),
+                "Expected a successful token response to read 'scope' from, got="
+                        + (response == null ? "null" : response.getResponseCode() + "/" + response.getData()));
+        JSONObject body = new JSONObject(response.getData());
+        Assert.assertTrue(body.has("scope"), "Token response carries no 'scope' field: " + response.getData());
+        Set<String> granted = new HashSet<>(Arrays.asList(body.getString("scope").trim().split("\\s+")));
+
+        // Resolve {{contextKey}} placeholders so a scenario-unique scope name can be asserted by reference.
+        for (String scope : splitScopeList(Utils.resolveContextPlaceholders(included))) {
+            Assert.assertTrue(granted.contains(scope),
+                    "Expected scope '" + scope + "' to be granted, but the issued scope list is " + granted);
+        }
+        for (String scope : splitScopeList(Utils.resolveContextPlaceholders(excluded))) {
+            Assert.assertFalse(granted.contains(scope),
+                    "Expected scope '" + scope + "' to be WITHHELD, but the issued scope list is " + granted);
+        }
+    }
+
+    /** Splits a comma-separated scope list from a feature argument, tolerating an empty argument. */
+    private static List<String> splitScopeList(String csv) {
+
+        if (csv == null || csv.isBlank()) {
+            return Collections.emptyList();
+        }
+        List<String> scopes = new ArrayList<>();
+        for (String entry : csv.split(",")) {
+            if (!entry.isBlank()) {
+                scopes.add(entry.trim());
+            }
+        }
+        return scopes;
+    }
+
+    /**
+     * Retrieves the Developer Portal application collection ({@code GET devportal/applications}) with the ACTING
+     * actor's devportal token. Non-asserting — the feature asserts the status, which is the point: legacy
+     * APIScopeTestCase#testRESTAPIScopes proves a CREATOR-role user's devportal token cannot list applications
+     * (it carries no {@code apim:subscribe}/{@code apim:app_manage}), so this step must be usable as a negative.
+     */
+    @When("I retrieve all applications from the Developer Portal")
+    public void iRetrieveAllApplicationsFromDevPortal() throws IOException {
+
+        Requests.get(Utils.getApplicationCreateURL(Utils.getBaseUrl()), Identity.devportalHeaders());
     }
 
     /**
@@ -3876,11 +4217,20 @@ public class ApplicationBaseSteps {
     /**
      * Adds a system-scope role-alias mapping (admin REST {@code PUT /role-aliases}): maps {@code role} to include
      * {@code alias}. Ports APISystemScopesTestCase#testAddScopeMapping. Non-asserting.
+     *
+     * <p>{@code alias} may be a COMMA-SEPARATED list, because the PUT replaces the whole mapping list — aliasing
+     * two roles onto one system role therefore has to happen in a single call (calling this step twice would
+     * discard the first mapping). The role-alias-derived-subscriber scenario needs exactly that. A single alias
+     * (every pre-existing caller) is the one-element case and is unaffected.
      */
     @When("I set the role alias {string} for role {string}")
     public void iSetRoleAlias(String alias, String role) throws IOException {
 
-        JSONObject entry = new JSONObject().put("role", role).put("aliases", new JSONArray().put(alias));
+        JSONArray aliases = new JSONArray();
+        for (String single : alias.split("\\s*,\\s*")) {
+            aliases.put(Utils.resolveContextPlaceholders(single));
+        }
+        JSONObject entry = new JSONObject().put("role", role).put("aliases", aliases);
         JSONObject payload = new JSONObject().put("count", 1).put("list", new JSONArray().put(entry));
         Requests.put(Utils.getRoleAliasesURL(Utils.getBaseUrl()), Identity.adminHeaders(), payload.toString(),
                 Constants.CONTENT_TYPES.APPLICATION_JSON);
@@ -4836,28 +5186,19 @@ public class ApplicationBaseSteps {
         String resolvedQuery = Utils.resolveContextPlaceholders(query);
         String resolvedExpected = Utils.resolveContextPlaceholders(expected);
         String url = Utils.getApiSearchURL(Utils.getBaseUrl(), resolvedQuery);
-        long endTimeStart = System.currentTimeMillis();
-        long endTime = endTimeStart + seconds * 1000L;
-        HttpResponse response = null;
-        boolean found = false;
-        while (true) {
-            try {
-                response = Requests.get(url, headers);
-                found = response.getResponseCode() == 200
-                        && response.getData() != null && response.getData().contains(resolvedExpected);
-            } catch (IOException transientFailure) {
-                // transient network failure — keep polling; the previous response (if any) is retained
-            }
-            if (found || System.currentTimeMillis() >= endTime) {
-                break;
-            }
-            Utils.pollPause(endTimeStart, 2000);
-        }
+        // Via retryUntil so the deadline cannot drop below RUNTIME_PROPAGATION_TIMEOUT (§7/§15).
+        HttpResponse response = Utils.retryUntil(seconds * 1000L,
+                () -> Requests.get(url, headers),
+                r -> r != null && r.getResponseCode() == 200 && r.getData() != null
+                        && r.getData().contains(resolvedExpected));
+        Requests.publishPollResult(response);
         Assert.assertNotNull(response, "DevPortal search '" + resolvedQuery + "' returned no response (every poll "
                 + "attempt failed)");
-        Assert.assertTrue(found, "DevPortal search '" + resolvedQuery + "' did not contain '" + resolvedExpected
-                + "' within " + seconds + "s; last response: " + response.getResponseCode()
-                + " / " + response.getData());
+        Assert.assertTrue(response.getResponseCode() == 200 && response.getData() != null
+                        && response.getData().contains(resolvedExpected),
+                "DevPortal search '" + resolvedQuery + "' did not contain '" + resolvedExpected
+                        + "' within the deadline; last response: " + response.getResponseCode()
+                        + " / " + response.getData());
     }
 
     /**
@@ -4876,28 +5217,19 @@ public class ApplicationBaseSteps {
         String resolvedQuery = Utils.resolveContextPlaceholders(query);
         String resolvedUnexpected = Utils.resolveContextPlaceholders(unexpected);
         String url = Utils.getApiSearchURL(Utils.getBaseUrl(), resolvedQuery);
-        long endTimeStart = System.currentTimeMillis();
-        long endTime = endTimeStart + seconds * 1000L;
-        HttpResponse response = null;
-        boolean absent = false;
-        while (true) {
-            try {
-                response = Requests.get(url, headers);
-                absent = response.getResponseCode() == 200
-                        && response.getData() != null && !response.getData().contains(resolvedUnexpected);
-            } catch (IOException transientFailure) {
-                // transient network failure — keep polling; the previous response (if any) is retained
-            }
-            if (absent || System.currentTimeMillis() >= endTime) {
-                break;
-            }
-            Utils.pollPause(endTimeStart, 2000);
-        }
+        // Via retryUntil so the deadline cannot drop below RUNTIME_PROPAGATION_TIMEOUT (§7/§15).
+        HttpResponse response = Utils.retryUntil(seconds * 1000L,
+                () -> Requests.get(url, headers),
+                r -> r != null && r.getResponseCode() == 200 && r.getData() != null
+                        && !r.getData().contains(resolvedUnexpected));
+        Requests.publishPollResult(response);
         Assert.assertNotNull(response, "DevPortal search '" + resolvedQuery + "' returned no response (every poll "
                 + "attempt failed)");
-        Assert.assertTrue(absent, "DevPortal search '" + resolvedQuery + "' still contained '" + resolvedUnexpected
-                + "' after " + seconds + "s; last response: " + response.getResponseCode()
-                + " / " + response.getData());
+        Assert.assertTrue(response.getResponseCode() == 200 && response.getData() != null
+                        && !response.getData().contains(resolvedUnexpected),
+                "DevPortal search '" + resolvedQuery + "' still contained '" + resolvedUnexpected
+                        + "' after the deadline; last response: " + response.getResponseCode()
+                        + " / " + response.getData());
     }
 
     /**
@@ -4913,29 +5245,167 @@ public class ApplicationBaseSteps {
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
         String resolvedQuery = Utils.resolveContextPlaceholders(query);
         String url = Utils.getApiSearchURLWithLimit(Utils.getBaseUrl(), resolvedQuery, limit);
-        long endTimeStart = System.currentTimeMillis();
-        long endTime = endTimeStart + seconds * 1000L;
-        HttpResponse response = null;
-        int actual = -1;
-        while (true) {
-            try {
-                response = Requests.get(url, headers);
-                if (response.getResponseCode() == 200
-                        && response.getData() != null && !response.getData().isBlank()) {
-                    actual = new JSONObject(response.getData()).optInt("count", -1);
-                }
-            } catch (IOException transientFailure) {
-                // transient network failure — keep polling; the previous response (if any) is retained
-            }
-            if (actual == expectedCount || System.currentTimeMillis() >= endTime) {
-                break;
-            }
-            Utils.pollPause(endTimeStart, 2000);
-        }
+        // Funnelled through Utils.retryUntil rather than a hand-rolled deadline loop (§7/§15): the envelope owns
+        // the max(timeout, RUNTIME_PROPAGATION_TIMEOUT) ceiling so this call site cannot silently cap itself, and
+        // retries ONLY IOException. Requests.get publishes each attempt, so the last one is the assertion target.
+        HttpResponse response = Utils.retryUntil(seconds * 1000L,
+                () -> Requests.get(url, headers),
+                result -> Utils.listCountOf(result) == expectedCount);
+        Requests.publishPollResult(response);
         Assert.assertNotNull(response, "No paginated search response");
-        Assert.assertEquals(actual, expectedCount,
+        Assert.assertEquals(Utils.listCountOf(response), expectedCount,
                 "DevPortal paginated page count did not reach the expected value");
     }
+
+    /**
+     * UNIFIED SEARCH ({@code /search}) on either plane, polled until the result count settles on the expected
+     * value, then asserted exactly. This is the ONLY search surface that can report a match inside a DOCUMENT's
+     * content — {@code /apis?query=} returns API objects, so a document hit cannot appear there (see
+     * {@link Utils#getUnifiedSearchURL}). Indexing is asynchronous, hence the poll.
+     *
+     * @param plane {@code "devportal"} or {@code "publisher"}
+     */
+    @When("I unified-search the {string} plane for {string} until the result count is {int} within {int} seconds")
+    public void iUnifiedSearchUntilCount(String plane, String query, int expectedCount, int seconds)
+            throws InterruptedException {
+
+        String url = Utils.getUnifiedSearchURL(Utils.getBaseUrl(), plane,
+                Utils.resolveContextPlaceholders(query));
+        Map<String, String> headers = "publisher".equals(plane)
+                ? Identity.publisherHeaders() : Identity.devportalHeaders();
+        HttpResponse response = Utils.retryUntil(seconds * 1000L,
+                () -> Requests.get(url, headers),
+                result -> Utils.listCountOf(result) == expectedCount);
+        Assert.assertNotNull(response, "No unified-search response from the " + plane + " plane");
+        Assert.assertEquals(Utils.listCountOf(response), expectedCount,
+                "Unified search on the " + plane + " plane for '" + query
+                        + "' did not reach the expected count; last body: " + response.getData());
+    }
+
+    /**
+     * One unified-search call, published for assertion without any expectation of its own — for inspecting the
+     * result SHAPE (a {@code DocumentSearchResult} carries {@code type}, {@code docType}, {@code sourceType}) or a
+     * status this step must not presume, such as an unsupported query prefix.
+     */
+    @When("I unified-search the {string} plane once for {string}")
+    public void iUnifiedSearchOnce(String plane, String query) throws IOException {
+
+        Requests.get(Utils.getUnifiedSearchURL(Utils.getBaseUrl(), plane,
+                        Utils.resolveContextPlaceholders(query)),
+                "publisher".equals(plane) ? Identity.publisherHeaders() : Identity.devportalHeaders());
+    }
+
+    /**
+     * The {@code count} of a DevPortal search page, or {@code -1} when the response has no usable body — so a
+     * non-2xx or empty answer can never be mistaken for a real count (in particular never for an expected 0,
+     * which would let a failed request satisfy a count-0 assertion). Guards before parsing, per §7.
+     */
+
+    /**
+     * Asserts the DevPortal's UNFILTERED API listing ({@code GET /apis} with an EMPTY query) lists an API name
+     * exactly {@code expectedOccurrences} times, and that the matching entry carries {@code expectedVersion}.
+     *
+     * <p>This is the ONE devportal read path that honours the {@code DisplayMultipleVersions} configuration. With
+     * the product default ({@code false}), {@code RegistrySearchUtil.getDevPortalSearchQuery} appends
+     * {@code &group=true&group.field=name&group.sort=versionComparable desc} to the Solr query — but ONLY when the
+     * effective query is empty or is exactly the devportal type-filter constant. The devportal REST layer
+     * ({@code ApisApiServiceImpl.apisGet}) APPENDS that constant to any user-supplied query, so a
+     * {@code ?query=<name>} search never satisfies the equality check and never groups: that is why a name search
+     * legitimately returns BOTH versions while this listing returns only the latest. Hence the empty query here —
+     * sending a name would silently test the ungrouped path.
+     *
+     * <p>Counts OCCURRENCES OF THIS API's NAME rather than the listing's total {@code count}, which is what the
+     * legacy test pinned ({@code count == 1} for a whole tenant). A total-count assertion is only valid in an
+     * otherwise-empty tenant and can never hold under parallel execution; per-name occurrences are exact by
+     * construction because the API name is uniquely generated (CLAUDE.md §4).
+     *
+     * <p>Polls because publishing propagates to the Solr index asynchronously; the assertions run after the loop so
+     * a persistent mismatch fails the step itself. Each sweep walks EVERY page of the listing, so a busy tenant
+     * cannot push the API onto a later page and have it counted as absent.
+     *
+     * @param apiName             the API name to count (resolves {@code {{...}}})
+     * @param expectedOccurrences exact number of listing entries expected for that name
+     * @param expectedVersion     the version the matching entry must carry
+     * @param seconds             poll window
+     */
+    @Then("the devportal API listing should list API {string} exactly {int} time(s) with version {string} within {int} seconds")
+    public void theDevportalListingShouldListApiOnce(String apiName, int expectedOccurrences,
+            String expectedVersion, int seconds) throws IOException, InterruptedException {
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
+        String resolvedName = Utils.resolveContextPlaceholders(apiName);
+        String resolvedVersion = Utils.resolveContextPlaceholders(expectedVersion);
+        // Funnelled through Utils.retryUntil rather than a hand-rolled deadline loop (§7/§15): the envelope owns
+        // the max(timeout, RUNTIME_PROPAGATION_TIMEOUT) ceiling so this call site cannot silently cap itself, and
+        // retries ONLY IOException. versionsListedForName returns null for an unreadable/malformed page, so the
+        // accept predicate treats null as not-ready and an exhausted window defaults to an empty listing.
+        List<String> lastSweep = Utils.retryUntil(seconds * 1000L,
+                () -> versionsListedForName(headers, resolvedName),
+                sweep -> sweep != null && sweep.size() == expectedOccurrences);
+        List<String> matchedVersions = lastSweep == null ? new ArrayList<>() : lastSweep;
+        Assert.assertEquals(matchedVersions.size(), expectedOccurrences,
+                "The unfiltered devportal listing carried " + matchedVersions.size() + " entr(ies) for API '"
+                        + resolvedName + "' (versions " + matchedVersions + ") but exactly " + expectedOccurrences
+                        + " was expected (counted across EVERY page of the listing)");
+        if (!matchedVersions.isEmpty()) {
+            Assert.assertEquals(matchedVersions.get(0), resolvedVersion,
+                    "The listed entry for API '" + resolvedName + "' was version " + matchedVersions.get(0)
+                            + " but " + resolvedVersion + " was expected (the grouped listing must surface the "
+                            + "LATEST version)");
+        }
+    }
+
+    /**
+     * Walks EVERY page of the unfiltered devportal listing and returns the versions of the entries whose name is
+     * {@code apiName}. Returns null when a page is unreadable so the caller's poll keeps waiting rather than
+     * treating a failed read as "zero occurrences".
+     *
+     * <p>Pages rather than sending one large {@code limit}: a single page can only claim "exactly N in this page",
+     * so an API sitting later in a busy tenant's collection would be counted as zero and time the poll out as a
+     * false failure. Mirrors the paging contract of
+     * {@code PublisherBaseSteps#countAcrossAllPages} — stop on a short/empty page, or once the reported
+     * {@code pagination.total} has been consumed (the offset guard also stops a total that never shrinks).
+     *
+     * <p>The URL carries no {@code query} parameter, which is what keeps the version GROUPING path active (see the
+     * calling step's javadoc); a name query would silently exercise the ungrouped path instead.
+     */
+    private static List<String> versionsListedForName(Map<String, String> headers, String apiName)
+            throws IOException {
+        List<String> versions = new ArrayList<>();
+        int offset = 0;
+        while (true) {
+            HttpResponse page = Requests.get(
+                    Utils.getDevportalApiListURL(Utils.getBaseUrl(), UNFILTERED_LISTING_PAGE_SIZE, offset), headers);
+            if (page == null || page.getResponseCode() != 200
+                    || page.getData() == null || page.getData().isBlank()) {
+                return null;
+            }
+            int onThisPage;
+            int total;
+            try {
+                JSONObject body = new JSONObject(page.getData());
+                JSONArray list = body.optJSONArray("list");
+                onThisPage = list == null ? 0 : list.length();
+                for (int i = 0; i < onThisPage; i++) {
+                    JSONObject entry = list.getJSONObject(i);
+                    if (apiName.equals(entry.optString("name"))) {
+                        versions.add(entry.optString("version"));
+                    }
+                }
+                JSONObject pagination = body.optJSONObject("pagination");
+                total = pagination == null ? -1 : pagination.optInt("total", -1);
+            } catch (JSONException malformedDuringWarmup) {
+                return null;
+            }
+            offset += onThisPage;
+            if (onThisPage == 0 || onThisPage < UNFILTERED_LISTING_PAGE_SIZE || (total >= 0 && offset >= total)) {
+                return versions;
+            }
+        }
+    }
+
+    /** Page size used when walking the whole unfiltered devportal listing. */
+    private static final int UNFILTERED_LISTING_PAGE_SIZE = 200;
 
     /**
      * Retrieves the DevPortal tag cloud (GET /tags), polling until it contains the expected value — the tag cloud
@@ -4950,26 +5420,17 @@ public class ApplicationBaseSteps {
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
         String resolvedExpected = Utils.resolveContextPlaceholders(expected);
         String url = Utils.getTagsURL(Utils.getBaseUrl());
-        long endTimeStart = System.currentTimeMillis();
-        long endTime = endTimeStart + seconds * 1000L;
-        HttpResponse response = null;
-        boolean found = false;
-        while (true) {
-            try {
-                response = Requests.get(url, headers);
-                found = response.getResponseCode() == 200
-                        && response.getData() != null && response.getData().contains(resolvedExpected);
-            } catch (IOException transientFailure) {
-                // transient network failure — keep polling; the previous response (if any) is retained
-            }
-            if (found || System.currentTimeMillis() >= endTime) {
-                break;
-            }
-            Utils.pollPause(endTimeStart, 2000);
-        }
+        // Via retryUntil so the deadline cannot drop below RUNTIME_PROPAGATION_TIMEOUT (§7/§15).
+        HttpResponse response = Utils.retryUntil(seconds * 1000L,
+                () -> Requests.get(url, headers),
+                r -> r != null && r.getResponseCode() == 200 && r.getData() != null
+                        && r.getData().contains(resolvedExpected));
+        Requests.publishPollResult(response);
         Assert.assertNotNull(response, "DevPortal tag cloud returned no response (every poll attempt failed)");
-        Assert.assertTrue(found, "DevPortal tag cloud did not contain '" + resolvedExpected + "' within "
-                + seconds + "s; last response: " + response.getResponseCode() + " / " + response.getData());
+        Assert.assertTrue(response.getResponseCode() == 200 && response.getData() != null
+                        && response.getData().contains(resolvedExpected),
+                "DevPortal tag cloud did not contain '" + resolvedExpected + "' within the deadline; "
+                        + "last response: " + response.getResponseCode() + " / " + response.getData());
     }
 
     /**
@@ -4987,27 +5448,18 @@ public class ApplicationBaseSteps {
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
         String resolved = Utils.resolveContextPlaceholders(unexpected);
         String url = Utils.getTagsURL(Utils.getBaseUrl());
-        long endTimeStart = System.currentTimeMillis();
-        long endTime = endTimeStart + seconds * 1000L;
-        HttpResponse response = null;
-        boolean absent = false;
-        while (true) {
-            try {
-                response = Requests.get(url, headers);
-                absent = response.getResponseCode() == 200
-                        && response.getData() != null && !response.getData().contains(resolved);
-            } catch (IOException transientFailure) {
-                // transient network failure — keep polling; the previous response (if any) is retained
-            }
-            if (absent || System.currentTimeMillis() >= endTime) {
-                break;
-            }
-            Utils.pollPause(endTimeStart, 2000);
-        }
+        // Via retryUntil so the deadline cannot drop below RUNTIME_PROPAGATION_TIMEOUT (§7/§15).
+        HttpResponse response = Utils.retryUntil(seconds * 1000L,
+                () -> Requests.get(url, headers),
+                r -> r != null && r.getResponseCode() == 200 && r.getData() != null
+                        && !r.getData().contains(resolved));
+        Requests.publishPollResult(response);
         Assert.assertNotNull(response, "DevPortal tag cloud returned no response (every poll attempt failed)");
-        Assert.assertTrue(absent, "DevPortal tag cloud still contained '" + resolved + "' after " + seconds
-                + "s (a restricted tag leaking persistently, not a transient index window); last response: "
-                + response.getResponseCode() + " / " + response.getData());
+        Assert.assertTrue(response.getResponseCode() == 200 && response.getData() != null
+                        && !response.getData().contains(resolved),
+                "DevPortal tag cloud still contained '" + resolved + "' after the deadline (a restricted tag "
+                        + "leaking persistently, not a transient index window); last response: "
+                        + response.getResponseCode() + " / " + response.getData());
     }
 
     /**
@@ -5020,6 +5472,8 @@ public class ApplicationBaseSteps {
         HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
         Assert.assertNotNull(response, "No tag cloud response captured");
         Assert.assertEquals(response.getResponseCode(), 200, "Tag cloud retrieval failed");
+        Assert.assertTrue(response.getData() != null && !response.getData().isBlank(),
+                "Tag cloud retrieval returned an empty response body: " + response.getData());
         JSONArray list = new JSONObject(response.getData()).getJSONArray("list");
         Integer actual = null;
         for (int i = 0; i < list.length(); i++) {

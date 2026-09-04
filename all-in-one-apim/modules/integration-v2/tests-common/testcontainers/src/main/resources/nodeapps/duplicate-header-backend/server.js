@@ -17,12 +17,25 @@
 
  const express = require('express');
 const duplicateHeaderRoutes = require('./routes/duplicateHeaderRoutes');
+const digestAuthRoutes = require('./routes/digestAuthRoutes');
+const mailSinkRoutes = require('./routes/mailSinkRoutes');
+const { startSmtpSink } = require('./controllers/mailSinkController');
 
 const app = express();
 const port = process.env.PORT || 3005;
+const smtpPort = process.env.SMTP_PORT || 3025;
 
 app.use('/duplicate', duplicateHeaderRoutes);
+// HTTP Digest protected upstream for DIGEST endpoint-security tests (no other backend here challenges).
+app.use('/digest', digestAuthRoutes);
+// Host-facing introspection of the SMTP capture sink below (this app already owns a published HTTP port, which
+// is why the sink lives here rather than in a new app).
+app.use('/mail', mailSinkRoutes);
 
 app.listen(port, () => {
     console.log(`Duplicate Header Backend Server running at http://nodebackend:${port}`);
 });
+
+// SMTP capture sink for APIM's new-API-version subscriber notification mail. Reached in-network as
+// nodebackend:3025; unpublished on purpose (see mailSinkController.js).
+startSmtpSink(smtpPort);
