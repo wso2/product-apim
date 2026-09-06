@@ -166,8 +166,10 @@ public class PolicySeverityFilteringTestCase extends APIMIntegrationBaseTest {
             fail("Storing compliance affecting severities must be rejected on a deployment which has neither the "
                     + "configuration nor the optional column");
         } catch (ApiException e) {
-            assertEquals(e.getCode(), Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(),
-                    "The rejection must surface as an error rather than a silently ignored value");
+            // A deployment which has not opted in is a supported state, not a fault, so the client is told its
+            // request was unacceptable rather than that the server broke. The client can retry without the field.
+            assertEquals(e.getCode(), Response.Status.BAD_REQUEST.getStatusCode(),
+                    "The rejection must surface as a client error rather than a server failure");
         }
 
         assertNull(restAPIGovernance.getPolicy(policyId).getData().getComplianceAffectingSeverities(),
