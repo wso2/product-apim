@@ -24,21 +24,50 @@
             <property name="signature_header_name" expression="'$signatureHeader'"/>
             <filter xpath="get-property('received_signature') = get-property('generated_signature')">
                 <then>
-            #end
+                    #end
 
-            <filter source="$ctx:TOPIC_VALIDITY" regex="false">
-                <then>
-                    <property name="HTTP_SC" value="404" scope="axis2"/>
-                    <property name="RESPONSE" value="true"/>
-                    <payloadFactory media-type="json">
-                        <format>{"error": "Invalid or missing topic"}</format>
-                    </payloadFactory>
-                    <property name="messageType" value="application/json" scope="axis2"/>
-                    <respond/>
-                </then>
-                <else/>
-            </filter>
+                    <filter source="$ctx:TOPIC_VALIDITY" regex="false">
+                        <then>
+                            <property name="HTTP_SC" value="404" scope="axis2"/>
+                            <property name="RESPONSE" value="true"/>
+                            <payloadFactory media-type="json">
+                                <format>{"error": "Invalid or missing topic"}</format>
+                            </payloadFactory>
+                            <property name="messageType" value="application/json" scope="axis2"/>
+                            <respond/>
+                        </then>
+                        <else/>
+                    </filter>
 
+                    #if($useExternalWebSubHub)
+                    <property name="HUB_MODE" value="publish"/>
+                    <property name="external.websub.hub.endpoint" value="$externalWebSubHubEndpoint" scope="default" type="STRING"/>
+                    <property name="disable.topic.context.prefix" value="$disableTopicContextPrefix" scope="default" type="BOOLEAN"/>
+                    <sequence key="externalWebSubHubCaller"/>
+                    <filter xpath="$ctx:is.external.websub.hub.error">
+                        <then>
+                            <property name="HTTP_SC" expression="get-property('external.websub.hub.response.status.code')" scope="axis2"/>
+                            <filter xpath="not(string($ctx:external.websub.hub.response.status.body))">
+                                <then>
+                                    <property name="external.websub.hub.response.status.body" value="{}" scope="default"/>
+                                </then>
+                            </filter>
+                            <payloadFactory media-type="json">
+                                <format>$1</format>
+                                <args>
+                                    <arg evaluator="xml" expression="get-property('external.websub.hub.response.status.body')"/>
+                                </args>
+                            </payloadFactory>
+                            <respond/>
+                        </then>
+                        <else>
+                            <property name="HTTP_SC" value="202" scope="axis2"/>
+                            <property name="TRANSPORT_HEADERS" action="remove" scope="axis2"/>
+                            <property name="NO_ENTITY_BODY" value="true" scope="axis2" type="BOOLEAN"/>
+                            <respond/>
+                        </else>
+                    </filter>
+                    #else
                     <clone>
                         <target>
                             <sequence>
@@ -54,6 +83,7 @@
                                     <target>
                                         <sequence onError="webhooksFaultSequence">
                                             <class name="org.wso2.carbon.apimgt.gateway.mediators.webhooks.SubscriberInfoLoader"/>
+                                            <property name="TRANSPORT_HEADERS" action="remove" scope="axis2"/>
                                             <property name="REST_URL_POSTFIX" scope="axis2" action="remove"/>
                                             <property name="link" expression="$ctx:SUBSCRIBER_LINK_HEADER" scope="transport"/>
                                             <header name="To" expression="$ctx:SUBSCRIBER_CALLBACK"/>
@@ -91,7 +121,8 @@
                             </sequence>
                         </target>
                     </clone>
-            #if($isSecurityEnabled)
+                    #end
+                    #if($isSecurityEnabled)
                 </then>
                 <else>
                     <log level="custom">
@@ -107,11 +138,11 @@
         <inSequence>
             <filter source="fn:contains(fn:lower-case($trp:Content-Type), 'application/x-www-form-urlencoded')" regex="true">
                 <then>
-                    <property name="FORCE_SC_ACCEPTED" value="true" scope="axis2"/>
                     <property name="SUBSCRIBER_MODE" expression="//xformValues//hub.mode"/>
                     <property name="SUBSCRIBER_TOPIC" expression="//xformValues//hub.topic"/>
                     <property name="SUBSCRIBER_CALLBACK" expression="//xformValues//hub.callback"/>
                     <property name="SUBSCRIBER_LEASE_SECONDS" expression="//xformValues//hub.lease_seconds"/>
+                    <property name="GIVEN_HUB_SECRET" expression="//xformValues//hub.secret"/>
                     <property name="HUB_CHALLENGE" expression="get-property('MessageID')"/>
                     <property name="QUERY_PARAMS"
                               expression="fn:concat('hub.mode=', $ctx:SUBSCRIBER_MODE, '&amp;','hub.topic=',$ctx:SUBSCRIBER_TOPIC, '&amp;','hub.challenge=', $ctx:HUB_CHALLENGE, '&amp;','hub.lease_seconds=', $ctx:SUBSCRIBER_LEASE_SECONDS)"
@@ -130,8 +161,77 @@
                                       scope="default" type="STRING"/>
                         </else>
                     </filter>
-                    <property name="messageType" value="application/xml" scope="axis2"/>
+                    <!-- External hub path: the hub handles callback verification and responds
+                         explicitly, so FORCE_SC_ACCEPTED is not required. -->
+                    #if($useExternalWebSubHub)
+                    <property name="HUB_MODE" expression="$ctx:SUBSCRIBER_MODE"/>
+                    <property name="external.websub.hub.endpoint" value="$externalWebSubHubEndpoint" scope="default" type="STRING"/>
+                    <property name="disable.topic.context.prefix" value="$disableTopicContextPrefix" scope="default" type="BOOLEAN"/>
 
+                    <!-- For subscribe, check local throttle and persist BEFORE calling the
+                         external hub so we do not create an external subscription the gateway
+                         would immediately reject. -->
+                    <filter source="fn:lower-case($ctx:SUBSCRIBER_MODE)" regex="subscribe">
+                        <then>
+                            <class name="org.wso2.carbon.apimgt.gateway.mediators.webhooks.SubscribersPersistMediator"/>
+                            <filter xpath="get-property('ERROR_CODE')">
+                                <then>
+                                    <drop/>
+                                </then>
+                            </filter>
+                            <filter source="fn:lower-case($ctx:SUBSCRIBER_MODE)" regex="subscribe">
+                                <then>
+                                    <class name="org.wso2.carbon.apimgt.gateway.mediators.webhooks.DeliveryStatusUpdater"/>
+                                </then>
+                            </filter>
+                        </then>
+                    </filter>
+
+                    <sequence key="externalWebSubHubCaller"/>
+                    <filter xpath="$ctx:is.external.websub.hub.error">
+                        <then>
+                            <property name="HTTP_SC" expression="get-property('external.websub.hub.response.status.code')" scope="axis2"/>
+                            <filter xpath="not(string($ctx:external.websub.hub.response.status.body))">
+                                <then>
+                                    <property name="external.websub.hub.response.status.body" value="{}" scope="default"/>
+                                </then>
+                            </filter>
+                            <payloadFactory media-type="json">
+                                <format>$1</format>
+                                <args>
+                                    <arg evaluator="xml" expression="get-property('external.websub.hub.response.status.body')"/>
+                                </args>
+                            </payloadFactory>
+                            <respond/>
+                        </then>
+                        <else>
+                            <!-- Unsubscribe: persist locally only after external hub succeeds. -->
+                            <filter source="fn:lower-case($ctx:SUBSCRIBER_MODE)" regex="unsubscribe">
+                                <then>
+                                    <class name="org.wso2.carbon.apimgt.gateway.mediators.webhooks.SubscribersPersistMediator"/>
+                                </then>
+                            </filter>
+                            <filter xpath="get-property('ERROR_CODE')">
+                                <then>
+                                    <drop/>
+                                </then>
+                            </filter>
+                            <property name="HTTP_SC" value="202" scope="axis2"/>
+                            <filter source="fn:lower-case($ctx:SUBSCRIBER_MODE)" regex="subscribe">
+                                <then>
+                                    <property name="HTTP_SC" value="200" scope="axis2"/>
+                                </then>
+                            </filter>
+                            <property name="TRANSPORT_HEADERS" action="remove" scope="axis2"/>
+                            <property name="NO_ENTITY_BODY" value="true" scope="axis2" type="BOOLEAN"/>
+                            <respond/>
+                        </else>
+                    </filter>
+                    #else
+                    <property name="messageType" value="application/xml" scope="axis2"/>
+                    <!-- Internal hub path has no explicit <respond/>; FORCE_SC_ACCEPTED makes
+                         Axis2 ack the subscribe request with 202 when the message reaches <drop/>. -->
+                    <property name="FORCE_SC_ACCEPTED" value="true" scope="axis2" type="BOOLEAN"/>
                     <call>
                         <endpoint>
                             <http method="GET" uri-template="{uri.var.callback}"/>
@@ -164,14 +264,95 @@
                         </else>
                     </filter>
                     #end
+                    #end
+                    <!-- Terminate the form-urlencoded subscription flow. The external hub already
+                         responded above; this <drop/> is reached only by the internal path. -->
                     <drop/>
                 </then>
                 <else>
+                    #if($useExternalWebSubHub)
+                    <!-- External hub path for non-form-urlencoded subscribe/unsubscribe.
+                         The hub handles callback verification and persistence. -->
+                    <property name="SUBSCRIBER_MODE" expression="$url:hub.mode"/>
+                    <property name="HUB_MODE" expression="$url:hub.mode"/>
+                    <property name="SUBSCRIBER_TOPIC" expression="$url:hub.topic"/>
+                    <property name="SUBSCRIBER_CALLBACK" expression="$url:hub.callback"/>
+                    <property name="SUBSCRIBER_LEASE_SECONDS" expression="$url:hub.lease_seconds"/>
+                    <property name="GIVEN_HUB_SECRET" expression="$url:hub.secret"/>
+                    <property name="SUBSCRIBER_APPLICATION_ID" expression="$ctx:api.ut.application.id"/>
+                    <property name="external.websub.hub.endpoint" value="$externalWebSubHubEndpoint" scope="default" type="STRING"/>
+                    <property name="disable.topic.context.prefix" value="$disableTopicContextPrefix" scope="default" type="BOOLEAN"/>
+
+                    <!-- For subscribe, check local throttle and persist BEFORE calling the
+                         external hub so we do not create an external subscription the gateway
+                         would immediately reject. -->
+                    <filter source="fn:lower-case($ctx:SUBSCRIBER_MODE)" regex="subscribe">
+                        <then>
+                            <class name="org.wso2.carbon.apimgt.gateway.mediators.webhooks.SubscribersPersistMediator"/>
+                            <filter xpath="get-property('ERROR_CODE')">
+                                <then>
+                                    <drop/>
+                                </then>
+                            </filter>
+                            <filter source="fn:lower-case($ctx:SUBSCRIBER_MODE)" regex="subscribe">
+                                <then>
+                                    <class name="org.wso2.carbon.apimgt.gateway.mediators.webhooks.DeliveryStatusUpdater"/>
+                                </then>
+                            </filter>
+                        </then>
+                    </filter>
+
+                    <sequence key="externalWebSubHubCaller"/>
+                    <filter xpath="$ctx:is.external.websub.hub.error">
+                        <then>
+                            <property name="HTTP_SC" expression="get-property('external.websub.hub.response.status.code')" scope="axis2"/>
+                            <filter xpath="not(string($ctx:external.websub.hub.response.status.body))">
+                                <then>
+                                    <property name="external.websub.hub.response.status.body" value="{}" scope="default"/>
+                                </then>
+                            </filter>
+                            <payloadFactory media-type="json">
+                                <format>$1</format>
+                                <args>
+                                    <arg evaluator="xml" expression="get-property('external.websub.hub.response.status.body')"/>
+                                </args>
+                            </payloadFactory>
+                            <respond/>
+                        </then>
+                        <else>
+                            <!-- Unsubscribe: persist locally only after external hub succeeds. -->
+                            <filter source="fn:lower-case($ctx:SUBSCRIBER_MODE)" regex="unsubscribe">
+                                <then>
+                                    <class name="org.wso2.carbon.apimgt.gateway.mediators.webhooks.SubscribersPersistMediator"/>
+                                </then>
+                            </filter>
+                            <filter xpath="get-property('ERROR_CODE')">
+                                <then>
+                                    <drop/>
+                                </then>
+                            </filter>
+                            <property name="HTTP_SC" value="202" scope="axis2"/>
+                            <filter source="fn:lower-case($ctx:SUBSCRIBER_MODE)" regex="subscribe">
+                                <then>
+                                    <property name="HTTP_SC" value="200" scope="axis2"/>
+                                </then>
+                            </filter>
+                            <property name="TRANSPORT_HEADERS" action="remove" scope="axis2"/>
+                            <property name="NO_ENTITY_BODY" value="true" scope="axis2" type="BOOLEAN"/>
+                            <respond/>
+                        </else>
+                    </filter>
+                    #else
                     <property name="STOP_TARGET_EXECUTION_ON_FAILURE" value="true"/>
                     <clone sequential="true">
                         <target>
                             <sequence>
                                 <class name="org.wso2.carbon.apimgt.gateway.mediators.webhooks.SubscribersPersistMediator"/>
+                                <filter xpath="get-property('ERROR_CODE')">
+                                    <then>
+                                        <drop/>
+                                    </then>
+                                </filter>
                                 <property name="NO_ENTITY_BODY" value="true" scope="axis2" type="BOOLEAN"/>
                                 <respond/>
                             </sequence>
@@ -198,6 +379,7 @@
                             </sequence>
                         </target>
                     </clone>
+                    #end
                 </else>
             </filter>
         </inSequence>
