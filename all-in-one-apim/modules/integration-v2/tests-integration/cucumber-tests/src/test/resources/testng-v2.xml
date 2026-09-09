@@ -9,7 +9,7 @@
   here via thread-count, not via profile env. (Lane boot itself is covered by the framework-verification
   suites — no placeholder block is kept here, since the product runners exercise the same lane.)
 -->
-<suite name="Integration Tests v2" parallel="tests" thread-count="2">
+<suite name="Integration Tests v2" parallel="tests" thread-count="1">
     <listeners>
         <listener class-name="org.wso2.am.integration.cucumbertests.utils.listeners.BlockLifecycleListener"/>
         <listener class-name="org.wso2.am.integration.cucumbertests.utils.listeners.BlockScopeListener"/>
