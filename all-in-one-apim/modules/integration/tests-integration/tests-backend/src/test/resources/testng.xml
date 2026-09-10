@@ -243,6 +243,7 @@
             <class name="org.wso2.am.integration.tests.publisher.APIM519CreateAnAPIThroughTheRestAPIWithoutLoggingInTestCase"/>
             <class name="org.wso2.am.integration.tests.publisher.APIM520UpdateAnAPIThroughThePublisherRestAPITestCase"/>
             <class name="org.wso2.am.integration.tests.publisher.APIM534GetAllTheAPIsCreatedThroughThePublisherRestAPITestCase"/>
+            <class name="org.wso2.am.integration.tests.publisher.AdditionalPropertiesInAPIListingTestCase"/>
             <class name="org.wso2.am.integration.tests.publisher.APIM548CopyAnAPIToANewerVersionThroughThePublisherRestAPITestCase"/>
             <class name="org.wso2.am.integration.tests.publisher.APIM574ChangeTheStatusOfAnAPIToPrototypedThroughThePublisherRestAPITestCase"/>
             <class name="org.wso2.am.integration.tests.publisher.APIM611AddDocumentationToAnAPIWithDocTypeHowToThroughPublisherRestAPITestCase"/>

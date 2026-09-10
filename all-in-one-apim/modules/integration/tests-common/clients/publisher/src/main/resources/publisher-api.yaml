@@ -154,6 +154,7 @@ paths:
             Please note that you need to use encoded URL (URL encoding) if you are using a client which does not support URL encoding (such as curl)
           schema:
             type: string
+        - $ref: '#/components/parameters/expandProperties'
         - $ref: '#/components/parameters/If-None-Match'
         - $ref: '#/components/parameters/Accept'
       responses:
@@ -17046,6 +17047,14 @@ components:
       schema:
         type: boolean
         default : false
+    expandProperties:
+      name: expandProperties
+      in: query
+      description: |
+        Defines whether the additionalProperties and additionalPropertiesMap of each API should be included in the response.
+      schema:
+        type: boolean
+        default: false
     apiId:
       name: apiId
       in: path
