@@ -191,6 +191,16 @@ paths:
           type: string
         style: form
       - description: |
+          Defines whether the additionalProperties and additionalPropertiesMap of each API should be included in the response.
+        explode: true
+        in: query
+        name: expandProperties
+        required: false
+        schema:
+          default: false
+          type: boolean
+        style: form
+      - description: |
           Validator for conditional requests; based on the ETag of the formerly retrieved
           variant of the resource.
         explode: false
@@ -22254,6 +22264,17 @@ components:
       explode: true
       in: query
       name: includeCommenterInfo
+      required: false
+      schema:
+        default: false
+        type: boolean
+      style: form
+    expandProperties:
+      description: |
+        Defines whether the additionalProperties and additionalPropertiesMap of each API should be included in the response.
+      explode: true
+      in: query
+      name: expandProperties
       required: false
       schema:
         default: false
