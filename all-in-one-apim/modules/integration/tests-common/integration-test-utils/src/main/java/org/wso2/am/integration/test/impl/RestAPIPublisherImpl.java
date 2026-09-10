@@ -1118,11 +1118,28 @@ public class RestAPIPublisherImpl {
      */
     public APIListDTO getAllAPIs() throws APIManagerIntegrationTestException, ApiException {
 
-        APIListDTO apis = apIsApi.getAllAPIs(null, null, null, null, null, null, null, null);
+        APIListDTO apis = apIsApi.getAllAPIs(null, null, null, null, null, null, null, null, null);
         if (apis.getCount() > 0) {
             return apis;
         }
         return null;
+    }
+
+    /**
+     * Retrieve all the APIs available for the user in Publisher, optionally requesting the additional properties
+     * of each API to be included in the response.
+     *
+     * @param expandProperties whether the additionalProperties and additionalPropertiesMap of each API should be
+     *                         included in the response
+     * @return APIListDTO - The list of APIs available for the user
+     * @throws ApiException if an error occurs while retrieving the APIs
+     */
+    public APIListDTO getAllAPIs(Boolean expandProperties) throws ApiException {
+
+        ApiResponse<APIListDTO> apiResponse = apIsApi.getAllAPIsWithHttpInfo(null, null, null, null, null, null,
+                expandProperties, null, null);
+        Assert.assertEquals(HttpStatus.SC_OK, apiResponse.getStatusCode());
+        return apiResponse.getData();
     }
 
     /**
@@ -1151,7 +1168,7 @@ public class RestAPIPublisherImpl {
 
         setActivityID();
         ApiResponse<APIListDTO> apiResponse = apIsApi.getAllAPIsWithHttpInfo(limit, offset, this.tenantDomain, null,
-                null, null, null, null);
+                null, null, null, null, null);
         Assert.assertEquals(HttpStatus.SC_OK, apiResponse.getStatusCode());
         return apiResponse.getData();
     }
