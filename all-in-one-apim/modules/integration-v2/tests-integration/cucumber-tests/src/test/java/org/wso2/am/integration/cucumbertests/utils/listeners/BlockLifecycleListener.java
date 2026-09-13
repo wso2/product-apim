@@ -46,7 +46,6 @@ import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.concurrent.Semaphore;
 
 /**
  * Per-block lifecycle for the parallel-on-shared-container lane. Fires once per TestNG {@code <test>}
@@ -87,6 +86,8 @@ public class BlockLifecycleListener implements ITestListener {
      * application sharing) so it still inherits the distribution + basic defaults.
      */
     static final String PARAM_TOML_EXTRA_OVERLAY = "tomlExtraOverlayPath";
+    private static final String EMAIL_USER_OVERLAY =
+            "src/test/resources/artifacts/configFiles/emailUserName/deployment.toml";
     /** When {@code true}, onStart provisions tenants/users into the block's own container after readiness. */
     static final String PARAM_INIT_TENANT_USERS = "initTenantUsers";
     /**
@@ -112,9 +113,10 @@ public class BlockLifecycleListener implements ITestListener {
     /**
      * When {@code true}, every user provisioned by {@link #PARAM_INIT_TENANT_USERS} (except the super-tenant
      * {@code admin}) gets an EMAIL-FORM physical username — {@code <base>@email.com} instead of {@code <base>} —
-     * making "email as username" a first-class block mode. Pair it with the
-     * {@code artifacts/configFiles/emailUserName} extra overlay, which turns on {@code [tenant_mgt]
-     * enable_email_domain}; the two must be set together (see that file for why).
+     * making "email as username" a first-class, topology-independent block mode. The listener automatically
+     * applies the framework's email-user TOML overlay to the relevant runtime component(s); callers do not need
+     * to know whether the block uses one all-in-one container or the distributed CP/TM/Gateway composition. Any
+     * explicit {@code tomlExtraOverlayPath} remains a later override.
      *
      * <p>This is the mechanism that closes the legacy {@code SUPER_TENANT_EMAIL_USER} /
      * {@code TENANT_EMAIL_USER} {@code TestUserMode} rows: legacy fanned every class over those modes at the
@@ -183,12 +185,13 @@ public class BlockLifecycleListener implements ITestListener {
      * belong here.
      */
     static final String PARAM_INIT_SOLACE_BROKER = "initSolaceBroker";
-    /** When true, attach the shared Squid proxy to this block's private network. */
+    /**
+     * When {@code true}, boot a per-block Squid proxy on this block's private network. The proxy access logs are
+     * assertion state (CONNECT counts and clearing), so they must be container-scoped and cannot be shared across
+     * concurrently running blocks.
+     */
     static final String PARAM_INIT_PROXY = "initProxy";
     static final String SQUID_PROXY_KEY = "blockSquidProxy";
-    static final String PROXY_ATTACHED_KEY = "proxyAttachedToBlockNetwork";
-    private static final Semaphore PROXY_PERMIT = new Semaphore(1);
-    private static final String PROXY_PERMIT_HELD_ATTRIBUTE = "proxyPermitHeld";
     /**
      * Optional comma-separated list of {@code <hostPath>::<serverRelativePath>} pairs copied into the block's
      * server directory tree BEFORE boot (host paths relative to the module working dir). For fixtures the
@@ -319,18 +322,11 @@ public class BlockLifecycleListener implements ITestListener {
             }
 
             if (Boolean.parseBoolean(param(context, PARAM_INIT_PROXY))) {
-                try {
-                    PROXY_PERMIT.acquire();
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                    throw new RuntimeException("Interrupted waiting for proxy permit in block '" + label + "'", e);
-                }
-                context.setAttribute(PROXY_PERMIT_HELD_ATTRIBUTE, Boolean.TRUE);
-                SquidProxyServer proxy = SquidProxyServer.getInstance();
-                proxy.attachToNetwork(blockNetwork);
-                TestContext.setShared(PROXY_ATTACHED_KEY, Boolean.TRUE);
+                // Publish before start() so a partial startup is still visible to failure-safe teardown.
+                SquidProxyServer proxy = new SquidProxyServer(label, blockNetwork);
                 TestContext.setShared(SQUID_PROXY_KEY, proxy);
-                logger.info("Block '" + label + "' attached the shared Squid proxy to its private network");
+                proxy.start();
+                logger.info("Block '" + label + "' booted its per-block Squid proxy");
             }
 
             // Solace: faked connector + real broker on THIS block's network, up BEFORE APIM so the toml-declared
@@ -445,7 +441,6 @@ public class BlockLifecycleListener implements ITestListener {
             // path runs second finds nothing left to do rather than double-closing (a double close would log a
             // spurious docker "network not found" and mask a genuine leak).
             teardownBlockInfra(label);
-            releaseProxyPermitIfHeld(context);
         } finally {
             // Defensive hygiene: never leave this block's scope bound to the (pooled) thread that ran
             // onStart. Per-invocation scoping in BlockScopeListener already resets scope before any body
@@ -488,7 +483,6 @@ public class BlockLifecycleListener implements ITestListener {
             // AFTER the APIM container is stopped — a container still connected keeps the network un-removable,
             // so the order (APIM stop -> IS/Solace stop -> backend detach -> network close) is load-bearing.
             teardownBlockInfra(label);
-            releaseProxyPermitIfHeld(context);
             TestContext.clear();
             TestContext.clearScope();
         }
@@ -551,14 +545,13 @@ public class BlockLifecycleListener implements ITestListener {
         Object net = TestContext.get(BLOCK_NETWORK_KEY);
         if (net instanceof Network network) {
             Object proxy = TestContext.get(SQUID_PROXY_KEY);
-            if (proxy instanceof SquidProxyServer squid
-                    && Boolean.TRUE.equals(TestContext.get(PROXY_ATTACHED_KEY))) {
+            if (proxy instanceof SquidProxyServer squid) {
                 TestContext.removeShared(SQUID_PROXY_KEY);
-                TestContext.removeShared(PROXY_ATTACHED_KEY);
                 try {
-                    squid.detachFromNetwork(network);
+                    squid.stop();
+                    logger.info("Block '" + label + "' Squid proxy stopped");
                 } catch (Throwable e) {
-                    logger.warn("Block '" + label + "' Squid proxy detach failed (network may leak): "
+                    logger.warn("Block '" + label + "' Squid proxy stop failed (container may leak): "
                             + e.getMessage());
                 }
             }
@@ -579,13 +572,6 @@ public class BlockLifecycleListener implements ITestListener {
                 logger.warn("Block '" + label + "' network close() FAILED — this network has LEAKED: "
                         + e.getMessage());
             }
-        }
-    }
-
-    private static void releaseProxyPermitIfHeld(ITestContext context) {
-        if (Boolean.TRUE.equals(context.getAttribute(PROXY_PERMIT_HELD_ATTRIBUTE))) {
-            context.setAttribute(PROXY_PERMIT_HELD_ATTRIBUTE, Boolean.FALSE);
-            PROXY_PERMIT.release();
         }
     }
 
@@ -629,11 +615,9 @@ public class BlockLifecycleListener implements ITestListener {
      * VM's host, which does not hold the ports published inside the VM.
      */
     private static String controlPlaneHostFor(String apimBaseUrl) {
-        URI uri = URI.create(apimBaseUrl);
+        URI uri = URI.create(Utils.containerReachable(apimBaseUrl));
         String host = uri.getHost();
-        boolean unreachableFromContainer = host == null || host.isBlank()
-                || "localhost".equalsIgnoreCase(host) || host.startsWith("127.");
-        return (unreachableFromContainer ? "host.docker.internal" : host) + ":" + uri.getPort();
+        return host + ":" + uri.getPort();
     }
 
     /**
@@ -649,7 +633,7 @@ public class BlockLifecycleListener implements ITestListener {
      *                                  super-tenant admin) with an email-form physical username
      */
     private void provisionTenantUsers(String label, boolean injectProvisioningFailure, boolean emailUserMode)
-            throws java.io.IOException, JaxenException {
+            throws java.io.IOException, JaxenException, InterruptedException {
 
         // Published BEFORE the first addUser so the provisioner's physicalUserName transform is in force for the
         // boot-time set, and stays in shared scope so a scenario's own `I provision user …` gets the same form.
@@ -680,6 +664,11 @@ public class BlockLifecycleListener implements ITestListener {
             // emailUserMode block differs from a default one in exactly one dimension.
             TenantUserProvisioner.addTenant("tenant1.com", "admin", "admin",
                     "First", "Tenant", "admin@tenant1.com");
+            // Tenant Management can acknowledge addTenant before APIM's standard internal roles are visible
+            // through the user store, especially on a fresh distributed MySQL database. Do not let the first
+            // addUser race that bootstrap and fail with "Internal role does not exist".
+            TenantUserProvisioner.awaitRequiredApimRoles(Constants.SUPER_TENANT_DOMAIN);
+            TenantUserProvisioner.awaitRequiredApimRoles("tenant1.com");
             // The configured super-tenant admin must remain the plain `admin` because SOAP provisioning depends
             // on it. Give both organizations a separate admin-role actor in email mode so the email-login admin
             // arc is still a genuine Tenant ×2 outline rather than a tenant-only special case.
@@ -803,13 +792,22 @@ public class BlockLifecycleListener implements ITestListener {
 
         // A block may layer a small feature-specific overlay on top of basic (e.g. custom auth header /
         // application sharing) without restating the whole distribution config.
+        java.util.List<String> overlays = new java.util.ArrayList<>();
+        overlays.add(overlay.toString());
+        if (Boolean.parseBoolean(param(context, PARAM_EMAIL_USER_MODE))) {
+            overlays.add(Paths.get(moduleDir, EMAIL_USER_OVERLAY).normalize().toString());
+        }
         String extraOverlayPath = param(context, PARAM_TOML_EXTRA_OVERLAY);
         if (extraOverlayPath != null && !extraOverlayPath.isBlank()) {
-            Path extraOverlay = Paths.get(moduleDir, extraOverlayPath).normalize();
-            return Utils.mergeTomls(basePath.toString(),
-                    java.util.List.of(overlay.toString(), extraOverlay.toString()));
+            overlays.add(Paths.get(moduleDir, extraOverlayPath).normalize().toString());
         }
-        return Utils.mergeToml(basePath.toString(), overlay.toString());
+        return Utils.mergeTomls(basePath.toString(), overlays);
+    }
+
+    /** Returns the built-in email-user overlay for topology-specific runtimes. */
+    protected String emailUserOverlayContent() throws java.io.IOException {
+        String moduleDir = ModulePathResolver.getModuleDir(BlockLifecycleListener.class);
+        return Files.readString(Paths.get(moduleDir, EMAIL_USER_OVERLAY).normalize());
     }
 
     protected String param(ITestContext context, String name) {

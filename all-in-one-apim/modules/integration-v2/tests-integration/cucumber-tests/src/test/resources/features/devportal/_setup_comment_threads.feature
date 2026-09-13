@@ -35,12 +35,15 @@ Feature: Setup comment threads for the plane-parity suite
     Then The lifecycle status of API "ptApiId<suffix>" should be "Published"
     When I add a "publisher" comment "This is root comment 1" with category "general" to API "ptApiId<suffix>" as "ptRoot1<suffix>"
     Then The response status code should be 201
+    And I wait for timestamp precision after the "publisher" comment "ptRoot1<suffix>" of API "ptApiId<suffix>"
     When I add a "publisher" comment "This is root comment 2" with category "general" to API "ptApiId<suffix>" as "ptRoot2<suffix>"
     Then The response status code should be 201
     When I add a "publisher" reply "This is a reply 1" to comment "ptRoot1<suffix>" of API "ptApiId<suffix>" as "ptReply1<suffix>"
     Then The response status code should be 201
+    And I wait for timestamp precision after the "publisher" comment "ptReply1<suffix>" of API "ptApiId<suffix>"
     When I add a "publisher" reply "This is a reply 2" to comment "ptRoot1<suffix>" of API "ptApiId<suffix>" as "ptReply2<suffix>"
     Then The response status code should be 201
+    And I wait for timestamp precision after the "publisher" comment "ptReply2<suffix>" of API "ptApiId<suffix>"
     When I add a "publisher" reply "This is a reply 3" to comment "ptRoot1<suffix>" of API "ptApiId<suffix>" as "ptReply3<suffix>"
     Then The response status code should be 201
     When I add a "publisher" reply "This is a reply" to comment "ptRoot2<suffix>" of API "ptApiId<suffix>" as "ptRoot2Reply<suffix>"
@@ -52,12 +55,15 @@ Feature: Setup comment threads for the plane-parity suite
     Then The lifecycle status of API "dtApiId<suffix>" should be "Published"
     When I add a "devportal" comment "This is root comment 1" with category "general" to API "dtApiId<suffix>" as "dtRoot1<suffix>"
     Then The response status code should be 201
+    And I wait for timestamp precision after the "devportal" comment "dtRoot1<suffix>" of API "dtApiId<suffix>"
     When I add a "devportal" comment "This is root comment 2" with category "general" to API "dtApiId<suffix>" as "dtRoot2<suffix>"
     Then The response status code should be 201
     When I add a "devportal" reply "This is a reply 1" to comment "dtRoot1<suffix>" of API "dtApiId<suffix>" as "dtReply1<suffix>"
     Then The response status code should be 201
+    And I wait for timestamp precision after the "devportal" comment "dtReply1<suffix>" of API "dtApiId<suffix>"
     When I add a "devportal" reply "This is a reply 2" to comment "dtRoot1<suffix>" of API "dtApiId<suffix>" as "dtReply2<suffix>"
     Then The response status code should be 201
+    And I wait for timestamp precision after the "devportal" comment "dtReply2<suffix>" of API "dtApiId<suffix>"
     When I add a "devportal" reply "This is a reply 3" to comment "dtRoot1<suffix>" of API "dtApiId<suffix>" as "dtReply3<suffix>"
     Then The response status code should be 201
     When I add a "devportal" reply "This is a reply" to comment "dtRoot2<suffix>" of API "dtApiId<suffix>" as "dtRoot2Reply<suffix>"

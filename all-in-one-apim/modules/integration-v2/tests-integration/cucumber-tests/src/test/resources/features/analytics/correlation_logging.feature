@@ -116,10 +116,10 @@ Feature: Correlation Logging Configuration
     When I enable only the correlation logging components "http"
     Then The response status code should be 200
     When I wait 15 seconds for the "correlation" configuration to reach the gateway
-    And I mark the current end of the server log file "correlation.log"
+    And I mark the current end of the control-plane server log file "correlation.log"
     And I retrieve all APIs created through the Publisher REST API
     Then The response status code should be 200
-    And The server log file "correlation.log" should gain a line containing "|HTTP-In-Request|" within 60 seconds
+    And The control-plane server log file "correlation.log" should gain a line containing "|HTTP-In-Request|" within 60 seconds
 
     # ...and the gateway stays silent under the same setting: no synapse transitions, no method calls.
     When I mark the current end of the server log file "correlation.log"
@@ -140,10 +140,10 @@ Feature: Correlation Logging Configuration
     And The server log file "correlation.log" should gain no line containing "|HTTP State Transition|" within 1 seconds
 
     # ...and the Tomcat valve is off again, so the http marker must not reappear on a management-plane call.
-    When I mark the current end of the server log file "correlation.log"
+    When I mark the current end of the control-plane server log file "correlation.log"
     And I retrieve all APIs created through the Publisher REST API
     Then The response status code should be 200
-    And The server log file "correlation.log" should gain no line containing "|HTTP-In-Request|" within 20 seconds
+    And The control-plane server log file "correlation.log" should gain no line containing "|HTTP-In-Request|" within 20 seconds
 
     # Everything off: neither marker, from either kind of traffic.
     When I enable only the correlation logging components ""
@@ -152,10 +152,11 @@ Feature: Correlation Logging Configuration
     And I mark the current end of the server log file "correlation.log"
     And I invoke the API at gateway context "{{singleComponentApiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
+    When I mark the current end of the control-plane server log file "correlation.log"
     When I retrieve all APIs created through the Publisher REST API
     Then The response status code should be 200
     And The server log file "correlation.log" should gain no line containing "|METHOD|" within 20 seconds
-    And The server log file "correlation.log" should gain no line containing "|HTTP-In-Request|" within 1 seconds
+    And The control-plane server log file "correlation.log" should gain no line containing "|HTTP-In-Request|" within 1 seconds
 
   @cap:analytics @feat:correlation-logging @rule:persistence @type:regression @dep:gateway @legacy:CorrelationLoggingTest
   Scenario: Correlation configuration survives a graceful restart
@@ -186,10 +187,10 @@ Feature: Correlation Logging Configuration
     # Legacy instead asserted the restart by looking for "Started log handler" in correlation.log — but the
     # LogsHandler constructor emits that line unconditionally at every boot, whatever the component settings,
     # so it only ever proved the server came back, never that anything persisted.
-    When I mark the current end of the server log file "correlation.log"
+    When I mark the current end of the control-plane server log file "correlation.log"
     And I retrieve all APIs created through the Publisher REST API
     Then The response status code should be 200
-    And The server log file "correlation.log" should gain a line containing "|HTTP-In-Request|" within 60 seconds
+    And The control-plane server log file "correlation.log" should gain a line containing "|HTTP-In-Request|" within 60 seconds
 
     When I mark the current end of the server log file "correlation.log"
     And I invoke the API at gateway context "{{persistedApiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds

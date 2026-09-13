@@ -23,6 +23,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.testng.Assert;
 import org.wso2.am.integration.cucumbertests.utils.clients.SimpleHTTPClient;
+import org.wso2.am.testcontainers.DistributedDynamicApimContainer;
 import org.wso2.am.integration.test.utils.Constants;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
@@ -85,9 +86,6 @@ public final class MultiTenantSsoProvisioner {
     /** The claim the identity provider releases group memberships under, as it arrives over OIDC. */
     private static final String GROUPS_CLAIM_URI = "groups";
 
-    /** API Manager's own browser-facing host, as it appears in its redirects and {@code redirect_uri}s. */
-    private static final String APIM_INTERNAL = "https://localhost:9443/";
-
     private static final Pattern APP_ID = Pattern.compile("applicationID>([^<]+)<");
     private static final Pattern CONSUMER_KEY = Pattern.compile("oauthConsumerKey>([^<]+)<");
 
@@ -101,6 +99,24 @@ public final class MultiTenantSsoProvisioner {
     /** API Manager browser-facing base (trailing slash) from the block's shared scope. */
     private static String apimBase() {
         return Utils.getBaseUrl();
+    }
+
+    /**
+     * API Manager's browser-facing internal authority, as emitted in redirects and registered OIDC callbacks.
+     *
+     * <p>The all-in-one distribution serves APIM as {@code localhost}; the distributed control plane advertises
+     * {@code apim-cp}. The browser proxy routes both names, but the authority must remain consistent with the
+     * distributed CP's redirects and the callback registered at the external Identity Server.
+     */
+    private static String apimInternal() {
+        return TestContext.get("blockApimContainer") instanceof DistributedDynamicApimContainer
+                ? "https://apim-cp:9443/" : "https://localhost:9443/";
+    }
+
+    /** The same APIM authority without the trailing slash, for OIDC allowed-origin fields. */
+    private static String apimOrigin() {
+        String base = apimInternal();
+        return base.substring(0, base.length() - 1);
     }
 
     /** Identity Server browser-facing base (mapped host) — its management APIs are reached here. */
@@ -241,13 +257,13 @@ public final class MultiTenantSsoProvisioner {
             throws IOException {
         // The tenant's own commonauth endpoint. The identity server rejects any redirect_uri not registered
         // here, so this must be the exact single value the tenant's service provider will redirect to.
-        String callback = APIM_INTERNAL + tenantPrefix(tenantDomain) + "commonauth";
+        String callback = apimInternal() + tenantPrefix(tenantDomain) + "commonauth";
         String appsUrl = isBase() + tenantPrefix(tenantDomain) + "api/server/v1/applications";
         Map<String, String> headers = tenantAdminHeaders(tenantDomain, admin, password);
         JSONObject oidc = new JSONObject()
                 .put("grantTypes", new JSONArray().put("authorization_code"))
                 .put("callbackURLs", new JSONArray().put(callback))
-                .put("allowedOrigins", new JSONArray().put("https://localhost:9443"))
+                .put("allowedOrigins", new JSONArray().put(apimOrigin()))
                 .put("publicClient", false);
         // Groups drives role mapping; the profile attributes carry the identity itself. Groups alone leaves the
         // chain with nothing but an opaque subject identifier to represent the user by.
@@ -494,7 +510,7 @@ public final class MultiTenantSsoProvisioner {
                 // This is the redirect_uri sent to the identity server, so it must be byte-identical to the
                 // callback registered on the tenant application there — the tenant's own commonauth, not the
                 // super tenant's, because this leg of the chain runs in the tenant's context.
-                + property("callbackUrl", APIM_INTERNAL + tenantPrefix(tenantDomain) + "commonauth")
+                + property("callbackUrl", apimInternal() + tenantPrefix(tenantDomain) + "commonauth")
                 // 'groups' is required alongside 'openid': the identity server releases group memberships
                 // only when that scope is requested, and without them no role mapping can happen.
                 + property("Scopes", "openid groups")
@@ -659,13 +675,13 @@ public final class MultiTenantSsoProvisioner {
                 + property("OAuth2TokenEPUrl", isServerBase() + "oauth2/token")
                 + property("UserInfoUrl", isServerBase() + "oauth2/userinfo")
                 + property("OIDCLogoutEPUrl", isServerBase() + "oidc/logout")
-                + property("callbackUrl", APIM_INTERNAL + "commonauth")
+                + property("callbackUrl", apimInternal() + "commonauth")
                 // 'groups' is required alongside 'openid': the identity server releases group memberships
                 // only when that scope is requested, and without them no role mapping can happen.
                 + property("Scopes", "openid groups")
                 + property("IsUserIdInClaims", "false")
                 + property("CommonSPName", commonSpName)
-                + property("TenantSelectionPageUrl", APIM_INTERNAL + "select-tenant/")
+                + property("TenantSelectionPageUrl", apimInternal() + "select-tenant/")
                 + property("IsBasicAuthEnabled", "false")
                 + "</m:federatedAuthenticatorConfigs>";
         addIdp(Constants.SUPER_TENANT_DOMAIN, idpName, "multiTenantAuthenticator",
@@ -686,7 +702,7 @@ public final class MultiTenantSsoProvisioner {
                 + "xmlns:xsd=\"" + NS_APP_OPS + "\" xmlns:dto=\"http://dto.oauth.identity.carbon.wso2.org/xsd\">"
                 + "<soapenv:Body><xsd:registerOAuthApplicationData><xsd:application>"
                 + "<dto:applicationName>" + Utils.escapeXml(spName) + "</dto:applicationName>"
-                + "<dto:callbackUrl>" + Utils.escapeXml(APIM_INTERNAL + "commonauth") + "</dto:callbackUrl>"
+                + "<dto:callbackUrl>" + Utils.escapeXml(apimInternal() + "commonauth") + "</dto:callbackUrl>"
                 + "<dto:grantTypes>" + COMMON_SP_GRANT_TYPES + "</dto:grantTypes>"
                 + "<dto:OAuthVersion>OAuth-2.0</dto:OAuthVersion>"
                 + "<dto:pkceMandatory>false</dto:pkceMandatory>"
@@ -920,8 +936,8 @@ public final class MultiTenantSsoProvisioner {
                 + "</ns:getIdPByName></soapenv:Body></soapenv:Envelope>";
         HttpResponse resp = SimpleHTTPClient.getInstance().sendSoapRequest(idpService(tenantDomain), verify,
                 "urn:getIdPByName", admin, password);
-        Assert.assertTrue(resp != null && resp.getData() != null
-                        && resp.getData().contains("identityProviderName>" + idpName + "<"),
+        assertUsableIdpLookup(resp, idpName, tenantDomain);
+        Assert.assertTrue(resp.getData().contains("identityProviderName>" + idpName + "<"),
                 "Identity provider '" + idpName + "' was not registered in tenant '" + tenantDomain
                         + "'. getIdPByName returned: " + (resp == null ? "null" : resp.getData()));
 
@@ -951,7 +967,8 @@ public final class MultiTenantSsoProvisioner {
 
         HttpResponse after = SimpleHTTPClient.getInstance().sendSoapRequest(idpService(tenantDomain), verify,
                 "urn:getIdPByName", admin, password);
-        String stored = after == null ? "" : String.valueOf(after.getData());
+        assertUsableIdpLookup(after, idpName, tenantDomain);
+        String stored = after.getData();
         log.info("[MT-IDP] '" + idpName + "' in " + tenantDomain
                 + " provisioningEnabled=" + firstMatch(Pattern.compile("provisioningEnabled>([^<]+)<"), stored)
                 + " roleClaimURI=" + firstMatch(Pattern.compile("roleClaimURI>([^<]+)<"), stored)
@@ -971,6 +988,25 @@ public final class MultiTenantSsoProvisioner {
                             + "' has no admin-group to admin-role mapping. The external tenant user could log in, "
                             + "but could not be authorized for tenant Admin operations.");
         }
+    }
+
+    /**
+     * Ensures an IdP read-back is a real successful SOAP response before its XML is inspected. A transport failure,
+     * non-success response, blank body, or SOAP fault is not evidence that the provider is absent or configured.
+     */
+    private static void assertUsableIdpLookup(HttpResponse response, String idpName, String tenantDomain) {
+        String body = response == null ? null : response.getData();
+        boolean valid = response != null && response.getResponseCode() >= 200 && response.getResponseCode() < 300
+                && body != null && !body.isBlank() && !isSoapFault(body);
+        Assert.assertTrue(valid,
+                "Could not read identity provider '" + idpName + "' in tenant '" + tenantDomain
+                        + "' using getIdPByName: expected a successful non-blank SOAP response without a fault, got "
+                        + (response == null ? "no response"
+                        : "HTTP " + response.getResponseCode() + " / body=" + body));
+    }
+
+    private static boolean isSoapFault(String body) {
+        return body != null && body.matches("(?s).*<[^>]*:?Fault(?:\\s[^>]*)?>.*");
     }
 
     private static String federatedOutbound(String idpName, String authenticatorName) {

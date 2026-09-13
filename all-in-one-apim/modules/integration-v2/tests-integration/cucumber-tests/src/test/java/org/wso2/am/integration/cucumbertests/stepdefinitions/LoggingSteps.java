@@ -35,6 +35,7 @@ import org.wso2.am.testcontainers.ApimRuntime;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -124,9 +125,9 @@ public class LoggingSteps {
 
     /**
      * Asserts the response body is the correlation configuration document with exactly the named components
-     * enabled — all five present, in the declared order, each carrying the right {@code enabled} flag, and
-     * jdbc carrying its {@code deniedThreads} property. This is the structural equivalent of legacy's
-     * string equality against a hardcoded document, minus the brittleness of pinning key order.
+     * enabled — all five present, each carrying the right {@code enabled} flag, and jdbc carrying its
+     * {@code deniedThreads} property. Component order is deliberately not significant because the API does not
+     * guarantee a database-independent order for the returned array.
      */
     @Then("The correlation configuration should have exactly the components {string} enabled")
     public void theCorrelationConfigurationShouldHaveEnabled(String componentsCsv) {
@@ -137,11 +138,21 @@ public class LoggingSteps {
         Assert.assertEquals(components.length(), CORRELATION_COMPONENTS.size(),
                 "Correlation configuration should list every declared component. Body: " + body);
 
-        for (int i = 0; i < CORRELATION_COMPONENTS.size(); i++) {
-            String name = CORRELATION_COMPONENTS.get(i);
+        Map<String, JSONObject> actualByName = new HashMap<>();
+        for (int i = 0; i < components.length(); i++) {
             JSONObject component = components.getJSONObject(i);
-            Assert.assertEquals(component.getString("name"), name,
-                    "Component at position " + i + " should be '" + name + "'. Body: " + body);
+            String name = component.getString("name");
+            Assert.assertTrue(CORRELATION_COMPONENTS.contains(name),
+                    "Unexpected correlation component '" + name + "'. Body: " + body);
+            Assert.assertFalse(actualByName.containsKey(name),
+                    "Duplicate correlation component '" + name + "'. Body: " + body);
+            actualByName.put(name, component);
+        }
+        Assert.assertEquals(actualByName.keySet(), new LinkedHashSet<>(CORRELATION_COMPONENTS),
+                "Correlation configuration should contain exactly the declared components. Body: " + body);
+
+        for (String name : CORRELATION_COMPONENTS) {
+            JSONObject component = actualByName.get(name);
             Assert.assertEquals(component.getString("enabled"), Boolean.toString(expected.contains(name)),
                     "Component '" + name + "' has the wrong enabled flag. Body: " + body);
 
@@ -287,6 +298,13 @@ public class LoggingSteps {
         TestContext.set(LOG_MARK_PREFIX + fileName, readLogFile(fileName).length());
     }
 
+    /** Marks a control-plane log for a management-plane assertion. */
+    @When("I mark the current end of the control-plane server log file {string}")
+    public void iRecordControlPlaneLogFileLength(String fileName) {
+        TestContext.set(LOG_MARK_PREFIX + "control-plane::" + fileName,
+                readControlPlaneLogFile(fileName).length());
+    }
+
     /**
      * Polls until a line appended after the mark contains {@code marker}, or fails with the appended text so
      * the actual log content is visible in the report rather than just "expected true but found false".
@@ -300,6 +318,32 @@ public class LoggingSteps {
         Assert.assertTrue(appended != null && containsMarker(appended, expected),
                 "No line containing '" + expected + "' was appended to " + fileName + " within " + seconds
                         + "s. Appended since the mark:\n" + appended);
+    }
+
+    /** Polls the control-plane log until a line appended after the mark contains the marker. */
+    @Then("The control-plane server log file {string} should gain a line containing {string} within {int} seconds")
+    public void controlPlaneLogFileShouldGainLine(String fileName, String marker, int seconds)
+            throws InterruptedException {
+        String expected = Utils.resolveContextPlaceholders(marker);
+        String appended = Utils.retryUntil(seconds * 1000L,
+                () -> appendedSinceControlPlaneMark(fileName),
+                text -> containsMarker(text, expected));
+        Assert.assertTrue(appended != null && containsMarker(appended, expected),
+                "No line containing '" + expected + "' was appended to the control-plane " + fileName
+                        + " within " + seconds + "s. Appended since the mark:\n" + appended);
+    }
+
+    /** Waits for the control-plane log window and asserts that the marker is absent. */
+    @Then("The control-plane server log file {string} should gain no line containing {string} within {int} seconds")
+    public void controlPlaneLogFileShouldNotGainLine(String fileName, String marker, int seconds)
+            throws InterruptedException {
+        String unexpected = Utils.resolveContextPlaceholders(marker);
+        Thread.sleep(seconds * 1000L);
+        String appended = appendedSinceControlPlaneMark(fileName);
+        if (containsMarker(appended, unexpected)) {
+            Assert.fail("A line containing '" + unexpected + "' was appended to the control-plane " + fileName
+                    + " but none was expected. Appended since the mark:\n" + appended);
+        }
     }
 
     /**
@@ -475,11 +519,26 @@ public class LoggingSteps {
         return from <= content.length() ? content.substring(from) : content;
     }
 
+    private String appendedSinceControlPlaneMark(String fileName) {
+        Object mark = TestContext.get(LOG_MARK_PREFIX + "control-plane::" + fileName);
+        if (mark == null) {
+            throw new IllegalStateException("The end of the control-plane " + fileName
+                    + " was never marked — the scenario must mark it before asserting on what was appended.");
+        }
+        String content = readControlPlaneLogFile(fileName);
+        int from = Integer.parseInt(mark.toString());
+        return from <= content.length() ? content.substring(from) : content;
+    }
+
     private String readLogFile(String fileName) {
         // Path shape owned by DynamicApimContainer alongside getContainerLog4j2Path(), so the in-container
         // layout lives in one module; the accessor also validates apim.server.name instead of silently
         // resolving a path containing "null".
         return container().readGatewayLogFile(fileName);
+    }
+
+    private String readControlPlaneLogFile(String fileName) {
+        return container().readControlPlaneLogFile(fileName);
     }
 
     private ApimRuntime container() {

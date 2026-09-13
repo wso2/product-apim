@@ -9,9 +9,6 @@ username = "wso2carbon"
 password = "wso2carbon"
 driver = "com.mysql.cj.jdbc.Driver"
 
-[apim.key_manager]
-service_url = "https://apim-cp:9443/services/"
-
 [apim.event_hub]
 enable = true
 username = "$ref{super_admin.username}"

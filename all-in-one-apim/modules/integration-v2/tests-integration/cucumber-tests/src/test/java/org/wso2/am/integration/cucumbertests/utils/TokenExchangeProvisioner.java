@@ -391,15 +391,19 @@ public final class TokenExchangeProvisioner {
                 + "<soapenv:Body><ns:getIdPByName xmlns:ns=\"http://mgt.idp.carbon.wso2.org\">"
                 + "<ns:idPName>" + Utils.escapeXml(idpName) + "</ns:idPName></ns:getIdPByName></soapenv:Body>" + SOAP_ENV_CLOSE;
         HttpResponse r = soap(scope, "urn:getIdPByName", body);
-        // A transport-level failure must FAIL the existence check, never read as "absent": the caller's
-        // negative assertion (malformed-cert registration refused -> IdP should not exist) would false-pass
-        // on a broken SOAP channel. A real body lacking the name (incl. an empty getIdPByNameResponse for a
-        // missing IdP) genuinely means absent.
-        if (r == null || r.getData() == null || r.getData().isBlank()) {
+        // Only a successful, non-fault SOAP response can establish that an IdP is absent. Treating a transport
+        // failure or SOAP fault as absence would allow registration to continue against an unknown APIM state.
+        if (r == null || r.getResponseCode() < 200 || r.getResponseCode() >= 300
+                || r.getData() == null || r.getData().isBlank() || isSoapFault(r.getData())) {
             throw new IllegalStateException("IdP existence check failed for '" + idpName + "': got "
-                    + (r == null ? "no response" : r.getResponseCode() + " / blank body"));
+                    + (r == null ? "no response" : "HTTP " + r.getResponseCode()
+                    + (isSoapFault(r.getData()) ? " / SOAP fault" : " / invalid response body")));
         }
         return r.getData().contains("identityProviderName>" + idpName);
+    }
+
+    private static boolean isSoapFault(String body) {
+        return body != null && body.matches("(?s).*<[^>]*:?Fault(?:\\s[^>]*)?>.*");
     }
 
     /** Deletes the named IdP (used by teardown). */

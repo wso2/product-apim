@@ -383,8 +383,11 @@ public class SsoSteps {
         String apiId = TestContext.resolve("ssoApiId").toString();
         String actualProvider = browser.recordedPrincipal(
                 "/api/am/publisher/v4/apis/" + apiId, "/publisher", "provider");
-        Assert.assertEquals(actualProvider, expectedProvider,
+        String expectedPhysicalProvider = Identity.resolveActor(expectedProvider).getUserName()
+                .replace("@carbon.super", "");
+        Assert.assertEquals(actualProvider, expectedPhysicalProvider,
                 "the API provider persisted by the admin change was '" + actualProvider
-                        + "', expected '" + expectedProvider + "'.");
+                        + "', expected actor '" + expectedProvider + "' (physical provider '"
+                        + expectedPhysicalProvider + "').");
     }
 }

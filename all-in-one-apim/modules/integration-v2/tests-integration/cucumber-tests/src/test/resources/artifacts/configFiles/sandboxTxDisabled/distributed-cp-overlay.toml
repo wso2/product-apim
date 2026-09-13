@@ -1,0 +1,21 @@
+# Distributed CP-only part of the SandboxAndTokenExchangeDisabled overlay.
+[[apim.gateway.environment]]
+name = "Default"
+type = "sandbox"
+gateway_type = "Regular"
+provider = "wso2"
+display_in_api_console = true
+description = "Sandbox-only gateway environment that rejects production tokens."
+show_as_token_endpoint_url = true
+service_url = "https://apim-gw:9443/services/"
+username = "${admin.username}"
+password = "${admin.password}"
+ws_endpoint = "ws://localhost:9099"
+wss_endpoint = "wss://localhost:8099"
+http_endpoint = "http://localhost:8280"
+https_endpoint = "https://localhost:8243"
+websub_event_receiver_http_endpoint = "http://localhost:9021"
+websub_event_receiver_https_endpoint = "https://localhost:8021"
+
+[oauth.grant_type.token_exchange]
+enable = false

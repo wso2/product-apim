@@ -23,6 +23,7 @@ import org.testng.Assert;
 import org.wso2.am.integration.cucumbertests.utils.clients.SimpleHTTPClient;
 import org.wso2.am.integration.test.utils.Constants;
 import org.wso2.am.testcontainers.DynamicISContainer;
+import org.wso2.am.testcontainers.DistributedDynamicApimContainer;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import java.io.IOException;
@@ -70,7 +71,13 @@ public final class SsoProvisioner {
      * endpoints (token/userinfo) and the federated authorize/logout use the internal IS base {@link #isServerBase}
      * ({@code wso2is:9443}) so the id_token issuer is consistent too.
      */
-    private static final String APIM_INTERNAL = "https://localhost:9443/";
+    private static final String APIM_LOCALHOST_INTERNAL = "https://localhost:9443/";
+
+    /** APIM hostname used by browser-visible redirects and callbacks in the current block topology. */
+    private static String apimInternal() {
+        return TestContext.get("blockApimContainer") instanceof DistributedDynamicApimContainer
+                ? "https://apim-cp:9443/" : APIM_LOCALHOST_INTERNAL;
+    }
 
     private SsoProvisioner() {
     }
@@ -120,8 +127,8 @@ public final class SsoProvisioner {
         // through the CONNECT proxy. Using the internal host keeps redirect_uri consistent end to end.
         JSONObject oidcInbound = new JSONObject()
                 .put("grantTypes", new JSONArray().put("authorization_code"))
-                .put("callbackURLs", new JSONArray().put(APIM_INTERNAL + "commonauth"))
-                .put("allowedOrigins", new JSONArray().put("https://localhost:9443"))
+                .put("callbackURLs", new JSONArray().put(apimInternal() + "commonauth"))
+                .put("allowedOrigins", new JSONArray().put(apimInternal().replaceAll("/$", "")))
                 .put("publicClient", false);
         JSONObject claimConfig = new JSONObject()
                 .put("dialect", "LOCAL")
@@ -308,7 +315,7 @@ public final class SsoProvisioner {
                 + idpAuthProperty("OAuth2TokenEPUrl", isServer + "oauth2/token")
                 + idpAuthProperty("UserInfoUrl", isServer + "oauth2/userinfo")
                 + idpAuthProperty("OIDCLogoutEPUrl", isServer + "oidc/logout")
-                + idpAuthProperty("callbackUrl", APIM_INTERNAL + "commonauth")
+                + idpAuthProperty("callbackUrl", apimInternal() + "commonauth")
                 + idpAuthProperty("Scopes", "openid groups")
                 // Authenticate to the external IS token endpoint with the HTTP Basic header ONLY (not client
                 // creds in the body). IS 7.x runs EVERY registered client authenticator's canAuthenticate() and
@@ -362,12 +369,19 @@ public final class SsoProvisioner {
                 + "<ns:idPName>" + Utils.escapeXml(idpName) + "</ns:idPName>"
                 + "</ns:getIdPByName></soapenv:Body></soapenv:Envelope>";
         HttpResponse r = idpSoap("urn:getIdPByName", payload);
-        // A transport-level failure must FAIL the check, never read as "absent" (would false-pass a negative).
-        if (r == null || r.getData() == null || r.getData().isBlank()) {
+        // Only a successful, non-fault SOAP response can establish that an IdP is absent. Treating a transport
+        // failure or SOAP fault as absence would allow registration to continue against an unknown APIM state.
+        if (r == null || r.getResponseCode() < 200 || r.getResponseCode() >= 300
+                || r.getData() == null || r.getData().isBlank() || isSoapFault(r.getData())) {
             throw new IllegalStateException("IdP existence check failed for '" + idpName + "': got "
-                    + (r == null ? "no response" : r.getResponseCode() + " / blank body"));
+                    + (r == null ? "no response" : "HTTP " + r.getResponseCode()
+                    + (isSoapFault(r.getData()) ? " / SOAP fault" : " / invalid response body")));
         }
         return r.getData().contains("identityProviderName>" + idpName);
+    }
+
+    private static boolean isSoapFault(String body) {
+        return body != null && body.matches("(?s).*<[^>]*:?Fault(?:\\s[^>]*)?>.*");
     }
 
     private static String idpAuthProperty(String name, String value) {
@@ -483,7 +497,9 @@ public final class SsoProvisioner {
 
         // The console's OAuth client was DCR-registered at startup against APIM's INTERNAL host, but the
         // containerised test drives the console on the mapped container port — so its redirect_uri never matches
-        // the registered callback (invalid_callback). Relax the callback to a boot-port-agnostic regex.
+        // the registered callback (invalid_callback). Relax the callback to a boot-port-agnostic regex. The
+        // distributed CP emits its network alias (apim-cp) in redirects, while the all-in-one path emits
+        // localhost; accept both harness-facing names without changing the product configuration.
         updateConsoleCallbackToRegex(inboundAuthKey);
     }
 
@@ -511,8 +527,7 @@ public final class SsoProvisioner {
         Assert.assertNotNull(secret, "Could not read consumerSecret for '" + consumerKey + "': " + getDiagnostic);
         // Match the console's original two-alternative shape (login|logout); both alternatives are
         // boot-port-agnostic so the mapped container port validates against whichever the console redirects to.
-        String regexCallback = "regexp=(https://localhost:\\d+/.*/services/auth/callback/login"
-                + "|https://localhost:\\d+/.*/services/auth/callback/logout)";
+        String regexCallback = "regexp=https://(localhost|apim-cp|wso2am):\\d+/.*/services/auth/callback/(login|logout)";
         // The DTO-carrying element MUST be named for the operation's real Java parameter — Axis2's RPC
         // deserializer (BeanUtil.deserialize) matches each SOAP child to a method parameter by name; a name that
         // is neither "arg*"/"item*" nor the actual parameter overruns the single-element param array and faults

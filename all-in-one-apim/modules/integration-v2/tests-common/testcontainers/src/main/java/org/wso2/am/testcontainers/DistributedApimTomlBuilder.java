@@ -49,17 +49,20 @@ public final class DistributedApimTomlBuilder {
      * Runtime values are deliberately last so a user overlay cannot redirect a component to localhost.
      */
     public static String build(String productDefaults, String distributedBaseOverlay,
-                               String componentOverlay, String extraOverlay,
-                               Map<String, ?> finalRuntimeValues) throws IOException {
+                               String extraOverlay, Map<String, ?> finalRuntimeValues) throws IOException {
         ObjectNode result = parse(productDefaults, "product defaults");
         merge(result, parse(distributedBaseOverlay, "distributed base overlay"));
-        if (componentOverlay != null && !componentOverlay.isBlank()) {
-            merge(result, parse(componentOverlay, "component overlay"));
-        }
         if (extraOverlay != null && !extraOverlay.isBlank()) {
             merge(result, parse(extraOverlay, "component extra overlay"));
         }
         applyRuntimeValues(result, finalRuntimeValues == null ? Collections.emptyMap() : finalRuntimeValues);
+        return TOML.writerWithDefaultPrettyPrinter().writeValueAsString(result);
+    }
+
+    /** Combines overlays in declaration order so later overlay values take precedence. */
+    public static String combineOverlays(String first, String second) throws IOException {
+        ObjectNode result = parse(first, "first overlay");
+        merge(result, parse(second, "second overlay"));
         return TOML.writerWithDefaultPrettyPrinter().writeValueAsString(result);
     }
 

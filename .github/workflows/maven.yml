@@ -266,8 +266,12 @@ jobs:
         include:
           - id: v2-all-in-one
             suite: testng-v2.xml
+            coverage: true
+            topology: all-in-one
           - id: v2-distributed
             suite: testng-v2_distributed.xml
+            coverage: false
+            topology: distributed
     steps:
       - name: Run hostname
         run: hostname
@@ -311,11 +315,12 @@ jobs:
           mkdir -p all-in-one-apim/modules/integration-v2/tests-common/testcontainers/target
           tar -C all-in-one-apim/modules/integration-v2/tests-common/testcontainers/target -xzf \
             /tmp/v2-images/distributed-apim-staging.tar.gz
-      # Pull the product class files out of the already-loaded image instead of shipping the ~538 MB distribution
+      # Pull the all-in-one product class files out of the already-loaded image instead of shipping the ~538 MB distribution
       # zip (docker cp is a LOCAL copy — zero extra artifact transfer). The image is what ran, so its classes are
-      # byte-identical to the executed ones → exact JaCoCo class-id match. The suite reads them via
-      # -Dapim.coverage.classfiles below. See docs/devs/v2-coverage-architecture.md §8.
+      # byte-identical to the executed ones → exact JaCoCo class-id match. Distributed coverage is intentionally
+      # unsupported because its CP, TM, and Gateway JVMs are separate products and are not collected by this lane.
       - name: Extract APIM class files from image (for coverage report)
+        if: matrix.coverage
         working-directory: all-in-one-apim/modules/integration-v2
         run: |
           APIM_IMAGE=$(mvn -q -N help:evaluate -Dexpression=apim.docker.image.name -DforceStdout)
@@ -331,7 +336,8 @@ jobs:
       # `mvn test` (not install) keeps the testcontainers pre-integration-test execs from firing, so the
       # loaded images and the restored target/is7 staging are reused. `-am` builds only the integration-v2
       # reactor deps up to the test phase; product 4.7.0-SNAPSHOT artifacts resolve from the restored repo.
-      - name: Run integration-v2 suite (reuses prebuilt images)
+      - name: Run all-in-one integration-v2 suite
+        if: matrix.topology == 'all-in-one'
         working-directory: all-in-one-apim/modules/integration-v2
         run: >
           mvn test -pl tests-integration/cucumber-tests -am
@@ -342,6 +348,17 @@ jobs:
           -Ddistributed.apim.gateway.image.name="distributed-apim-gateway:${GATEWAY_VERSION}-jdk21"
           -Dapim.coverage=true
           -Dapim.coverage.classfiles="$APIM_COVERAGE_CLASSFILES"
+          -Ddocker.extra.hosts="--add-host=host.docker.internal:host-gateway"
+      - name: Run distributed integration-v2 suite (coverage intentionally disabled)
+        if: matrix.topology == 'distributed'
+        working-directory: all-in-one-apim/modules/integration-v2
+        run: >
+          mvn test -pl tests-integration/cucumber-tests -am
+          -Dsurefire.suite.xml=${{ matrix.suite }}
+          -Dapim.server.version="$APIM_VERSION"
+          -Ddistributed.apim.cp.image.name="distributed-apim-cp:${CP_VERSION}-jdk21"
+          -Ddistributed.apim.tm.image.name="distributed-apim-tm:${TM_VERSION}-jdk21"
+          -Ddistributed.apim.gateway.image.name="distributed-apim-gateway:${GATEWAY_VERSION}-jdk21"
           -Ddocker.extra.hosts="--add-host=host.docker.internal:host-gateway"
       - name: Archive test reports
         if: always()
@@ -354,11 +371,9 @@ jobs:
             all-in-one-apim/modules/integration-v2/tests-integration/cucumber-tests/target/logs/**
             all-in-one-apim/modules/integration-v2/tests-integration/cucumber-tests/target/coverage/output/**
           if-no-files-found: warn
-      # Guard against a silent coverage regression: if the suite PASSED but no report was produced (dist-zip not
-      # shared, agent didn't attach, etc.), fail loudly here rather than uploading nothing and staying green. No
-      # `if:` → skipped when the suite itself failed (that run is already red), so it fires only in the
-      # "green build, coverage silently missing" case. Purely local — a Codecov outage never trips it.
+      # Guard against a silent all-in-one coverage regression. Distributed coverage is intentionally excluded.
       - name: Verify coverage report was generated
+        if: matrix.coverage
         run: |
           REPORT=all-in-one-apim/modules/integration-v2/tests-integration/cucumber-tests/target/coverage/output/txt/jacoco-it.xml
           # Check validity, not mere existence: -s rejects a 0-byte file, and the grep for the LINE counter
@@ -370,7 +385,7 @@ jobs:
           fi
           echo "Coverage report present and valid ($(wc -c <"$REPORT") bytes)"
       - name: Upload v2 integration coverage to Codecov
-        if: always()
+        if: ${{ always() && matrix.coverage }}
         uses: codecov/codecov-action@v5
         with:
           files: all-in-one-apim/modules/integration-v2/tests-integration/cucumber-tests/target/coverage/output/txt/jacoco-it.xml

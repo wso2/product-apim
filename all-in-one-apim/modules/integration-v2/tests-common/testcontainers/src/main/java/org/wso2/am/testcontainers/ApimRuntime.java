@@ -92,6 +92,9 @@ public interface ApimRuntime {
      */
     String readGatewayLogFile(String fileName);
 
+    /** Read a log file from the component that serves control-plane requests. */
+    String readControlPlaneLogFile(String fileName);
+
     String readContainerFile(String containerPath);
 
     void writeContainerFile(String containerPath, String content);

@@ -1066,9 +1066,10 @@ Feature: Gateway Security Enforcement
     epoNewEndpoint
     """
     Then The response status code should be 200
-    # The retrieved API must round-trip the non-secret OAUTH config per key type and BLANK both stored backend
-    # clientSecrets. Probed contract (4.7.0): the field is present and equal to "" — see the password-grant
-    # scenario below. == "" is the legacy assertion and is stronger than a plaintext "should not contain".
+    Then The value of response field "endpointConfig.endpoint_security.production.clientSecret" should be ""
+    And The value of response field "endpointConfig.endpoint_security.sandbox.clientSecret" should be ""
+    # Both the PUT response and the read-back response must expose the backend secrets as blank, matching the
+    # legacy contract. The response must never expose the actual secret values (asserted below).
     When I retrieve the "apis" resource with id "epoApiId"
     Then The value of response field "endpointConfig.endpoint_security.production.clientSecret" should be ""
     And The value of response field "endpointConfig.endpoint_security.sandbox.clientSecret" should be ""

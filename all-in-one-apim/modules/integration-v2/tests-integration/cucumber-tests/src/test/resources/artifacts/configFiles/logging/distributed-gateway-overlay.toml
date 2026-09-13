@@ -1,0 +1,4 @@
+# Distributed Gateway overlay for the logging block. The restart API is exposed by the
+# Gateway component, which the logging feature restarts to verify persisted configuration.
+[server]
+enable_restart_from_api = true

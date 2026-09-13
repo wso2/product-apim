@@ -35,6 +35,7 @@ import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Provisioning helper extracted from {@code TenantUserInitialisationSteps} so the same SOAP-build +
@@ -66,6 +67,10 @@ public final class TenantUserProvisioner {
      * the (tenant-unqualified) username at 30 chars.
      */
     private static final String EMAIL_USERNAME_MAIL_DOMAIN = "@email.com";
+
+    /** APIM roles that the block-level user provisioning assigns to its standard actors. */
+    private static final Set<String> REQUIRED_APIM_ROLES = Set.of(
+            "Internal/creator", "Internal/publisher", "Internal/subscriber");
 
     private TenantUserProvisioner() {
     }
@@ -305,6 +310,58 @@ public final class TenantUserProvisioner {
         tenant.setDomain(tenantDomain);
         tenant.setTenantAdmin(admin);
         TestContext.setShared(tenantDomain, tenant);
+    }
+
+    /**
+     * Waits until the APIM internal roles required by the standard test actors exist in the tenant user store.
+     * Tenant Management becoming reachable is not sufficient: on a fresh distributed MySQL database, the
+     * APIM role bootstrap can still be in progress when the first addUser request arrives.
+     */
+    public static void awaitRequiredApimRoles(String tenantDomain) throws InterruptedException {
+
+        long deadlineStart = System.currentTimeMillis();
+        long deadline = deadlineStart + Constants.SERVER_STARTUP_WAIT_TIME;
+        while (System.currentTimeMillis() < deadline) {
+            try {
+                Tenant tenant = Utils.getTenantFromContext(tenantDomain);
+                boolean allRolesReady = true;
+                for (String role : REQUIRED_APIM_ROLES) {
+                    if (!isExistingRole(tenant, role)) {
+                        allRolesReady = false;
+                        break;
+                    }
+                }
+                if (allRolesReady) {
+                    logger.info("APIM internal roles are ready for tenant " + tenantDomain);
+                    return;
+                }
+            } catch (Exception ignored) {
+                // User-store/bootstrap services can still be initializing; retry until the startup deadline.
+            }
+            logger.info("Waiting for APIM internal roles to be ready for tenant " + tenantDomain + "...");
+            Utils.pollPause(deadlineStart, 1000);
+        }
+        throw new IllegalStateException("APIM internal roles did not become ready for tenant " + tenantDomain
+                + " within " + (Constants.SERVER_STARTUP_WAIT_TIME / 1000) + "s");
+    }
+
+    private static boolean isExistingRole(Tenant tenant, String role) throws IOException, JaxenException {
+
+        String payload = "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" "
+                + "xmlns:ser=\"http://service.ws.um.carbon.wso2.org\">"
+                + "<soapenv:Header/><soapenv:Body>"
+                + "<ser:isExistingRole><ser:roleName>" + Utils.escapeXml(role)
+                + "</ser:roleName></ser:isExistingRole>"
+                + "</soapenv:Body></soapenv:Envelope>";
+        User tenantAdmin = tenant.getTenantAdmin();
+        HttpResponse response = SimpleHTTPClient.getInstance().sendSoapRequest(
+                Utils.getRemoteUserStoreManagerServiceURL(Utils.getBaseUrl()), payload, "urn:isExistingRole",
+                tenantAdmin.getUserName(), tenantAdmin.getPassword());
+        if (response.getResponseCode() != 200 || response.getData() == null) {
+            return false;
+        }
+        List<String> values = Utils.getNodeTextsByXPath(response.getData(), "//*[local-name()='return']");
+        return values.size() == 1 && Boolean.parseBoolean(values.get(0));
     }
 
     /**

@@ -128,8 +128,8 @@ public final class ConnectProxy implements AutoCloseable {
             Socket tunnel = upstream;
             pool.submit(() -> pipe(client, tunnel));
             pipe(tunnel, client);
-        } catch (IOException e) {
-            logger.warn("CONNECT proxy tunnel failed: " + e.getMessage());
+        } catch (IOException | RuntimeException e) {
+            logger.warn("CONNECT proxy tunnel failed (malformed request or I/O error): " + e.getMessage());
             closeQuietly(upstream);
             closeQuietly(client);
         }
@@ -187,6 +187,9 @@ public final class ConnectProxy implements AutoCloseable {
     }
 
     private static void closeQuietly(Socket s) {
+        if (s == null) {
+            return;
+        }
         try {
             s.close();
         } catch (IOException ignored) {

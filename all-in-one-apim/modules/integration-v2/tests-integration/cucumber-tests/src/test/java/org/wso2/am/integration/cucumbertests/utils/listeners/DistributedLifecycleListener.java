@@ -41,13 +41,16 @@ public class DistributedLifecycleListener extends BlockLifecycleListener {
         Map<String, String> parameters = context.getCurrentXmlTest().getLocalParameters();
         for (DistributedApimTomlBuilder.Component component : DistributedApimTomlBuilder.Component.values()) {
             try {
+                if (Boolean.parseBoolean(param(context, PARAM_EMAIL_USER_MODE))) {
+                    container.withTomlExtraOverlay(component, emailUserOverlayContent());
+                }
                 String overlay = DistributedApimTomlBuilder.resolveExtraOverlay(parameters, component);
                 if (overlay != null) {
                     container.withTomlExtraOverlay(component, overlay);
                 }
                 for (DistributedApimTomlBuilder.ServerFile file
                         : DistributedApimTomlBuilder.resolveServerFiles(parameters, component)) {
-                    container.withComponentServerFile(component, file.source().toString(), file.serverRelativePath());
+                    container.withComponentServerFile(component, file);
                 }
             } catch (IOException e) {
                 throw new IllegalArgumentException("Unable to resolve distributed "

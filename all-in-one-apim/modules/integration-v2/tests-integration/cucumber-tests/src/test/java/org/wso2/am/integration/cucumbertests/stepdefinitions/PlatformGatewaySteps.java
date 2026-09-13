@@ -126,7 +126,7 @@ public class PlatformGatewaySteps {
         // The platform gateway runs in a separate Compose network and cannot resolve the APIM block's
         // nodebackend alias. Route through the singleton NodeAppServer's stable host-published REST port;
         // the compose provides host.docker.internal for this purpose.
-        String nodeBackendUrl = Utils.getNodeBackendUrl(3001)
+        String nodeBackendUrl = Utils.containerReachable(Utils.getNodeBackendUrl(3001))
                 + "/jaxrs_basic/services/customers/customerservice";
         baseSteps.iReplaceInPayload("http://nodebackend:3001/jaxrs_basic/services/customers/customerservice",
                 nodeBackendUrl, "<createApiPayload>");

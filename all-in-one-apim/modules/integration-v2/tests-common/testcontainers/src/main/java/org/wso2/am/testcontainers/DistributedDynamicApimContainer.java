@@ -18,8 +18,10 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -42,6 +44,9 @@ public class DistributedDynamicApimContainer implements ApimRuntime {
     private static final String TOML_PATH = SERVER_HOME + "/repository/conf/deployment.toml";
     private static final String DEFAULTS_DIRECTORY = "distributed-apim/defaults";
     private static final String DEFAULTS_DIRECTORY_PROPERTY = "distributed.apim.defaults.directory";
+    private static final String EXTERNAL_IS_GATEWAY_OVERLAY =
+            "[apim.event_hub]\n"
+                    + "service_url = \"https://wso2am:9443/services/\"\n";
 
     private final String label;
     private final Path cpDefaults;
@@ -57,7 +62,7 @@ public class DistributedDynamicApimContainer implements ApimRuntime {
     private GenericContainer<?> gateway;
     private final Map<DistributedApimTomlBuilder.Component, String> extraOverlays =
             new EnumMap<>(DistributedApimTomlBuilder.Component.class);
-    private final Map<DistributedApimTomlBuilder.Component, String> extraFiles =
+    private final Map<DistributedApimTomlBuilder.Component, List<DistributedApimTomlBuilder.ServerFile>> extraFiles =
             new EnumMap<>(DistributedApimTomlBuilder.Component.class);
     private boolean externalKmTrust;
     private boolean externalIsNotificationAlias;
@@ -134,7 +139,18 @@ public class DistributedDynamicApimContainer implements ApimRuntime {
     /** Add a small overlay for one component; it is merged after the distributed base. */
     public DistributedDynamicApimContainer withTomlExtraOverlay(
             DistributedApimTomlBuilder.Component component, String content) {
-        extraOverlays.put(Objects.requireNonNull(component, "component"), content);
+        Objects.requireNonNull(component, "component");
+        Objects.requireNonNull(content, "content");
+        String existing = extraOverlays.get(component);
+        if (existing == null || existing.isBlank()) {
+            extraOverlays.put(component, content);
+        } else {
+            try {
+                extraOverlays.put(component, DistributedApimTomlBuilder.combineOverlays(existing, content));
+            } catch (IOException e) {
+                throw new IllegalArgumentException("Unable to combine distributed component TOML overlays", e);
+            }
+        }
         return this;
     }
 
@@ -145,13 +161,17 @@ public class DistributedDynamicApimContainer implements ApimRuntime {
         if (hostPath == null || relativePath == null || hostPath.isBlank() || relativePath.isBlank()) {
             throw new IllegalArgumentException("Component server file source and destination are required");
         }
-        try {
-            String encoded = hostPath + "::" + relativePath;
-            extraFiles.merge(component, encoded, (oldValue, newValue) -> oldValue + "," + newValue);
-            return this;
-        } catch (RuntimeException e) {
-            throw new IllegalArgumentException("Invalid component server file", e);
-        }
+        return withComponentServerFile(component,
+                new DistributedApimTomlBuilder.ServerFile(Path.of(hostPath).normalize(), relativePath.trim()));
+    }
+
+    /** Add a validated boot-time file to one component without serializing its path. */
+    public DistributedDynamicApimContainer withComponentServerFile(
+            DistributedApimTomlBuilder.Component component, DistributedApimTomlBuilder.ServerFile file) {
+        Objects.requireNonNull(component, "component");
+        Objects.requireNonNull(file, "file");
+        extraFiles.computeIfAbsent(component, ignored -> new ArrayList<>()).add(file);
+        return this;
     }
 
     @Override
@@ -259,7 +279,9 @@ public class DistributedDynamicApimContainer implements ApimRuntime {
 
     @Override
     public DistributedDynamicApimContainer withCoverage() {
-        return this;
+        throw new UnsupportedOperationException(
+                "Distributed JaCoCo wiring is not available; run the distributed suite without integration "
+                        + "coverage enabled");
     }
 
     @Override
@@ -287,7 +309,7 @@ public class DistributedDynamicApimContainer implements ApimRuntime {
 
     @Override
     public int getCoverageDumpPort() {
-        throw new UnsupportedOperationException("Distributed JaCoCo wiring is not available until Phase 9");
+        throw new UnsupportedOperationException("Distributed JaCoCo coverage is intentionally unsupported");
     }
 
     @Override
@@ -320,6 +342,17 @@ public class DistributedDynamicApimContainer implements ApimRuntime {
                     stream -> new String(stream.readAllBytes(), StandardCharsets.UTF_8));
         } catch (Exception e) {
             throw new IllegalStateException("Failed to read distributed Gateway file: " + path, e);
+        }
+    }
+
+    @Override
+    public String readControlPlaneLogFile(String fileName) {
+        String path = SERVER_HOME + "/repository/logs/" + fileName;
+        try {
+            return cp.copyFileFromContainer(path,
+                    stream -> new String(stream.readAllBytes(), StandardCharsets.UTF_8));
+        } catch (Exception e) {
+            throw new IllegalStateException("Failed to read distributed Control Plane file: " + path, e);
         }
     }
 
@@ -381,6 +414,9 @@ public class DistributedDynamicApimContainer implements ApimRuntime {
     }
 
     private void createComponents() throws IOException {
+        if (externalIsNotificationAlias) {
+            cpAliasAndGatewayOverlay();
+        }
         String cpToml = buildToml(cpDefaults, DistributedApimTomlBuilder.Component.CP, "cp-base-overlay.toml");
         String tmToml = buildToml(tmDefaults, DistributedApimTomlBuilder.Component.TM, "tm-base-overlay.toml");
         String gatewayToml = buildToml(gatewayDefaults, DistributedApimTomlBuilder.Component.GATEWAY,
@@ -390,15 +426,21 @@ public class DistributedDynamicApimContainer implements ApimRuntime {
         gateway = component(GATEWAY_IMAGE, "apim-gw", gatewayToml, 0, 9443,
                 Constants.GATEWAY_HTTPS_PORT, Constants.GATEWAY_HTTP_PORT, Constants.GATEWAY_WS_PORT,
                 Constants.GATEWAY_WSS_PORT, Constants.WEBSUB_EVENT_RECEIVER_PORT);
+        if (externalIsNotificationAlias) {
+            cp.withNetworkAliases("wso2am");
+        }
         if (externalKmTrust) {
             String configured = System.getProperty("apim.km.truststore.path");
             String path = configured == null || configured.isBlank()
                     ? System.getProperty("module.dir", ".") + "/target/is7/client-truststore.jks" : configured;
             copyToCp(path, SERVER_HOME + "/repository/resources/security/client-truststore.jks");
+            copyToComponent(gateway, path, SERVER_HOME + "/repository/resources/security/client-truststore.jks");
+            // The Gateway's HTTPS pass-through listener also uses the APIM keystore. Without this copy the
+            // Gateway may report Carbon startup while silently failing to bind 8243, making browser/API
+            // invocations fail with a connection refusal.
             copyClasspathToCp("is7/wso2am.p12", SERVER_HOME + "/repository/resources/security/wso2am.p12");
-        }
-        if (externalIsNotificationAlias) {
-            cp.withNetworkAliases("wso2am");
+            copyClasspathToComponent(gateway, "is7/wso2am.p12",
+                    SERVER_HOME + "/repository/resources/security/wso2am.p12");
         }
         if (solaceJwksAlias) {
             cp.withNetworkAliases(DynamicSolaceBroker.APIM_JWKS_ALIAS);
@@ -408,19 +450,30 @@ public class DistributedDynamicApimContainer implements ApimRuntime {
         copyComponentFiles(DistributedApimTomlBuilder.Component.GATEWAY, gateway);
     }
 
+    private void cpAliasAndGatewayOverlay() {
+        try {
+            String existing = extraOverlays.get(DistributedApimTomlBuilder.Component.GATEWAY);
+            extraOverlays.put(DistributedApimTomlBuilder.Component.GATEWAY,
+                    existing == null || existing.isBlank()
+                            ? EXTERNAL_IS_GATEWAY_OVERLAY
+                            : DistributedApimTomlBuilder.combineOverlays(existing, EXTERNAL_IS_GATEWAY_OVERLAY));
+        } catch (IOException e) {
+            throw new IllegalStateException("Unable to configure distributed Gateway for the IS callback alias", e);
+        }
+    }
+
     private void copyComponentFiles(DistributedApimTomlBuilder.Component component,
                                     GenericContainer<?> container) {
-        String encoded = extraFiles.get(component);
-        if (encoded == null) {
+        List<DistributedApimTomlBuilder.ServerFile> files = extraFiles.get(component);
+        if (files == null) {
             return;
         }
-        for (String entry : encoded.split(",")) {
-            String[] parts = entry.split("::", 2);
+        for (DistributedApimTomlBuilder.ServerFile file : files) {
             try {
-                container.withCopyToContainer(Transferable.of(Files.readAllBytes(Path.of(parts[0])), 0666),
-                        SERVER_HOME + "/" + parts[1]);
+                container.withCopyToContainer(Transferable.of(Files.readAllBytes(file.source()), 0666),
+                        SERVER_HOME + "/" + file.serverRelativePath());
             } catch (IOException e) {
-                throw new IllegalStateException("Unable to stage distributed component file: " + parts[0], e);
+                throw new IllegalStateException("Unable to stage distributed component file: " + file.source(), e);
             }
         }
     }
@@ -435,28 +488,36 @@ public class DistributedDynamicApimContainer implements ApimRuntime {
             }
             baseOverlay = new String(input.readAllBytes(), StandardCharsets.UTF_8);
         }
-        return DistributedApimTomlBuilder.build(defaults, baseOverlay, null,
-                extraOverlays.get(component), new HashMap<>());
+        return DistributedApimTomlBuilder.build(defaults, baseOverlay, extraOverlays.get(component),
+                new HashMap<>());
     }
 
     private void copyToCp(String source, String target) {
+        copyToComponent(cp, source, target);
+    }
+
+    private void copyToComponent(GenericContainer<?> component, String source, String target) {
         try {
             Path path = Path.of(source);
             if (!Files.isRegularFile(path)) {
-                throw new IllegalStateException("Distributed CP file does not exist: " + path);
+                throw new IllegalStateException("Distributed component file does not exist: " + path);
             }
-            cp.withCopyToContainer(Transferable.of(Files.readAllBytes(path), 0666), target);
+            component.withCopyToContainer(Transferable.of(Files.readAllBytes(path), 0666), target);
         } catch (IOException e) {
-            throw new IllegalStateException("Unable to stage distributed CP file: " + source, e);
+            throw new IllegalStateException("Unable to stage distributed component file: " + source, e);
         }
     }
 
     private void copyClasspathToCp(String resource, String target) {
+        copyClasspathToComponent(cp, resource, target);
+    }
+
+    private void copyClasspathToComponent(GenericContainer<?> component, String resource, String target) {
         try (var input = getClass().getClassLoader().getResourceAsStream(resource)) {
             if (input == null) {
                 throw new IllegalStateException("Classpath resource not found: " + resource);
             }
-            cp.withCopyToContainer(Transferable.of(input.readAllBytes(), 0666), target);
+            component.withCopyToContainer(Transferable.of(input.readAllBytes(), 0666), target);
         } catch (IOException e) {
             throw new IllegalStateException("Unable to stage classpath file: " + resource, e);
         }

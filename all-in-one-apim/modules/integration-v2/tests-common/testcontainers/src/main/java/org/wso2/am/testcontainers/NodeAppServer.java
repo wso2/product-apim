@@ -217,12 +217,23 @@ public class NodeAppServer {
         return String.format("http://%s:%d", container.getHost(), container.getMappedPort(containerPort));
     }
 
-    private static class InstanceHolder {
-        private static final NodeAppServer instance = new NodeAppServer();
-    }
+    private static volatile NodeAppServer instance;
+    private static volatile RuntimeException initializationFailure;
 
-    public static NodeAppServer getInstance() {
-        return NodeAppServer.InstanceHolder.instance;
+    public static synchronized NodeAppServer getInstance() {
+        if (initializationFailure != null) {
+            throw new IllegalStateException("NodeAppServer failed to start earlier in this JVM",
+                    initializationFailure);
+        }
+        if (instance == null) {
+            try {
+                instance = new NodeAppServer();
+            } catch (RuntimeException e) {
+                initializationFailure = e;
+                throw e;
+            }
+        }
+        return instance;
     }
 
     /**

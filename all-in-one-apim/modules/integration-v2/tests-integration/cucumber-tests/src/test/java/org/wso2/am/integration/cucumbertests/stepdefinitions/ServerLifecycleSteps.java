@@ -20,7 +20,7 @@ package org.wso2.am.integration.cucumbertests.stepdefinitions;
 import io.cucumber.java.en.When;
 import org.testng.Assert;
 import org.wso2.am.integration.cucumbertests.utils.ServerReadiness;
-import org.wso2.am.integration.cucumbertests.utils.TestContext;
+import org.wso2.am.integration.cucumbertests.utils.Utils;
 import org.wso2.am.integration.cucumbertests.utils.clients.SimpleHTTPClient;
 import org.wso2.am.integration.test.utils.Constants;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
@@ -48,7 +48,9 @@ public class ServerLifecycleSteps {
     @When("I gracefully restart the API Manager server")
     public void iGracefullyRestartTheApiManagerServer() throws Exception {
 
-        String baseUrl = TestContext.get("baseUrl").toString();
+        // Restart the component that serves Gateway traffic. In all-in-one this resolves to the same unified
+        // APIM URL; in distributed topology it resolves to the Gateway management listener rather than CP.
+        String baseUrl = Utils.getBaseGatewayManagementUrl();
         String endpoint = baseUrl + "services/ServerAdmin.ServerAdminHttpsSoap11Endpoint/";
 
         String soapBody = "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" "

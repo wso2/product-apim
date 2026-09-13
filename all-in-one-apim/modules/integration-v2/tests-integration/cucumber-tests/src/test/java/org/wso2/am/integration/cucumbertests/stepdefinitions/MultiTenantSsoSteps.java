@@ -222,7 +222,7 @@ public class MultiTenantSsoSteps {
                 "the MT console login page is not multi-option (no " + multiOptionUri + "): "
                         + browser.pageDiagnostic());
         String brokerIdp = TestContext.resolve("mtBrokerIdpName").toString();
-        Assert.assertTrue(browser.pageOffersBothAuthenticators(brokerIdp),
+        Assert.assertTrue(browser.pageOffersMultiTenantAuthenticators(brokerIdp),
                 "the MT console login page does not offer local BasicAuthenticator and broker IdP '"
                         + brokerIdp + "': " + browser.pageDiagnostic());
     }
@@ -235,7 +235,7 @@ public class MultiTenantSsoSteps {
     @Then("the DevPortal login page must offer local plus broker authentication")
     public void theDevportalLoginPageMustOfferLocalPlusBrokerAuthentication() {
         String brokerIdp = TestContext.resolve("mtBrokerIdpName").toString();
-        Assert.assertTrue(browser.pageOffersBothAuthenticators(brokerIdp),
+        Assert.assertTrue(browser.pageOffersMultiTenantAuthenticators(brokerIdp),
                 "the DevPortal login endpoint does not offer local BasicAuthenticator and broker IdP '"
                         + brokerIdp + "': " + browser.pageDiagnostic());
     }

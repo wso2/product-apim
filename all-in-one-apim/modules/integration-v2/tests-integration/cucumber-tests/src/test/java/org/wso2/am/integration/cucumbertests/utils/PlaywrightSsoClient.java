@@ -63,7 +63,7 @@ public final class PlaywrightSsoClient implements AutoCloseable {
     private static final Log log = LogFactory.getLog(PlaywrightSsoClient.class);
 
     /** Internal hostnames the servers emit; the proxy tunnels these to the mapped container ports. */
-    private static final String APIM_INTERNAL = "https://localhost:9443";
+    private final String apimInternal;
 
     /** APIM resident-IS authentication-framework session cookie; its reuse across consoles is single sign-on. */
     private static final String IS_SESSION_COOKIE = "commonAuthId";
@@ -103,11 +103,15 @@ public final class PlaywrightSsoClient implements AutoCloseable {
      *                          {@code localhost:8243}; may be null when no gateway invocation is needed.
      */
     public PlaywrightSsoClient(String apimMappedBase, String isMappedBase, String gatewayMappedBase) {
+        this.apimInternal = TestContext.get("blockApimContainer")
+                instanceof org.wso2.am.testcontainers.DistributedDynamicApimContainer
+                ? "https://apim-cp:9443" : "https://localhost:9443";
         InetSocketAddress apim = addressOf(apimMappedBase);
         InetSocketAddress is = addressOf(isMappedBase);
         Map<String, InetSocketAddress> routes = new HashMap<>();
         routes.put("localhost:9443", apim);   // APIM self-emitted URLs + console
         routes.put("wso2am:9443", apim);       // APIM network alias (if ever emitted)
+        routes.put("apim-cp:9443", apim);      // Distributed CP hostname emitted by console redirects
         routes.put("wso2is:9443", is);         // federated IdP authorize/token host
         if (gatewayMappedBase != null && !gatewayMappedBase.isBlank()) {
             // The API's deployed gateway URL is https://localhost:8243/<context> (VHost "localhost"); tunnel it to
@@ -206,9 +210,9 @@ public final class PlaywrightSsoClient implements AutoCloseable {
      */
     private String consoleEntryUrl(String consoleContext) {
         if ("devportal".equals(consoleContext)) {
-            return APIM_INTERNAL + "/devportal/applications?tenant=" + devportalTenant;
+            return apimInternal + "/devportal/applications?tenant=" + devportalTenant;
         }
-        return APIM_INTERNAL + "/" + consoleContext + "/services/auth/login";
+        return apimInternal + "/" + consoleContext + "/services/auth/login";
     }
 
     /** Whether the login page is a multi-option step (carries the {@code multiOptionURI} parameter). */
@@ -222,6 +226,14 @@ public final class PlaywrightSsoClient implements AutoCloseable {
         return html.contains("BasicAuthenticator")
                 && (html.contains("OpenIDConnectAuthenticator%3A" + idpName)
                     || html.contains("OpenIDConnectAuthenticator:" + idpName));
+    }
+
+    /** Whether a multi-tenant login page offers the local and multi-tenant broker authenticators. */
+    public boolean pageOffersMultiTenantAuthenticators(String brokerIdpName) {
+        String html = page.content();
+        return html.contains("BasicAuthenticator")
+                && (html.contains("multiTenantAuthenticator%3A" + brokerIdpName)
+                    || html.contains("multiTenantAuthenticator:" + brokerIdpName));
     }
 
     /**
@@ -294,7 +306,7 @@ public final class PlaywrightSsoClient implements AutoCloseable {
      * itself rather than trying to decode anything.
      */
     public String sessionPrincipal(String consoleContext) {
-        APIResponse resp = page.request().get(APIM_INTERNAL + "/" + consoleContext + "/services/auth/introspect");
+        APIResponse resp = page.request().get(apimInternal + "/" + consoleContext + "/services/auth/introspect");
         String body;
         try {
             body = resp.text();
@@ -478,8 +490,42 @@ public final class PlaywrightSsoClient implements AutoCloseable {
                 throw e;
             }
             log.info("[SSO] console '" + consoleContext
-                    + "' navigation was interrupted by the expected login redirect; continuing with trail checks");
+                    + "' navigation was interrupted by a redirect; waiting for the redirect chain to settle");
+            waitForConsoleNavigationOutcome(consoleContext, 30000);
         }
+    }
+
+    /**
+     * Waits for an aborted console navigation to reach a meaningful terminal state. Playwright can report
+     * {@code ERR_ABORTED} when a redirect replaces the document while {@code navigate()} is waiting; returning
+     * immediately would let the next assertion inspect the previous console's page and cookies.
+     *
+     * <p>The outcome is deliberately limited to a target-console token or a login page. Reaching the callback URL
+     * alone is not terminal: the callback may redirect again without issuing the target console's token, and
+     * returning at that point would let the next assertion inspect an incomplete navigation.
+     */
+    private void waitForConsoleNavigationOutcome(String consoleContext, int timeoutMs) {
+        long deadline = System.currentTimeMillis() + timeoutMs;
+        // CHECKSTYLE:OFF deadlineLoop - browser navigation synchronization; condition-based Playwright poll
+        while (System.currentTimeMillis() < deadline) {
+            // CHECKSTYLE:ON
+            if (consoleTokenPart1("/" + consoleContext) != null
+                    || navigationServedLoginPage()) {
+                return;
+            }
+            try {
+                page.waitForTimeout(1000);
+            } catch (RuntimeException e) {
+                // The page may be replaced while the redirect chain is settling; continue checking the terminal
+                // state rather than converting a transient Playwright error into an uninformative failure.
+            }
+        }
+        throw new AssertionError("console '" + consoleContext + "' navigation did not reach a token cookie or "
+                + "login page after ERR_ABORTED within " + timeoutMs + "ms. " + pageDiagnostic());
+    }
+
+    private boolean navigationServedLoginPage() {
+        return hopsSinceConsoleOpen().stream().anyMatch(hop -> hop.contains(LOGIN_PAGE_PATH));
     }
 
     /** Document-navigation hops recorded since the most recent {@link #openConsoleExpectingSso(String)}. */
@@ -505,7 +551,7 @@ public final class PlaywrightSsoClient implements AutoCloseable {
     public void assertSameIsSessionAcrossConsoles(String consoleContext) {
         String current = isSessionCookieValue();
         if (current == null || current.isBlank()) {
-            throw new AssertionError("no " + IS_SESSION_COOKIE + " cookie for " + APIM_INTERNAL + " after landing "
+            throw new AssertionError("no " + IS_SESSION_COOKIE + " cookie for " + apimInternal + " after landing "
                     + "in the '" + consoleContext + "' console — there is no resident-IS session for a later "
                     + "console to single-sign-on with. cookies=" + cookieNames());
         }
@@ -528,7 +574,7 @@ public final class PlaywrightSsoClient implements AutoCloseable {
      * <p>The value is a session secret, so it is compared but never logged.
      */
     private String isSessionCookieValue() {
-        for (Cookie c : context.cookies(APIM_INTERNAL)) {
+        for (Cookie c : context.cookies(apimInternal)) {
             if (IS_SESSION_COOKIE.equals(c.name)) {
                 return c.value;
             }
@@ -548,7 +594,7 @@ public final class PlaywrightSsoClient implements AutoCloseable {
      */
     public void logoutFromConsole(String consoleContext) {
         int mark = docTrail.size();
-        page.navigate(APIM_INTERNAL + "/" + consoleContext + "/services/logout",
+        page.navigate(apimInternal + "/" + consoleContext + "/services/logout",
                 new Page.NavigateOptions().setWaitUntil(WaitUntilState.DOMCONTENTLOADED));
         page.waitForLoadState(com.microsoft.playwright.options.LoadState.NETWORKIDLE);
         settle();
@@ -619,7 +665,7 @@ public final class PlaywrightSsoClient implements AutoCloseable {
             log.info("[SSO] the '" + consoleContext + "' console kept no token cookie at all after logout");
             return;
         }
-        APIResponse resp = page.request().get(APIM_INTERNAL + resourcePath,
+        APIResponse resp = page.request().get(apimInternal + resourcePath,
                 RequestOptions.create().setHeader("Authorization", "Bearer " + part1));
         if (resp.status() == 200) {
             throw new AssertionError("after single logout the '" + consoleContext + "' console's token STILL "
@@ -639,7 +685,7 @@ public final class PlaywrightSsoClient implements AutoCloseable {
      */
     public void assertNoSessionCookieResidue() {
         java.util.List<String> residue = new java.util.ArrayList<>();
-        for (Cookie c : context.cookies(APIM_INTERNAL)) {
+        for (Cookie c : context.cookies(apimInternal)) {
             boolean isSessionCookie = IS_SESSION_COOKIE.equals(c.name)
                     || c.name.startsWith("AM_ACC_TOKEN")
                     || c.name.startsWith("WSO2_AM_TOKEN_1");
@@ -648,7 +694,7 @@ public final class PlaywrightSsoClient implements AutoCloseable {
             }
         }
         if (!residue.isEmpty()) {
-            throw new AssertionError("single logout left session cookie residue for " + APIM_INTERNAL + ": "
+            throw new AssertionError("single logout left session cookie residue for " + apimInternal + ": "
                     + residue + " — these still authorize calls after logout.");
         }
         log.info("[SSO] no session cookie residue remains after logout");
@@ -701,7 +747,7 @@ public final class PlaywrightSsoClient implements AutoCloseable {
         // provided endpoint triggers a browser-side reachability test the proxy can't satisfy); it is set on the
         // Endpoints config page afterwards.
         for (int attempt = 1; attempt <= 6; attempt++) {
-            page.navigate(APIM_INTERNAL + "/publisher/apis/create/rest",
+        page.navigate(apimInternal + "/publisher/apis/create/rest",
                     new Page.NavigateOptions().setWaitUntil(WaitUntilState.DOMCONTENTLOADED));
             try {
                 page.waitForSelector("[data-testid=default-api-form]",
@@ -801,7 +847,7 @@ public final class PlaywrightSsoClient implements AutoCloseable {
      * {@code Undeploy} control appears), which is the deploy-succeeded signal.
      */
     public void deployApi() {
-        page.navigate(APIM_INTERNAL + "/publisher/apis/" + currentApiId + "/deployments",
+        page.navigate(apimInternal + "/publisher/apis/" + currentApiId + "/deployments",
                 new Page.NavigateOptions().setWaitUntil(WaitUntilState.DOMCONTENTLOADED));
         Locator deploy = page.locator("#deploy-btn");
         deploy.waitFor(new Locator.WaitForOptions().setTimeout(30000));
@@ -837,7 +883,7 @@ public final class PlaywrightSsoClient implements AutoCloseable {
      * reads PUBLISHED. Requires a deployed revision (call {@link #deployApi()} first).
      */
     public void publishApi() {
-        page.navigate(APIM_INTERNAL + "/publisher/apis/" + currentApiId + "/lifecycle",
+        page.navigate(apimInternal + "/publisher/apis/" + currentApiId + "/lifecycle",
                 new Page.NavigateOptions().setWaitUntil(WaitUntilState.DOMCONTENTLOADED));
         Locator publish = page.locator("[data-testid=Publish-btn]");
         publish.waitFor(new Locator.WaitForOptions().setTimeout(30000));
@@ -871,7 +917,7 @@ public final class PlaywrightSsoClient implements AutoCloseable {
      * needs no second login. Waits for the deploy-revision REST call as the success signal.
      */
     public void redeployApi() {
-        page.navigate(APIM_INTERNAL + "/publisher/apis/" + currentApiId + "/deployments",
+        page.navigate(apimInternal + "/publisher/apis/" + currentApiId + "/deployments",
                 new Page.NavigateOptions().setWaitUntil(WaitUntilState.DOMCONTENTLOADED));
         Locator dnr = page.getByRole(AriaRole.BUTTON,
                 new Page.GetByRoleOptions().setName("Deploy New Revision"));
@@ -993,7 +1039,7 @@ public final class PlaywrightSsoClient implements AutoCloseable {
      */
     public int changeApiProviderViaAdminSession(String apiId, String newProvider) {
         // Make the Admin console the active context so its split-token cookies are present/fresh.
-        page.navigate(APIM_INTERNAL + "/admin/",
+        page.navigate(apimInternal + "/admin/",
                 new Page.NavigateOptions().setWaitUntil(WaitUntilState.DOMCONTENTLOADED));
         settle();
         String part1 = consoleTokenPart1("/admin");
@@ -1001,7 +1047,7 @@ public final class PlaywrightSsoClient implements AutoCloseable {
             throw new AssertionError("could not find the admin SSO access-token part 1 cookie "
                     + "(WSO2_AM_TOKEN_1_* at /admin). cookies=" + cookieNames());
         }
-        String url = APIM_INTERNAL + "/api/am/admin/v4/apis/" + apiId + "/change-provider?provider="
+        String url = apimInternal + "/api/am/admin/v4/apis/" + apiId + "/change-provider?provider="
                 + java.net.URLEncoder.encode(newProvider, java.nio.charset.StandardCharsets.UTF_8);
         APIResponse resp = page.request().post(url,
                 RequestOptions.create().setHeader("Authorization", "Bearer " + part1));
@@ -1039,7 +1085,7 @@ public final class PlaywrightSsoClient implements AutoCloseable {
             throw new AssertionError("no " + pathHint + " split-token cookie, so the session's principal cannot "
                     + "be read. cookies=" + cookieNames());
         }
-        String resourceUrl = APIM_INTERNAL + resourcePath;
+        String resourceUrl = apimInternal + resourcePath;
         APIResponse resp = page.request().get(resourceUrl,
                 RequestOptions.create().setHeader("Authorization", "Bearer " + part1));
         if (resp.status() != 200) {
@@ -1101,7 +1147,7 @@ public final class PlaywrightSsoClient implements AutoCloseable {
      * protected create page triggers the devportal's SSO login (reusing the shared IS session — no relogin).
      */
     public String createDevportalApp(String appName) {
-        page.navigate(APIM_INTERNAL + "/devportal/applications/create?tenant=" + devportalTenant,
+        page.navigate(apimInternal + "/devportal/applications/create?tenant=" + devportalTenant,
                 new Page.NavigateOptions().setWaitUntil(WaitUntilState.DOMCONTENTLOADED));
         page.waitForSelector("input[name=name]", new Page.WaitForSelectorOptions().setTimeout(30000));
         fillAndBlur("input[name=name]", appName);
@@ -1163,7 +1209,7 @@ public final class PlaywrightSsoClient implements AutoCloseable {
      * (pick application + business plan, click Subscribe). Waits for the subscriptions REST call as the signal.
      */
     public void subscribeAppToApi(String apiId, String appName) {
-        page.navigate(APIM_INTERNAL + "/devportal/apis/" + apiId + "/credentials?tenant=" + devportalTenant,
+        page.navigate(apimInternal + "/devportal/apis/" + apiId + "/credentials?tenant=" + devportalTenant,
                 new Page.NavigateOptions().setWaitUntil(WaitUntilState.DOMCONTENTLOADED));
         page.waitForSelector("#subscribe-to-api-btn", new Page.WaitForSelectorOptions().setTimeout(30000));
         // The "Application" select defaults to DefaultApplication — switch it to OUR app. (The "Business Plan"
@@ -1208,7 +1254,7 @@ public final class PlaywrightSsoClient implements AutoCloseable {
      * production-keys page's Generate Keys action. Waits for the generate-keys REST call as the signal.
      */
     public void generateAppKeys() {
-        page.navigate(APIM_INTERNAL + "/devportal/applications/" + currentAppId
+        page.navigate(apimInternal + "/devportal/applications/" + currentAppId
                         + "/productionkeys/oauth?tenant=" + devportalTenant,
                 new Page.NavigateOptions().setWaitUntil(WaitUntilState.DOMCONTENTLOADED));
         Locator gen = page.locator("#generate-keys");
@@ -1271,7 +1317,7 @@ public final class PlaywrightSsoClient implements AutoCloseable {
         }
         String basic = java.util.Base64.getEncoder().encodeToString(
                 (appConsumerKey + ":" + appConsumerSecret).getBytes(java.nio.charset.StandardCharsets.UTF_8));
-        APIResponse tokenResp = page.request().post(APIM_INTERNAL + "/oauth2/token",
+        APIResponse tokenResp = page.request().post(apimInternal + "/oauth2/token",
                 RequestOptions.create()
                         .setHeader("Authorization", "Basic " + basic)
                         .setForm(com.microsoft.playwright.options.FormData.create()
