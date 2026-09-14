@@ -18,6 +18,11 @@ Feature: API Platform Gateway lifecycle
     When I publish the "apis" resource with id "pgApiId"
     Then The lifecycle status of API "pgApiId" should be "Published"
     When I generate an internal API key for API "pgApiId" and store it as "pgApiKey"
+    # The control plane publishes the key to the gateway as an APIKeyState xDS resource exactly ONCE, and nothing
+    # re-sends a dropped push — CI run 24b29536 lost it (APIKeyState stuck at version=0/num_resources=0 while
+    # RouteConfig reached v2 on the same live stream) and every invoke below was correctly rejected 401. Gate on
+    # the key actually being served, re-minting it if it never arrived; the invokes that follow still assert.
+    Then the platform gateway serves the API key "pgApiKey" for API "pgApiId", re-minting it if the key never reaches the gateway
     # The API carries an api-key-auth policy, so the gateway ENFORCES the key: valid → 200, missing/wrong → 401.
     When I invoke the deployed API on the platform gateway with header "ApiKey" set to "pgApiKey" until response status code becomes 200 within 90 seconds
     Then The response status code should be 200

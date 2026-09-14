@@ -11,7 +11,6 @@
         <parameter name="initTenantUsers" value="true"/>
         <parameter name="initSecondaryUserStore" value="true"/>
         <classes>
-        <class name="org.wso2.am.integration.cucumbertests.runners.block.PublisherVersioningRunner"/>
         <class name="org.wso2.am.integration.cucumbertests.runners.block.PublisherLifecycleRunner"/>
         <class name="org.wso2.am.integration.cucumbertests.runners.block.PublisherConfigRunner"/>
         <class name="org.wso2.am.integration.cucumbertests.runners.block.PublisherOperationPoliciesRunner"/>
@@ -28,6 +27,17 @@
         <class name="org.wso2.am.integration.cucumbertests.runners.block.PublisherDefaultEndpointRunner"/>
         <class name="org.wso2.am.integration.cucumbertests.runners.block.PublisherEndpointCertificatesRunner"/>
         <class name="org.wso2.am.integration.cucumbertests.runners.block.PublisherServiceCatalogRunner"/>
+        </classes>
+    </test>
+    <!-- API versioning creates revisions against a freshly-created parent API. Keep this workflow in its own
+         sequential distributed Publisher block so concurrent lifecycle/deployment mutations cannot make that
+         parent temporarily unreadable. The runner's 201 revision and 401 authorization assertions remain unchanged. -->
+    <test name="IntegrationV2-Distributed-Publisher-Versioning" parallel="classes" thread-count="1">
+        <parameter name="blockLabel" value="distributed-publisher-versioning"/>
+        <parameter name="initTenantUsers" value="true"/>
+        <parameter name="initSecondaryUserStore" value="true"/>
+        <classes>
+        <class name="org.wso2.am.integration.cucumbertests.runners.block.PublisherVersioningRunner"/>
         </classes>
     </test>
     <!-- Additional distributed blocks verified sequentially in the first-seven focused run. -->
@@ -48,7 +58,6 @@
         <classes>
         <class name="org.wso2.am.integration.cucumbertests.runners.block.DevPortalApplicationsRunner"/>
         <class name="org.wso2.am.integration.cucumbertests.runners.block.DevPortalSearchRunner"/>
-        <class name="org.wso2.am.integration.cucumbertests.runners.block.DevPortalUnifiedSearchRunner"/>
         <class name="org.wso2.am.integration.cucumbertests.runners.block.DevPortalEnvironmentUrlsRunner"/>
         <class name="org.wso2.am.integration.cucumbertests.runners.block.DevPortalSubscriptionManagementRunner"/>
         <class name="org.wso2.am.integration.cucumbertests.runners.block.DevPortalSubscribeRunner"/>
@@ -61,19 +70,27 @@
         <class name="org.wso2.am.integration.cucumbertests.runners.block.DevPortalGraphqlComplexityRunner"/>
         </classes>
     </test>
+    <!-- Unified document search depends on asynchronous registry/Solr document-content indexing. Keep it in a
+         dedicated sequential distributed container so concurrent DevPortal API/document mutations cannot
+         reorder or starve the document indexing work. The runner and its exact-count assertions are unchanged. -->
+    <test name="IntegrationV2-Distributed-DevPortal-UnifiedSearch" parallel="classes" thread-count="1">
+        <parameter name="blockLabel" value="distributed-devportal-unified-search"/>
+        <parameter name="initTenantUsers" value="true"/>
+        <parameter name="initSecondaryUserStore" value="true"/>
+        <classes>
+        <class name="org.wso2.am.integration.cucumbertests.runners.block.DevPortalUnifiedSearchRunner"/>
+        </classes>
+    </test>
     <test name="IntegrationV2-Distributed-Gateway" parallel="classes" thread-count="2">
         <parameter name="blockLabel" value="distributed-gateway"/>
         <parameter name="initTenantUsers" value="true"/>
         <parameter name="initBackend" value="true"/>
         <classes>
-        <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayDenyEnforcementRunner"/>
         <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayRestInvocationRunner"/>
-        <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewaySoapInvocationRunner"/>
         <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayGraphQLInvocationRunner"/>
         <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewaySecurityEnforcementRunner"/>
         <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayCredentialTypeConfusionRunner"/>
         <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayBasicAuthSecurityRunner"/>
-        <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayThrottlingEnforcementRunner"/>
         <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayGraphQLScopeEnforcementRunner"/>
         <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayDefaultVersionRoutingRunner"/>
         <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayLifecycleStageInvocationRunner"/>
@@ -86,8 +103,6 @@
         <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewaySchemaValidationRunner"/>
         <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayWebSocketInvocationRunner"/>
         <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewaySseInvocationRunner"/>
-        <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayWebSubInvocationRunner"/>
-        <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayCorsRunner"/>
         <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayMediationPoliciesRunner"/>
         <class name="org.wso2.am.integration.cucumbertests.runners.block.PublisherMcpServersRunner"/>
         <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayMcpInvocationRunner"/>
@@ -99,6 +114,28 @@
         <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayGraphqlSubQueryLimitsRunner"/>
         <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayGraphqlSubscriptionTenantIsolationRunner"/>
         <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayProviderChangeInvocationRunner"/>
+        </classes>
+    </test>
+    <!-- CORS creates and deploys many API subtypes, including WSDL-generated SOAP-to-REST APIs. Keep its
+         deployment-to-Publish ordering isolated from the high-churn distributed gateway runners; the feature
+         retains exact lifecycle, CORS-header, and invocation assertions. This uses default config, not the
+         gateway-global mtlsWsCors overlay used by GatewayWebSocketCorsRunner below. -->
+    <test name="IntegrationV2-Distributed-Gateway-Cors" parallel="classes" thread-count="1">
+        <parameter name="blockLabel" value="distributed-gateway-cors"/>
+        <parameter name="initTenantUsers" value="true"/>
+        <parameter name="initBackend" value="true"/>
+        <classes>
+        <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayCorsRunner"/>
+        </classes>
+    </test>
+    <!-- SOAP-to-REST setup depends on ordered revision deployment and lifecycle events; isolate it from the
+         high-churn gateway invocation runners while retaining the exact lifecycle and invocation assertions. -->
+    <test name="IntegrationV2-Distributed-Gateway-Soap" parallel="classes" thread-count="1">
+        <parameter name="blockLabel" value="distributed-gateway-soap"/>
+        <parameter name="initTenantUsers" value="true"/>
+        <parameter name="initBackend" value="true"/>
+        <classes>
+        <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewaySoapInvocationRunner"/>
         </classes>
     </test>
     <!-- Key-manager features (token/key issuance). initBackend for the gateway invocations. -->
@@ -129,7 +166,6 @@
         <parameter name="initSecondaryUserStore" value="true"/>
         <classes>
         <class name="org.wso2.am.integration.cucumbertests.runners.block.AdminApplicationSearchRunner"/>
-        <class name="org.wso2.am.integration.cucumbertests.runners.block.AdminThrottlingPolicyRunner"/>
         <class name="org.wso2.am.integration.cucumbertests.runners.block.AdminGatewayEnvironmentsRunner"/>
         <class name="org.wso2.am.integration.cucumbertests.runners.block.AdminKeyManagerConfigRunner"/>
         <class name="org.wso2.am.integration.cucumbertests.runners.block.AdminDenyPolicyRunner"/>
@@ -140,6 +176,17 @@
         <class name="org.wso2.am.integration.cucumbertests.runners.block.AdminApiCategoriesRunner"/>
         <class name="org.wso2.am.integration.cucumbertests.runners.block.AdminApplicationOwnerChangeRunner"/>
         <class name="org.wso2.am.integration.cucumbertests.runners.block.AdminSecondaryUserStoreRunner"/>
+        </classes>
+    </test>
+    <!-- Throttling policy scenarios update API and subscription state while asynchronous key-manager/configuration
+         events may still be settling. Keep this runner in its own default distributed container and execute it
+         sequentially; this preserves the policy assertions while preventing cross-runner control-plane races. -->
+    <test name="IntegrationV2-Distributed-Admin-ThrottlingPolicy" parallel="classes" thread-count="1">
+        <parameter name="blockLabel" value="distributed-admin-throttling-policy"/>
+        <parameter name="initTenantUsers" value="true"/>
+        <parameter name="initSecondaryUserStore" value="true"/>
+        <classes>
+        <class name="org.wso2.am.integration.cucumbertests.runners.block.AdminThrottlingPolicyRunner"/>
         </classes>
     </test>
     <!-- Governance features use the distributed control-plane services and the shared backend. -->
@@ -185,7 +232,13 @@
         <parameter name="blockLabel" value="distributed-gateway-isolated-runtime"/>
         <parameter name="initTenantUsers" value="true"/>
         <parameter name="initBackend" value="true"/>
+        <parameter name="throttleDataReadinessSeconds" value="180"/>
         <classes>
+        <!-- These runners exercise shared gateway eventing/runtime state; keep them in this sequential,
+             gateway-isolated block so their setup cannot race other gateway classes. -->
+        <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayDenyEnforcementRunner"/>
+        <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayThrottlingEnforcementRunner"/>
+        <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayWebSubInvocationRunner"/>
         <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayApplicationTierChangeRunner"/>
         <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewaySubscriptionValidationDisableRunner"/>
         </classes>
@@ -210,9 +263,9 @@
         <class name="org.wso2.am.integration.cucumbertests.runners.block.Is7KeyManagerRoleEnforcementRunner"/>
         </classes>
     </test>
-    <!-- Mutual SSL, WebSocket, and CORS are Gateway-global/runtime-sensitive. Keep this block isolated and
-         sequential; its Gateway overlay configures the SSL-profile reload interval and WebSocket CORS policy. -->
-    <test name="IntegrationV2-Distributed-MutualSslWsCors" parallel="classes" thread-count="2">
+    <!-- Mutual SSL, WebSocket, and CORS share gateway-global SSL-profile/listener state and the client-certificate
+         trust store. Keep their runners sequential on the same distributed APIM block. -->
+    <test name="IntegrationV2-Distributed-MutualSslWsCors" parallel="classes" thread-count="1">
         <parameter name="blockLabel" value="distributed-mtls-ws-cors"/>
         <parameter name="initTenantUsers" value="true"/>
         <parameter name="initBackend" value="true"/>
@@ -232,7 +285,9 @@
         <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayEndpointCertificateInvocationRunner"/>
         </classes>
     </test>
-    <test name="IntegrationV2-Distributed-CustomAuthAndAppSharing" parallel="classes" thread-count="2">
+    <!-- Custom auth is gateway-global and application sharing is CP-global. Keep both runners sequential on
+         this distributed block; unrelated distributed blocks remain parallel. -->
+    <test name="IntegrationV2-Distributed-CustomAuthAndAppSharing" parallel="classes" thread-count="1">
         <parameter name="blockLabel" value="distributed-custom-auth-sharing"/>
         <parameter name="initTenantUsers" value="true"/>
         <parameter name="initBackend" value="true"/>
@@ -243,7 +298,7 @@
         <class name="org.wso2.am.integration.cucumbertests.runners.block.DevPortalApplicationSharingRunner"/>
         </classes>
     </test>
-    <test name="IntegrationV2-Distributed-ApplicationAttributes" parallel="classes" thread-count="2">
+    <test name="IntegrationV2-Distributed-ApplicationAttributes" parallel="classes" thread-count="1">
         <parameter name="blockLabel" value="distributed-application-attributes"/>
         <parameter name="initTenantUsers" value="true"/>
         <parameter name="initBackend" value="true"/>
@@ -278,7 +333,10 @@
         <class name="org.wso2.am.integration.cucumbertests.runners.block.TokenExchangeDisabledRunner"/>
         </classes>
     </test>
-    <test name="IntegrationV2-Distributed-ThrottlingAndAllowedScopes" parallel="classes" thread-count="2">
+    <!-- TM and Gateway share the throttleData publisher/consumer pipeline and registry state. A class-parallel
+         block can race that singleton initialization even when the API traffic is otherwise independent. Keep
+         this distributed block sequential; the feature gates both component log markers before enforcement. -->
+    <test name="IntegrationV2-Distributed-ThrottlingAndAllowedScopes" parallel="classes" thread-count="1">
         <parameter name="blockLabel" value="distributed-throttling-allowed-scopes"/>
         <parameter name="initTenantUsers" value="true"/>
         <parameter name="initBackend" value="true"/>
@@ -427,6 +485,7 @@
         <parameter name="blockLabel" value="distributed-logging"/>
         <parameter name="initTenantUsers" value="true"/>
         <parameter name="initBackend" value="true"/>
+        <parameter name="tomlExtraOverlayPath.cp" value="src/test/resources/artifacts/configFiles/logging/distributed-gateway-overlay.toml"/>
         <parameter name="tomlExtraOverlayPath.gateway" value="src/test/resources/artifacts/configFiles/logging/distributed-gateway-overlay.toml"/>
         <classes>
         <class name="org.wso2.am.integration.cucumbertests.runners.block.AnalyticsCorrelationLoggingRunner"/>
@@ -539,6 +598,7 @@
          creation, deployment, subscription, Gateway invocation, cross-console SSO, provider change, and logout. -->
     <test name="IntegrationV2-Distributed-ExternalIdpConsoleSso" parallel="classes" thread-count="1">
         <parameter name="blockLabel" value="distributed-external-idp-sso"/>
+        <parameter name="lifecycleLock" value="browser-sso"/>
         <parameter name="initTenantUsers" value="true"/>
         <parameter name="initBackend" value="true"/>
         <parameter name="bootExternalIdentityServer" value="true"/>
@@ -550,6 +610,7 @@
          distributed CP/Gateway SSO overlay. Verified in the focused distributed suite. -->
     <test name="IntegrationV2-Distributed-MultiTenantSso" parallel="classes" thread-count="1">
         <parameter name="blockLabel" value="distributed-mt-sso"/>
+        <parameter name="lifecycleLock" value="browser-sso"/>
         <parameter name="initBackend" value="true"/>
         <parameter name="bootExternalIdentityServer" value="true"/>
         <parameter name="receiveExternalIsNotifications" value="true"/>

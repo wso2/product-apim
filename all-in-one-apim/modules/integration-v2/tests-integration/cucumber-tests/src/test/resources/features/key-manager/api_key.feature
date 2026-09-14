@@ -20,7 +20,10 @@ Feature: Key Manager API Key
       ["api_key", "oauth_basic_auth_api_key_mandatory", "oauth2"]
       """
     Then The response status code should be 200
-    When I retrieve the "apis" resource with id "createdApiId"
+    When I retrieve the "apis" resource with id "createdApiId" until its security schemes equal the following within 180 seconds:
+      """
+      ["api_key", "oauth_basic_auth_api_key_mandatory", "oauth2"]
+      """
     Then The response field "securityScheme[*]" should be exactly the list "api_key,oauth_basic_auth_api_key_mandatory,oauth2"
     And I extract response field "context" and store it as "apiContext"
 
@@ -397,6 +400,16 @@ Feature: Key Manager API Key
   Scenario Outline: An API key invokes a subscriptionless API without any subscription as <actor>
     Given The system is ready
     And I have valid access tokens as "<actor>"
+
+    # The DefaultSubscriptionless tier is conditional on this tenant setting. Capture and register the original
+    # configuration before enabling it so each tenant row is deterministic and cleanup restores the fixture on failure.
+    When I capture the tenant configuration as "slOriginalTenantConf"
+    And I register tenant configuration "slOriginalTenantConf" for cleanup
+    And I copy context value "slOriginalTenantConf" to "slEnabledTenantConf"
+    And I set the boolean field "AllowSubscriptionValidationDisabling" to "true" in the payload "slEnabledTenantConf"
+    And I update the tenant configuration from "slEnabledTenantConf"
+    Then The response status code should be 200
+
     And I have created an api from "artifacts/payloads/create_apim_test_api.json" as "slApiId" and deployed it
     When I retrieve the "apis" resource with id "slApiId"
     Then The response status code should be 200
@@ -447,6 +460,10 @@ Feature: Key Manager API Key
     Then The response status code should be 200
     And The value of response field "id" should be "123"
     And The value of response field "name" should be "John"
+
+    # Restore the tenant configuration explicitly; the cleanup registration above is the failure-safe backstop.
+    When I update the tenant configuration from "slOriginalTenantConf"
+    Then The response status code should be 200
 
     Examples:
       | actor             |

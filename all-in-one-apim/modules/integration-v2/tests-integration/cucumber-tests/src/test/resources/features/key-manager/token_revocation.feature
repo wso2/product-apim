@@ -69,10 +69,11 @@ Feature: Key Manager Token Revocation
 
     When I attach the common operation policy "revokeOneTimeToken" to operation 0 of API "ottApiId" in flows "request" with parameters "{\"scope\":\"OTT\"}"
     Then The response status code should be 200
-    When I publish the "apis" resource with id "ottApiId"
-    Then The lifecycle status of API "ottApiId" should be "Published"
     And I deploy the API with id "ottApiId"
     Then The response status code should be 201
+    And the "apis" resource "ottApiId" should be live on the gateway, redeploying if propagation is lost
+    When I publish the "apis" resource with id "ottApiId"
+    Then The lifecycle status of API "ottApiId" should be "Published"
 
     When I put JSON payload from file "artifacts/payloads/create_apim_test_app.json" in context as "ottAppPayload"
     And I create an application with payload "ottAppPayload"
@@ -136,10 +137,11 @@ Feature: Key Manager Token Revocation
 
     When I attach the common operation policy "revokeOneTimeToken" to operation 0 of API "ottOutApiId" in flows "request" with parameters "{\"scope\":\"OTT\"}"
     Then The response status code should be 200
-    When I publish the "apis" resource with id "ottOutApiId"
-    Then The lifecycle status of API "ottOutApiId" should be "Published"
     And I deploy the API with id "ottOutApiId"
     Then The response status code should be 201
+    And the "apis" resource "ottOutApiId" should be live on the gateway, redeploying if propagation is lost
+    When I publish the "apis" resource with id "ottOutApiId"
+    Then The lifecycle status of API "ottOutApiId" should be "Published"
 
     When I put JSON payload from file "artifacts/payloads/create_apim_test_app.json" in context as "ottOutAppPayload"
     And I create an application with payload "ottOutAppPayload"

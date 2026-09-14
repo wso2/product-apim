@@ -53,7 +53,7 @@ public class NodeAppServer {
     // Every port listed also joins the startup liveness set (Wait.forListeningPort waits on ALL exposed ports),
     // so an app added here must actually listen or every block's boot stalls.
     private final Integer[] exposedPorts = {3000, 3001, 3002, 3003, 3004, 3005, 3006, 3007, 3008, 3009, 3010, 3011,
-            3012, 3013, 3014, 3015, 3016, 3017, 3018, 3019, 3021, 3022, 3023, 3024, 3026};
+            3012, 3013, 3014, 3015, 3016, 3017, 3018, 3019, 3021, 3022, 3023, 3024, 3026, 3027};
 
     /** Attempts to draw a fresh set of host ports when docker reports one of them already bound. */
     private static final int START_ATTEMPTS = 4;

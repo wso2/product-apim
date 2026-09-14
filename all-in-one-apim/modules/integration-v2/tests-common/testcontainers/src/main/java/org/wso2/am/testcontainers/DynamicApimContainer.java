@@ -277,7 +277,9 @@ public class DynamicApimContainer extends GenericContainer<DynamicApimContainer>
 
     @Override
     public String getBackendOAuthTokenUrl() {
-        return getServletHttpsUrl() + "oauth2/token";
+        // This URL is consumed from inside the APIM container. Do not use the host-mapped servlet URL here:
+        // the mapped port is reachable from the test JVM, not from the container's network namespace.
+        return "https://localhost:9443/oauth2/token";
     }
 
     public String getGatewayHttpsUrl() {
@@ -429,6 +431,12 @@ public class DynamicApimContainer extends GenericContainer<DynamicApimContainer>
 
     @Override
     public String readControlPlaneLogFile(String fileName) {
+        return readContainerFile(getContainerLogFilePath(fileName));
+    }
+
+    @Override
+    public String readTrafficManagerLogFile(String fileName) {
+        // The all-in-one distribution publishes and consumes throttle events in the same Carbon JVM.
         return readContainerFile(getContainerLogFilePath(fileName));
     }
 

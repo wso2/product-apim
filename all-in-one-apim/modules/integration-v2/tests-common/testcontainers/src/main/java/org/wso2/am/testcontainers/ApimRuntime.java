@@ -95,6 +95,9 @@ public interface ApimRuntime {
     /** Read a log file from the component that serves control-plane requests. */
     String readControlPlaneLogFile(String fileName);
 
+    /** Read a log file from the component that publishes traffic-manager events. */
+    String readTrafficManagerLogFile(String fileName);
+
     String readContainerFile(String containerPath);
 
     void writeContainerFile(String containerPath, String content);

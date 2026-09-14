@@ -21,6 +21,7 @@ Feature: Gateway Invocation After An API Provider Change
     And I have created an api from "artifacts/payloads/create_apim_test_api.json" as "pciApiId" and deployed it
     # Keep the deployed revision's id: it is undeployed and replaced AFTER the provider change.
     And I put value "revisionId" in context as "pciRevision1"
+    And the "apis" resource "pciApiId" should be live on the gateway, redeploying if propagation is lost and updating revision key "pciRevision1"
     When I publish the "apis" resource with id "pciApiId"
     Then The lifecycle status of API "pciApiId" should be "Published"
     When I retrieve the "apis" resource with id "pciApiId"
@@ -94,7 +95,7 @@ Feature: Gateway Invocation After An API Provider Change
     When I deploy revision "gciRevision1" of "apis" resource "gciApiId"
     Then The response status code should be 201
     And I wait for deployment of the resource in "gciRetrievedPayload"
-    And the "apis" resource "gciApiId" should be live on the gateway, redeploying if propagation is lost
+    And the "apis" resource "gciApiId" should be live on the gateway, redeploying if propagation is lost and updating revision key "gciRevision1"
     And I publish the "apis" resource with id "gciApiId"
     Then The lifecycle status of API "gciApiId" should be "Published"
 

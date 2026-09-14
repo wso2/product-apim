@@ -200,7 +200,7 @@ module.exports = {
     script: "./tenant1-tls-backend/server.js",
     cwd: "./",
     env: {
-      PORT: 3026
+      PORT: 3027
     }
   },
   {

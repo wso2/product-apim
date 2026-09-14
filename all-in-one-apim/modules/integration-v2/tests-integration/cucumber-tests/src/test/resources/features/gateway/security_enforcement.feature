@@ -571,7 +571,7 @@ Feature: Gateway Security Enforcement
     Then The lifecycle status of API "epApiId" should be "Published"
     # Deploy-readiness gate: the gateway invokes below can only retry the REQUEST, and a lost runtime
     # propagation event is unrecoverable that way (it produced three 404 "Invalid URL" failures in this
-    # runner). This re-fires the deploy if the artifact never lands (utils/Utils awaitWithRetry).
+    # runner). This re-fires the deploy if the artifact never lands (utils/HealGate awaitOrHeal).
     And the "apis" resource "epApiId" should be live on the gateway, redeploying if propagation is lost
     When I retrieve the "apis" resource with id "epApiId"
     And I extract response field "context" and store it as "epContext"
@@ -607,7 +607,7 @@ Feature: Gateway Security Enforcement
     Then The lifecycle status of API "epsymApiId" should be "Published"
     # Deploy-readiness gate: the gateway invokes below can only retry the REQUEST, and a lost runtime
     # propagation event is unrecoverable that way (it produced three 404 "Invalid URL" failures in this
-    # runner). This re-fires the deploy if the artifact never lands (utils/Utils awaitWithRetry).
+    # runner). This re-fires the deploy if the artifact never lands (utils/HealGate awaitOrHeal).
     And the "apis" resource "epsymApiId" should be live on the gateway, redeploying if propagation is lost
     When I retrieve the "apis" resource with id "epsymApiId"
     And I extract response field "context" and store it as "epsymCtx"
@@ -665,7 +665,7 @@ Feature: Gateway Security Enforcement
     Then The lifecycle status of API "epsApiId" should be "Published"
     # Deploy-readiness gate: the gateway invokes below can only retry the REQUEST, and a lost runtime
     # propagation event is unrecoverable that way (it produced three 404 "Invalid URL" failures in this
-    # runner). This re-fires the deploy if the artifact never lands (utils/Utils awaitWithRetry).
+    # runner). This re-fires the deploy if the artifact never lands (utils/HealGate awaitOrHeal).
     And the "apis" resource "epsApiId" should be live on the gateway, redeploying if propagation is lost
     # Retrieved API redacts the stored backend passwords (never returned in plaintext).
     When I retrieve the "apis" resource with id "epsApiId"
@@ -725,7 +725,7 @@ Feature: Gateway Security Enforcement
     Then The lifecycle status of API "epcApiId" should be "Published"
     # Deploy-readiness gate: the gateway invokes below can only retry the REQUEST, and a lost runtime
     # propagation event is unrecoverable that way (it produced three 404 "Invalid URL" failures in this
-    # runner). This re-fires the deploy if the artifact never lands (utils/Utils awaitWithRetry).
+    # runner). This re-fires the deploy if the artifact never lands (utils/HealGate awaitOrHeal).
     And the "apis" resource "epcApiId" should be live on the gateway, redeploying if propagation is lost
     When I retrieve the "apis" resource with id "epcApiId"
     And I extract response field "context" and store it as "epcCtx"
@@ -778,7 +778,7 @@ Feature: Gateway Security Enforcement
     Then The lifecycle status of API "epcApiId" should be "Published"
     # Deploy-readiness gate: the gateway invokes below can only retry the REQUEST, and a lost runtime
     # propagation event is unrecoverable that way (it produced three 404 "Invalid URL" failures in this
-    # runner). This re-fires the deploy if the artifact never lands (utils/Utils awaitWithRetry).
+    # runner). This re-fires the deploy if the artifact never lands (utils/HealGate awaitOrHeal).
     And the "apis" resource "epcApiId" should be live on the gateway, redeploying if propagation is lost
     When I retrieve the "apis" resource with id "epcApiId"
     And I extract response field "context" and store it as "epcCtx"
@@ -849,7 +849,7 @@ Feature: Gateway Security Enforcement
     Then The lifecycle status of API "epcApiId" should be "Published"
     # Deploy-readiness gate: the gateway invokes below can only retry the REQUEST, and a lost runtime
     # propagation event is unrecoverable that way (it produced three 404 "Invalid URL" failures in this
-    # runner). This re-fires the deploy if the artifact never lands (utils/Utils awaitWithRetry).
+    # runner). This re-fires the deploy if the artifact never lands (utils/HealGate awaitOrHeal).
     And the "apis" resource "epcApiId" should be live on the gateway, redeploying if propagation is lost
     When I retrieve the "apis" resource with id "epcApiId"
     And I extract response field "context" and store it as "epcCtx"
@@ -917,7 +917,7 @@ Feature: Gateway Security Enforcement
     Then The lifecycle status of API "epsApiId" should be "Published"
     # Deploy-readiness gate: the gateway invokes below can only retry the REQUEST, and a lost runtime
     # propagation event is unrecoverable that way (it produced three 404 "Invalid URL" failures in this
-    # runner). This re-fires the deploy if the artifact never lands (utils/Utils awaitWithRetry).
+    # runner). This re-fires the deploy if the artifact never lands (utils/HealGate awaitOrHeal).
     And the "apis" resource "epsApiId" should be live on the gateway, redeploying if propagation is lost
     When I retrieve the "apis" resource with id "epsApiId"
     Then The response should not contain "admin123"
@@ -973,7 +973,7 @@ Feature: Gateway Security Enforcement
     Then The lifecycle status of API "epsApiId" should be "Published"
     # Deploy-readiness gate: the gateway invokes below can only retry the REQUEST, and a lost runtime
     # propagation event is unrecoverable that way (it produced three 404 "Invalid URL" failures in this
-    # runner). This re-fires the deploy if the artifact never lands (utils/Utils awaitWithRetry).
+    # runner). This re-fires the deploy if the artifact never lands (utils/HealGate awaitOrHeal).
     And the "apis" resource "epsApiId" should be live on the gateway, redeploying if propagation is lost
     When I retrieve the "apis" resource with id "epsApiId"
     Then The response should not contain "admin123"
@@ -1042,7 +1042,7 @@ Feature: Gateway Security Enforcement
     Then The lifecycle status of API "epoApiId" should be "Published"
     # Deploy-readiness gate: the gateway invokes below can only retry the REQUEST, and a lost runtime
     # propagation event is unrecoverable that way (it produced three 404 "Invalid URL" failures in this
-    # runner). This re-fires the deploy if the artifact never lands (utils/Utils awaitWithRetry).
+    # runner). This re-fires the deploy if the artifact never lands (utils/HealGate awaitOrHeal).
     And the "apis" resource "epoApiId" should be live on the gateway, redeploying if propagation is lost
     When I retrieve the "apis" resource with id "epoApiId"
     And I extract response field "context" and store it as "epoCtx"
@@ -1163,7 +1163,7 @@ Feature: Gateway Security Enforcement
     Then The lifecycle status of API "eppApiId" should be "Published"
     # Deploy-readiness gate: the gateway invokes below can only retry the REQUEST, and a lost runtime
     # propagation event is unrecoverable that way (it produced three 404 "Invalid URL" failures in this
-    # runner). This re-fires the deploy if the artifact never lands (utils/Utils awaitWithRetry).
+    # runner). This re-fires the deploy if the artifact never lands (utils/HealGate awaitOrHeal).
     And the "apis" resource "eppApiId" should be live on the gateway, redeploying if propagation is lost
     When I retrieve the "apis" resource with id "eppApiId"
     And I extract response field "context" and store it as "eppCtx"

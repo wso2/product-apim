@@ -25,8 +25,8 @@ import io.cucumber.testng.CucumberOptions;
  * IntegrationV2-WsProxyAuthWrongCreds block whose deployment.toml overlay (wsProxyAuthWrongCreds)
  * points nodebackend at squid-proxy:3129 (the Basic-auth Squid instance) with incorrect
  * credentials. Squid returns 407, the CONNECT tunnel is never established, and the WS upgrade
- * fails. A CONNECT count of 1 confirms the rejection came from Squid credential validation
- * rather than a pre-proxy network failure.
+ * fails. A non-zero authenticated CONNECT count, together with Squid's 407 response, confirms the rejection came
+ * from credential validation rather than a pre-proxy network failure.
  */
 @CucumberOptions(
         features = {

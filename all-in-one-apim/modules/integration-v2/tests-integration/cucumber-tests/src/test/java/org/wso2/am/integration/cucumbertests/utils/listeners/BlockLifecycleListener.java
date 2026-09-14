@@ -29,6 +29,7 @@ import org.wso2.am.integration.cucumbertests.utils.ModulePathResolver;
 import org.wso2.am.integration.cucumbertests.utils.ServerReadiness;
 import org.wso2.am.integration.cucumbertests.utils.SecondaryUserStoreProvisioner;
 import org.wso2.am.integration.cucumbertests.utils.TenantUserProvisioner;
+import org.wso2.am.integration.cucumbertests.utils.ThrottleDataReadiness;
 import org.wso2.am.integration.cucumbertests.utils.TestContext;
 import org.wso2.am.integration.cucumbertests.utils.Utils;
 import org.wso2.am.integration.test.utils.Constants;
@@ -46,6 +47,9 @@ import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Semaphore;
 
 /**
  * Per-block lifecycle for the parallel-on-shared-container lane. Fires once per TestNG {@code <test>}
@@ -78,6 +82,10 @@ public class BlockLifecycleListener implements ITestListener {
 
     /** Optional {@code <parameter>} names read from the block's {@code <test>}. */
     static final String PARAM_BLOCK_LABEL = "blockLabel";
+    /** Optional named lifecycle lock held from block boot through block teardown. */
+    static final String PARAM_LIFECYCLE_LOCK = "lifecycleLock";
+    private static final String LIFECYCLE_LOCK_KEY = "lifecycleLockPermit";
+    private static final Map<String, Semaphore> LIFECYCLE_LOCKS = new ConcurrentHashMap<>();
     static final String PARAM_TOML_OVERLAY = "tomlOverlayPath";
     /**
      * Optional path to a small feature-specific TOML overlay merged on top of the default {@code basic}
@@ -165,6 +173,8 @@ public class BlockLifecycleListener implements ITestListener {
      * name pointing at APIM (IS, Solace) is per-block instead.
      */
     static final String PARAM_INIT_BACKEND = "initBackend";
+    /** When set, fail block bootstrap unless the TM-to-Gateway throttle-data pipeline is healthy. */
+    static final String PARAM_THROTTLE_DATA_READINESS_SECONDS = "throttleDataReadinessSeconds";
     /**
      * When {@code true}, onStart boots {@link DynamicSolaceBroker} — a faked Solace connector control plane
      * (network alias {@code solaceshim}) plus a REAL PubSub+ broker (alias {@code solacebroker}) — BEFORE APIM,
@@ -305,6 +315,7 @@ public class BlockLifecycleListener implements ITestListener {
         // leaks a live Docker container for the JVM lifetime (only reaped later by Ryuk).
         ApimRuntime container = null;
         try {
+            acquireLifecycleLock(context, label);
             // Every block runs on its OWN private docker network, which is what makes the lane's fixed aliases
             // (wso2am / wso2is / apimforsolace / solaceshim / nodebackend) network-scoped instead of JVM-unique.
             // Created first and published immediately so BOTH the boot-failure catch and onFinish can tear it
@@ -379,6 +390,16 @@ public class BlockLifecycleListener implements ITestListener {
                         + (Constants.SERVER_STARTUP_WAIT_TIME / 1000) + "s");
             }
 
+            String throttleReadinessSeconds = param(context, PARAM_THROTTLE_DATA_READINESS_SECONDS);
+            if (throttleReadinessSeconds != null && !throttleReadinessSeconds.isBlank()) {
+                int timeoutSeconds = Integer.parseInt(throttleReadinessSeconds);
+                ThrottleDataReadiness.Result readiness = ThrottleDataReadiness.await(container, timeoutSeconds);
+                if (!readiness.ready()) {
+                    throw new IllegalStateException("Throttle-data infrastructure for block '" + label
+                            + "' did not become ready within " + timeoutSeconds + "s: " + readiness.diagnostics());
+                }
+            }
+
             TestContext.setShared(CONTAINER_KEY, container);
             TestContext.setShared(BASE_URL_KEY, baseUrl);
             TestContext.setShared(BACKEND_OAUTH_TOKEN_URL_KEY, container.getBackendOAuthTokenUrl());
@@ -441,6 +462,7 @@ public class BlockLifecycleListener implements ITestListener {
             // path runs second finds nothing left to do rather than double-closing (a double close would log a
             // spurious docker "network not found" and mask a genuine leak).
             teardownBlockInfra(label);
+            releaseLifecycleLock(label);
         } finally {
             // Defensive hygiene: never leave this block's scope bound to the (pooled) thread that ran
             // onStart. Per-invocation scoping in BlockScopeListener already resets scope before any body
@@ -483,8 +505,41 @@ public class BlockLifecycleListener implements ITestListener {
             // AFTER the APIM container is stopped — a container still connected keeps the network un-removable,
             // so the order (APIM stop -> IS/Solace stop -> backend detach -> network close) is load-bearing.
             teardownBlockInfra(label);
+            releaseLifecycleLock(label);
             TestContext.clear();
             TestContext.clearScope();
+        }
+    }
+
+    /**
+     * Acquires an optional named permit before a block creates Docker resources. The permit remains held until
+     * {@link #onFinish(ITestContext)} has completed teardown, so protected blocks cannot overlap container or
+     * network shutdown. Blocks without the parameter retain the normal parallel lane.
+     */
+    private void acquireLifecycleLock(ITestContext context, String label) {
+        String lockName = param(context, PARAM_LIFECYCLE_LOCK);
+        if (lockName == null || lockName.isBlank()) {
+            return;
+        }
+        Semaphore lock = LIFECYCLE_LOCKS.computeIfAbsent(lockName, ignored -> new Semaphore(1, true));
+        try {
+            lock.acquire();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IllegalStateException("Interrupted while waiting for lifecycle lock '" + lockName
+                    + "' for block '" + label + "'", e);
+        }
+        TestContext.setShared(LIFECYCLE_LOCK_KEY, lock);
+        logger.info("Block '" + label + "' acquired lifecycle lock '" + lockName + "'");
+    }
+
+    /** Releases a permit only after all resources owned by the block have been torn down. */
+    private void releaseLifecycleLock(String label) {
+        Object permit = TestContext.get(LIFECYCLE_LOCK_KEY);
+        if (permit instanceof Semaphore lock) {
+            TestContext.removeShared(LIFECYCLE_LOCK_KEY);
+            lock.release();
+            logger.info("Block '" + label + "' released its lifecycle lock");
         }
     }
 

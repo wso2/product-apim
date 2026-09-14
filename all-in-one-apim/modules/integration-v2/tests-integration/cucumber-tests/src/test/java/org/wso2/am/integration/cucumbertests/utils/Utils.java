@@ -898,6 +898,11 @@ public class Utils {
         return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "apis/" + apiId + "/lifecycle-state";
     }
 
+    /** Publisher — retrieve the authoritative lifecycle state of an API product (GET). */
+    public static String getAPIProductLifecycleStateURL(String baseUrl, String apiProductId) {
+        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "api-products/" + apiProductId + "/lifecycle-state";
+    }
+
     /** Publisher — the lifecycle audit-trail / state-transition history of an API (GET). */
     public static String getAPILifecycleHistoryURL(String baseUrl, String apiId) {
         return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "apis/" + apiId + "/lifecycle-history";

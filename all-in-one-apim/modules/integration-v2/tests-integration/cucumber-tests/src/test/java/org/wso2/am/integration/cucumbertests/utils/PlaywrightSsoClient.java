@@ -439,6 +439,32 @@ public final class PlaywrightSsoClient implements AutoCloseable {
                     + "issued no session token cookie of its own within 30s (the federated auth / JIT / token "
                     + "exchange did not complete). " + pageDiagnostic());
         }
+        // The token cookie can be issued by the callback before the browser finishes its final SPA navigation.
+        // Do not let the next step start a second navigation while that callback is still redirecting.
+        waitForAuthenticatedConsoleRoute(consoleContext, 30000);
+    }
+
+    /** Waits until the authenticated console has left its authentication callback and finished document loading. */
+    private void waitForAuthenticatedConsoleRoute(String consoleContext, int timeoutMs) {
+        try {
+            page.waitForURL(url -> isAuthenticatedConsoleRoute(consoleContext, url),
+                    new Page.WaitForURLOptions().setTimeout(timeoutMs));
+            page.waitForLoadState(com.microsoft.playwright.options.LoadState.LOAD,
+                    new Page.WaitForLoadStateOptions().setTimeout(timeoutMs));
+        } catch (RuntimeException e) {
+            throw new AssertionError("the '" + consoleContext + "' console issued its token but its browser route "
+                    + "did not settle within " + timeoutMs + "ms. " + pageDiagnostic(), e);
+        }
+    }
+
+    private static boolean isAuthenticatedConsoleRoute(String consoleContext, String url) {
+        try {
+            String path = URI.create(url).getPath();
+            String consolePrefix = "/" + consoleContext + "/";
+            return path.startsWith(consolePrefix) && !path.contains("/services/auth/");
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
     }
 
     /** Polls the cookie store until an {@code AM_ACC_TOKEN…} cookie appears or the timeout elapses. */
@@ -486,7 +512,7 @@ public final class PlaywrightSsoClient implements AutoCloseable {
             // can report ERR_ABORTED when that redirect replaces the document while navigate() is waiting for
             // DOMContentLoaded. The document response trail still records the redirect and is what the fresh-login
             // assertion evaluates; unrelated navigation failures must remain visible to the test.
-            if (!e.getMessage().contains("net::ERR_ABORTED")) {
+            if (!isRedirectAborted(e)) {
                 throw e;
             }
             log.info("[SSO] console '" + consoleContext
@@ -594,9 +620,22 @@ public final class PlaywrightSsoClient implements AutoCloseable {
      */
     public void logoutFromConsole(String consoleContext) {
         int mark = docTrail.size();
-        page.navigate(apimInternal + "/" + consoleContext + "/services/logout",
-                new Page.NavigateOptions().setWaitUntil(WaitUntilState.DOMCONTENTLOADED));
-        page.waitForLoadState(com.microsoft.playwright.options.LoadState.NETWORKIDLE);
+        try {
+            page.navigate(apimInternal + "/" + consoleContext + "/services/logout",
+                    new Page.NavigateOptions().setWaitUntil(WaitUntilState.DOMCONTENTLOADED));
+            page.waitForLoadState(com.microsoft.playwright.options.LoadState.NETWORKIDLE);
+        } catch (PlaywrightException e) {
+            // Federated logout replaces the current document several times (APIM -> resident IS -> external IdP ->
+            // APIM callback). Chromium can report ERR_ABORTED when one redirect replaces the document while
+            // navigate()/waitForLoadState() is waiting. The callback response trail is the reliable completion
+            // signal; unrelated browser failures must still fail immediately.
+            if (!isRedirectAborted(e)) {
+                throw e;
+            }
+            log.info("[SSO] '" + consoleContext
+                    + "' logout navigation was interrupted by a redirect; waiting for its callback");
+            waitForLogoutNavigationOutcome(consoleContext, mark, 30000);
+        }
         settle();
         // Fail HERE if the logout endpoint did not answer. Otherwise the session simply survives and the residue
         // assertions below report a global-logout failure, which reads as a product defect rather than a bad URL.
@@ -609,6 +648,45 @@ public final class PlaywrightSsoClient implements AutoCloseable {
             }
         }
         log.info("[SSO] logged out of the '" + consoleContext + "' console");
+    }
+
+    /** Waits for the logout callback after Playwright reports a redirect-induced navigation abort. */
+    private void waitForLogoutNavigationOutcome(String consoleContext, int trailMark, int timeoutMs) {
+        String callback = "/" + consoleContext + "/services/auth/callback/logout";
+        long deadline = System.currentTimeMillis() + timeoutMs;
+        // CHECKSTYLE:OFF deadlineLoop - browser navigation synchronization; condition-based Playwright poll
+        while (System.currentTimeMillis() < deadline) {
+            // CHECKSTYLE:ON
+            java.util.List<String> all = new java.util.ArrayList<>(docTrail);
+            int from = Math.min(trailMark, all.size());
+            if (all.subList(from, all.size()).stream().anyMatch(hop -> hop.contains(callback))) {
+                try {
+                    page.waitForLoadState(com.microsoft.playwright.options.LoadState.LOAD,
+                            new Page.WaitForLoadStateOptions().setTimeout(5000));
+                } catch (RuntimeException ignored) {
+                    // The callback itself is the terminal redirect evidence; downstream assertions validate the
+                    // callback and session state, so a late load-state notification is not a separate failure.
+                }
+                return;
+            }
+            try {
+                page.waitForTimeout(500);
+            } catch (RuntimeException ignored) {
+                // The page may be replaced during the federated chain; continue checking the response trail.
+            }
+        }
+        throw new AssertionError("console '" + consoleContext + "' logout did not reach its callback after "
+                + "ERR_ABORTED within " + timeoutMs + "ms. " + pageDiagnostic());
+    }
+
+    private static boolean isRedirectAborted(PlaywrightException exception) {
+        return exception.getMessage() != null && exception.getMessage().contains("net::ERR_ABORTED");
+    }
+
+    private static boolean isNavigationInterrupted(PlaywrightException exception) {
+        String message = exception.getMessage();
+        return message != null && (message.contains("net::ERR_ABORTED")
+                || message.contains("interrupted by another navigation"));
     }
 
     /** Requires the logout flow to return through the console's registered logout callback. */
@@ -747,8 +825,21 @@ public final class PlaywrightSsoClient implements AutoCloseable {
         // provided endpoint triggers a browser-side reachability test the proxy can't satisfy); it is set on the
         // Endpoints config page afterwards.
         for (int attempt = 1; attempt <= 6; attempt++) {
-        page.navigate(apimInternal + "/publisher/apis/create/rest",
-                    new Page.NavigateOptions().setWaitUntil(WaitUntilState.DOMCONTENTLOADED));
+            try {
+                page.navigate(apimInternal + "/publisher/apis/create/rest",
+                        new Page.NavigateOptions().setWaitUntil(WaitUntilState.DOMCONTENTLOADED));
+            } catch (PlaywrightException e) {
+                // The SSO callback may still be replacing /publisher/ when this step begins. The create form has
+                // not been submitted, so retrying this navigation is side-effect free; unrelated browser errors
+                // must remain visible to the test.
+                if (!isNavigationInterrupted(e)) {
+                    throw e;
+                }
+                log.info("[SSO-WORK] create navigation was interrupted by the SSO callback; waiting for the "
+                        + "Publisher route to settle before retrying");
+                waitForAuthenticatedConsoleRoute("publisher", 30000);
+                continue;
+            }
             try {
                 page.waitForSelector("[data-testid=default-api-form]",
                         new Page.WaitForSelectorOptions().setTimeout(30000));

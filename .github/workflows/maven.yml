@@ -105,6 +105,8 @@ jobs:
       - name: Publish Test Report
         if: always()
         uses: malinthaprasan/action-surefire-report@v1
+        env:
+          NODE_OPTIONS: --max-old-space-size=8192
         with:
           report_paths: 'reports/**/TEST-*.xml'
   # Builds the distribution + Docker images ONCE, then shares the non-public images (docker save ->
@@ -209,7 +211,7 @@ jobs:
       - name: Build integration Docker images (no suite)
         working-directory: all-in-one-apim/modules/integration-v2
         run: >
-          mvn install -pl tests-integration/cucumber-tests -am -DskipTests
+          mvn install -Pinclude-distributed-images -pl tests-integration/cucumber-tests -am -DskipTests
           -Dapim.server.version="$APIM_VERSION"
           -Ddistributed.apim.cp.image.name="distributed-apim-cp:${CP_VERSION}-jdk21"
           -Ddistributed.apim.tm.image.name="distributed-apim-tm:${TM_VERSION}-jdk21"
@@ -396,6 +398,8 @@ jobs:
       - name: Publish v2 test report
         if: always()
         uses: malinthaprasan/action-surefire-report@v1
+        env:
+          NODE_OPTIONS: --max-old-space-size=8192
         with:
           report_paths: 'all-in-one-apim/modules/integration-v2/tests-integration/cucumber-tests/target/surefire-reports/TEST-*.xml'
           check_name: 'integration-v2 results'

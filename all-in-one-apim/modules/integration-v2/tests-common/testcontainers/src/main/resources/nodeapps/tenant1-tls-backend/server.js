@@ -5,7 +5,7 @@ const path = require('path');
 
 const app = express();
 const router = express.Router();
-const port = process.env.PORT || 3026;
+const port = process.env.PORT || 3027;
 const customers = { 123: { id: 123, name: 'John' } };
 
 router.get('/customers/:id', (req, res) => {

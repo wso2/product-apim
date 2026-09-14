@@ -108,6 +108,17 @@ public final class ServerReadiness {
         return false;
     }
 
+    /** Awaits a distributed Control Plane restart through its management login endpoint. */
+    public static boolean awaitControlPlaneRestart(String baseUrl) {
+        String endpoint = baseUrl + "carbon/admin/login.jsp";
+        if (!awaitUnreadyEndpoint(endpoint, Constants.SERVER_STARTUP_WAIT_TIME)) {
+            logger.error("Control Plane did not go down after the restart request; restart may not have taken effect");
+            return false;
+        }
+        logger.info("Control Plane went down for restart; waiting for it to come back up...");
+        return awaitHttpEndpoint(endpoint);
+    }
+
     /**
      * Polls an external WSO2 Identity Server's OIDC discovery document until it returns 200 or
      * {@link Constants#SERVER_STARTUP_WAIT_TIME} elapses. Used by the external-KM block after starting the
@@ -167,7 +178,11 @@ public final class ServerReadiness {
 
     /** Polls the health-check until it is NOT 200 (or the port is closed), i.e. the server has gone down. */
     private static boolean awaitUnready(String baseUrl, long timeoutMillis) {
-        String url = Utils.getGatewayHealthCheckURL(baseUrl);
+        return awaitUnreadyEndpoint(Utils.getGatewayHealthCheckURL(baseUrl), timeoutMillis);
+    }
+
+    /** Polls an arbitrary readiness endpoint until it is NOT 200 (or the port is closed). */
+    private static boolean awaitUnreadyEndpoint(String url, long timeoutMillis) {
         long deadlineStart = System.currentTimeMillis();
         long deadline = deadlineStart + timeoutMillis;
         while (System.currentTimeMillis() < deadline) {

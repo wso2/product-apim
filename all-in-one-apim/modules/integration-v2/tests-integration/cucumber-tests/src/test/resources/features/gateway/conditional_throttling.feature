@@ -11,9 +11,12 @@ Feature: Gateway Conditional-Group Advanced Throttling Enforcement
   are off in the distribution default; IP throttling is on by default). Runs in both tenants as the tenant
   admin. Ports the enforcement arc of JWTRequestCountThrottlingTestCase. Teardown via the per-scenario hook.
 
+  Background:
+    Given The system is ready
+    And the Traffic Manager throttleData publisher and Gateway throttleData consumer are ready within 180 seconds
+
   @cap:gateway @feat:throttling-enforcement @rule:conditional-ip @type:regression @dep:admin @dep:publisher @dep:devportal @legacy:JWTRequestCountThrottlingTestCase
   Scenario Outline: An IP conditional group throttles a matching client IP at its lower limit as <actor>
-    Given The system is ready
     And I have valid access tokens as "<actor>"
     When I create an advanced throttling policy "${UNIQUE:condIp}" allowing 100 requests per minute with an IP conditional group of 3 requests per minute for IP "10.100.7.99"
     Then The response status code should be 201
@@ -49,7 +52,6 @@ Feature: Gateway Conditional-Group Advanced Throttling Enforcement
 
   @cap:gateway @feat:throttling-enforcement @rule:conditional-header @type:regression @dep:admin @dep:publisher @dep:devportal @legacy:JWTRequestCountThrottlingTestCase
   Scenario Outline: A header conditional group throttles a matching header at its lower limit as <actor>
-    Given The system is ready
     And I have valid access tokens as "<actor>"
     When I create an advanced throttling policy "${UNIQUE:condHdr}" allowing 100 requests per minute with a header conditional group of 3 requests per minute for header "X-Tier" value "gold"
     Then The response status code should be 201
@@ -84,7 +86,6 @@ Feature: Gateway Conditional-Group Advanced Throttling Enforcement
 
   @cap:gateway @feat:throttling-enforcement @rule:conditional-query @type:regression @dep:admin @dep:publisher @dep:devportal @legacy:JWTRequestCountThrottlingTestCase
   Scenario Outline: A query-parameter conditional group throttles a matching query at its lower limit as <actor>
-    Given The system is ready
     And I have valid access tokens as "<actor>"
     When I create an advanced throttling policy "${UNIQUE:condQry}" allowing 100 requests per minute with a query conditional group of 3 requests per minute for query "name" value "admin"
     Then The response status code should be 201
@@ -125,7 +126,6 @@ Feature: Gateway Conditional-Group Advanced Throttling Enforcement
   # 3/min group. Needs [apim.jwt] enable = true (backend JWT) — set by this block's overlay.
   @cap:gateway @feat:throttling-enforcement @rule:conditional-jwt @type:regression @dep:admin @dep:publisher @dep:devportal @legacy:JWTRequestCountThrottlingTestCase
   Scenario Outline: A JWT-claim conditional group throttles a matching application at its lower limit as <actor>
-    Given The system is ready
     And I have valid access tokens as "<actor>"
     And I generate a unique value and store it as "jwtClaimApp"
     When I create an advanced throttling policy "${UNIQUE:condJwt}" allowing 100 requests per minute with a JWT claim conditional group of 3 requests per minute for claim "http://wso2.org/claims/applicationname" value "{{jwtClaimApp}}"

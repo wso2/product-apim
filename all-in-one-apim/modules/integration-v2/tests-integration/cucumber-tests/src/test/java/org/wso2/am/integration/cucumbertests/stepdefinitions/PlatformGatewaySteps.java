@@ -22,13 +22,15 @@ import io.cucumber.java.en.When;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.testng.Assert;
+import org.wso2.am.integration.cucumbertests.utils.HealGate;
 import org.wso2.am.integration.cucumbertests.utils.Identity;
 import org.wso2.am.integration.cucumbertests.utils.Requests;
 import org.wso2.am.integration.cucumbertests.utils.ResourceCleanup;
 import org.wso2.am.integration.cucumbertests.utils.TestContext;
 import org.wso2.am.integration.cucumbertests.utils.Utils;
-import org.wso2.am.integration.cucumbertests.utils.clients.SimpleHTTPClient;
 import org.wso2.am.testcontainers.DynamicPlatformGatewayContainer;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
@@ -46,6 +48,8 @@ import java.util.Map;
  * {@code platformGatewayControlPlaneHost} (the {@code host.docker.internal:<port>} the gateway dials).
  */
 public class PlatformGatewaySteps {
+
+    private static final Logger logger = LoggerFactory.getLogger(PlatformGatewaySteps.class);
 
     private static final String GATEWAY_ID_KEY = "platformGatewayId";
     private static final String GATEWAY_NAME_KEY = "platformGatewayName";
@@ -173,23 +177,134 @@ public class PlatformGatewaySteps {
             + "until response status code becomes {int} within {int} seconds")
     public void invokeThroughPlatformGatewayWithHeader(String header, String value, int expectedStatus,
             int timeoutSeconds) throws InterruptedException {
-        // If value is a context key (e.g. a generated api-key), resolve it; otherwise use the literal (a wrong key).
+        // If value is a context key (e.g. a generated api-key), resolve it; otherwise use the literal — the
+        // negative rows pass a deliberately wrong key ("totally-wrong-api-key") that is NOT a context key.
+        // Log the fallback: a mistyped or never-stored context key would otherwise be sent as its own literal
+        // name and rejected with 401, which is indistinguishable from the real dropped-key defect this
+        // scenario exists to catch.
         Map<String, String> headers = new HashMap<>();
+        if (!TestContext.contains(value)) {
+            logger.warn("Platform gateway invoke: '{}' is not a context key, sending it as a LITERAL header"
+                    + " value. Intended for the wrong-key negatives; if this was meant to be a stored key,"
+                    + " the resulting 401 is a TEST defect, not a propagation failure.", value);
+        }
         headers.put(header, TestContext.contains(value) ? String.valueOf(TestContext.get(value)) : value);
         invokeAndAssert(headers, expectedStatus, timeoutSeconds);
     }
 
-    private void invokeAndAssert(Map<String, String> headers, int expectedStatus, int timeoutSeconds)
-            throws InterruptedException {
+    /**
+     * Gates on the API key having actually REACHED the platform gateway, re-minting it if the publication was
+     * lost. Fixture readiness, never an assertion target — the scenario's own invoke still asserts the 200.
+     *
+     * <p><b>Why this is needed.</b> The control plane publishes the key to the gateway as an
+     * {@code APIKeyState} xDS resource, ONCE. CI run 24b29536 shows what happens when that single push is lost:
+     * {@code APIKeyState} sat at {@code version=0 num_resources=0} while {@code RouteConfig} and
+     * {@code PolicyChainConfig} advanced to v2 on the SAME stream — so the channel was alive and the API itself
+     * arrived, but the key never did, and every invoke was correctly rejected with 401 "Valid API key required".
+     * The passing run of the same scenario shows the contrast: {@code APIKeyState} v1 then v2, ACKed in the same
+     * second as {@code RouteConfig} v2. Nothing re-sends a dropped push, so the invoke's retry — however long —
+     * can never recover it.
+     *
+     * <p>This is NOT a concurrency or isolation defect, which was the first hypothesis: the block is
+     * {@code thread-count="1"} with a single runner, the gateway container is booted PER BLOCK
+     * ({@code new DynamicPlatformGatewayContainer(label)}) rather than shared, no other block boots one, and
+     * {@code TestContext}'s shared scope is keyed per block. There is no second writer to race with; the push is
+     * simply at-most-once.
+     *
+     * <p>The heal RE-DEPLOYS the API rather than re-minting the key, because key state rides on the deploy: in
+     * the passing run {@code APIKeyState} v1/v2 were ACKed in the same second as {@code RouteConfig} v2. A
+     * measured experiment ruled the alternative out — forcing two re-mints left {@code APIKeyState} at the
+     * version the original deploy had set, and the freshly minted key was REJECTED because it had never been
+     * published. Re-minting swaps a working credential for an unpublished one, which is worse than no heal.
+     *
+     * <p><b>Both halves are measured.</b> Detection: a healthy run never fires the gate, and the failure is
+     * reported as "the key never reached the gateway" at the point it happens rather than as an opaque 401 after
+     * a long invoke retry. Healing: with the probe forced to report not-accepted until two heals had fired,
+     * {@code APIKeyState} advanced to v3 — past the v2 a healthy run ends on — alongside {@code RouteConfig} and
+     * {@code PolicyChainConfig} v3. So re-deploying to the gateway's own environment really does make the control
+     * plane republish key state, which is the mechanism by which a dropped push is recovered.
+     */
+    @Then("the platform gateway serves the API key {string} for API {string}, re-minting it if the key never "
+            + "reaches the gateway")
+    public void gatewayServesApiKey(String keyContextKey, String apiIdKey) throws Exception {
+
+        String resolvedKeyContext = Utils.normalizeContextKey(keyContextKey);
+        PublisherBaseSteps publisher = new PublisherBaseSteps();
+
+        HealGate.awaitOrHeal("platform gateway acceptance of the API key for " + apiIdKey,
+                () -> {
+                    Object key = TestContext.get(resolvedKeyContext);
+                    if (key == null) {
+                        return new HealGate.Fatal("no API key stored under '" + resolvedKeyContext
+                                + "' — the generate-key step did not run or stored a different key");
+                    }
+                    Map<String, String> headers = new HashMap<>();
+                    headers.put("ApiKey", String.valueOf(key));
+                    HttpResponse probe = Requests.get(platformGatewayInvokeUrl(), headers);
+                    if (probe == null) {
+                        return new HealGate.NotReady("no response from the platform gateway data plane");
+                    }
+                    int code = probe.getResponseCode();
+                    if (code == 200) {
+                        return new HealGate.Ready();
+                    }
+                    // 401 is precisely the dropped-key symptom: the gateway is serving the route (it answered)
+                    // but does not know this key. Anything else is reported verbatim rather than guessed at.
+                    return new HealGate.NotReady("HTTP " + code + " from the gateway"
+                            + (code == 401 ? " (key not known to the gateway)" : "") + ": " + probe.getData());
+                },
+                attempt -> {
+                    // RE-DEPLOY TO THIS GATEWAY'S OWN ENVIRONMENT. Two other candidates were measured and are
+                    // both WRONG — recorded so neither is reintroduced:
+                    //
+                    //  - Re-minting the key does NOT re-publish APIKeyState. Across two forced heals the
+                    //    gateway's version stayed exactly where the original deploy left it and the freshly
+                    //    minted key was REJECTED, so re-minting swaps a working credential for an unpublished
+                    //    one — strictly worse than no heal at all.
+                    //  - PublisherBaseSteps#reconcileAndRedeployRevision targets
+                    //    System.getenv(GATEWAY_ENVIRONMENT), the DEFAULT synapse environment, NOT this gateway's.
+                    //    Measured: two heals through it produced ZERO xDS pushes — RouteConfig and
+                    //    PolicyChainConfig never advanced either — because the redeploy landed somewhere the
+                    //    platform gateway does not watch, after deleting the revision that was serving it.
+                    //
+                    // Gateway registration auto-creates a deployable environment named after the gateway, and
+                    // that is what the original deploy targets, so the heal must name it too. Key state rides on
+                    // the deploy: in the passing CI run APIKeyState v1/v2 were ACKed in the same second as
+                    // RouteConfig v2.
+                    String gatewayName = (String) TestContext.resolve(GATEWAY_NAME_KEY);
+                    logger.warn("self-heal: re-deploying {} to platform gateway environment '{}' — the"
+                            + " APIKeyState publication did not reach the gateway", apiIdKey, gatewayName);
+                    BaseSteps healSteps = new BaseSteps();
+                    healSteps.putJsonPayloadInContext("<pgwHealRevisionPayload>",
+                            "{\"description\":\"self-heal revision for platform gateway key republication\"}");
+                    publisher.iCreateResourceRevision("apis", apiIdKey, "<pgwHealRevisionPayload>");
+                    healSteps.putJsonPayloadInContext("<pgwHealDeployPayload>",
+                            "[{\"name\":\"" + gatewayName + "\",\"vhost\":\"localhost\","
+                                    + "\"displayOnDevportal\":true}]");
+                    publisher.iDeployApiRevisionGivenPayload("<revisionId>", "apis", apiIdKey,
+                            "<pgwHealDeployPayload>");
+                    return new HealGate.NotReady("re-deployed to the platform gateway environment");
+                },
+                3);
+    }
+
+    /** The data-plane URL the scenario's API is served on; shared by the readiness gate and the invoke steps. */
+    private String platformGatewayInvokeUrl() {
         String dataPlaneUrl = (String) TestContext.get(DATA_PLANE_URL_KEY);
         String context = ((String) TestContext.resolve(API_CONTEXT_KEY)).trim();
         String base = dataPlaneUrl.endsWith("/") ? dataPlaneUrl.substring(0, dataPlaneUrl.length() - 1) : dataPlaneUrl;
         String path = context.startsWith("/") ? context : "/" + context;
-        String url = base + path + "/1.0.0/reflect-headers";
-        // Data plane is HTTPS with a self-signed listener cert (CN=localhost); SimpleHTTPClient trusts all in the
-        // test lane. Invocation is async (the deploy propagates to the gateway over the WS), so retry until ready.
+        return base + path + "/1.0.0/reflect-headers";
+    }
+
+    private void invokeAndAssert(Map<String, String> headers, int expectedStatus, int timeoutSeconds)
+            throws InterruptedException {
+        String url = platformGatewayInvokeUrl();
+        // Data plane is HTTPS with a self-signed listener cert (CN=localhost); the shared Requests funnel uses
+        // SimpleHTTPClient, which trusts all in the test lane. Invocation is async (the deploy propagates to the
+        // gateway over the WS), so retry until ready.
         HttpResponse resp = Utils.retryUntil(timeoutSeconds * 1000L,
-                () -> SimpleHTTPClient.getInstance().doGet(url, headers),
+                () -> Requests.get(url, headers),
                 r -> r != null && r.getResponseCode() == expectedStatus);
         if (resp != null) {
             TestContext.set("httpResponse", resp);

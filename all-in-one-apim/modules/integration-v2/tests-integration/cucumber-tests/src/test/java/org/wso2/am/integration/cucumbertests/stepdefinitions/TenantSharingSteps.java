@@ -123,7 +123,7 @@ public class TenantSharingSteps {
      * (/tmp/w10w8-run4-locked-deliveryprobe.log), so it is genuinely nondeterministic rather than a fixed lane
      * behaviour.
      *
-     * <p>This is {@code retryUntil} and not {@code awaitWithRetry} on purpose (§15): the STATUS is the assertion
+     * <p>This is {@code retryUntil} and not {@code HealGate.awaitOrHeal} on purpose (§15): the STATUS is the assertion
      * target of the row being ported (the legacy {@code assertEquals(SC_OK)}), so the retry must fail loudly if a
      * 200 is never reached rather than heal a prerequisite. Re-posting is safe because the event is idempotent —
      * it carries the desired {@code lifecycleStatus.activated} flag rather than a toggle. The LAST response stays

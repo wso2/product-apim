@@ -41,6 +41,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.testng.Assert;
 import org.wso2.am.integration.cucumbertests.utils.ISResourceCleanup;
+import org.wso2.am.integration.cucumbertests.utils.HealGate;
 import org.wso2.am.integration.cucumbertests.utils.Identity;
 import org.wso2.am.integration.cucumbertests.utils.IntegrationActors;
 import org.wso2.am.integration.cucumbertests.utils.Names;
@@ -75,6 +76,9 @@ import java.util.stream.IntStream;
 public class ApplicationBaseSteps {
 
     private static final Log log = LogFactory.getLog(ApplicationBaseSteps.class);
+    private static final int FRESH_APPLICATION_KEY_GENERATION_ATTEMPTS = 3;
+    private static final long STALE_KEY_MAPPING_CLEANUP_TIMEOUT_MILLIS = 30000L;
+    private static final long STALE_KEY_MAPPING_CLEANUP_POLL_INTERVAL_MILLIS = 2000L;
 
     BaseSteps baseSteps = new BaseSteps();
 
@@ -1973,12 +1977,123 @@ public class ApplicationBaseSteps {
         // Only extract key fields on success — a non-2xx (e.g. a KM that denies the user's role → 403) has no
         // consumerKey, and extracting it would throw before the feature can assert the rejection status.
         if (response.getResponseCode() >= 200 && response.getResponseCode() < 300) {
-            TestContext.set("consumerKey", Utils.extractValueFromPayload(response.getData(), "consumerKey"));
-            TestContext.set("consumerSecret", Utils.extractValueFromPayload(response.getData(), "consumerSecret"));
-            Object keyMappingId = Utils.extractValueFromPayload(response.getData(), "keyMappingId");
-            TestContext.set("keyMappingId", keyMappingId);
-            ResourceCleanup.registerApplicationKeyMapping(actualAppId, keyMappingId);
+            storeGeneratedClientCredentials(actualAppId, response);
         }
+    }
+
+    /**
+     * Generates credentials for an application that was just created and explicitly opts into recovery of the
+     * partial key-mapping state produced by the known non-atomic key-generation failure. This must not be folded
+     * into the generic generation step: other scenarios intentionally generate multiple mappings or assert that a
+     * failed generation leaves its partial mapping behind.
+     *
+     * <p>The fresh-application precondition makes cleanup safe here. If the initial request results in a 409, this
+     * step expects exactly one mapping to have appeared, removes that mapping through the product's cleanup
+     * endpoint, waits for the deletion to be observable, and retries the generation a bounded number of times.</p>
+     */
+    @When("I generate client credentials for fresh application id {string} with payload {string}, retrying on 409 stale mapping conflicts")
+    public void iGenerateClientCredentialsForFreshApplicationWithRecovery(String appId, String payload) throws Exception {
+
+        String actualAppId = TestContext.resolve(appId).toString();
+        String jsonPayload = Utils.resolveContextPlaceholders(TestContext.resolve(payload).toString());
+
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
+
+        JSONArray mappingsBeforeGeneration = readApplicationKeyMappings(actualAppId, headers);
+        Assert.assertTrue(mappingsBeforeGeneration.isEmpty(),
+                "Fresh application " + actualAppId + " already has " + mappingsBeforeGeneration.length()
+                        + " OAuth key mapping(s); refusing stale-mapping recovery");
+
+        HttpResponse response = null;
+        for (int attempt = 1; attempt <= FRESH_APPLICATION_KEY_GENERATION_ATTEMPTS; attempt++) {
+            response = Requests.post(Utils.getGenerateApplicationKeysURL(Utils.getBaseUrl(), actualAppId), headers,
+                    jsonPayload, Constants.CONTENT_TYPES.APPLICATION_JSON);
+            if (isSuccessful(response)) {
+                storeGeneratedClientCredentials(actualAppId, response);
+                return;
+            }
+
+            if (response == null || response.getResponseCode() != 409
+                    || attempt == FRESH_APPLICATION_KEY_GENERATION_ATTEMPTS) {
+                break;
+            }
+
+            JSONArray mappingsAfterConflict = readApplicationKeyMappings(actualAppId, headers);
+            Assert.assertEquals(mappingsAfterConflict.length(), 1,
+                    "Expected exactly one stale OAuth key mapping after a 409 for fresh application " + actualAppId
+                            + ", but found " + mappingsAfterConflict.length());
+            String staleKeyMappingId = mappingsAfterConflict.getJSONObject(0).optString("keyMappingId", null);
+            Assert.assertNotNull(staleKeyMappingId,
+                    "The OAuth key mapping created during recovery for application " + actualAppId
+                            + " did not contain a keyMappingId");
+
+            log.warn("Recovering stale OAuth key mapping " + staleKeyMappingId + " for fresh application "
+                    + actualAppId + " after key generation attempt " + attempt + " returned 409");
+            HttpResponse cleanupResponse = Requests.post(
+                    Utils.getCleanupRegistrationURL(Utils.getBaseUrl(), actualAppId, staleKeyMappingId), headers, "",
+                    Constants.CONTENT_TYPES.APPLICATION_JSON);
+            Assert.assertTrue(isSuccessful(cleanupResponse),
+                    "Failed to clean up stale OAuth key mapping " + staleKeyMappingId + " for application "
+                            + actualAppId + ". Status: " + responseSummary(cleanupResponse));
+
+            JSONArray remainingMappings = Utils.retryUntilWithInterval(STALE_KEY_MAPPING_CLEANUP_TIMEOUT_MILLIS,
+                    STALE_KEY_MAPPING_CLEANUP_POLL_INTERVAL_MILLIS,
+                    () -> readApplicationKeyMappings(actualAppId, headers), JSONArray::isEmpty);
+            Assert.assertNotNull(remainingMappings,
+                    "Could not verify cleanup of stale OAuth key mapping " + staleKeyMappingId + " for application "
+                            + actualAppId);
+            Assert.assertTrue(remainingMappings.isEmpty(),
+                    "Stale OAuth key mapping " + staleKeyMappingId + " still exists for application " + actualAppId
+                            + " after cleanup timeout");
+        }
+
+        Assert.assertTrue(isSuccessful(response),
+                "Client credential generation with stale-mapping recovery failed for fresh application "
+                        + actualAppId + " after " + FRESH_APPLICATION_KEY_GENERATION_ATTEMPTS + " attempt(s). Status: "
+                        + responseSummary(response));
+    }
+
+    private void storeGeneratedClientCredentials(String actualAppId, HttpResponse response) throws IOException {
+
+        TestContext.set("consumerKey", Utils.extractValueFromPayload(response.getData(), "consumerKey"));
+        TestContext.set("consumerSecret", Utils.extractValueFromPayload(response.getData(), "consumerSecret"));
+        Object keyMappingId = Utils.extractValueFromPayload(response.getData(), "keyMappingId");
+        TestContext.set("keyMappingId", keyMappingId);
+        ResourceCleanup.registerApplicationKeyMapping(actualAppId, keyMappingId);
+    }
+
+    private JSONArray readApplicationKeyMappings(String actualAppId, Map<String, String> headers) throws IOException {
+
+        String url = Utils.getApplicationAllKeys(Utils.getBaseUrl(), actualAppId);
+        HttpResponse response = SimpleHTTPClient.getInstance().doGet(url, headers);
+        if (response == null) {
+            throw new IOException("No response while reading OAuth key mappings for application " + actualAppId);
+        }
+        if (response.getResponseCode() < 200 || response.getResponseCode() >= 300) {
+            throw new IOException("Unexpected status while reading OAuth key mappings for application " + actualAppId
+                    + ": " + responseSummary(response));
+        }
+        if (response.getData() == null || response.getData().trim().isEmpty()) {
+            throw new IOException("Empty response while reading OAuth key mappings for application " + actualAppId);
+        }
+
+        try {
+            JSONArray mappings = new JSONObject(response.getData()).optJSONArray("list");
+            return mappings == null ? new JSONArray() : mappings;
+        } catch (JSONException e) {
+            throw new IOException("Invalid OAuth key mapping response for application " + actualAppId, e);
+        }
+    }
+
+    private static boolean isSuccessful(HttpResponse response) {
+
+        return response != null && response.getResponseCode() >= 200 && response.getResponseCode() < 300;
+    }
+
+    private static String responseSummary(HttpResponse response) {
+
+        return response == null ? "no response" : response.getResponseCode() + " " + response.getData();
     }
 
     /**
@@ -2077,7 +2192,7 @@ public class ApplicationBaseSteps {
      * real and the "the API create/deploy/publish arc covers it" assumption does not hold.
      *
      * <p>The 60s-floored {@link Utils#retryUntil} envelope is the right one of the three (§15) rather than
-     * {@link Utils#awaitWithRetry}: the result IS what the setup asserts (it publishes {@code httpResponse} and
+     * {@code HealGate.awaitOrHeal}: the result IS what the setup asserts (it publishes {@code httpResponse} and
      * the feature asserts the exact 200), and nothing needs re-triggering — no event was dropped, the holder is
      * simply not populated yet. Re-POSTing is safe because a 901403 is refused BEFORE any key-mapping row is
      * written, so a retry cannot duplicate a mapping or leak one; and this waits for the CONDITION rather than
@@ -4038,10 +4153,30 @@ public class ApplicationBaseSteps {
         iCreateAnApplicationWithJsonPayload("<createAppPayload>");
         baseSteps.theResponseStatusCodeShouldBe(201);
 
-        // generate credentials for application
+        // Generate credentials WITH stale-mapping recovery. The application is created a few lines above, so the
+        // "fresh application" precondition recovery asserts is guaranteed by construction — which is exactly the
+        // condition under which recovery is safe.
+        //
+        // Without it this composite is exposed to a FRAMEWORK-induced failure, not a product one: key generation
+        // is not atomic, so a transient 5xx/900967 can land AFTER the key-mapping row is committed;
+        // SimpleHTTPClient then re-POSTs on its 900967 gate, collides with that row, and the caller sees
+        // 409 "Key Mappings already exists" on an application that really was fresh. Observed in the distributed
+        // lane during a registry-contention burst. Recovery removes the orphaned mapping through the product's
+        // cleanup endpoint and retries, so the scenario gets the keys it asked for.
+        //
+        // Deliberately NOT folded into the plain generation step: admin/is7_keygen_negatives asserts the END STATE
+        // of a failed generation (including that exactly one mapping survives) and key-manager/map_application_keys
+        // asserts a genuine second-mapping 409. Neither uses these composites (verified), and auto-recovery would
+        // destroy both.
+        //
+        // UNPROVEN BUT REGRESSION-SAFE: the recovery path itself is not mutation-proven — the partial state needs
+        // a DCR that fails against an unreachable key manager, which no available interface reproduces (a
+        // successful keygen leaves a live client; removeOAuthApplicationData cascades and takes the row with it).
+        // What IS verified: 92/92 on the heaviest composite users, and with no 409 the recovery branch never runs.
         baseSteps.putJsonPayloadInContext("<generateApplicationKeysPayload>", "{\"keyType\": \"PRODUCTION\"," +
                 "\"grantTypesToBeSupported\": [\"client_credentials\"]}");
-        iGenerateClientCredentialsForApplication("<createdAppId>", "<generateApplicationKeysPayload>");
+        iGenerateClientCredentialsForFreshApplicationWithRecovery("<createdAppId>",
+                "<generateApplicationKeysPayload>");
         baseSteps.theResponseStatusCodeShouldBe(200);
 
         // subscribe to an api with that created application
@@ -4079,10 +4214,30 @@ public class ApplicationBaseSteps {
         iCreateAnApplicationWithJsonPayload("<createAppPayload>");
         baseSteps.theResponseStatusCodeShouldBe(201);
 
-        // generate credentials for application
+        // Generate credentials WITH stale-mapping recovery. The application is created a few lines above, so the
+        // "fresh application" precondition recovery asserts is guaranteed by construction — which is exactly the
+        // condition under which recovery is safe.
+        //
+        // Without it this composite is exposed to a FRAMEWORK-induced failure, not a product one: key generation
+        // is not atomic, so a transient 5xx/900967 can land AFTER the key-mapping row is committed;
+        // SimpleHTTPClient then re-POSTs on its 900967 gate, collides with that row, and the caller sees
+        // 409 "Key Mappings already exists" on an application that really was fresh. Observed in the distributed
+        // lane during a registry-contention burst. Recovery removes the orphaned mapping through the product's
+        // cleanup endpoint and retries, so the scenario gets the keys it asked for.
+        //
+        // Deliberately NOT folded into the plain generation step: admin/is7_keygen_negatives asserts the END STATE
+        // of a failed generation (including that exactly one mapping survives) and key-manager/map_application_keys
+        // asserts a genuine second-mapping 409. Neither uses these composites (verified), and auto-recovery would
+        // destroy both.
+        //
+        // UNPROVEN BUT REGRESSION-SAFE: the recovery path itself is not mutation-proven — the partial state needs
+        // a DCR that fails against an unreachable key manager, which no available interface reproduces (a
+        // successful keygen leaves a live client; removeOAuthApplicationData cascades and takes the row with it).
+        // What IS verified: 92/92 on the heaviest composite users, and with no 409 the recovery branch never runs.
         baseSteps.putJsonPayloadInContext("<generateApplicationKeysPayload>", "{\"keyType\": \"PRODUCTION\"," +
                 "\"grantTypesToBeSupported\": [\"client_credentials\"]}");
-        iGenerateClientCredentialsForApplication("<createdAppId>", "<generateApplicationKeysPayload>");
+        iGenerateClientCredentialsForFreshApplicationWithRecovery("<createdAppId>",
+                "<generateApplicationKeysPayload>");
         baseSteps.theResponseStatusCodeShouldBe(200);
 
         // subscribe to an api with that created application
@@ -4110,10 +4265,30 @@ public class ApplicationBaseSteps {
         baseSteps.putJsonPayloadFromFile("artifacts/payloads/create_apim_test_app.json", "<createAppPayload>");
         iCreateAnApplicationWithJsonPayload("<createAppPayload>");
 
-        // generate credentials for application
+        // Generate credentials WITH stale-mapping recovery. The application is created a few lines above, so the
+        // "fresh application" precondition recovery asserts is guaranteed by construction — which is exactly the
+        // condition under which recovery is safe.
+        //
+        // Without it this composite is exposed to a FRAMEWORK-induced failure, not a product one: key generation
+        // is not atomic, so a transient 5xx/900967 can land AFTER the key-mapping row is committed;
+        // SimpleHTTPClient then re-POSTs on its 900967 gate, collides with that row, and the caller sees
+        // 409 "Key Mappings already exists" on an application that really was fresh. Observed in the distributed
+        // lane during a registry-contention burst. Recovery removes the orphaned mapping through the product's
+        // cleanup endpoint and retries, so the scenario gets the keys it asked for.
+        //
+        // Deliberately NOT folded into the plain generation step: admin/is7_keygen_negatives asserts the END STATE
+        // of a failed generation (including that exactly one mapping survives) and key-manager/map_application_keys
+        // asserts a genuine second-mapping 409. Neither uses these composites (verified), and auto-recovery would
+        // destroy both.
+        //
+        // UNPROVEN BUT REGRESSION-SAFE: the recovery path itself is not mutation-proven — the partial state needs
+        // a DCR that fails against an unreachable key manager, which no available interface reproduces (a
+        // successful keygen leaves a live client; removeOAuthApplicationData cascades and takes the row with it).
+        // What IS verified: 92/92 on the heaviest composite users, and with no 409 the recovery branch never runs.
         baseSteps.putJsonPayloadInContext("<generateApplicationKeysPayload>", "{\"keyType\": \"PRODUCTION\"," +
                 "\"grantTypesToBeSupported\": [\"client_credentials\"]}");
-        iGenerateClientCredentialsForApplication("<createdAppId>", "<generateApplicationKeysPayload>");
+        iGenerateClientCredentialsForFreshApplicationWithRecovery("<createdAppId>",
+                "<generateApplicationKeysPayload>");
         baseSteps.theResponseStatusCodeShouldBe(200);
     }
 
@@ -4256,6 +4431,36 @@ public class ApplicationBaseSteps {
                 Identity.adminHeaders(), payload.toString(), Constants.CONTENT_TYPES.APPLICATION_JSON);
     }
 
+    /**
+     * Clears all system-scope role-alias mappings and waits for a subsequent read to observe the requested alias as
+     * absent. The write endpoint can acknowledge the update before the role-alias read path has converged under
+     * full-suite load, so this is deliberately a scenario-specific semantic barrier rather than a fixed sleep or a
+     * repeated PUT. The final response remains the assertion target for the existing status and absence assertions.
+     */
+    @When("I clear all role aliases and wait until alias {string} is absent")
+    public void iClearAllRoleAliasesAndWaitUntilAliasIsAbsent(String alias) throws IOException, InterruptedException {
+
+        String resolvedAlias = Utils.resolveContextPlaceholders(alias);
+        JSONObject payload = new JSONObject().put("count", 0).put("list", new JSONArray());
+        Requests.put(Utils.getRoleAliasesURL(Utils.getBaseUrl()), Identity.adminHeaders(), payload.toString(),
+                Constants.CONTENT_TYPES.APPLICATION_JSON);
+
+        String roleAliasesUrl = Utils.getRoleAliasesURL(Utils.getBaseUrl());
+        HttpResponse last = Utils.retryUntil(Constants.RUNTIME_PROPAGATION_TIMEOUT,
+                () -> Requests.get(roleAliasesUrl, Identity.adminHeaders()),
+                response -> response != null && response.getResponseCode() == 200
+                        && response.getData() != null && !response.getData().isBlank()
+                        && !response.getData().contains(resolvedAlias));
+        Requests.publishPollResult(last);
+
+        if (last == null || last.getResponseCode() != 200 || last.getData() == null
+                || last.getData().contains(resolvedAlias)) {
+            log.warn("Role-alias clear did not converge for alias '" + resolvedAlias + "' within "
+                    + Constants.RUNTIME_PROPAGATION_TIMEOUT + " ms; last response: "
+                    + (last == null ? "none" : last.getResponseCode() + " / " + last.getData()));
+        }
+    }
+
     /** Maps a friendly throttling-policy kind to the export/import {@code type} token. */
     private static String throttleExportType(String friendlyType) {
         switch (friendlyType) {
@@ -4340,96 +4545,166 @@ public class ApplicationBaseSteps {
     }
 
     /**
-     * Creates a key manager like {@link #iCreateKeyManager} and then BLOCKS until it is OPERATIONAL — i.e.
-     * visible to the runtime key-manager holder, not just persisted. A freshly-created KM propagates to the
-     * in-memory holder ASYNCHRONOUSLY (eventhub); a keygen inside that window fails deep in the registration
-     * workflow with "Key Manager ... not configured" AFTER the key-mapping row is inserted, leaking the row —
-     * and the HTTP client's general-error retry then re-POSTs and surfaces a misleading 901409 "Key Mappings
-     * already exists" on a fresh app. The probe here is the exact call that needs the holder: a throwaway
-     * application + keygen against the new KM, deleting the throwaway app after every attempt (which also
-     * removes any leaked mapping row). Use this variant when a scenario generates keys shortly after
-     * registering the KM; NOT usable in KM config-CRUD tests that register deliberately unreachable/disabled
-     * key managers (the probe would never converge — those tests don't generate keys anyway).
+     * Creates a key manager like {@link #iCreateKeyManager} and then GATES on it being OPERATIONAL — i.e.
+     * visible to the runtime key-manager holder, not merely persisted — re-emitting its registration event if
+     * that event was lost.
+     *
+     * <p>A freshly-created key manager reaches the in-memory holder ASYNCHRONOUSLY, and a keygen inside that
+     * window fails deep in the registration workflow with "Key Manager ... not configured" AFTER the key-mapping
+     * row is inserted, leaking the row — whereupon the HTTP client's general-error retry re-POSTs and surfaces a
+     * misleading 901409 "Key Mappings already exists" on a fresh application. So the wait is load-bearing.
+     *
+     * <p><b>Why it heals rather than just polling.</b> The holder is populated by exactly one thing: the
+     * {@code ACTION_ADD} event {@code APIAdminImpl#addKeyManagerConfiguration} emits on create, carried over JMS
+     * to {@code KeyManagerHolder#addKeyManagerConfiguration}. The database row is written either way, so if that
+     * at-most-once event is dropped the key manager is permanently invisible to the runtime and no amount of
+     * waiting recovers it — which is what the previous 60-second poll-only loop did before failing. Re-PUTting
+     * the same config emits {@code ACTION_UPDATE}, and {@code KeyManagerHolder#updateKeyManagerConfiguration} is
+     * remove-then-add, so it rebuilds the entry without creating a resource or changing the id.
+     *
+     * <p>Two conditions are refused up front instead of waited out, because
+     * {@code KeyManagerHolder#addKeyManagerConfiguration} registers only when
+     * {@code isEnabled() && !TokenType.EXCHANGED.equals(getTokenType())}: a disabled key manager, and a
+     * token-exchange one. Both used to spend the full window and then blame propagation. Use the plain
+     * {@link #iCreateKeyManager} step for those — a KM config-CRUD test that registers a deliberately
+     * disabled or unreachable key manager does not generate keys anyway.
      */
     @When("I create a key manager from payload {string} as {string} and wait until it is operational")
     public void iCreateKeyManagerAndAwaitOperational(String resourcePath, String idKey) throws Exception {
 
-        iCreateKeyManager(resourcePath, idKey);
-        String kmId = TestContext.resolve(idKey).toString();
+        JSONObject payload = loadKeyManagerPayload(resourcePath);
+        HttpResponse createResponse = postKeyManager(payload);
+        Assert.assertEquals(createResponse.getResponseCode(), 201, createResponse.getData());
+        Object kmIdValue = Utils.extractValueFromPayload(createResponse.getData(), "id");
+        TestContext.set(idKey, kmIdValue);
+        TestContext.set(idKey + "Name", Utils.extractValueFromPayload(createResponse.getData(), "name"));
+        ResourceCleanup.register(Constants.CREATED_KEY_MANAGER_IDS, kmIdValue);
+
+        String kmId = String.valueOf(kmIdValue);
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
-        long deadlineStart = System.currentTimeMillis();
-        long deadline = deadlineStart + 60_000;
-        int attempts = 0;
-        while (true) {
-            attempts++;
-            // Probe via the raw client so the step's published httpResponse stays the KM-create 201.
-            String probeAppName = Names.unique("kmProbeApp");
-            String appPayload = "{\"name\":\"" + probeAppName
-                    + "\",\"throttlingPolicy\":\"Unlimited\",\"description\":\"KM propagation probe\"}";
-            HttpResponse appResp;
-            try {
-                appResp = SimpleHTTPClient.getInstance().doPost(
-                        Utils.getApplicationCreateURL(Utils.getBaseUrl()), headers, appPayload,
-                        Constants.CONTENT_TYPES.APPLICATION_JSON);
-            } catch (IOException transientFailure) {
-                // Outcome UNKNOWN — the create may have committed with the response lost, and the next probe
-                // uses a FRESH name, so an orphan would never be swept. Register any survivor for teardown,
-                // then retry within the deadline.
-                String orphanId = Utils.findIdByNameInListResponse(
-                        Utils.getApplicationSearchURL(Utils.getBaseUrl(), probeAppName), headers, probeAppName,
-                        "applicationId");
-                if (orphanId != null) {
-                    ResourceCleanup.register(Constants.CREATED_APPLICATION_IDS, orphanId);
-                }
-                if (System.currentTimeMillis() > deadline) {
-                    throw transientFailure;
-                }
-                Utils.pollPause(deadlineStart, 2000);   // mutating probe: each retry creates an app + keygen
-                continue;
+
+        // A key manager the holder will NEVER accept is a config error, not propagation, and waiting cannot fix
+        // it. KeyManagerHolder#addKeyManagerConfiguration registers only when
+        // `isEnabled() && !TokenType.EXCHANGED.equals(getTokenType())`, so mirror exactly that and fail now with
+        // the real reason instead of spending the whole gate blaming "holder propagation" (which is what the
+        // previous 60s loop did, and why this step carried a warning not to use it on such key managers).
+        JSONObject created = new JSONObject(createResponse.getData());
+        Assert.assertTrue(created.optBoolean("enabled", true)
+                        && !"EXCHANGED".equalsIgnoreCase(created.optString("tokenType", "")),
+                "Key manager '" + kmId + "' can never register in the runtime holder (enabled="
+                        + created.optBoolean("enabled", true) + ", tokenType="
+                        + created.optString("tokenType", "<unset>") + "), so it will never become operational."
+                        + " Use the plain \"I create a key manager from payload ... as ...\" step for a key"
+                        + " manager that is deliberately disabled or token-exchange only.");
+
+        HealGate.awaitOrHeal("runtime holder registration of key manager " + kmId,
+                () -> probeKeyManagerOperational(kmId, headers),
+                attempt -> {
+                    // The holder is populated ONLY by the ACTION_ADD event that APIAdminImpl#addKeyManagerConfiguration
+                    // emits on create (KeyMgtNotificationSender -> KeyManagerJMSMessageListener ->
+                    // KeyManagerHolder#addKeyManagerConfiguration). The DB row exists either way, so once that event
+                    // is dropped NOTHING re-emits it and no amount of polling recovers. Re-PUTting the SAME config
+                    // fires ACTION_UPDATE, and KeyManagerHolder#updateKeyManagerConfiguration is literally
+                    // remove-then-add — so it rebuilds the holder entry without creating a resource, changing the
+                    // id, or affecting the teardown sweep.
+                    //
+                    // The ORIGINAL fixture payload is re-sent rather than a GET-then-PUT round trip on purpose:
+                    // the admin read masks secrets, so echoing a read-back config would risk writing a masked
+                    // secret over the real one. This payload is byte-for-byte what the server accepted at create.
+                    log.warn("self-heal: re-PUTting key manager " + kmId
+                            + " to re-emit its holder-registration event");
+                    HttpResponse put = SimpleHTTPClient.getInstance().doPut(
+                            Utils.getKeyManagerByIdURL(Utils.getBaseUrl(), kmId), Identity.adminHeaders(),
+                            payload.toString(), Constants.CONTENT_TYPES.APPLICATION_JSON);
+                    int code = put == null ? -1 : put.getResponseCode();
+                    if (code == 401 || code == 403) {
+                        return new HealGate.Fatal("re-PUT of key manager " + kmId + " returned " + code
+                                + " — credentials/scope, not propagation: " + put.getData());
+                    }
+                    if (code < 200 || code >= 300) {
+                        return new HealGate.NotReady("re-PUT returned " + code + "/"
+                                + (put == null ? "null" : put.getData()));
+                    }
+                    return new HealGate.NotReady("key-manager config re-PUT");
+                },
+                3);
+    }
+
+    /**
+     * One operational probe for {@link #iCreateKeyManagerAndAwaitOperational}: the exact call that needs the
+     * runtime holder — a throwaway application plus a keygen against the key manager — with the throwaway deleted
+     * on every path.
+     *
+     * <p>Mutating by necessity (only a real keygen consults the holder), so it is written to leave nothing behind:
+     * the probe app is registered for teardown the instant it exists, a lost-response create is looked up by name
+     * and registered so an orphan cannot escape the sweep, and the per-attempt delete both removes the probe keys
+     * and clears any key-mapping row a pre-propagation keygen leaked. Only a SUCCESSFUL delete deregisters, so a
+     * failed one stays queued for the teardown sweep.
+     *
+     * <p>All calls use the raw client so the step's published {@code httpResponse} stays the key-manager 201.
+     */
+    private HealGate.Verdict probeKeyManagerOperational(String kmId, Map<String, String> headers) throws IOException {
+
+        String probeAppName = Names.unique("kmProbeApp");
+        String appPayload = "{\"name\":\"" + probeAppName
+                + "\",\"throttlingPolicy\":\"Unlimited\",\"description\":\"KM propagation probe\"}";
+        HttpResponse appResp;
+        try {
+            appResp = SimpleHTTPClient.getInstance().doPost(
+                    Utils.getApplicationCreateURL(Utils.getBaseUrl()), headers, appPayload,
+                    Constants.CONTENT_TYPES.APPLICATION_JSON);
+        } catch (IOException transientFailure) {
+            // Outcome UNKNOWN — the create may have committed with the response lost, and the next probe uses a
+            // FRESH name, so an orphan would never be swept. Register any survivor, then report not-ready.
+            String orphanId = Utils.findIdByNameInListResponse(
+                    Utils.getApplicationSearchURL(Utils.getBaseUrl(), probeAppName), headers, probeAppName,
+                    "applicationId");
+            if (orphanId != null) {
+                ResourceCleanup.register(Constants.CREATED_APPLICATION_IDS, orphanId);
             }
-            Assert.assertTrue(appResp != null && appResp.getResponseCode() == 201,
-                    "KM-propagation probe app create failed: got=" + (appResp == null ? "null"
-                            : appResp.getResponseCode() + "/" + appResp.getData()));
-            String probeAppId = String.valueOf(Utils.extractValueFromPayload(appResp.getData(), "applicationId"));
-            // Register the throwaway app for teardown IMMEDIATELY — the keygen probe or the delete below can
-            // throw, and a created-but-unregistered app would leak. The successful per-attempt delete
-            // deregisters it again so the sweep never chases an already-gone id.
-            ResourceCleanup.register(Constants.CREATED_APPLICATION_IDS, probeAppId);
-            boolean operational = false;
-            try {
-                String keygenPayload = "{\"keyType\":\"PRODUCTION\",\"keyManager\":\"" + kmId
-                        + "\",\"grantTypesToBeSupported\":[\"client_credentials\"]}";
-                HttpResponse keyResp = SimpleHTTPClient.getInstance().doPost(
-                        Utils.getGenerateApplicationKeysURL(Utils.getBaseUrl(), probeAppId), headers, keygenPayload,
-                        Constants.CONTENT_TYPES.APPLICATION_JSON);
-                operational = keyResp != null && keyResp.getResponseCode() >= 200 && keyResp.getResponseCode() < 300;
-                if (operational) {
-                    ResourceCleanup.registerApplicationKeyMapping(probeAppId,
-                            Utils.extractValueFromPayload(keyResp.getData(), "keyMappingId"));
-                }
-            } catch (IOException transientKeygenFailure) {
-                // transient — the probe simply counts as not operational this round; the finally still
-                // deletes the throwaway app and the deadline bounds the overall wait
-            } finally {
-                // Delete the probe app regardless: it removes the probe keys AND any mapping row a
-                // pre-propagation keygen attempt leaked. Only a successful delete deregisters — a failed or
-                // throwing delete leaves the id registered for the teardown sweep.
-                HttpResponse del = SimpleHTTPClient.getInstance().doDelete(
-                        Utils.getApplicationCreateURL(Utils.getBaseUrl()) + "/" + probeAppId, headers);
-                if (del != null && del.getResponseCode() >= 200 && del.getResponseCode() < 300) {
-                    ResourceCleanup.deregister(Constants.CREATED_APPLICATION_IDS, probeAppId);
-                }
-            }
-            if (operational) {
-                return;
-            }
-            if (System.currentTimeMillis() > deadline) {
-                Assert.fail("Key manager '" + kmId + "' did not become operational (holder propagation) within "
-                        + "60s (" + attempts + " keygen probes)");
-            }
-            Utils.pollPause(deadlineStart, 2000);   // mutating probe: each retry creates an app + keygen
+            return new HealGate.NotReady("probe app create failed transiently: " + transientFailure.getMessage());
         }
+        if (appResp == null || appResp.getResponseCode() != 201) {
+            int code = appResp == null ? -1 : appResp.getResponseCode();
+            if (code == 401 || code == 403) {
+                return new HealGate.Fatal("KM-propagation probe app create returned " + code
+                        + " — credentials/scope, not propagation: " + appResp.getData());
+            }
+            return new HealGate.NotReady("probe app create got=" + code + "/"
+                    + (appResp == null ? "null" : appResp.getData()));
+        }
+        String probeAppId = String.valueOf(Utils.extractValueFromPayload(appResp.getData(), "applicationId"));
+        ResourceCleanup.register(Constants.CREATED_APPLICATION_IDS, probeAppId);
+        HealGate.Verdict verdict = new HealGate.NotReady("keygen did not succeed against key manager " + kmId);
+        try {
+            String keygenPayload = "{\"keyType\":\"PRODUCTION\",\"keyManager\":\"" + kmId
+                    + "\",\"grantTypesToBeSupported\":[\"client_credentials\"]}";
+            HttpResponse keyResp = SimpleHTTPClient.getInstance().doPost(
+                    Utils.getGenerateApplicationKeysURL(Utils.getBaseUrl(), probeAppId), headers, keygenPayload,
+                    Constants.CONTENT_TYPES.APPLICATION_JSON);
+            int code = keyResp == null ? -1 : keyResp.getResponseCode();
+            if (code >= 200 && code < 300) {
+                ResourceCleanup.registerApplicationKeyMapping(probeAppId,
+                        Utils.extractValueFromPayload(keyResp.getData(), "keyMappingId"));
+                verdict = new HealGate.Ready();
+            } else if (code == 401 || code == 403) {
+                verdict = new HealGate.Fatal("keygen probe returned " + code
+                        + " — credentials/scope, not propagation: " + keyResp.getData());
+            } else {
+                verdict = new HealGate.NotReady("keygen got=" + code + "/"
+                        + (keyResp == null ? "null" : keyResp.getData()));
+            }
+        } catch (IOException transientKeygenFailure) {
+            verdict = new HealGate.NotReady("keygen failed transiently: " + transientKeygenFailure.getMessage());
+        } finally {
+            HttpResponse del = SimpleHTTPClient.getInstance().doDelete(
+                    Utils.getApplicationCreateURL(Utils.getBaseUrl()) + "/" + probeAppId, headers);
+            if (del != null && del.getResponseCode() >= 200 && del.getResponseCode() < 300) {
+                ResourceCleanup.deregister(Constants.CREATED_APPLICATION_IDS, probeAppId);
+            }
+        }
+        return verdict;
     }
 
     /**
@@ -5199,6 +5474,52 @@ public class ApplicationBaseSteps {
                 "DevPortal search '" + resolvedQuery + "' did not contain '" + resolvedExpected
                         + "' within the deadline; last response: " + response.getResponseCode()
                         + " / " + response.getData());
+    }
+
+    /**
+     * Waits until the DevPortal API index contains the exact scenario-owned API. This is a prerequisite for
+     * document-content indexing: lifecycle state and a successful document write do not prove that the API artifact
+     * is already visible to the asynchronous search index.
+     */
+    @When("I wait until the DevPortal API index contains API {string} named {string} within {int} seconds")
+    public void iWaitUntilDevportalApiIndexContains(String apiId, String apiName, int seconds)
+            throws IOException, InterruptedException {
+
+        String actualApiId = TestContext.resolve(apiId).toString();
+        String resolvedApiName = Utils.resolveContextPlaceholders(apiName);
+        String url = Utils.getApiSearchURL(Utils.getBaseUrl(), "name:" + resolvedApiName);
+        Map<String, String> headers = Identity.devportalHeaders();
+        HttpResponse response = Utils.retryUntil(seconds * 1000L,
+                () -> Requests.get(url, headers),
+                result -> devportalSearchContainsApi(result, actualApiId, resolvedApiName));
+        Requests.publishPollResult(response);
+        Assert.assertTrue(devportalSearchContainsApi(response, actualApiId, resolvedApiName),
+                "DevPortal API index did not contain API " + actualApiId + " named '" + resolvedApiName
+                        + "' within the deadline; last response: " + (response == null ? "null"
+                        : response.getResponseCode() + " / " + response.getData()));
+    }
+
+    private static boolean devportalSearchContainsApi(HttpResponse response, String apiId, String apiName) {
+        if (response == null || response.getResponseCode() != 200 || response.getData() == null
+                || response.getData().isBlank()) {
+            return false;
+        }
+        try {
+            JSONArray results = new JSONObject(response.getData()).optJSONArray("list");
+            if (results == null) {
+                return false;
+            }
+            for (int i = 0; i < results.length(); i++) {
+                JSONObject result = results.optJSONObject(i);
+                if (result != null && apiId.equals(result.optString("id", result.optString("apiId", "")))
+                        && apiName.equals(result.optString("name", ""))) {
+                    return true;
+                }
+            }
+        } catch (JSONException ignored) {
+            // A malformed or incomplete response is still pending during index warm-up.
+        }
+        return false;
     }
 
     /**

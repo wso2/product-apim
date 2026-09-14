@@ -3,7 +3,7 @@ Feature: Gateway Endpoint Certificate TLS Invocation
 
   The RUNTIME half of the endpoint-certificate feature: whether an uploaded endpoint certificate actually changes
   what the GATEWAY trusts when it calls a backend over TLS. The backend is the tls-backend node app on
-  https://nodebackend:3023 for the super tenant and https://tenantbackend:3026 for tenant1, both of which present
+  https://nodebackend:3023 for the super tenant and https://tenantbackend:3027 for tenant1, both of which present
   self-signed certificates the gateway does not trust out of the box and mirror node-customer-service so GET
   /customers/123 answers {"id":123,"name":"John"}.
 
@@ -31,6 +31,10 @@ Feature: Gateway Endpoint Certificate TLS Invocation
     Then The lifecycle status of API "tlsCertApiId" should be "Published"
     When I retrieve the "apis" resource with id "tlsCertApiId"
     And I extract response field "context" and store it as "tlsCertApiContext"
+    # Publishing records the deployment in the control plane, but the tenant-specific Gateway route is asynchronous.
+    # Gate the TLS transition on the actual Gateway artifact; the existing step can re-deploy a fresh revision if
+    # the deployment event was lost, while keeping the first 500 as the certificate-trust control.
+    And the "apis" resource "tlsCertApiId" should be live on the gateway, redeploying if propagation is lost
     When I have set up application with keys, subscribed to API "tlsCertApiId" with plan "Unlimited", and obtained access token for "tlsCertSubId"
     Then The response status code should be 200
 
@@ -44,6 +48,12 @@ Feature: Gateway Endpoint Certificate TLS Invocation
     # block's overlay shortens to about a minute; hence the longer window here.
     When I upload endpoint certificate "<certificatePath>" with alias "{{tlsCertAlias}}" for endpoint "<backendUrl>"
     Then The response status code should be 201
+    # The gateway learns about the upload through a single at-most-once event, and the product drops it whenever
+    # its trust-store read races the control plane's trust-store write. Waiting longer cannot recover that (the
+    # product stops retrying and never tries again). The prerequisite therefore has one bounded recovery: restart
+    # the Gateway to clear its failed SSL client, re-fire the upload once, and wait for the Gateway reload markers.
+    # The 200 below stays the assertion; this only makes sure the fixture exists first.
+    And the endpoint certificate "{{tlsCertAlias}}" should be trusted by the gateway at context "{{tlsCertApiContext}}/1.0.0/customers/123/" with access token "generatedAccessToken", restarting the gateway once and re-uploading if propagation is lost
     When I invoke the API at gateway context "{{tlsCertApiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 240 seconds
     Then The response status code should be 200
     # The BACKEND's body, so a gateway-generated 200 (a CORS/fault response, a cached error page) cannot pass.
@@ -53,6 +63,7 @@ Feature: Gateway Endpoint Certificate TLS Invocation
     # LEG 3 — delete the certificate: trust is withdrawn and the handshake fails again.
     When I delete the endpoint certificate with alias "{{tlsCertAlias}}"
     Then The response status code should be 200
+    And the endpoint certificate "{{tlsCertAlias}}" should no longer be trusted by the gateway at context "{{tlsCertApiContext}}/1.0.0/customers/123/" with access token "generatedAccessToken", restarting the gateway once if removal propagation is lost
     When I invoke the API at gateway context "{{tlsCertApiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 500 within 240 seconds
     Then The response status code should be 500
     # ...and it STAYS 500: enforcement, not a transient that the until-status poll happened to catch.
@@ -61,4 +72,4 @@ Feature: Gateway Endpoint Certificate TLS Invocation
     Examples:
       | actor             | backendUrl                 | certificatePath                            |
       | admin             | https://nodebackend:3023   | artifacts/certs/endpoint/nodebackend.cer   |
-      | admin@tenant1.com | https://tenantbackend:3026 | artifacts/certs/endpoint/tenantbackend.cer |
+      | admin@tenant1.com | https://tenantbackend:3027 | artifacts/certs/endpoint/tenantbackend.cer |

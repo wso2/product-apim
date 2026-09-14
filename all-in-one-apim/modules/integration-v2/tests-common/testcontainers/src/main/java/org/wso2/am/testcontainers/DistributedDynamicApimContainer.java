@@ -6,9 +6,13 @@
  */
 package org.wso2.am.testcontainers;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 import org.testcontainers.containers.Container;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.Network;
+import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.images.builder.Transferable;
 import org.wso2.am.integration.test.utils.Constants;
@@ -36,6 +40,8 @@ import java.util.Objects;
  * database behind.</p>
  */
 public class DistributedDynamicApimContainer implements ApimRuntime {
+
+    private static final Logger logger = LoggerFactory.getLogger(DistributedDynamicApimContainer.class);
 
     private static final String CP_IMAGE = requiredImage("distributed.apim.cp.image.name");
     private static final String TM_IMAGE = requiredImage("distributed.apim.tm.image.name");
@@ -134,6 +140,13 @@ public class DistributedDynamicApimContainer implements ApimRuntime {
                         Files.readString(this.sharedDatabaseSchema))
                 .withSchema(DistributedMySqlContainer.APIM_DATABASE,
                         Files.readString(this.apiManagerDatabaseSchema));
+        // Streamed for the same reason as the three server components, and it is NOT redundant with the launch
+        // exception: testcontainers attaches container output when a container fails to START, but a database
+        // that starts fine and then misbehaves under load — connection-pool exhaustion, "too many connections",
+        // lock-wait timeouts, tmpfs exhaustion — says so only in this log, and that is precisely the failure mode
+        // two APIM compositions on one CI VM produce. Costs almost nothing: MySQL writes an error log only, so a
+        // full container lifecycle here measured 5 KB / 49 lines against hundreds of KB for a Carbon component.
+        this.mysql.withLogConsumer(componentLogConsumer(DistributedMySqlContainer.NETWORK_ALIAS));
     }
 
     /** Add a small overlay for one component; it is merged after the distributed base. */
@@ -357,6 +370,17 @@ public class DistributedDynamicApimContainer implements ApimRuntime {
     }
 
     @Override
+    public String readTrafficManagerLogFile(String fileName) {
+        String path = SERVER_HOME + "/repository/logs/" + fileName;
+        try {
+            return tm.copyFileFromContainer(path,
+                    stream -> new String(stream.readAllBytes(), StandardCharsets.UTF_8));
+        } catch (Exception e) {
+            throw new IllegalStateException("Failed to read distributed Traffic Manager file: " + path, e);
+        }
+    }
+
+    @Override
     public String readContainerFile(String containerPath) {
         try {
             return cp.copyFileFromContainer(containerPath,
@@ -405,12 +429,42 @@ public class DistributedDynamicApimContainer implements ApimRuntime {
         GenericContainer<?> container = new GenericContainer<>(image)
                 .withNetwork(network)
                 .withNetworkAliases(alias)
+                .withExtraHost("host.docker.internal", "host-gateway")
                 .withExposedPorts(exposedPorts)
                 .withCopyToContainer(Transferable.of(toml, 0666), TOML_PATH)
                 .withCommand("-DportOffset=" + portOffset)
                 .waitingFor(Wait.forLogMessage(".*WSO2 Carbon started in.*", 1)
                         .withStartupTimeout(Duration.ofMinutes(20)));
+        container.withLogConsumer(componentLogConsumer(alias));
         return container;
+    }
+
+    /**
+     * Streams a component's server output into the test log, exactly as {@link DynamicApimContainer} does for the
+     * all-in-one runtime.
+     *
+     * <p>Without this the distributed lane produces NO product output anywhere — not on the console and not in the
+     * archived {@code target/logs} artifact. Measured on CI run 34930026152: the distributed job's archived log was
+     * 3.2 MB / 16,485 lines with ZERO carbon lines ({@code grep -c ' INFO - '} → 0), against 62 MB for the
+     * all-in-one job, whose log is mostly this stream. Both of that run's failures were diagnosable only because
+     * the all-in-one lane streams; had they landed in the distributed lane there would have been nothing to read.
+     *
+     * <p>The prefix is {@code <block>/<alias>} so the composition's containers stay distinguishable in one
+     * interleaved log, and the alias is the SAME token the tomls and network use ({@code apim-cp} /
+     * {@code apim-tm} / {@code apim-gw} / {@code mysql}) — so a name grepped out of a config matches the lines it
+     * produced. This mirrors {@link DynamicPlatformGatewayContainer}, which already prefixes its two compose
+     * services this way.
+     *
+     * <p>stderr is separated so a component's error output arrives at ERROR rather than being flattened into INFO,
+     * and the {@code testName} MDC key is carried over so the lines interleave correctly with the rest of the
+     * block's output.
+     */
+    private Slf4jLogConsumer componentLogConsumer(String alias) {
+        String testName = MDC.get("testName") != null ? MDC.get("testName") : "default";
+        return new Slf4jLogConsumer(logger)
+                .withPrefix(label + "/" + alias)
+                .withSeparateOutputStreams()
+                .withMdc("testName", testName);
     }
 
     private void createComponents() throws IOException {
