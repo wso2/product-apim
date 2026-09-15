@@ -88,6 +88,12 @@
 <call>
 <endpoint xmlns="http://ws.apache.org/ns/synapse" key="$ep_key"/>
 </call>
+        ## GCP (Vertex) only: if the backend rejects the injected token with 401, invalidate the cached GCP
+        ## token so the next request re-mints a fresh one. Emitted only for GCP-auth endpoints, so the generated
+        ## sequence for every non-GCP AI provider is unchanged.
+        #if($endpoint.endpointSecurityEnabled && ($endpoint.authenticationType == "gcp" || $endpoint.authenticationType == "GCP"))
+<class name="org.wso2.carbon.apimgt.gateway.mediators.GCPOAuth2ResponseMediator"/>
+        #end
         #end
 
         #macro ( fail_scenario )
