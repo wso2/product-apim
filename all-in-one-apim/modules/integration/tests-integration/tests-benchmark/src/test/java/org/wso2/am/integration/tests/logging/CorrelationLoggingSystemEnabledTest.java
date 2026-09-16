@@ -119,12 +119,13 @@ import org.wso2.carbon.utils.ServerConstants;
         resetAllLogs();
         while ((logLine = bufferedReader.readLine()) != null) {
             assertTrue(isSynapseLogLine(logLine) || isHTTPLogLine(logLine) || isJDBCLogLine(logLine)
-                    || isMethodCallsLogLine(logLine) || logLine.contains("Started log handler"));
+                            || isMethodCallsLogLine(logLine) || logLine.contains("Started log handler"),
+                    "Unrecognised correlation log line: " + logLine);
             if (logLine.contains(CORRELATION_ID)) {
                 correlationIDLog = true;
             }
         }
-        assertTrue(httpLog && jdbcLog && synapseLog && methodCallsLog && correlationIDLog);
+        assertAllCorrelationCategoriesLogged("after ENABLING all correlation components via the DevOps API");
 
         // Disabling all the correlation components using the DevOps API and testing whether logs are still logging.
         configureCorrelationLoggingComponent(new String[] { "http", "jdbc", "synapse", "ldap", "method-calls" }, false);
@@ -133,12 +134,34 @@ import org.wso2.carbon.utils.ServerConstants;
         resetAllLogs();
         while ((logLine = bufferedReader.readLine()) != null) {
             assertTrue(isSynapseLogLine(logLine) || isHTTPLogLine(logLine) || isJDBCLogLine(logLine)
-                    || isMethodCallsLogLine(logLine) || logLine.contains("Started log handler"));
+                            || isMethodCallsLogLine(logLine) || logLine.contains("Started log handler"),
+                    "Unrecognised correlation log line: " + logLine);
             if (logLine.contains(CORRELATION_ID)) {
                 correlationIDLog = true;
             }
         }
-        assertTrue(httpLog && jdbcLog && synapseLog && methodCallsLog && correlationIDLog);
+        assertAllCorrelationCategoriesLogged(
+                "after DISABLING all correlation components via the DevOps API "
+                        + "(the system property must take priority, so logging is expected to continue)");
+    }
+
+    /**
+     * Asserts that every correlation log category was observed since the last {@link #resetAllLogs()}.
+     *
+     * <p>Each category is asserted separately so a failure names the category that was missing. A single
+     * combined assertion reports only "expected [true] but found [false]", which gives no indication of
+     * which of the five signals was absent.</p>
+     *
+     * @param phase description of the point in the test at which the check is made, included in the
+     *              failure message
+     */
+    private void assertAllCorrelationCategoriesLogged(String phase) {
+        assertTrue(httpLog, "No http correlation log line seen " + phase);
+        assertTrue(jdbcLog, "No jdbc correlation log line seen " + phase);
+        assertTrue(synapseLog, "No synapse correlation log line seen " + phase);
+        assertTrue(methodCallsLog, "No method-calls correlation log line seen " + phase);
+        assertTrue(correlationIDLog,
+                "Correlation id '" + CORRELATION_ID + "' not found in any log line " + phase);
     }
 
     private void InvokeTestAPI() throws Exception {
