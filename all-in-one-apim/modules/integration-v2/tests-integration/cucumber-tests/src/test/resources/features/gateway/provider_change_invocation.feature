@@ -139,3 +139,75 @@ Feature: Gateway Invocation After An API Provider Change
       | actor | tenant | suffix |
       | admin | carbon.super |  |
       | admin@tenant1.com | tenant1.com | @tenant1.com |
+
+  # DEFAULT-VERSION ROUTING across an ownership transfer. The DAO's two statements are keyed differently: the
+  # default-version row is updated by API NAME + old provider (so it re-owns the default-version record of EVERY
+  # version of that name), while the API row is updated by a single UUID. A name with two versions is therefore
+  # the shape where the two can drift apart, and the user-visible consequence of a drift is that the UNVERSIONED
+  # URL stops resolving to the default version.
+  #
+  # HOW "served by 2.0.0" IS PROVEN. The application is subscribed to 2.0.0 ONLY. A gateway request carrying that
+  # application's token against the unversioned context therefore answers 200 only while the route resolves to
+  # 2.0.0; had it drifted onto 1.0.0 the same token would be unsubscribed there and answered 403. A bare 200 on
+  # the unversioned URL would not have distinguished the two.
+  # scenario: KB-APIM-0001-S09
+  @cap:gateway @feat:rest-invocation @rule:provider-change @type:regression @dep:publisher @dep:admin @legacy:ChangeApiProviderTestCase
+  Scenario Outline: Unversioned routing still resolves to the re-owned default version as <actor>
+    Given The system is ready
+    And I have valid access tokens as "<actor>"
+    And I provision user "dvNewProvider" with roles "Internal/creator,Internal/publisher" in tenant "<tenant>"
+    And I act as "<actor>"
+    # Version 1.0.0 — created, deployed and published.
+    And I have created an api from "artifacts/payloads/create_apim_test_api.json" as "dvApiV1" and deployed it
+    When I publish the "apis" resource with id "dvApiV1"
+    Then The lifecycle status of API "dvApiV1" should be "Published"
+
+    # Version 2.0.0 of the SAME name, taking over as the default version, then deployed and published too.
+    When I create a new version "2.0.0" of "apis" resource "dvApiV1" with default version "true" as "dvApiV2"
+    When I put the following JSON payload in context as "dvRevisionPayload"
+    """
+    {"description":"Initial revision of the default version"}
+    """
+    And I make a request to create a revision for "apis" resource "dvApiV2" with payload "dvRevisionPayload"
+    Then The response status code should be 201
+    And I extract response field "id" and store it as "dvRevisionV2"
+    When I deploy revision "dvRevisionV2" of "apis" resource "dvApiV2"
+    Then The response status code should be 201
+    And the "apis" resource "dvApiV2" should be live on the gateway, redeploying if propagation is lost
+    When I publish the "apis" resource with id "dvApiV2"
+    Then The lifecycle status of API "dvApiV2" should be "Published"
+
+    # BASELINE: 2.0.0 is the default version, 1.0.0 is not, and the unversioned URL resolves to 2.0.0.
+    When I retrieve the "apis" resource with id "dvApiV2"
+    Then The response status code should be 200
+    And The value of response field "isDefaultVersion" should be "true"
+    And I extract response field "context" and store it as "dvApiContext"
+    When I retrieve the "apis" resource with id "dvApiV1"
+    Then The response status code should be 200
+    And The value of response field "isDefaultVersion" should be "false"
+    When I have set up application with keys, subscribed to API "dvApiV2", and obtained access token for "dvSubId"
+    Then The response status code should be 200
+    When I invoke the API at gateway context "{{dvApiContext}}/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    And The value of response field "id" should be "123"
+
+    # Transfer ownership of 2.0.0 ONLY.
+    When I change the provider of API "dvApiV2" to "dvNewProvider<suffix>"
+    Then The response status code should be 200
+    And The provider of API "dvApiV2" should match actor "dvNewProvider<suffix>"
+    # 1.0.0 was not named in the call and keeps its original owner.
+    And The provider of API "dvApiV1" should match actor "<actor>"
+    When I retrieve the "apis" resource with id "dvApiV2"
+    Then The response status code should be 200
+    And The value of response field "isDefaultVersion" should be "true"
+
+    # The unversioned route still resolves to the re-owned 2.0.0.
+    When I invoke the API at gateway context "{{dvApiContext}}/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
+
+    Examples:
+      | actor | tenant | suffix |
+      | admin | carbon.super |  |
+      | admin@tenant1.com | tenant1.com | @tenant1.com |

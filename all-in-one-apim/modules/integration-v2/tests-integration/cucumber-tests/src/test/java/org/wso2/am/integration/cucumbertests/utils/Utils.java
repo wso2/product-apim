@@ -1303,7 +1303,17 @@ public class Utils {
     }
 
     public static String getAPIProvider(String baseUrl, String apiId, String providerName) {
-        return baseUrl + Constants.DEFAULT_APIM_ADMIN + "apis/" + apiId + "/change-provider?provider=" + providerName;
+        return getAPIProvider(baseUrl, apiId) + "?provider=" + providerName;
+    }
+
+    /**
+     * Admin - the change-provider operation WITHOUT the {@code provider} query parameter, for the negative that
+     * omits a required parameter entirely. Kept as the base of the three-argument overload so the endpoint path
+     * is spelled in exactly one place; note that {@code ?provider=} (present but empty) is a DIFFERENT case that
+     * reaches the resource's own user-existence branch rather than the parameter validator.
+     */
+    public static String getAPIProvider(String baseUrl, String apiId) {
+        return baseUrl + Constants.DEFAULT_APIM_ADMIN + "apis/" + apiId + "/change-provider";
     }
 
     /**
