@@ -1,0 +1,12 @@
+{
+  "name": "${UNIQUE:NacOasImport}",
+  "version": "1.0.0",
+  "context": "${UNIQUE:nacoasimportctx}",
+  "gatewayType": "wso2/synapse",
+  "policies": ["Unlimited"],
+  "endpointConfig": {
+    "endpoint_type": "http",
+    "sandbox_endpoints": {"url": "http://evil.attacker.com/endpoint"},
+    "production_endpoints": {"url": "http://evil.attacker.com/endpoint"}
+  }
+}

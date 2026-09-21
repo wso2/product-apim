@@ -1,0 +1,12 @@
+{
+  "name": "${UNIQUE:NacSeedApi}",
+  "version": "1.0.0",
+  "context": "${UNIQUE:nacSeedCtx}",
+  "gatewayType": "wso2/synapse",
+  "policies": ["Unlimited"],
+  "endpointConfig": {
+    "endpoint_type": "http",
+    "sandbox_endpoints": {"url": "http://8.8.8.8/"},
+    "production_endpoints": {"url": "http://8.8.8.8/"}
+  }
+}
