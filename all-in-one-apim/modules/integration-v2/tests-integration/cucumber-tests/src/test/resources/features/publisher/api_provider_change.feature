@@ -11,6 +11,7 @@ Feature: Publisher API Provider Change
   tenant admin in both tenants; the target provider is a second creator/publisher user provisioned inline. Torn
   down by the cleanup hook.
 
+  # scenario: KB-APIM-0001-S01
   @cap:publisher @feat:api-lifecycle @type:regression @dep:admin @legacy:ChangeApiProviderTestCase
   Scenario Outline: Changing an API's provider re-owns it and retains its metadata in <tenant>
     Given The system is ready
@@ -39,21 +40,36 @@ Feature: Publisher API Provider Change
     When I retrieve the "apis" resource with id "cpApiId"
     Then The response status code should be 200
     And The value of response field "isDefaultVersion" should be "true"
+    # Same baseline for the IDENTITY triple and the lifecycle state, read from the SAME representation the
+    # post-change assertions read, so the comparison below is like for like. The API is never published or
+    # deployed here, so CREATED is also this scenario's never-deployed starting state.
+    And The value of response field "lifeCycleStatus" should be "CREATED"
+    And I extract response field "context" and store it as "cpApiContext"
+    And I extract response field "version" and store it as "cpApiVersion"
 
-    # Change the provider to the second user.
+    # Change the provider to the second user. The operation answers a bare 200 with NO body.
     When I change the provider of API "cpApiId" to "apiNewProvider<suffix>"
     Then The response status code should be 200
+    And The response body should be empty
 
     # The API is re-owned by the new provider and its metadata is retained.
     When I retrieve the "apis" resource with id "cpApiId"
     Then The response status code should be 200
-    And The provider of API "cpApiId" should match actor "apiNewProvider<suffix>"
     And The response should contain "{{cpApiName}}"
     And The response should contain "Provider change retention marker"
     And The response should contain "nodebackend:3001/jaxrs_basic/services/customers/customerservice"
     And The response should contain "/customers/{id}"
     # NAMED regression guard (fix for issue #5038): the default-version flag survives the ownership transfer.
     And The value of response field "isDefaultVersion" should be "true"
+    # The identity triple and the lifecycle state are untouched by the transfer: change-provider re-owns an API,
+    # it does not re-address or re-stage it. Read back exactly, against the baseline captured before the change.
+    And The value of response field "name" should be "{{cpApiName}}"
+    And The value of response field "context" should be "{{cpApiContext}}"
+    And The value of response field "version" should be "{{cpApiVersion}}"
+    And The value of response field "lifeCycleStatus" should be "CREATED"
+    # Last of this group, because it issues its OWN publisher GET and republishes the response the assertions
+    # above read (CLAUDE.md section 7).
+    And The provider of API "cpApiId" should match actor "apiNewProvider<suffix>"
 
     # The revision is an immutable snapshot: reading the API by its REVISION uuid still reports the ORIGINAL
     # provider, and the revision's swagger is still retrievable.
@@ -391,3 +407,284 @@ Feature: Publisher API Provider Change
 
   # verify-first NOTE: the tenant of `admin` (no suffix) is carbon.super and `admin@tenant1.com` is tenant1.com;
   # the cross-tenant row targets the opposite tenant's admin as the (invalid) new provider.
+
+  # An existing SUBSCRIPTION is carried over untouched: the DAO writes only AM_API and AM_API_DEFAULT_VERSION, so
+  # nothing in the change touches the subscription rows — but "nothing broke" is not the interesting claim. The
+  # claim is that the surviving subscription is visible TO THE NEW OWNER on the publisher plane, which is what
+  # makes the API manageable rather than merely intact. The sibling gateway feature proves the subscriber's TOKEN
+  # still works; this proves the provider's VIEW of that subscription still works.
+  # scenario: KB-APIM-0001-S02
+  @cap:publisher @feat:api-lifecycle @rule:post-change-updates @type:regression @dep:admin @dep:devportal @legacy:ChangeApiProviderTestCase
+  Scenario Outline: An existing subscription survives a provider change and is listed to the new provider in <tenant>
+    Given The system is ready
+    And I have valid access tokens as "admin<suffix>"
+    And I provision user "subNewProvider" with roles "Internal/creator,Internal/publisher" in tenant "<tenant>"
+    # Mint the new provider's publisher tokens up front so the post-transfer read can run AS them.
+    And The system is ready and I have valid publisher access tokens as "subNewProvider<suffix>"
+    And I act as "admin<suffix>"
+    And I have created an api from "artifacts/payloads/create_apim_test_api.json" as "subApiId" and deployed it
+    When I publish the "apis" resource with id "subApiId"
+    Then The lifecycle status of API "subApiId" should be "Published"
+
+    # One DevPortal application subscribed on the Gold tier BEFORE the transfer. Gold (not the composite's default
+    # Bronze) so the tier read back afterwards is a value the fixture did not pick for us.
+    When I have set up application with keys, subscribed to API "subApiId" with plan "Gold", and obtained access token for "subSubscriptionId"
+    Then The response status code should be 200
+    When I retrieve the application "createdAppId"
+    Then The response status code should be 200
+    And I extract response field "name" and store it as "subAppName"
+
+    # Transfer ownership.
+    When I change the provider of API "subApiId" to "subNewProvider<suffix>"
+    Then The response status code should be 200
+
+    # Read the publisher subscription list AS THE NEW PROVIDER — that is the whole point of the scenario.
+    When I act as "subNewProvider<suffix>"
+    Then The provider of API "subApiId" should match actor "subNewProvider<suffix>"
+    When I retrieve the subscriptions of API "subApiId"
+    Then The response status code should be 200
+    And The response should contain "{{subAppName}}"
+    # The SAME subscription, still on Gold — pinned by subscription id, so a different subscription carrying Gold
+    # could not satisfy it.
+    And The publisher subscription "subSubscriptionId" of API "subApiId" should have business plan "Gold"
+
+    Examples:
+      | tenant       | suffix       |
+      | carbon.super |              |
+      | tenant1.com  | @tenant1.com |
+
+  # The first of the two validation branches the resource has: the target username must exist. The name is minted
+  # per run, so it cannot exist in any user store on this container, and the rejection is pinned to the exact
+  # error envelope (901502 / "User Not Found") rather than a bare 404 — a 404 alone would also be produced by an
+  # unresolvable API id, which is a different branch (see the unknown-API-id scenario below).
+  # scenario: KB-APIM-0001-S03
+  @cap:publisher @feat:api-lifecycle @type:negative @dep:admin @legacy:ChangeApiProviderTestCase
+  Scenario Outline: A provider change to a username that does not exist is rejected in <tenant>
+    Given The system is ready
+    And I have valid access tokens as "admin<suffix>"
+    And I act as "admin<suffix>"
+    And I put JSON payload from file "artifacts/payloads/create_apim_test_api.json" in context as "unkApiPayload"
+    And I create an "apis" resource with payload "unkApiPayload" as "unkApiId"
+    Then The response status code should be 201
+    When I generate a unique value and store it as "unkProviderName"
+    And I change the provider of API "unkApiId" to "{{unkProviderName}}<suffix>"
+    Then The response status code should be 404
+    And The error response should have code "901502" and message "User Not Found"
+    # The rejected call left ownership where it was.
+    And The provider of API "unkApiId" should match actor "admin<suffix>"
+
+    Examples:
+      | tenant       | suffix       |
+      | carbon.super |              |
+      | tenant1.com  | @tenant1.com |
+
+  # The API-resolution branch: a well-formed uuid that identifies no API. The body must NAME the id it could not
+  # resolve, so a caller batching several transfers can tell which one failed; asserting only the 404 would pass
+  # against an opaque "something went wrong".
+  # scenario: KB-APIM-0001-S04
+  @cap:publisher @feat:api-lifecycle @type:negative @dep:admin @legacy:ChangeApiProviderTestCase
+  Scenario Outline: A provider change against an unknown API id is rejected in <tenant>
+    Given The system is ready
+    And I have valid access tokens as "admin<suffix>"
+    And I provision user "nfNewProvider" with roles "Internal/creator,Internal/publisher" in tenant "<tenant>"
+    And I act as "admin<suffix>"
+    And I put JSON payload from file "artifacts/payloads/create_apim_test_api.json" in context as "nfApiPayload"
+    And I create an "apis" resource with payload "nfApiPayload" as "nfApiId"
+    Then The response status code should be 201
+    When I generate a random UUID and store it as "nfUnknownApiId"
+    And I change the provider of API "nfUnknownApiId" to "nfNewProvider<suffix>"
+    Then The response status code should be 404
+    And The response should contain "{{nfUnknownApiId}}"
+    # The tenant's real API is untouched: the failed lookup changed nothing.
+    And The provider of API "nfApiId" should match actor "admin<suffix>"
+
+    Examples:
+      | tenant       | suffix       |
+      | carbon.super |              |
+      | tenant1.com  | @tenant1.com |
+
+  # provider is a REQUIRED query parameter, so omitting it is refused by the parameter validator before any of the
+  # resource's own branches run — a 400, not the 404 the unknown-username branch produces.
+  # scenario: KB-APIM-0001-S05
+  @cap:publisher @feat:api-lifecycle @type:negative @dep:admin @legacy:ChangeApiProviderTestCase
+  Scenario Outline: A provider change without the provider parameter is rejected in <tenant>
+    Given The system is ready
+    And I have valid access tokens as "admin<suffix>"
+    And I act as "admin<suffix>"
+    And I put JSON payload from file "artifacts/payloads/create_apim_test_api.json" in context as "npApiPayload"
+    And I create an "apis" resource with payload "npApiPayload" as "npApiId"
+    Then The response status code should be 201
+    When I attempt to change the provider of API "npApiId" without naming a provider
+    Then The response status code should be 400
+    # The rejected call left ownership where it was.
+    And The provider of API "npApiId" should match actor "admin<suffix>"
+
+    Examples:
+      | tenant       | suffix       |
+      | carbon.super |              |
+      | tenant1.com  | @tenant1.com |
+
+  # A revision is an IMMUTABLE SNAPSHOT of the pre-handover state, and the first scenario in this file already
+  # pins that a change made to the WORKING COPY spares it. This is the harder case: the change-provider call names
+  # the REVISION's uuid directly. Whatever the operation answers, the snapshot must still report the provider it
+  # was taken under, and the working copy must not be re-owned as a side effect. No status is asserted on the call
+  # itself: neither the API reference nor the knowledge base states what a revision-targeted call should return,
+  # and pinning a guess would assert a contract nobody has written.
+  # scenario: KB-APIM-0001-S06
+  @cap:publisher @feat:api-lifecycle @rule:revision-target @type:negative @dep:admin @legacy:ChangeApiProviderTestCase
+  Scenario Outline: A provider change targeting a revision uuid leaves the revision's provider unchanged in <tenant>
+    Given The system is ready
+    And I have valid access tokens as "admin<suffix>"
+    And I provision user "revNewProvider" with roles "Internal/creator,Internal/publisher" in tenant "<tenant>"
+    And I act as "admin<suffix>"
+    And I have created an api from "artifacts/payloads/create_apim_test_api.json" as "revApiId" and deployed it
+    # Keep the deployed revision's id under its own key: "revisionId" is overwritten by any later revision create.
+    And I put value "revisionId" in context as "revRevision1"
+    When I publish the "apis" resource with id "revApiId"
+    Then The lifecycle status of API "revApiId" should be "Published"
+
+    When I change the provider of API "revRevision1" to "revNewProvider<suffix>"
+    # No contract defines what a revision-targeted call should answer - neither the admin API reference nor the
+    # knowledge base mentions the case - so this pins the OBSERVED current behaviour rather than a value derived
+    # from a spec. It is here so that a call which never reached the resource at all (an auth rejection, a
+    # mis-resolved key, a future guard that refuses a revision uuid) cannot be mistaken for one that was refused:
+    # the two provider reads below would pass in every one of those cases.
+    Then The response status code should be 200
+    # The working copy is read FIRST: it was not named in the call at all, so if it moved, that is the larger
+    # finding and it would otherwise be hidden behind the revision assertion.
+    And The provider of API "revApiId" should match actor "admin<suffix>"
+    And The provider of API "revRevision1" should match actor "admin<suffix>"
+
+    Examples:
+      | tenant       | suffix       |
+      | carbon.super |              |
+      | tenant1.com  | @tenant1.com |
+
+  # Re-owning an API is an ADMIN operation: the endpoint is guarded by apim:admin + apim:api_provider_change, and
+  # the permissions reference marks api_provider_change for the admin role only. publisherUser holds
+  # Internal/creator,Internal/publisher, so its token carries neither scope. The management plane answers a scope
+  # failure with 401 "Unauthenticated request" (CLAUDE.md §12) — NOT the gateway's 403/900910, which belongs to the
+  # Synapse fault sequence and not to this plane.
+  # scenario: KB-APIM-0001-S07
+  @cap:publisher @feat:api-lifecycle @type:negative @dep:admin @legacy:ChangeApiProviderTestCase
+  Scenario Outline: A creator and publisher token cannot change an API's provider in <tenant>
+    Given The system is ready
+    And I have valid access tokens as "admin<suffix>"
+    And I provision user "scopeNewProvider" with roles "Internal/creator,Internal/publisher" in tenant "<tenant>"
+    And I act as "admin<suffix>"
+    And I put JSON payload from file "artifacts/payloads/create_apim_test_api.json" in context as "scopeApiPayload"
+    And I create an "apis" resource with payload "scopeApiPayload" as "scopeApiId"
+    Then The response status code should be 201
+
+    # The named new provider is a perfectly valid target — only the CALLER is unauthorised, so a rejection here
+    # can only be the scope gate.
+    When The system is ready and I have valid publisher access tokens as "publisherUser<suffix>"
+    And I attempt to change the provider of API "scopeApiId" to "scopeNewProvider<suffix>" using the publisher token
+    Then The response status code should be 401
+    And The value of error response field "code" should be "401"
+    And The value of error response field "description" should be "Unauthenticated request"
+    # GlobalThrowableMapper sets message and moreInfo to the empty string before setting the description, and the
+    # error envelope serialises an empty field rather than dropping it, so both are pinned as empty.
+    And The value of error response field "message" should be ""
+    And The value of error response field "moreInfo" should be ""
+
+    # Ownership is unchanged — the refusal was not a partial application.
+    When I act as "admin<suffix>"
+    Then The provider of API "scopeApiId" should match actor "admin<suffix>"
+
+    Examples:
+      | tenant       | suffix       |
+      | carbon.super |              |
+      | tenant1.com  | @tenant1.com |
+
+  # Re-owning to the CURRENT owner is a no-op, not an error, and ownership can be handed back. Both halves matter
+  # operationally: a transfer script that re-runs must not fail, and a transfer made in error must be reversible.
+  # The lifecycle state and the default-version flag are re-read around the repeat so "no-op" means the whole
+  # record stood still, not just the provider column.
+  #
+  # SUSPECTED PRODUCT DEFECT, recorded here rather than worked around. change-provider is synchronous and answers
+  # 200, but a publisher read issued immediately afterwards occasionally still reports the PREVIOUS owner. Measured
+  # with a throwaway probe repeating change-then-read against one API: 1 failure in 115 executed pairs (0.9%), on
+  # the tenant row, with the 200 already returned. Nothing documents an eventual-consistency window for a publisher
+  # read of an admin write, and the DAO commits its transaction before the persistence layer is updated, which is
+  # where the window most plausibly comes from.
+  #
+  # The exposure is a property of the OPERATION, not of this scenario: every change-then-read in this file, the
+  # pre-existing scenarios included, carries it. It is not introduced here. The assertions below are deliberately
+  # left exact - a retry or a wait would hide precisely the inconsistency that is worth knowing about - so this
+  # scenario can fail at roughly that rate until the defect is resolved. See the linked product issue.
+  # scenario: KB-APIM-0001-S10
+  @cap:publisher @feat:api-lifecycle @rule:idempotency @type:regression @dep:admin @legacy:ChangeApiProviderTestCase
+  Scenario Outline: Repeating a provider change is safe and the API can be handed back in <tenant>
+    Given The system is ready
+    And I have valid access tokens as "admin<suffix>"
+    And I provision user "idemNewProvider" with roles "Internal/creator,Internal/publisher" in tenant "<tenant>"
+    And I act as "admin<suffix>"
+    And I have created an api from "artifacts/payloads/create_apim_test_api.json" as "idemApiId" and deployed it
+    When I publish the "apis" resource with id "idemApiId"
+    Then The lifecycle status of API "idemApiId" should be "Published"
+
+    # Hand over once — this is the state the repeat must preserve.
+    When I change the provider of API "idemApiId" to "idemNewProvider<suffix>"
+    Then The response status code should be 200
+    And The provider of API "idemApiId" should match actor "idemNewProvider<suffix>"
+    And The lifecycle status of API "idemApiId" should be "Published"
+    When I retrieve the "apis" resource with id "idemApiId"
+    Then The value of response field "isDefaultVersion" should be "true"
+
+    # Repeat the SAME change: naming the CURRENT provider again neither errors nor moves ownership elsewhere.
+    When I change the provider of API "idemApiId" to "idemNewProvider<suffix>"
+    Then The response status code should be 200
+    And The provider of API "idemApiId" should match actor "idemNewProvider<suffix>"
+    And The lifecycle status of API "idemApiId" should be "Published"
+    When I retrieve the "apis" resource with id "idemApiId"
+    Then The value of response field "isDefaultVersion" should be "true"
+
+    # And the API can be handed BACK to its original owner.
+    When I change the provider of API "idemApiId" to "admin<suffix>"
+    Then The response status code should be 200
+    And The provider of API "idemApiId" should match actor "admin<suffix>"
+
+    Examples:
+      | tenant       | suffix       |
+      | carbon.super |              |
+      | tenant1.com  | @tenant1.com |
+
+  # Two transfers of the SAME API issued at once. The DAO runs both of its statements inside one transaction with
+  # an explicit rollback, so the contract is a single consistent winner: each request is answered (success, or a
+  # whole failure carrying 903011), exactly one of the two candidates ends up owning the API, and the rest of the
+  # record is untouched. The allowed-status pair is the SPECIFIED outcome of a race, not a widened assertion
+  # standing in for an unknown one — any other status, or an unanswered request, fails the scenario.
+  # scenario: KB-APIM-0001-S13
+  @cap:publisher @feat:api-lifecycle @rule:concurrency @type:regression @dep:admin @legacy:ChangeApiProviderTestCase
+  Scenario Outline: Two simultaneous provider changes leave the API with exactly one provider in <tenant>
+    Given The system is ready
+    And I have valid access tokens as "admin<suffix>"
+    And I provision user "raceProviderA" with roles "Internal/creator,Internal/publisher" in tenant "<tenant>"
+    And I provision user "raceProviderB" with roles "Internal/creator,Internal/publisher" in tenant "<tenant>"
+    And I act as "admin<suffix>"
+    And I put JSON payload from file "artifacts/payloads/create_apim_test_api.json" in context as "raceApiPayload"
+    And I create an "apis" resource with payload "raceApiPayload" as "raceApiId"
+    Then The response status code should be 201
+    And I extract response field "name" and store it as "raceApiName"
+    When I retrieve the "apis" resource with id "raceApiId"
+    Then The response status code should be 200
+    And I extract response field "context" and store it as "raceApiContext"
+    And I extract response field "version" and store it as "raceApiVersion"
+
+    When I change the provider of API "raceApiId" concurrently to "raceProviderA<suffix>" and "raceProviderB<suffix>"
+    Then Each concurrent provider change should have returned status 200 or status 500 with error code "903011"
+
+    # Exactly one candidate owns the API afterwards, and nothing else about it moved.
+    When I retrieve the "apis" resource with id "raceApiId"
+    Then The response status code should be 200
+    And The value of response field "name" should be "{{raceApiName}}"
+    And The value of response field "context" should be "{{raceApiContext}}"
+    And The value of response field "version" should be "{{raceApiVersion}}"
+    And The value of response field "lifeCycleStatus" should be "CREATED"
+    And The provider of API "raceApiId" should match exactly one of the actors "raceProviderA<suffix>" and "raceProviderB<suffix>"
+
+    Examples:
+      | tenant       | suffix       |
+      | carbon.super |              |
+      | tenant1.com  | @tenant1.com |

@@ -2651,24 +2651,58 @@ public class PublisherBaseSteps {
     public void theProviderOfResourceShouldMatchActor(String resourceType, String idKey, String actorRef)
             throws IOException {
         String actualApiId = TestContext.resolve(idKey).toString();
-        // The publisher API's provider field carries a tenant user's full username (e.g. admin@tenant1.com) but
-        // strips the carbon.super suffix for a super-tenant user (e.g. ppImporter, not ppImporter@carbon.super).
+        Assert.assertEquals(readProvider(resourceType, actualApiId), providerFormOfActor(actorRef),
+                resourceType + " provider mismatch for id=" + actualApiId);
+    }
+
+    /**
+     * Asserts an API's {@code provider} is one of TWO named actors, and says which. The disjunction is the
+     * expectation itself, not a relaxed form of an exact one: it is the outcome of a RACE between two transfers
+     * of the same API, where the contract is that exactly one of the contenders wins outright. Every other
+     * property of the record is still pinned exactly by the feature; this step only refuses a third value, a
+     * half-applied merge, or an unreadable API.
+     *
+     * @param idKey       context key holding the API id
+     * @param firstActor  one of the two candidate owners
+     * @param secondActor the other candidate owner
+     */
+    @Then("The provider of API {string} should match exactly one of the actors {string} and {string}")
+    public void theProviderShouldMatchOneOfTheActors(String idKey, String firstActor, String secondActor)
+            throws IOException {
+        String actualApiId = TestContext.resolve(idKey).toString();
+        String actualProvider = readProvider("apis", actualApiId);
+        String first = providerFormOfActor(firstActor);
+        String second = providerFormOfActor(secondActor);
+        Assert.assertTrue(actualProvider.equals(first) || actualProvider.equals(second),
+                "API " + actualApiId + " provider is '" + actualProvider + "', which is neither candidate owner '"
+                        + first + "' nor '" + second + "'");
+    }
+
+    /**
+     * The form an actor's username takes in a publisher {@code provider} field: a tenant user keeps its full
+     * qualification (e.g. {@code admin@tenant1.com}) while a super-tenant user has the {@code @carbon.super}
+     * suffix stripped (e.g. {@code ppImporter}, not {@code ppImporter@carbon.super}).
+     */
+    private String providerFormOfActor(String actorRef) {
         String expectedProvider = Identity.resolveActor(actorRef).getUserName();
         String superSuffix = "@" + Constants.SUPER_TENANT_DOMAIN;
         if (expectedProvider.endsWith(superSuffix)) {
             expectedProvider = expectedProvider.substring(0, expectedProvider.length() - superSuffix.length());
         }
+        return expectedProvider;
+    }
+
+    /** Reads the {@code provider} field of a publisher resource as the acting actor, guarded for a 2xx body. */
+    private String readProvider(String resourceType, String resourceId) throws IOException {
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
         HttpResponse response = Requests.get(
-                Utils.getResourceEndpointURL(Utils.getBaseUrl(), resourceType, actualApiId), headers);
+                Utils.getResourceEndpointURL(Utils.getBaseUrl(), resourceType, resourceId), headers);
         Assert.assertTrue(response != null && response.getResponseCode() == 200
                         && response.getData() != null && !response.getData().isBlank(),
-                resourceType + " fetch failed for id=" + actualApiId + " got="
+                resourceType + " fetch failed for id=" + resourceId + " got="
                         + (response == null ? "null" : response.getResponseCode() + "/" + response.getData()));
-        String actualProvider = new JSONObject(response.getData()).getString("provider");
-        Assert.assertEquals(actualProvider, expectedProvider,
-                resourceType + " provider mismatch for id=" + actualApiId);
+        return new JSONObject(response.getData()).getString("provider");
     }
 
     /**

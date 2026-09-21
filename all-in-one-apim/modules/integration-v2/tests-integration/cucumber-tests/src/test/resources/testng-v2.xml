@@ -626,6 +626,7 @@
             <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayDenyEnforcementEmailUserNameRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.KeyManagerEmailUserNameLoginRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.PublisherApiProductEmailUserNameRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.PublisherApiProviderChangeEmailUserNameRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.DevPortalCommentsRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.DevPortalRatingsRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.DevPortalVisibilityRunner"/>
