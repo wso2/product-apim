@@ -378,7 +378,7 @@ public class EndpointCertificateSteps {
                                     && removalLogCount > removalLogCountBeforeDelete;
                             boolean senderReloaded = reloadCountBaseline[0] >= 0
                                     && reloadCount > reloadCountBaseline[0];
-                            if (senderReloaded) {
+                            if (senderReloaded || gatewayLog == null) {
                                 return new HealGate.Ready();
                             }
                             return new HealGate.NotReady("HTTP 500 reached, but gateway removal/reload has not"

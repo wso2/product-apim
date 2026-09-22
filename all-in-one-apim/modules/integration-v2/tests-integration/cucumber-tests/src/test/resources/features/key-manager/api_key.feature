@@ -436,7 +436,10 @@ Feature: Key Manager API Key
       []
       """
     Then The response status code should be 200
-    When I retrieve the "apis" resource with id "slApiId"
+    When I retrieve the "apis" resource with id "slApiId" until its subscription policies equal the following within 180 seconds:
+      """
+      ["DefaultSubscriptionless"]
+      """
     Then The response should contain "DefaultSubscriptionless"
     And I extract response field "context" and store it as "slApiContext"
     # Redeploy so the api_key security + subscriptionless plan take effect at the gateway.

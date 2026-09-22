@@ -8,6 +8,7 @@ package org.wso2.am.testcontainers;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.dataformat.toml.TomlMapper;
 
@@ -159,15 +160,46 @@ public final class DistributedApimTomlBuilder {
                 throw new IllegalArgumentException("Runtime TOML keys and values must be non-empty");
             }
             String[] segments = path.split("\\.");
-            ObjectNode cursor = target;
+            JsonNode cursor = target;
             for (int i = 0; i < segments.length - 1; i++) {
-                JsonNode child = cursor.get(segments[i]);
-                if (child != null && !child.isObject()) {
+                String segment = segments[i];
+                if (cursor.isObject()) {
+                    ObjectNode object = (ObjectNode) cursor;
+                    JsonNode child = object.get(segment);
+                    if (child == null) {
+                        child = object.putObject(segment);
+                    } else if (!child.isObject() && !child.isArray()) {
+                        throw new IllegalArgumentException("Runtime TOML path crosses a scalar: " + path);
+                    }
+                    cursor = child;
+                } else if (cursor.isArray()) {
+                    int index = arrayIndex(segment, path);
+                    JsonNode child = cursor.get(index);
+                    if (child == null || (!child.isObject() && !child.isArray())) {
+                        throw new IllegalArgumentException("Runtime TOML path crosses a scalar: " + path);
+                    }
+                    cursor = child;
+                } else {
                     throw new IllegalArgumentException("Runtime TOML path crosses a scalar: " + path);
                 }
-                cursor = child == null ? cursor.putObject(segments[i]) : (ObjectNode) child;
             }
-            cursor.set(segments[segments.length - 1], TOML.valueToTree(value));
+            String leaf = segments[segments.length - 1];
+            JsonNode runtimeValue = TOML.valueToTree(value);
+            if (cursor.isObject()) {
+                ((ObjectNode) cursor).set(leaf, runtimeValue);
+            } else if (cursor.isArray()) {
+                ((ArrayNode) cursor).set(arrayIndex(leaf, path), runtimeValue);
+            } else {
+                throw new IllegalArgumentException("Runtime TOML path crosses a scalar: " + path);
+            }
         });
+    }
+
+    private static int arrayIndex(String segment, String path) {
+        try {
+            return Integer.parseInt(segment);
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("Runtime TOML path requires an array index: " + path, e);
+        }
     }
 }

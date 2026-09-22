@@ -24,7 +24,7 @@ import java.nio.file.Path;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.EnumMap;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -50,9 +50,10 @@ public class DistributedDynamicApimContainer implements ApimRuntime {
     private static final String TOML_PATH = SERVER_HOME + "/repository/conf/deployment.toml";
     private static final String DEFAULTS_DIRECTORY = "distributed-apim/defaults";
     private static final String DEFAULTS_DIRECTORY_PROPERTY = "distributed.apim.defaults.directory";
-    private static final String EXTERNAL_IS_GATEWAY_OVERLAY =
-            "[apim.event_hub]\n"
-                    + "service_url = \"https://wso2am:9443/services/\"\n";
+    private static final String CP_ALIAS = "apim-cp";
+    private static final String TM_ALIAS = "apim-tm";
+    private static final String GATEWAY_ALIAS = "apim-gw";
+    private static final String SERVICES_PATH = "/services/";
 
     private final String label;
     private final Path cpDefaults;
@@ -468,16 +469,13 @@ public class DistributedDynamicApimContainer implements ApimRuntime {
     }
 
     private void createComponents() throws IOException {
-        if (externalIsNotificationAlias) {
-            cpAliasAndGatewayOverlay();
-        }
         String cpToml = buildToml(cpDefaults, DistributedApimTomlBuilder.Component.CP, "cp-base-overlay.toml");
         String tmToml = buildToml(tmDefaults, DistributedApimTomlBuilder.Component.TM, "tm-base-overlay.toml");
         String gatewayToml = buildToml(gatewayDefaults, DistributedApimTomlBuilder.Component.GATEWAY,
                 "gateway-base-overlay.toml");
-        cp = component(CP_IMAGE, "apim-cp", cpToml, 0, 9443, 9763, 5672);
-        tm = component(TM_IMAGE, "apim-tm", tmToml, 0, 9443, 5672, 9611, 9711);
-        gateway = component(GATEWAY_IMAGE, "apim-gw", gatewayToml, 0, 9443,
+        cp = component(CP_IMAGE, CP_ALIAS, cpToml, 0, 9443, 9763, 5672);
+        tm = component(TM_IMAGE, TM_ALIAS, tmToml, 0, 9443, 5672, 9611, 9711);
+        gateway = component(GATEWAY_IMAGE, GATEWAY_ALIAS, gatewayToml, 0, 9443,
                 Constants.GATEWAY_HTTPS_PORT, Constants.GATEWAY_HTTP_PORT, Constants.GATEWAY_WS_PORT,
                 Constants.GATEWAY_WSS_PORT, Constants.WEBSUB_EVENT_RECEIVER_PORT);
         if (externalIsNotificationAlias) {
@@ -502,18 +500,6 @@ public class DistributedDynamicApimContainer implements ApimRuntime {
         copyComponentFiles(DistributedApimTomlBuilder.Component.CP, cp);
         copyComponentFiles(DistributedApimTomlBuilder.Component.TM, tm);
         copyComponentFiles(DistributedApimTomlBuilder.Component.GATEWAY, gateway);
-    }
-
-    private void cpAliasAndGatewayOverlay() {
-        try {
-            String existing = extraOverlays.get(DistributedApimTomlBuilder.Component.GATEWAY);
-            extraOverlays.put(DistributedApimTomlBuilder.Component.GATEWAY,
-                    existing == null || existing.isBlank()
-                            ? EXTERNAL_IS_GATEWAY_OVERLAY
-                            : DistributedApimTomlBuilder.combineOverlays(existing, EXTERNAL_IS_GATEWAY_OVERLAY));
-        } catch (IOException e) {
-            throw new IllegalStateException("Unable to configure distributed Gateway for the IS callback alias", e);
-        }
     }
 
     private void copyComponentFiles(DistributedApimTomlBuilder.Component component,
@@ -543,7 +529,80 @@ public class DistributedDynamicApimContainer implements ApimRuntime {
             baseOverlay = new String(input.readAllBytes(), StandardCharsets.UTF_8);
         }
         return DistributedApimTomlBuilder.build(defaults, baseOverlay, extraOverlays.get(component),
-                new HashMap<>());
+                finalRuntimeValues(component));
+    }
+
+    /**
+     * Values derived from this block's actual component/database wiring. They are applied after every overlay so
+     * an overlay cannot silently redirect a component to a stale alias or developer-machine database URL.
+     */
+    private Map<String, ?> finalRuntimeValues(DistributedApimTomlBuilder.Component component) {
+        Map<String, Object> values = new LinkedHashMap<>();
+        String controlPlaneServices = serviceUrl(CP_ALIAS);
+        String trafficManagerEvents = "tcp://" + TM_ALIAS + ":9611";
+        String trafficManagerEventsSsl = "ssl://" + TM_ALIAS + ":9711";
+        String gatewayServices = serviceUrl(GATEWAY_ALIAS);
+        String gatewayEventHubServices = externalIsNotificationAlias ? "https://wso2am:9443" + SERVICES_PATH
+                : controlPlaneServices;
+
+        switch (component) {
+            case CP:
+                values.put("server.hostname", CP_ALIAS);
+                values.put("database.apim_db.url", mysqlTomlUrl(DistributedMySqlContainer.APIM_DATABASE));
+                values.put("database.shared_db.url", mysqlTomlUrl(DistributedMySqlContainer.SHARED_DATABASE));
+                values.put("apim.key_manager.service_url", controlPlaneServices);
+                values.put("apim.event_hub.service_url", controlPlaneServices);
+                values.put("apim.event_hub.event_listening_endpoints", List.of("tcp://" + CP_ALIAS + ":5672"));
+                values.put("apim.event_hub.publish.url_group", List.of(eventHubUrlGroup(
+                        List.of(trafficManagerEvents), List.of(trafficManagerEventsSsl))));
+                // Keep the environment type and other policy values supplied by a block overlay. Only the
+                // service URL is runtime-derived and must be applied last to prevent a localhost address.
+                values.put("apim.gateway.environment.0.service_url", gatewayServices);
+                break;
+            case TM:
+                values.put("server.hostname", TM_ALIAS);
+                values.put("database.apim_db.url", mysqlTomlUrl(DistributedMySqlContainer.APIM_DATABASE));
+                values.put("database.shared_db.url", mysqlTomlUrl(DistributedMySqlContainer.SHARED_DATABASE));
+                values.put("apim.event_hub.service_url", controlPlaneServices);
+                values.put("apim.event_hub.event_listening_endpoints", List.of("tcp://" + CP_ALIAS + ":5672"));
+                break;
+            case GATEWAY:
+                values.put("server.hostname", GATEWAY_ALIAS);
+                values.put("database.shared_db.url", mysqlTomlUrl(DistributedMySqlContainer.SHARED_DATABASE));
+                values.put("apim.event_hub.service_url", gatewayEventHubServices);
+                values.put("apim.event_hub.event_listening_endpoints", List.of("tcp://" + CP_ALIAS + ":5672"));
+                values.put("apim.throttling.throttle_decision_endpoints",
+                        List.of("tcp://" + TM_ALIAS + ":5672"));
+                values.put("apim.throttling.url_group", List.of(trafficManagerUrlGroup(
+                        List.of(trafficManagerEvents), List.of(trafficManagerEventsSsl))));
+                break;
+            default:
+                throw new IllegalArgumentException("Unsupported distributed APIM component: " + component);
+        }
+        return values;
+    }
+
+    private String mysqlTomlUrl(String database) {
+        // The product configuration mapper consumes XML-escaped ampersands from deployment.toml.
+        return mysql.getJdbcUrl(database).replace("&", "&amp;");
+    }
+
+    private static String serviceUrl(String alias) {
+        return "https://" + alias + ":9443" + SERVICES_PATH;
+    }
+
+    private static Map<String, Object> eventHubUrlGroup(List<String> urls, List<String> authUrls) {
+        Map<String, Object> group = new LinkedHashMap<>();
+        group.put("urls", urls);
+        group.put("auth_urls", authUrls);
+        return group;
+    }
+
+    private static Map<String, Object> trafficManagerUrlGroup(List<String> urls, List<String> authUrls) {
+        Map<String, Object> group = new LinkedHashMap<>();
+        group.put("traffic_manager_urls", urls);
+        group.put("traffic_manager_auth_urls", authUrls);
+        return group;
     }
 
     private void copyToCp(String source, String target) {

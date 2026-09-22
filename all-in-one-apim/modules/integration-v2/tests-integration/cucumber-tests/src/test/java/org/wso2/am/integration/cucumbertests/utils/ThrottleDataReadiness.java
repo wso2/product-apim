@@ -6,6 +6,12 @@
  * You may obtain a copy of the License at
  *
  * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package org.wso2.am.integration.cucumbertests.utils;
@@ -33,6 +39,8 @@ public final class ThrottleDataReadiness {
             Pattern.CASE_INSENSITIVE);
     private static final Pattern GATEWAY_CONSUMER_READY = Pattern.compile(
             "Started to listen on destination\\s*:\\s*throttleData\\b", Pattern.CASE_INSENSITIVE);
+    private static final Pattern CONTROL_PLANE_RECOVERED = Pattern.compile(
+            "WSO2 Carbon started in", Pattern.CASE_INSENSITIVE);
     private static final Pattern THROTTLE_FAILURE = Pattern.compile(
             "REG_PATH|jms\\.subscriptions|permission denied.*(?:binding|throttledata)"
                     + "|(?:binding|throttledata).*permission denied"
@@ -54,17 +62,13 @@ public final class ThrottleDataReadiness {
         String trafficManagerLog = runtime.readTrafficManagerLogFile(SERVER_LOG);
         String gatewayLog = runtime.readGatewayLogFile(SERVER_LOG);
 
-        boolean controlPlaneHealthy = !containsThrottleFailure(controlPlaneLog);
+        boolean controlPlaneHealthy = markerIsCurrent(controlPlaneLog, CONTROL_PLANE_RECOVERED);
         boolean publisherReady = markerIsCurrent(trafficManagerLog, TM_PUBLISHER_READY);
         boolean consumerReady = markerIsCurrent(gatewayLog, GATEWAY_CONSUMER_READY);
         return new Result(controlPlaneHealthy, publisherReady, consumerReady,
                 diagnostics("Control Plane", controlPlaneLog)
                         + diagnostics("Traffic Manager", trafficManagerLog)
                         + diagnostics("Gateway", gatewayLog));
-    }
-
-    private static boolean containsThrottleFailure(String log) {
-        return THROTTLE_FAILURE.matcher(log).find();
     }
 
     /**

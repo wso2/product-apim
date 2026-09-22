@@ -772,13 +772,14 @@ public final class PlaywrightSsoClient implements AutoCloseable {
         }
         APIResponse resp = page.request().get(apimInternal + resourcePath,
                 RequestOptions.create().setHeader("Authorization", "Bearer " + part1));
-        if (resp.status() == 200) {
-            throw new AssertionError("after single logout the '" + consoleContext + "' console's token STILL "
-                    + "authorizes " + shortUrl(resourcePath) + " (HTTP 200) — a usable session survived there, so "
-                    + "the logout was not global.");
+        int status = resp.status();
+        if (status != 401 && status != 403) {
+            throw new AssertionError("after single logout the '" + consoleContext + "' console's token was not "
+                    + "explicitly rejected by " + shortUrl(resourcePath) + " (HTTP " + status + ", body="
+                    + safeText(resp) + ") — the logout result is inconclusive, so the logout was not proven global.");
         }
         log.info("[SSO] the '" + consoleContext + "' console's surviving token no longer authorizes (HTTP "
-                + resp.status() + ")");
+                + status + ")");
     }
 
     /**

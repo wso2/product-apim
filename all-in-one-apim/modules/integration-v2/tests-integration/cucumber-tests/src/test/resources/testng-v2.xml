@@ -181,7 +181,6 @@
                  IntegrationV2-EmailUserName, where a single-"@" store principal cannot resolve to a tenant. -->
             <class name="org.wso2.am.integration.cucumbertests.runners.block.KeyManagerTokenIssuanceStorePrincipalRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.KeyManagerTokenRevocationRunner"/>
-            <class name="org.wso2.am.integration.cucumbertests.runners.block.KeyManagerApiKeyRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.KeyManagerOAuthKeysRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.KeyManagerMultipleClientSecretsRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.KeyManagerMapApplicationKeysRunner"/>
@@ -332,12 +331,15 @@
         <parameter name="throttleDataReadinessSeconds" value="180"/>
         <classes>
             <!-- These runners exercise shared gateway eventing/runtime state; keep them in this sequential,
-                 gateway-isolated block so their setup cannot race other gateway classes. -->
+                 gateway-isolated block so their setup cannot race other gateway classes. The API-key runner also
+                 mutates the tenant-global AllowSubscriptionValidationDisabling setting and must not overlap the
+                 subscription-validation runner or any other tenant-configuration mutation. -->
             <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayDenyEnforcementRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayThrottlingEnforcementRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayWebSubInvocationRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayApplicationTierChangeRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewaySubscriptionValidationDisableRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.KeyManagerApiKeyRunner"/>
         </classes>
     </test>
 
