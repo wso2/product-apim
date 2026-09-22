@@ -36,6 +36,7 @@ import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 /**
@@ -61,9 +62,10 @@ public class PlatformGatewaySteps {
 
     @When("I register a platform gateway {string}")
     public void registerPlatformGateway(String name) throws IOException {
+        String resolvedName = resolveRegistrationName(name);
         String payload = new JSONObject()
-                .put("name", name)
-                .put("displayName", name)
+                .put("name", resolvedName)
+                .put("displayName", resolvedName)
                 .put("vhost", "https://localhost:8443")
                 .put("description", "integration-v2 platform gateway")
                 .toString();
@@ -100,21 +102,49 @@ public class PlatformGatewaySteps {
 
     @Then("the platform gateway {string} becomes active within {int} seconds")
     public void gatewayBecomesActive(String name, int timeoutSeconds) throws InterruptedException {
+        String resolvedName = resolveGatewayName(name);
         String url = Utils.getPlatformGatewaysURL(Utils.getBaseUrl());
         HttpResponse resp = Utils.retryUntil(timeoutSeconds * 1000L,
                 () -> Requests.get(url, Identity.adminHeaders()),
-                r -> isGatewayActive(r, name));
-        Assert.assertTrue(isGatewayActive(resp, name),
-                "Platform gateway '" + name + "' did not report isActive=true within " + timeoutSeconds
+                r -> isGatewayActive(r, resolvedName));
+        Assert.assertTrue(isGatewayActive(resp, resolvedName),
+                "Platform gateway '" + resolvedName + "' did not report isActive=true within " + timeoutSeconds
                         + "s; last response=" + (resp == null ? "null" : resp.getData()));
     }
 
     @Then("the platform gateway {string} is inactive")
     public void gatewayIsInactive(String name) throws IOException {
+        String resolvedName = resolveGatewayName(name);
         HttpResponse resp = Requests.get(Utils.getPlatformGatewaysURL(Utils.getBaseUrl()), Identity.adminHeaders());
-        Assert.assertFalse(isGatewayActive(resp, name),
-                "Platform gateway '" + name + "' should be inactive (registered but never connected) but reports "
+        Assert.assertFalse(isGatewayActive(resp, resolvedName),
+                "Platform gateway '" + resolvedName + "' should be inactive (registered but never connected) but reports "
                         + "isActive=true; " + (resp == null ? "null" : resp.getData()));
+    }
+
+    private static String resolveGatewayName(String name) {
+        if (name.contains("${UNIQUE:") && TestContext.get(GATEWAY_NAME_KEY) != null) {
+            return String.valueOf(TestContext.get(GATEWAY_NAME_KEY));
+        }
+        return resolveRegistrationName(name);
+    }
+
+    /**
+     * Platform gateway names have a narrower contract than the general resource-name placeholders: they must
+     * contain only lowercase letters, digits, and hyphens. Keep the general unique-name generator unchanged for
+     * other resources and normalize only names created through this platform-gateway step. The UUID portion still
+     * guarantees uniqueness; replacing the generator's separators does not make the name reusable.
+     */
+    private static String resolveRegistrationName(String name) {
+        String resolved = Utils.resolvePayloadPlaceholders(name);
+        if (!name.contains("${UNIQUE:")) {
+            return resolved;
+        }
+        String normalized = resolved.toLowerCase(Locale.ROOT).replaceAll("[^a-z0-9-]+", "-")
+                .replaceAll("^-+|-+$", "");
+        if (normalized.isEmpty()) {
+            throw new IllegalArgumentException("Platform gateway unique name resolved to an empty value: " + name);
+        }
+        return normalized;
     }
 
     @When("I create and deploy a REST API from {string} to the platform gateway as {string}")

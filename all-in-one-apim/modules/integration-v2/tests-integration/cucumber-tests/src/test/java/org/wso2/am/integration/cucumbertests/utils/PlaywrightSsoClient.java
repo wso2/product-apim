@@ -119,20 +119,36 @@ public final class PlaywrightSsoClient implements AutoCloseable {
             routes.put("localhost:8243", addressOf(gatewayMappedBase));
             gatewayRouted = true;
         }
-        this.proxy = new ConnectProxy(routes);
-
-        // Only Chromium is installed (via `playwright install chromium`); tell the driver NOT to download any
-        // browser at runtime, so create() never blocks on a slow Firefox/WebKit fetch from the CDN.
-        this.playwright = Playwright.create(new Playwright.CreateOptions()
-                .setEnv(Map.of("PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD", "1")));
-        this.browser = playwright.chromium().launch(new BrowserType.LaunchOptions()
-                .setHeadless(true)
-                .setProxy(new Proxy("http://127.0.0.1:" + proxy.getPort()))
-                // Chromium bypasses the proxy for loopback by default; force localhost through it so the
-                // servers' localhost:9443 URLs are tunnelled to the mapped ports.
-                .setArgs(List.of("--proxy-bypass-list=<-loopback>")));
-        this.context = browser.newContext(new Browser.NewContextOptions().setIgnoreHTTPSErrors(true));
-        this.page = context.newPage();
+        ConnectProxy createdProxy = new ConnectProxy(routes);
+        Playwright createdPlaywright = null;
+        Browser createdBrowser = null;
+        BrowserContext createdContext = null;
+        Page createdPage = null;
+        try {
+            // Only Chromium is installed (via `playwright install chromium`); tell the driver NOT to download any
+            // browser at runtime, so create() never blocks on a slow Firefox/WebKit fetch from the CDN.
+            createdPlaywright = Playwright.create(new Playwright.CreateOptions()
+                    .setEnv(Map.of("PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD", "1")));
+            createdBrowser = createdPlaywright.chromium().launch(new BrowserType.LaunchOptions()
+                    .setHeadless(true)
+                    .setProxy(new Proxy("http://127.0.0.1:" + createdProxy.getPort()))
+                    // Chromium bypasses the proxy for loopback by default; force localhost through it so the
+                    // servers' localhost:9443 URLs are tunnelled to the mapped ports.
+                    .setArgs(List.of("--proxy-bypass-list=<-loopback>")));
+            createdContext = createdBrowser.newContext(new Browser.NewContextOptions().setIgnoreHTTPSErrors(true));
+            createdPage = createdContext.newPage();
+        } catch (RuntimeException | Error startupFailure) {
+            closeQuietly(createdContext);
+            closeQuietly(createdBrowser);
+            closeQuietly(createdPlaywright);
+            closeQuietly(createdProxy);
+            throw startupFailure;
+        }
+        this.proxy = createdProxy;
+        this.playwright = createdPlaywright;
+        this.browser = createdBrowser;
+        this.context = createdContext;
+        this.page = createdPage;
         // Record every top-level document navigation (url + status) — safe to read even while the page is mid
         // navigation, unlike page.content(). This is the diagnostic trail and the #17744 detector.
         // Capture management-plane XHR/fetch calls + browser console errors, so a stuck SPA form (e.g. the create
@@ -181,6 +197,17 @@ public final class PlaywrightSsoClient implements AutoCloseable {
         URI u = URI.create(url);
         int port = u.getPort() == -1 ? 443 : u.getPort();
         return new InetSocketAddress(u.getHost(), port);
+    }
+
+    private static void closeQuietly(AutoCloseable resource) {
+        if (resource == null) {
+            return;
+        }
+        try {
+            resource.close();
+        } catch (Exception ignored) {
+            // Preserve the original startup failure.
+        }
     }
 
     // ─────────────────────────── flow methods ───────────────────────────

@@ -741,6 +741,7 @@ public class APIInvocationSteps {
         String resolvedContext = Utils.resolveContextPlaceholders(context);
         String marker = Utils.resolveContextPlaceholders(expectedBody);
         long timeoutMillis = timeoutSeconds * 1000L;
+        long started = System.currentTimeMillis();
         HttpResponse last = invokeUntilBodyMarker(resolvedContext, httpMethod, accessToken, payload, contentType,
                 marker, timeoutMillis);
 
@@ -762,7 +763,7 @@ public class APIInvocationSteps {
         Requests.publishPollResult(last);
         if (last != null && last.getResponseCode() == 401) {
             Utils.logAuthRejection(resolvedContext, accessToken, credentialForDiagnostic(accessToken),
-                    last.getResponseCode(), last.getData(), timeoutMillis);
+                    last.getResponseCode(), last.getData(), System.currentTimeMillis() - started);
         }
         assertReachedExpectedStatus(last, 200);
         String body = last == null ? null : last.getData();

@@ -9,10 +9,10 @@ Feature: API Platform Gateway lifecycle
   Scenario: Register a platform gateway, deploy an API-key-secured REST API, and enforce auth at the gateway
     Given The system is ready
     And I have valid access tokens as "admin"
-    When I register a platform gateway "smoke-gateway"
+    When I register a platform gateway "${UNIQUE:smoke-gateway}"
     Then The response status code should be 201
     When I connect the platform gateway with the issued registration token
-    Then the platform gateway "smoke-gateway" becomes active within 120 seconds
+    Then the platform gateway "${UNIQUE:smoke-gateway}" becomes active within 120 seconds
     When I create and deploy a REST API from "artifacts/payloads/create_platform_gateway_api.json" to the platform gateway as "pgApiId"
     Then The response status code should be 201
     When I publish the "apis" resource with id "pgApiId"
@@ -38,6 +38,6 @@ Feature: API Platform Gateway lifecycle
   Scenario: A registered platform gateway that never connects stays inactive
     Given The system is ready
     And I have valid access tokens as "admin"
-    When I register a platform gateway "unconnected-gw"
+    When I register a platform gateway "${UNIQUE:unconnected-gw}"
     Then The response status code should be 201
-    And the platform gateway "unconnected-gw" is inactive
+    And the platform gateway "${UNIQUE:unconnected-gw}" is inactive
