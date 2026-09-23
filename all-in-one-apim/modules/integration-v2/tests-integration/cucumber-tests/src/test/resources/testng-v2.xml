@@ -38,7 +38,6 @@
             <class name="org.wso2.am.integration.cucumbertests.runners.block.PublisherGraphQLDesignRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.PublisherSoapDesignRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.PublisherAPIRevisionsRunner"/>
-            <class name="org.wso2.am.integration.cucumbertests.runners.block.PublisherApiProductsRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.PublisherAccessControlRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.PublisherApiVisibilityDomainsRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.PublisherApiProviderChangeRunner"/>
@@ -47,15 +46,17 @@
             <class name="org.wso2.am.integration.cucumbertests.runners.block.PublisherServiceCatalogRunner"/>
         </classes>
     </test>
-    <!-- API versioning creates revisions against a freshly-created parent API. Keep this workflow in its own
-         sequential Publisher block so concurrent lifecycle/deployment mutations cannot make that parent
-         temporarily unreadable. The runner's 201 revision and 401 authorization assertions remain unchanged. -->
+    <!-- API versioning and API-product lifecycle workflows create revisions and perform ordered lifecycle
+         transitions. Keep them in their own sequential Publisher block so concurrent lifecycle/deployment
+         mutations cannot make their resources temporarily unreadable. Their exact revision, lifecycle, and
+         authorization assertions remain unchanged. -->
     <test name="IntegrationV2-Publisher-Versioning" parallel="classes" thread-count="1">
         <parameter name="blockLabel" value="publisher-versioning"/>
         <parameter name="initTenantUsers" value="true"/>
         <parameter name="initSecondaryUserStore" value="true"/>
         <classes>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.PublisherVersioningRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.PublisherApiProductsRunner"/>
         </classes>
     </test>
     <!-- The deployment-acknowledgement contract runs in its own Publisher-configured block so its strict

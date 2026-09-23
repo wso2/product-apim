@@ -21,6 +21,7 @@ import org.wso2.am.testcontainers.ApimRuntime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.regex.Pattern;
 
 /**
@@ -46,14 +47,29 @@ public final class ThrottleDataReadiness {
                     + "|(?:binding|throttledata).*permission denied"
                     + "|(?:binding|throttledata).*(?:\\b403\\b|\\b504\\b)",
             Pattern.CASE_INSENSITIVE);
+    private static final long STABLE_PIPELINE_MILLIS = 3000L;
 
     private ThrottleDataReadiness() {
     }
 
     /** Polls the component logs until the complete throttle-data pipeline is healthy or the deadline expires. */
     public static Result await(ApimRuntime runtime, int timeoutSeconds) throws InterruptedException {
+
+        AtomicLong healthySince = new AtomicLong(-1L);
         return Utils.retryUntil(timeoutSeconds * 1000L,
-                () -> inspect(runtime), Result::ready);
+                () -> inspect(runtime), result -> {
+                    if (!result.ready()) {
+                        healthySince.set(-1L);
+                        return false;
+                    }
+                    long now = System.currentTimeMillis();
+                    long firstHealthy = healthySince.get();
+                    if (firstHealthy < 0L) {
+                        healthySince.compareAndSet(-1L, now);
+                        return false;
+                    }
+                    return now - firstHealthy >= STABLE_PIPELINE_MILLIS;
+                });
     }
 
     /** Takes one snapshot of all logs relevant to the throttle-data pipeline. */

@@ -28,8 +28,13 @@ Feature: Gateway Conditional-Group Advanced Throttling Enforcement
     {{advThrottlePolicyName}}
     """
     Then The response status code should be 200
+    And the advanced throttling policy "{{advThrottlePolicyId}}" should persist this condition within 180 seconds:
+    """
+    {"type":"IPCONDITION","ipCondition":{"ipConditionType":"IPSPECIFIC","specificIP":"10.100.7.99"}}
+    """
     When I deploy the API with id "condIpApiId"
     Then The response status code should be 201
+    And the "apis" resource "condIpApiId" should be live on the gateway, redeploying if propagation is lost
     When I publish the "apis" resource with id "condIpApiId"
     Then The lifecycle status of API "condIpApiId" should be "Published"
     When I retrieve the "apis" resource with id "condIpApiId"
@@ -63,8 +68,13 @@ Feature: Gateway Conditional-Group Advanced Throttling Enforcement
     {{advThrottlePolicyName}}
     """
     Then The response status code should be 200
+    And the advanced throttling policy "{{advThrottlePolicyId}}" should persist this condition within 180 seconds:
+    """
+    {"type":"HEADERCONDITION","headerCondition":{"headerName":"X-Tier","headerValue":"gold"}}
+    """
     When I deploy the API with id "condHdrApiId"
     Then The response status code should be 201
+    And the "apis" resource "condHdrApiId" should be live on the gateway, redeploying if propagation is lost
     When I publish the "apis" resource with id "condHdrApiId"
     Then The lifecycle status of API "condHdrApiId" should be "Published"
     When I retrieve the "apis" resource with id "condHdrApiId"
@@ -99,8 +109,13 @@ Feature: Gateway Conditional-Group Advanced Throttling Enforcement
     {{advThrottlePolicyName}}
     """
     Then The response status code should be 200
+    And the advanced throttling policy "{{advThrottlePolicyId}}" should persist this condition within 180 seconds:
+    """
+    {"type":"QUERYPARAMETERCONDITION","queryParameterCondition":{"parameterName":"name","parameterValue":"admin"}}
+    """
     When I deploy the API with id "condQryApiId"
     Then The response status code should be 201
+    And the "apis" resource "condQryApiId" should be live on the gateway, redeploying if propagation is lost
     When I publish the "apis" resource with id "condQryApiId"
     Then The lifecycle status of API "condQryApiId" should be "Published"
     When I retrieve the "apis" resource with id "condQryApiId"
@@ -138,8 +153,13 @@ Feature: Gateway Conditional-Group Advanced Throttling Enforcement
     {{advThrottlePolicyName}}
     """
     Then The response status code should be 200
+    And the advanced throttling policy "{{advThrottlePolicyId}}" should persist this condition within 180 seconds:
+    """
+    {"type":"JWTCLAIMSCONDITION","jwtClaimsCondition":{"claimUrl":"http://wso2.org/claims/applicationname","attribute":"{{jwtClaimApp}}"}}
+    """
     When I deploy the API with id "condJwtApiId"
     Then The response status code should be 201
+    And the "apis" resource "condJwtApiId" should be live on the gateway, redeploying if propagation is lost
     When I publish the "apis" resource with id "condJwtApiId"
     Then The lifecycle status of API "condJwtApiId" should be "Published"
     When I retrieve the "apis" resource with id "condJwtApiId"

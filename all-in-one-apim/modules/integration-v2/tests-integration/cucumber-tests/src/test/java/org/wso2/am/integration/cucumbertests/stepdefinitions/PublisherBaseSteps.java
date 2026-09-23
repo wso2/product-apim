@@ -247,6 +247,20 @@ public class PublisherBaseSteps {
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION,
                 "Bearer " + Identity.publisherToken());
 
+        // The revision endpoint reads the parent resource from the publisher registry. A successful create
+        // response only confirms that the create request was accepted; under parallel CI load the registry
+        // artifact can still be unreadable when the revision POST arrives. Wait for the parent resource before
+        // issuing the mutating revision request. This is deliberately limited to the positive revision step:
+        // negative scenarios use iAttemptToCreateResourceRevision and retain their original response assertions.
+        HttpResponse parentResource = awaitPublisherResourceReadable(resourceType, actualResourceId, true);
+        Assert.assertTrue(parentResource != null && parentResource.getResponseCode() == 200
+                        && parentResource.getData() != null && !parentResource.getData().isBlank(),
+                "Parent " + resourceType + " " + actualResourceId
+                        + " was not readable before revision creation within "
+                        + Constants.RUNTIME_PROPAGATION_TIMEOUT + " ms; last response: "
+                        + (parentResource == null ? "null"
+                        : parentResource.getResponseCode() + "/" + parentResource.getData()));
+
         // Creating a revision immediately after creating the API races the publisher plane's ASYNC registry/Solr
         // artifact indexing: the revision endpoint reads the API by id (getPublisherAPI), which under load may
         // not be consistently readable yet, so the POST 500s with "Error while adding new API Revision ...
@@ -1119,6 +1133,18 @@ public class PublisherBaseSteps {
      */
     private HttpResponse awaitPublisherResourceReadable(String resourceType, String resourceId)
             throws IOException, InterruptedException {
+        return awaitPublisherResourceReadable(resourceType, resourceId, false);
+    }
+
+    /**
+     * Polls a publisher resource until its registry representation is readable.
+     *
+     * @param retryNotFound whether a 404 should be treated as transient. This is safe for the positive revision
+     *                         path because the resource id was just returned by a successful create response; the
+     *                         bounded final assertion still fails if the resource never becomes readable.
+     */
+    private HttpResponse awaitPublisherResourceReadable(String resourceType, String resourceId, boolean retryNotFound)
+            throws IOException, InterruptedException {
 
         String url = Utils.getResourceEndpointURL(Utils.getBaseUrl(), resourceType, resourceId);
         Map<String, String> headers = Identity.publisherHeaders();
@@ -1134,7 +1160,7 @@ public class PublisherBaseSteps {
                         && !last.getData().isBlank()) {
                     return last;
                 }
-                if (!isTransientApiReadFailure(last)) {
+                if (!isTransientApiReadFailure(last, retryNotFound)) {
                     return last;
                 }
             } catch (IOException transientTransportFailure) {
@@ -1150,8 +1176,14 @@ public class PublisherBaseSteps {
         }
     }
 
-    private static boolean isTransientApiReadFailure(HttpResponse response) {
-        if (response == null || response.getResponseCode() != 500 || response.getData() == null) {
+    private static boolean isTransientApiReadFailure(HttpResponse response, boolean retryNotFound) {
+        if (response == null) {
+            return false;
+        }
+        if (retryNotFound && response.getResponseCode() == 404) {
+            return true;
+        }
+        if (response.getResponseCode() != 500 || response.getData() == null) {
             return false;
         }
         return response.getData().contains("903220") || response.getData().contains("Failed to get API");

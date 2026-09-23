@@ -728,6 +728,85 @@ public class ApplicationBaseSteps {
     }
 
     /**
+     * Waits for the exact conditional group written by a scenario-specific advanced policy POST to be visible from
+     * the admin read model. A successful POST only confirms acceptance by the write path; deploying an API before
+     * this representation converges can publish an artifact without the condition that the gateway must enforce.
+     * The caller still performs the unchanged gateway 429 assertion after this prerequisite.
+     */
+    @And("the advanced throttling policy {string} should persist this condition within {int} seconds:")
+    public void advancedThrottlingPolicyShouldPersistCondition(String policyIdReference, int timeoutSeconds,
+                                                               String expectedConditionJson)
+            throws IOException, InterruptedException {
+
+        String policyId = Utils.resolveContextPlaceholders(policyIdReference);
+        JSONObject expectedCondition = new JSONObject(Utils.resolveContextPlaceholders(expectedConditionJson));
+        String url = Utils.getAdvancedThrottlingPolicyByIdURL(Utils.getBaseUrl(), policyId);
+        HttpResponse response = Utils.retryUntil(timeoutSeconds * 1000L,
+                () -> Requests.get(url, Identity.adminHeaders()),
+                candidate -> responseContainsConditionalGroup(candidate, expectedCondition));
+        Requests.publishPollResult(response);
+
+        Assert.assertNotNull(response, "No response received while waiting for advanced policy " + policyId
+                + " to persist its conditional group");
+        Assert.assertEquals(response.getResponseCode(), 200,
+                "Advanced policy " + policyId + " was not readable after creation: " + response.getData());
+        Assert.assertTrue(responseContainsConditionalGroup(response, expectedCondition),
+                "Advanced policy " + policyId + " did not persist the expected conditional group: "
+                        + response.getData());
+    }
+
+    private boolean responseContainsConditionalGroup(HttpResponse response, JSONObject expectedCondition) {
+        if (response == null || response.getResponseCode() != 200 || response.getData() == null
+                || response.getData().isBlank()) {
+            return false;
+        }
+        try {
+            JSONObject policy = new JSONObject(response.getData());
+            JSONArray groups = policy.optJSONArray("conditionalGroups");
+            if (groups == null) {
+                return false;
+            }
+            for (int groupIndex = 0; groupIndex < groups.length(); groupIndex++) {
+                JSONObject group = groups.optJSONObject(groupIndex);
+                if (group == null) {
+                    continue;
+                }
+                JSONArray conditions = group.optJSONArray("conditions");
+                if (conditions == null) {
+                    continue;
+                }
+                for (int conditionIndex = 0; conditionIndex < conditions.length(); conditionIndex++) {
+                    JSONObject actualCondition = conditions.optJSONObject(conditionIndex);
+                    if (actualCondition != null && jsonContains(actualCondition, expectedCondition)) {
+                        return true;
+                    }
+                }
+            }
+        } catch (JSONException ignored) {
+            // The read model can briefly expose an incomplete/non-JSON response while it converges.
+        }
+        return false;
+    }
+
+    /** Returns true when the actual JSON contains every scalar/object value required by the expected JSON. */
+    private boolean jsonContains(JSONObject actual, JSONObject expected) {
+        for (String key : expected.keySet()) {
+            Object expectedValue = expected.opt(key);
+            Object actualValue = actual.opt(key);
+            if (expectedValue instanceof JSONObject expectedObject) {
+                if (!(actualValue instanceof JSONObject actualObject) || !jsonContains(actualObject, expectedObject)) {
+                    return false;
+                }
+            } else if (expectedValue == JSONObject.NULL
+                    ? actualValue != JSONObject.NULL
+                    : actualValue == null || !expectedValue.toString().equals(actualValue.toString())) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
      * Advanced policy whose SINGLE conditional group carries ALL FOUR condition types at once — IPCONDITION
      * (IPSPECIFIC), HEADERCONDITION, QUERYPARAMETERCONDITION and JWTCLAIMSCONDITION. The four steps above each
      * exercise one condition in isolation for gateway enforcement; this one exists for the admin-plane
