@@ -1,0 +1,34 @@
+# Feature-specific TOML overlay for the IntegrationV2-AiApiNonHybridGateway block, merged ON TOP of the shared
+# `basic` overlay via the block's `tomlExtraOverlayPath`.
+#
+# Default is redefined to serve PRODUCTION traffic only, rather than the shipped `hybrid`: the check that refuses a
+# deployment when the API carries no endpoint of the stage the gateway serves is only evaluated for a gateway
+# serving ONE stage, so this is what puts it in the deployment path.
+#
+# WHY REDEFINE Default RATHER THAN ADD AN ENVIRONMENT. Every shared step deploys to Default, and an environment
+# created through the admin API is registered in the control plane but not served by this container's gateway
+# (`[apim.sync_runtime_artifacts.gateway] gateway_labels = ["Default"]`), so an API deployed only there never routes.
+#
+# WHY ITS OWN BLOCK. A production-only Default changes the deployment outcome of every API in the container —
+# anything carrying a sandbox endpoint alone stops being deployable — so it cannot be co-hosted.
+#
+# The environment is restated in full because the merge REPLACES the array rather than merging its entries; every
+# value below is the distribution's, with `type` changed and the description updated to match.
+
+[[apim.gateway.environment]]
+name = "Default"
+type = "production"
+gateway_type = "Regular"
+provider = "wso2"
+display_in_api_console = true
+description = "This is a production gateway that handles only production token traffic."
+show_as_token_endpoint_url = true
+service_url = "https://localhost:${mgt.transport.https.port}/services/"
+username = "${admin.username}"
+password = "${admin.password}"
+ws_endpoint = "ws://localhost:9099"
+wss_endpoint = "wss://localhost:8099"
+http_endpoint = "http://localhost:${http.nio.port}"
+https_endpoint = "https://localhost:${https.nio.port}"
+websub_event_receiver_http_endpoint = "http://localhost:9021"
+websub_event_receiver_https_endpoint = "https://localhost:8021"
