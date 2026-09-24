@@ -223,8 +223,8 @@ public class PlatformGatewaySteps {
     }
 
     /**
-     * Gates on the API key having actually REACHED the platform gateway, re-minting it if the publication was
-     * lost. Fixture readiness, never an assertion target — the scenario's own invoke still asserts the 200.
+     * Gates on the API key having actually REACHED the platform gateway, re-deploying the API if the publication
+     * was lost. Fixture readiness, never an assertion target — the scenario's own invoke still asserts the 200.
      *
      * <p><b>Why this is needed.</b> The control plane publishes the key to the gateway as an
      * {@code APIKeyState} xDS resource, ONCE. CI run 24b29536 shows what happens when that single push is lost:
@@ -254,7 +254,7 @@ public class PlatformGatewaySteps {
      * {@code PolicyChainConfig} v3. So re-deploying to the gateway's own environment really does make the control
      * plane republish key state, which is the mechanism by which a dropped push is recovered.
      */
-    @Then("the platform gateway serves the API key {string} for API {string}, re-minting it if the key never "
+    @Then("the platform gateway serves the API key {string} for API {string}, re-deploying the API if the key never "
             + "reaches the gateway")
     public void gatewayServesApiKey(String keyContextKey, String apiIdKey) throws Exception {
 

@@ -51,13 +51,28 @@ public final class DistributedApimTomlBuilder {
      */
     public static String build(String productDefaults, String distributedBaseOverlay,
                                String extraOverlay, Map<String, ?> finalRuntimeValues) throws IOException {
-        ObjectNode result = parse(productDefaults, "product defaults");
-        merge(result, parse(distributedBaseOverlay, "distributed base overlay"));
-        if (extraOverlay != null && !extraOverlay.isBlank()) {
-            merge(result, parse(extraOverlay, "component extra overlay"));
-        }
+        ObjectNode result = mergedConfiguration(productDefaults, distributedBaseOverlay, extraOverlay);
         applyRuntimeValues(result, finalRuntimeValues == null ? Collections.emptyMap() : finalRuntimeValues);
         return TOML.writerWithDefaultPrettyPrinter().writeValueAsString(result);
+    }
+
+    /** Returns whether the merged defaults and overlays declare the supplied dotted TOML path. */
+    public static boolean hasMergedPath(String productDefaults, String distributedBaseOverlay,
+                                        String extraOverlay, String path) throws IOException {
+        if (path == null || path.isBlank()) {
+            throw new IllegalArgumentException("TOML path must not be empty");
+        }
+        JsonNode cursor = mergedConfiguration(productDefaults, distributedBaseOverlay, extraOverlay);
+        for (String segment : path.split("\\.")) {
+            if (!cursor.isObject()) {
+                return false;
+            }
+            cursor = cursor.get(segment);
+            if (cursor == null) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /** Combines overlays in declaration order so later overlay values take precedence. */
@@ -142,6 +157,16 @@ public final class DistributedApimTomlBuilder {
         return (ObjectNode) node;
     }
 
+    private static ObjectNode mergedConfiguration(String productDefaults, String distributedBaseOverlay,
+                                                  String extraOverlay) throws IOException {
+        ObjectNode result = parse(productDefaults, "product defaults");
+        merge(result, parse(distributedBaseOverlay, "distributed base overlay"));
+        if (extraOverlay != null && !extraOverlay.isBlank()) {
+            merge(result, parse(extraOverlay, "component extra overlay"));
+        }
+        return result;
+    }
+
     private static void merge(ObjectNode target, ObjectNode overlay) {
         overlay.fields().forEachRemaining(field -> {
             JsonNode incoming = field.getValue();
@@ -167,6 +192,10 @@ public final class DistributedApimTomlBuilder {
                     ObjectNode object = (ObjectNode) cursor;
                     JsonNode child = object.get(segment);
                     if (child == null) {
+                        if (isArrayIndex(segments[i + 1])) {
+                            throw new IllegalArgumentException("Runtime TOML path requires an existing array parent: "
+                                    + path);
+                        }
                         child = object.putObject(segment);
                     } else if (!child.isObject() && !child.isArray()) {
                         throw new IllegalArgumentException("Runtime TOML path crosses a scalar: " + path);
@@ -193,6 +222,15 @@ public final class DistributedApimTomlBuilder {
                 throw new IllegalArgumentException("Runtime TOML path crosses a scalar: " + path);
             }
         });
+    }
+
+    private static boolean isArrayIndex(String segment) {
+        try {
+            Integer.parseInt(segment);
+            return true;
+        } catch (NumberFormatException e) {
+            return false;
+        }
     }
 
     private static int arrayIndex(String segment, String path) {

@@ -462,6 +462,8 @@ public class MultiTenantSsoSteps {
         int status = browser.changeApiProviderViaAdminSession(apiId, "admin@" + tenant);
         Assert.assertEquals(status, 200, "change-provider via the federated tenant Admin session should return "
                 + "200; the external admin group must map to the tenant-scoped API Manager admin role.");
+        ResourceCleanup.deregister(Constants.CREATED_API_IDS, apiId);
+        ResourceCleanup.registerFor(Constants.CREATED_API_IDS, apiId, "admin@" + tenant);
     }
 
     /** Console context → the service provider API Manager registers for it. */

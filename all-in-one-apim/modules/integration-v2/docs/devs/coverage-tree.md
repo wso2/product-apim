@@ -1050,7 +1050,7 @@ integration-v2 product tests
 - `common/_setup_config_api.feature:24` — Create the <label> configuration base API in <tenant> — @setup
 - `common/_setup_config_api.feature:39` — Create the GraphQL configuration base API in <tenant> — @setup
 - `common/_setup_published_apis.feature:11` — Publish a REST API in <tenant> — @setup
-- `devportal/_setup_comment_threads.feature:28` — Publish three APIs and build a publisher-plane and a devportal-plane comment thread as <actor> — @setup
+- `devportal/_setup_comment_threads.feature:27` — Publish three APIs and build a publisher-plane and a devportal-plane comment thread as <actor> — @setup
 - `framework-verification/block_probe.feature:10` — The block server is ready and its shared URLs are published — @framework
 - `framework-verification/block_probe_defaults.feature:9` — A block with no overlay param boots on the base toml — @framework
 - `framework-verification/block_probe_double_stop.feature:8` — Stopping the container twice is a no-op — @framework

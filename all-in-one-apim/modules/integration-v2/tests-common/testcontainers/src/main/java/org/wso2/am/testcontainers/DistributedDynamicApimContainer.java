@@ -533,15 +533,20 @@ public class DistributedDynamicApimContainer implements ApimRuntime {
             }
             baseOverlay = new String(input.readAllBytes(), StandardCharsets.UTF_8);
         }
-        return DistributedApimTomlBuilder.build(defaults, baseOverlay, extraOverlays.get(component),
-                finalRuntimeValues(component));
+        String extraOverlay = extraOverlays.get(component);
+        boolean gatewayDeclaresApimDb = component == DistributedApimTomlBuilder.Component.GATEWAY
+                && DistributedApimTomlBuilder.hasMergedPath(defaults, baseOverlay, extraOverlay,
+                "database.apim_db");
+        return DistributedApimTomlBuilder.build(defaults, baseOverlay, extraOverlay,
+                finalRuntimeValues(component, gatewayDeclaresApimDb));
     }
 
     /**
      * Values derived from this block's actual component/database wiring. They are applied after every overlay so
      * an overlay cannot silently redirect a component to a stale alias or developer-machine database URL.
      */
-    private Map<String, ?> finalRuntimeValues(DistributedApimTomlBuilder.Component component) {
+    private Map<String, ?> finalRuntimeValues(DistributedApimTomlBuilder.Component component,
+                                              boolean gatewayDeclaresApimDb) {
         Map<String, Object> values = new LinkedHashMap<>();
         String controlPlaneServices = serviceUrl(CP_ALIAS);
         String trafficManagerEvents = "tcp://" + TM_ALIAS + ":9611";
@@ -573,6 +578,9 @@ public class DistributedDynamicApimContainer implements ApimRuntime {
                 break;
             case GATEWAY:
                 values.put("server.hostname", GATEWAY_ALIAS);
+                if (gatewayDeclaresApimDb) {
+                    values.put("database.apim_db.url", mysqlTomlUrl(DistributedMySqlContainer.APIM_DATABASE));
+                }
                 values.put("database.shared_db.url", mysqlTomlUrl(DistributedMySqlContainer.SHARED_DATABASE));
                 values.put("apim.event_hub.service_url", gatewayEventHubServices);
                 values.put("apim.event_hub.event_listening_endpoints", List.of("tcp://" + CP_ALIAS + ":5672"));

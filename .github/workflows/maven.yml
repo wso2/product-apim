@@ -349,6 +349,7 @@ jobs:
           -Ddistributed.apim.cp.image.name="distributed-apim-cp:${CP_VERSION}-jdk21"
           -Ddistributed.apim.tm.image.name="distributed-apim-tm:${TM_VERSION}-jdk21"
           -Ddistributed.apim.gateway.image.name="distributed-apim-gateway:${GATEWAY_VERSION}-jdk21"
+          -Dplaywright.sso=true
           -Dapim.coverage=true
           -Dapim.coverage.classfiles="$APIM_COVERAGE_CLASSFILES"
           -Ddocker.extra.hosts="--add-host=host.docker.internal:host-gateway"
@@ -362,6 +363,7 @@ jobs:
           -Ddistributed.apim.cp.image.name="distributed-apim-cp:${CP_VERSION}-jdk21"
           -Ddistributed.apim.tm.image.name="distributed-apim-tm:${TM_VERSION}-jdk21"
           -Ddistributed.apim.gateway.image.name="distributed-apim-gateway:${GATEWAY_VERSION}-jdk21"
+          -Dplaywright.sso=true
           -Ddocker.extra.hosts="--add-host=host.docker.internal:host-gateway"
       - name: Archive test reports
         if: always()

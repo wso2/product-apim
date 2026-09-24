@@ -638,16 +638,11 @@ public class PublisherBaseSteps {
             throws IOException, InterruptedException {
 
         String actualResourceId = TestContext.resolve(resourceId).toString();
-        Map<String, String> headers = new HashMap<>();
-        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION,
-                "Bearer " + Identity.publisherToken());
-        String url = Utils.getChangeLifecycleURL(Utils.getBaseUrl(), resourceType, actualResourceId, "Publish", null);
-        HttpResponse publishResponse = Requests.post(url, headers, null, null);
+        changeLifecycle(resourceType, resourceId, "Publish", null);
+        HttpResponse publishResponse = (HttpResponse) TestContext.get("httpResponse");
         Assert.assertNotNull(publishResponse, "Publish lifecycle-change returned no response for " + actualResourceId);
         Assert.assertEquals(publishResponse.getResponseCode(), 200,
                 "Publish lifecycle-change failed for " + actualResourceId + ": " + publishResponse.getData());
-        TestContext.set("httpResponse", publishResponse);
-        awaitLifecycleTransition(resourceType, actualResourceId, "Publish", url, headers, publishResponse);
     }
 
     /**
@@ -4533,6 +4528,9 @@ public class PublisherBaseSteps {
                 + (response == null ? "null" : response.getResponseCode() + " / " + response.getData())
                 + ContainerLogDiagnostics.explainRegistryContention(
                         "lifecycle-change '" + action + "' of " + actualId));
+        // Preserve the lifecycle POST response for the feature's explicit status/workflow assertions. The healing
+        // gate below uses raw reads and must not replace this response with an intermediate lifecycle-state read.
+        TestContext.set("httpResponse", response);
 
         // The loop above rescues a LOST POST; this gates the other half of the same at-most-once race, a POST
         // whose 200 did not stick. See awaitLifecycleTransition for why re-firing is the only recovery and why

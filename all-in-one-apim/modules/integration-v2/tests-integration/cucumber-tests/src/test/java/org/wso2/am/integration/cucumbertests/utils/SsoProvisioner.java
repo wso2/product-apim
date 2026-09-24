@@ -493,7 +493,25 @@ public final class SsoProvisioner {
                 + "</m:localAndOutBoundAuthenticationConfig>"
                 + "<m:saasApp>true</m:saasApp></axis2:serviceProvider></axis2:updateApplication>"
                 + "</soapenv:Body></soapenv:Envelope>";
-        appSoap("urn:updateApplication", updatePayload);
+        HttpResponse updateResponse = appSoap("urn:updateApplication", updatePayload);
+        String updateDiagnostic = updateResponse == null ? "no response"
+                : "HTTP " + updateResponse.getResponseCode() + ", bodyPresent="
+                + (updateResponse.getData() != null);
+        Assert.assertTrue(updateResponse != null && updateResponse.getResponseCode() >= 200
+                        && updateResponse.getResponseCode() < 300 && !isSoapFault(updateResponse.getData()),
+                "updateApplication failed for console SP '" + spName + "': " + updateDiagnostic);
+
+        HttpResponse verifyResponse = appSoap("urn:getApplication", getPayload);
+        String verifyBody = verifyResponse == null ? null : verifyResponse.getData();
+        String verifyDiagnostic = verifyResponse == null ? "no response"
+                : "HTTP " + verifyResponse.getResponseCode() + ", bodyPresent=" + (verifyBody != null);
+        Assert.assertTrue(verifyResponse != null && verifyResponse.getResponseCode() >= 200
+                        && verifyResponse.getResponseCode() < 300 && verifyBody != null && !verifyBody.isBlank()
+                        && !isSoapFault(verifyBody)
+                        && verifyBody.contains("identityProviderName>" + idpName + "<")
+                        && verifyBody.contains("BasicAuthenticator"),
+                "getApplication did not confirm IdP '" + idpName + "' and BasicAuthenticator for console SP '"
+                        + spName + "': " + verifyDiagnostic);
 
         // The console's OAuth client was DCR-registered at startup against APIM's INTERNAL host, but the
         // containerised test drives the console on the mapped container port — so its redirect_uri never matches

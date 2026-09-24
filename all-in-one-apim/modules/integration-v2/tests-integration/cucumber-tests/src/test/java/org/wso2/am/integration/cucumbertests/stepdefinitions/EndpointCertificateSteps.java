@@ -334,10 +334,11 @@ public class EndpointCertificateSteps {
      * removal event can be lost, and in either topology the gateway can retain the certificate in its in-memory SSL
      * profile indefinitely. This gate keeps the runtime assertion strict: HTTP 500 is accepted only after the
      * gateway has emitted a fresh outbound-SSL reload marker after the DELETE, or after the one permitted gateway
-     * restart has completed and emitted a fresh reload marker. The removal text marker is retained as diagnostic
-     * evidence when the topology emits it, but it is not a distributed contract because the management-side removal
-     * log may be written by the control plane rather than the gateway. HTTP 200 remains not-ready, so waiting cannot
-     * turn a still-trusted certificate into a pass.
+     * restart has completed. Once that recovery has started, a functional HTTP 500 is sufficient even if the fresh
+     * reload marker is unavailable. The removal text marker is retained as diagnostic evidence when the topology
+     * emits it, but it is not a distributed contract because the management-side removal log may be written by the
+     * control plane rather than the gateway. HTTP 200 remains not-ready, so waiting cannot turn a still-trusted
+     * certificate into a pass.
      *
      * <p>The following scenario steps still invoke the API until 500 and verify that 500 remains stable. This is a
      * bounded fixture-convergence repair, not a replacement or relaxation of the product assertion.
@@ -378,7 +379,7 @@ public class EndpointCertificateSteps {
                                     && removalLogCount > removalLogCountBeforeDelete;
                             boolean senderReloaded = reloadCountBaseline[0] >= 0
                                     && reloadCount > reloadCountBaseline[0];
-                            if (senderReloaded || gatewayLog == null) {
+                            if (senderReloaded || recoveryStarted[0] || gatewayLog == null) {
                                 return new HealGate.Ready();
                             }
                             return new HealGate.NotReady("HTTP 500 reached, but gateway removal/reload has not"

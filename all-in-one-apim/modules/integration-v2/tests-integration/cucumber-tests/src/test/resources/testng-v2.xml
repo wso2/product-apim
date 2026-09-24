@@ -505,6 +505,8 @@
         <parameter name="blockLabel" value="throttling-allowed-scopes"/>
         <parameter name="initTenantUsers" value="true"/>
         <parameter name="initBackend" value="true"/>
+        <parameter name="bootstrapThrottleData" value="true"/>
+        <parameter name="throttleDataReadinessSeconds" value="180"/>
         <parameter name="tomlExtraOverlayPath" value="src/test/resources/artifacts/configFiles/throttlingAndAllowedScopes/deployment.toml"/>
         <classes>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.ConditionalThrottlingRunner"/>
@@ -645,10 +647,11 @@
             <class name="org.wso2.am.integration.cucumbertests.runners.block.DevPortalDeprecatedApiDiscoverabilityRunner"/>
         </classes>
     </test>
-    <!-- Email as username: its own block, and the only one that may set emailUserMode. The parameter and the
-         overlay must be set TOGETHER — the overlay alone breaks boot provisioning (a plain tenant actor resolves
-         to a non-existent super-tenant user), the parameter alone provisions usernames the product then refuses
-         to resolve. Neither is co-hostable with runners that expect the plain actor usernames.
+    <!-- Email as username: its own block, and the only one that may set emailUserMode. The listener automatically
+         applies the email-user overlay when emailUserMode is true; no separate tomlExtraOverlayPath is required.
+         The mode and its automatically applied overlay must remain together: the overlay configures product
+         username resolution, while the mode provisions the matching email-form users. Neither is co-hostable with
+         runners that expect the plain actor usernames.
          The runners after the dedicated email ones are MODE FAN-OUT: existing classes re-run under the mode,
          which is how legacy obtained SUPER_TENANT_EMAIL_USER / TENANT_EMAIL_USER coverage. A class is listed
          only where the PHYSICAL username is load-bearing for an assertion it already makes.

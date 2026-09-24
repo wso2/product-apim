@@ -636,12 +636,13 @@ public final class MultiTenantSsoProvisioner {
 
     private static String tenantAdminName(String tenantDomain) {
         return Constants.SUPER_TENANT_DOMAIN.equals(tenantDomain)
-                ? Constants.SUPER_TENANT_ADMIN_USERNAME : "admin@" + tenantDomain;
+                ? Constants.SUPER_TENANT_ADMIN_USERNAME : qualify(tenantDomain,
+                        TestContext.resolve("mtTenantAdmin").toString());
     }
 
     private static String tenantAdminPassword(String tenantDomain) {
         return Constants.SUPER_TENANT_DOMAIN.equals(tenantDomain)
-                ? Constants.SUPER_TENANT_ADMIN_PASSWORD : "Admin@12345";
+                ? Constants.SUPER_TENANT_ADMIN_PASSWORD : TestContext.resolve("mtTenantAdminPassword").toString();
     }
 
     /** The roles a user holds in a tenant, read from API Manager's user-store admin service. */

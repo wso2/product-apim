@@ -40,8 +40,7 @@ public final class KeyManagerReadiness {
     private static final Pattern KEY_MANAGER_LISTENER_READY = Pattern.compile(
             "Started to listen on destination\\s*:\\s*keyManager\\b", Pattern.CASE_INSENSITIVE);
     private static final Pattern KEY_MANAGER_FAILURE = Pattern.compile(
-            "(?:keyManager|key-manager).*(?:error|exception|failed|permission denied|403|504)"
-                    + "|(?:error|exception|failed|permission denied|403|504).*(?:keyManager|key-manager)",
+            "\\b(?:keyManager|key-manager)\\b[^\\r\\n]*\\b(?:error|exception|failed|permission\\s+denied|403|504)\\b",
             Pattern.CASE_INSENSITIVE);
 
     private KeyManagerReadiness() {
