@@ -26,7 +26,9 @@ import org.wso2.am.integration.clients.governance.ApiResponse;
 import org.wso2.am.integration.clients.governance.api.dto.APIMGovernancePolicyDTO;
 import org.wso2.am.integration.clients.governance.api.dto.ArtifactComplianceDetailsDTO;
 import org.wso2.am.integration.clients.governance.api.dto.PolicyAdherenceWithRulesetsDTO;
+import org.wso2.am.integration.clients.governance.api.dto.RuleValidationResultDTO;
 import org.wso2.am.integration.clients.governance.api.dto.RulesetInfoDTO;
+import org.wso2.am.integration.clients.governance.api.dto.RulesetValidationResultDTO;
 import org.wso2.am.integration.clients.governance.api.dto.RulesetValidationResultWithoutRulesDTO;
 import org.wso2.am.integration.test.Constants.APIMGovernanceTestConstants;
 import org.wso2.am.integration.test.utils.base.APIMIntegrationBaseTest;
@@ -48,16 +50,17 @@ import javax.ws.rs.core.Response;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertNull;
+import static org.testng.Assert.assertTrue;
 import static org.testng.Assert.fail;
 
 /**
  * Integration coverage for per-policy compliance affecting severities on a deployment which has not opted in.
  * <p>
- * The feature needs two deliberate opt-ins: the {@code apim.governance.per_policy_severity_filtering_enabled}
- * configuration, and an optional {@code COMPLIANCE_AFFECTING_SEVERITIES} column on {@code GOV_POLICY} which the
- * product never creates. The standard integration pack has neither, and this suite deliberately does not try to
- * add them: issuing DDL against the deployment's own database and restarting the server mid-suite makes every
- * later test in the run depend on that having worked.
+ * The column that holds a policy's selection, {@code GOV_POLICY.COMPLIANCE_AFFECTING_SEVERITIES}, is part of the
+ * product schema and always exists. The feature still needs a deliberate opt-in: the
+ * {@code apim.governance.per_policy_severity_filtering_enabled} configuration, which ships off. The standard
+ * integration pack does not turn it on, and this suite deliberately does not try to: restarting the server
+ * mid-suite to flip a configuration would make every later test in the run depend on that restart having worked.
  * <p>
  * What is asserted here is the half that actually carries release risk, and the half that only a running server
  * can show: that a deployment which has not opted in behaves exactly as it did before this feature existed. The
@@ -144,14 +147,14 @@ public class PolicySeverityFilteringTestCase extends APIMIntegrationBaseTest {
         assertEquals(policy.getStatusCode(), Response.Status.OK.getStatusCode(), "Cannot read the policy");
 
         assertNull(policy.getData().getComplianceAffectingSeverities(),
-                "Without the configuration and the optional column the field must be null, so that a client knows "
-                        + "not to offer the control at all");
+                "Without the configuration enabled the field must be null, so that a client knows not to offer "
+                        + "the control at all");
     }
 
     /**
      * Hiding the control in the portal is not enough, because the REST API can be called directly. A deployment
-     * which cannot store severities must say so rather than accept the value and silently drop it, which would
-     * leave an operator believing a threshold is in force when nothing changed.
+     * which has not opted in must say so rather than accept the value and silently drop it, which would leave an
+     * operator believing a threshold is in force when nothing changed.
      */
     @Test(groups = {"wso2.am"},
             description = "Storing severities is rejected when the deployment has not opted in",
@@ -163,15 +166,50 @@ public class PolicySeverityFilteringTestCase extends APIMIntegrationBaseTest {
 
         try {
             restAPIGovernance.updatePolicy(policyId, policy);
-            fail("Storing compliance affecting severities must be rejected on a deployment which has neither the "
-                    + "configuration nor the optional column");
+            fail("Storing compliance affecting severities must be rejected on a deployment which has not enabled "
+                    + "the configuration");
         } catch (ApiException e) {
-            assertEquals(e.getCode(), Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(),
-                    "The rejection must surface as an error rather than a silently ignored value");
+            // A deployment which has not opted in is a supported state, not a fault, so the client is told its
+            // request was unacceptable rather than that the server broke. The client can retry without the field.
+            assertEquals(e.getCode(), Response.Status.BAD_REQUEST.getStatusCode(),
+                    "The rejection must surface as a client error rather than a server failure");
+            // ERROR and WARN are both severities the product defines, so this request fails on exactly one
+            // condition: the deployment has not opted in. The specific code proves that is the reason, rather
+            // than the request merely failing to reach the server for some unrelated cause.
+            assertTrue(e.getResponseBody() != null && e.getResponseBody().contains("990213"),
+                    "The rejection must be reported under the code for an unavailable feature");
         }
 
         assertNull(restAPIGovernance.getPolicy(policyId).getData().getComplianceAffectingSeverities(),
                 "A rejected write must leave the policy unconfigured");
+    }
+
+    /**
+     * A severity the product does not define is dropped when a stored selection is read back, so accepting one
+     * would leave a policy judged on severities nobody asked for. It is refused on the way in instead, and refused
+     * as a client error under its own code, so a client can tell "fix the request" from "the deployment has not
+     * opted in".
+     */
+    @Test(groups = {"wso2.am"},
+            description = "A severity the product does not define is rejected rather than stored",
+            dependsOnMethods = "testStoringSeveritiesIsRejectedWhenTheFeatureIsNotEnabled")
+    public void testAnUnknownSeverityIsRejected() throws Exception {
+
+        APIMGovernancePolicyDTO policy = restAPIGovernance.getPolicy(policyId).getData();
+        policy.setComplianceAffectingSeverities("ERROR,BLOCKER");
+
+        try {
+            restAPIGovernance.updatePolicy(policyId, policy);
+            fail("A severity the product does not define must not be accepted");
+        } catch (ApiException e) {
+            assertEquals(e.getCode(), Response.Status.BAD_REQUEST.getStatusCode(),
+                    "An unusable selection is the caller's mistake rather than a server failure");
+            assertTrue(e.getResponseBody() != null && e.getResponseBody().contains("BLOCKER"),
+                    "The response has to name the token that was refused, so the caller can correct it");
+        }
+
+        assertNull(restAPIGovernance.getPolicy(policyId).getData().getComplianceAffectingSeverities(),
+                "A rejected write must leave the policy exactly as it was");
     }
 
     /**
@@ -198,6 +236,21 @@ public class PolicySeverityFilteringTestCase extends APIMIntegrationBaseTest {
                 "The policy holding that ruleset must still be violated");
         assertEquals(compliance.getData().getStatus(), ArtifactComplianceDetailsDTO.StatusEnum.NON_COMPLIANT,
                 "The API must still be non compliant");
+
+        // The aggregate statuses above are consistent with an INFO only violation, but consistent is not the same
+        // as caused by: the ruleset holds one ERROR rule too, and only naming the individual results proves it is
+        // the INFO rule doing the failing, not some other regression the aggregate status cannot distinguish.
+        RulesetValidationResultDTO ruleset = restAPIGovernance.getRulesetValidationResults(apiId, infoRulesetId)
+                .getData();
+        assertTrue(ruleset.getViolatedRules().stream().anyMatch(rule ->
+                        "severity-test-contact-required".equals(rule.getName())
+                                && RuleValidationResultDTO.StatusEnum.FAILED.equals(rule.getStatus())
+                                && RuleValidationResultDTO.SeverityEnum.INFO.equals(rule.getSeverity())),
+                "The INFO contact rule must be violated");
+        assertTrue(ruleset.getFollowedRules().stream().anyMatch(rule ->
+                        "severity-test-title-required".equals(rule.getName())
+                                && RuleValidationResultDTO.StatusEnum.PASSED.equals(rule.getStatus())),
+                "The ERROR title rule must be followed");
     }
 
     /**

@@ -32,6 +32,7 @@ import org.wso2.am.integration.clients.governance.api.dto.ArtifactComplianceDeta
 import org.wso2.am.integration.clients.governance.api.dto.PolicyAdherenceDetailsDTO;
 import org.wso2.am.integration.clients.governance.api.dto.RulesetInfoDTO;
 import org.wso2.am.integration.clients.governance.api.dto.RulesetListDTO;
+import org.wso2.am.integration.clients.governance.api.dto.RulesetValidationResultDTO;
 import org.wso2.am.integration.test.ClientAuthenticator;
 
 import java.io.File;
@@ -249,5 +250,18 @@ public class RestAPIGovernanceImpl {
      */
     public ApiResponse<PolicyAdherenceDetailsDTO> getPolicyAdherence(String poilcyId) throws ApiException {
         return policyAdherenceApi.getPolicyAdherenceByPolicyIdWithHttpInfo(poilcyId);
+    }
+
+    /**
+     * Get the validation results of a ruleset for an artifact
+     *
+     * @param apiId     Id of the API
+     * @param rulesetId Id of the ruleset
+     * @return RulesetValidationResultDTO
+     * @throws ApiException If there is an issue with the API request
+     */
+    public ApiResponse<RulesetValidationResultDTO> getRulesetValidationResults(String apiId, String rulesetId)
+            throws ApiException {
+        return artifactComplianceApi.getRulesetValidationResultsByAPIIdWithHttpInfo(apiId, rulesetId);
     }
 }
