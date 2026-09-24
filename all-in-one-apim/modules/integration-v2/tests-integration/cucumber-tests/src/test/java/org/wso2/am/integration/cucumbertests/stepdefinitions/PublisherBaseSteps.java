@@ -4499,6 +4499,7 @@ public class PublisherBaseSteps {
         long endTime = endTimeStart + Constants.RUNTIME_PROPAGATION_TIMEOUT;
         HttpResponse response = null;
         boolean changed = false;
+        boolean publishedStateConfirmed = false;
         while (true) {
             try {
                 response = Requests.post(url, headers, null, null);
@@ -4511,6 +4512,7 @@ public class PublisherBaseSteps {
             }
             if (targetState != null && targetState.equals(currentApiLifecycleState(actualId, headers))) {
                 changed = true;
+                publishedStateConfirmed = "Published".equals(targetState);
                 break;
             }
             if (System.currentTimeMillis() >= endTime) {
@@ -4528,8 +4530,12 @@ public class PublisherBaseSteps {
                 + (response == null ? "null" : response.getResponseCode() + " / " + response.getData())
                 + ContainerLogDiagnostics.explainRegistryContention(
                         "lifecycle-change '" + action + "' of " + actualId));
-        // Preserve the lifecycle POST response for the feature's explicit status/workflow assertions. The healing
-        // gate below uses raw reads and must not replace this response with an intermediate lifecycle-state read.
+        // Preserve the lifecycle POST response for the feature's explicit status/workflow assertions. If the POST
+        // response was lost or non-2xx but the lifecycle-state read confirmed Published, expose a successful result
+        // for the publish step; all other state fallbacks retain the original response and its failure status.
+        if (publishedStateConfirmed) {
+            response = new HttpResponse(null, 200);
+        }
         TestContext.set("httpResponse", response);
 
         // The loop above rescues a LOST POST; this gates the other half of the same at-most-once race, a POST

@@ -34,6 +34,8 @@
         <runGroupTest>false</runGroupTest>
         <!-- Default suite (filename under src/test/resources); override with -Dsurefire.suite.xml=<file> for framework-verification lanes. -->
         <surefire.suite.xml>testng-v2.xml</surefire.suite.xml>
+        <surefire.groups/>
+        <surefire.excludedGroups>migrationTest</surefire.excludedGroups>
     </properties>
     <dependencies>
         <dependency>
@@ -233,20 +235,20 @@
                 </plugins>
             </build>
         </profile>
-        <!-- Default profile: exclude groupTest and migrationTest -->
+        <!-- Default profile -->
         <profile>
             <id>default</id>
             <activation>
                 <activeByDefault>true</activeByDefault>
             </activation>
-            <properties>
-                <surefire.groups/>
-                <surefire.excludedGroups>migrationTest</surefire.excludedGroups>
-            </properties>
         </profile>
         <!-- Profile to include all tests including migrationTest -->
         <profile>
             <id>migration</id>
+            <properties>
+                <surefire.groups/>
+                <surefire.excludedGroups/>
+            </properties>
         </profile>
     </profiles>
 </project>

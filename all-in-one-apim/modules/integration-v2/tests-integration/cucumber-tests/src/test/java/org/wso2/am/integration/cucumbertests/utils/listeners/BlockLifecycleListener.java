@@ -179,6 +179,8 @@ public class BlockLifecycleListener implements ITestListener {
     static final String PARAM_INIT_BACKEND = "initBackend";
     /** When set, fail block bootstrap unless the TM-to-Gateway throttle-data pipeline is healthy. */
     static final String PARAM_THROTTLE_DATA_READINESS_SECONDS = "throttleDataReadinessSeconds";
+    /** When true, repair the registry-backed throttle-data hierarchy and recover its event pipeline during boot. */
+    static final String PARAM_BOOTSTRAP_THROTTLE_DATA = "bootstrapThrottleData";
     /**
      * When {@code true}, onStart boots {@link DynamicSolaceBroker} — a faked Solace connector control plane
      * (network alias {@code solaceshim}) plus a REAL PubSub+ broker (alias {@code solacebroker}) — BEFORE APIM,
@@ -423,10 +425,11 @@ public class BlockLifecycleListener implements ITestListener {
                 SecondaryUserStoreProvisioner.provision(container, Constants.SUPER_TENANT_DOMAIN, "tenant1.com");
             }
 
-            bootstrapThrottleDataInfrastructure(container, label,
-                    Boolean.parseBoolean(param(context, PARAM_INIT_TENANT_USERS)));
-
             String throttleReadinessSeconds = param(context, PARAM_THROTTLE_DATA_READINESS_SECONDS);
+            if (Boolean.parseBoolean(param(context, PARAM_BOOTSTRAP_THROTTLE_DATA))) {
+                bootstrapThrottleDataInfrastructure(container, label,
+                        Boolean.parseBoolean(param(context, PARAM_INIT_TENANT_USERS)));
+            }
             if (throttleReadinessSeconds != null && !throttleReadinessSeconds.isBlank()) {
                 int timeoutSeconds = Integer.parseInt(throttleReadinessSeconds);
                 ThrottleDataReadiness.Result readiness = ThrottleDataReadiness.await(container, timeoutSeconds);
