@@ -119,6 +119,17 @@ public final class ServerReadiness {
         return awaitHttpEndpoint(endpoint);
     }
 
+    /** Awaits a non-Gateway Carbon node restart through its management login endpoint. */
+    public static boolean awaitComponentRestart(String baseUrl) {
+        String endpoint = baseUrl + "carbon/admin/login.jsp";
+        if (!awaitUnreadyEndpoint(endpoint, Constants.SERVER_STARTUP_WAIT_TIME)) {
+            logger.error("Carbon component did not go down after the restart request; restart may not have taken effect");
+            return false;
+        }
+        logger.info("Carbon component went down for restart; waiting for it to come back up...");
+        return awaitHttpEndpoint(endpoint);
+    }
+
     /**
      * Polls an external WSO2 Identity Server's OIDC discovery document until it returns 200 or
      * {@link Constants#SERVER_STARTUP_WAIT_TIME} elapses. Used by the external-KM block after starting the

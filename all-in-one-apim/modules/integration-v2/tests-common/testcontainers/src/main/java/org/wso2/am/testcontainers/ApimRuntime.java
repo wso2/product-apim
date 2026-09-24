@@ -51,6 +51,9 @@ public interface ApimRuntime {
     /** Gateway management HTTPS base URL (the endpoint serving gateway artifact APIs). */
     String getGatewayManagementHttpsUrl();
 
+    /** Traffic Manager management HTTPS base URL (the endpoint used to restart its Carbon process). */
+    String getTrafficManagerManagementHttpsUrl();
+
     String getGatewayHttpUrl();
 
     String getGatewayWsUrl();

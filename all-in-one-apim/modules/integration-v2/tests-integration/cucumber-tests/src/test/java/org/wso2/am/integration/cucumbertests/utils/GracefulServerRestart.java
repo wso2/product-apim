@@ -43,6 +43,11 @@ public final class GracefulServerRestart {
         restart(Utils.getBaseUrl(), true);
     }
 
+    /** Restarts the Traffic Manager node in distributed topology. */
+    public static void trafficManager() throws Exception {
+        restartTrafficManager(Utils.getBaseTrafficManagerManagementUrl());
+    }
+
     private static void restart(String baseUrl, boolean controlPlane) throws Exception {
         String endpoint = baseUrl + "services/ServerAdmin.ServerAdminHttpsSoap11Endpoint/";
         String soapBody = "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" "
@@ -70,5 +75,29 @@ public final class GracefulServerRestart {
                 : ServerReadiness.awaitRestart(baseUrl);
         Assert.assertTrue(restarted, "APIM server did not come back ready within "
                 + (Constants.SERVER_STARTUP_WAIT_TIME / 1000) + "s after a graceful restart");
+    }
+
+    private static void restartTrafficManager(String baseUrl) throws Exception {
+        String endpoint = baseUrl + "services/ServerAdmin.ServerAdminHttpsSoap11Endpoint/";
+        String soapBody = "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" "
+                + "xmlns:xsd=\"http://org.apache.axis2/xsd\"><soapenv:Header/><soapenv:Body>"
+                + "<xsd:restartGracefully/></soapenv:Body></soapenv:Envelope>";
+
+        String credentials = Constants.SUPER_TENANT_ADMIN_USERNAME + ":" + Constants.SUPER_TENANT_ADMIN_PASSWORD;
+        String basicAuth = Base64.getEncoder().encodeToString(credentials.getBytes(StandardCharsets.UTF_8));
+        Map<String, String> headers = new HashMap<>();
+        headers.put("Authorization", "Basic " + basicAuth);
+        headers.put("SOAPAction", "urn:restartGracefully");
+
+        HttpResponse response = SimpleHTTPClient.getInstance().doPost(endpoint, headers, soapBody,
+                "text/xml;charset=UTF-8");
+        Assert.assertNotNull(response, "Traffic Manager restartGracefully returned no response");
+        Assert.assertEquals(response.getResponseCode(), 200,
+                "Traffic Manager restartGracefully call failed: " + response.getData());
+        Assert.assertTrue(response.getData() != null && response.getData().contains("<ns:return>true</ns:return>"),
+                "Traffic Manager restartGracefully did not return true; response: " + response.getData());
+        Assert.assertTrue(ServerReadiness.awaitComponentRestart(baseUrl),
+                "Traffic Manager did not come back ready within "
+                        + (Constants.SERVER_STARTUP_WAIT_TIME / 1000) + "s after a graceful restart");
     }
 }

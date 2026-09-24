@@ -1044,6 +1044,7 @@
     </test>
     <test name="IntegrationV2-PlatformGateway" parallel="classes" thread-count="1">
         <parameter name="blockLabel" value="platform-gateway"/>
+        <parameter name="lifecycleLock" value="browser-sso"/>
         <parameter name="initTenantUsers" value="true"/>
         <parameter name="initBackend" value="true"/>
         <parameter name="bootPlatformGateway" value="true"/>

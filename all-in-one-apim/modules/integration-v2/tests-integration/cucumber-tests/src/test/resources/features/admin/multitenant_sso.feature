@@ -121,7 +121,7 @@ Feature: Multi-tenant console SSO via an external Identity Server
     And I subscribe the DevPortal application to the created API
     And I generate production keys for the DevPortal application
     Then I invoke the created API through the gateway using the DevPortal application
-    When I open the "admin" console expecting multi-tenant SSO
+    When I open the "admin" console expecting multi-tenant SSO with one bounded recovery
     Then I should not be prompted to log in again for multi-tenant SSO
     And I should land authenticated in the "admin" console as a tenant user
     And the "admin" console session should belong to the tenant's SSO user

@@ -586,6 +586,11 @@ public class Utils {
         return requiredContextUrl("baseGatewayManagementUrl");
     }
 
+    /** Traffic Manager management URL, distinct from the Gateway management URL in distributed topology. */
+    public static String getBaseTrafficManagerManagementUrl() {
+        return requiredContextUrl("baseTrafficManagerManagementUrl");
+    }
+
     /** Publisher — endpoint-certificate collection: {@code /endpoint-certificates} (POST multipart upload). */
     public static String getEndpointCertificatesURL(String baseUrl) {
         return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "endpoint-certificates";

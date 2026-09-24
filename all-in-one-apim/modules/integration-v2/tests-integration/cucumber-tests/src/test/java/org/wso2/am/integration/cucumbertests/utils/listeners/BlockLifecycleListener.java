@@ -24,8 +24,11 @@ import org.testng.ITestContext;
 import org.testng.ITestListener;
 import org.testng.xml.XmlTest;
 import org.wso2.am.integration.cucumbertests.utils.CoverageSupport;
+import org.wso2.am.integration.cucumbertests.utils.GracefulServerRestart;
+import org.wso2.am.integration.cucumbertests.utils.Identity;
 import org.wso2.am.integration.cucumbertests.utils.IntegrationActors;
 import org.wso2.am.integration.cucumbertests.utils.ModulePathResolver;
+import org.wso2.am.integration.cucumbertests.utils.RegistryAdminService;
 import org.wso2.am.integration.cucumbertests.utils.ServerReadiness;
 import org.wso2.am.integration.cucumbertests.utils.SecondaryUserStoreProvisioner;
 import org.wso2.am.integration.cucumbertests.utils.TenantUserProvisioner;
@@ -75,6 +78,7 @@ public class BlockLifecycleListener implements ITestListener {
     static final String BASE_URL_KEY = "baseUrl";
     static final String BASE_GATEWAY_URL_KEY = "baseGatewayUrl";
     static final String BASE_GATEWAY_MANAGEMENT_URL_KEY = "baseGatewayManagementUrl";
+    static final String BASE_TRAFFIC_MANAGER_MANAGEMENT_URL_KEY = "baseTrafficManagerManagementUrl";
     static final String BASE_GATEWAY_WS_URL_KEY = "baseGatewayWsUrl";
     static final String BASE_GATEWAY_WSS_URL_KEY = "baseGatewayWssUrl";
     static final String BASE_WEBSUB_EVENT_RECEIVER_URL_KEY = "baseWebSubEventReceiverUrl";
@@ -390,21 +394,13 @@ public class BlockLifecycleListener implements ITestListener {
                         + (Constants.SERVER_STARTUP_WAIT_TIME / 1000) + "s");
             }
 
-            String throttleReadinessSeconds = param(context, PARAM_THROTTLE_DATA_READINESS_SECONDS);
-            if (throttleReadinessSeconds != null && !throttleReadinessSeconds.isBlank()) {
-                int timeoutSeconds = Integer.parseInt(throttleReadinessSeconds);
-                ThrottleDataReadiness.Result readiness = ThrottleDataReadiness.await(container, timeoutSeconds);
-                if (!readiness.ready()) {
-                    throw new IllegalStateException("Throttle-data infrastructure for block '" + label
-                            + "' did not become ready within " + timeoutSeconds + "s: " + readiness.diagnostics());
-                }
-            }
-
             TestContext.setShared(CONTAINER_KEY, container);
             TestContext.setShared(BASE_URL_KEY, baseUrl);
             TestContext.setShared(BACKEND_OAUTH_TOKEN_URL_KEY, container.getBackendOAuthTokenUrl());
             TestContext.setShared(BASE_GATEWAY_URL_KEY, gatewayUrl);
             TestContext.setShared(BASE_GATEWAY_MANAGEMENT_URL_KEY, gatewayManagementUrl);
+            TestContext.setShared(BASE_TRAFFIC_MANAGER_MANAGEMENT_URL_KEY,
+                    container.getTrafficManagerManagementHttpsUrl());
             TestContext.setShared(BASE_GATEWAY_WS_URL_KEY, container.getGatewayWsUrl());
             TestContext.setShared(BASE_GATEWAY_WSS_URL_KEY, container.getGatewayWssUrl());
             TestContext.setShared(BASE_WEBSUB_EVENT_RECEIVER_URL_KEY, container.getWebSubEventReceiverUrl());
@@ -425,6 +421,19 @@ public class BlockLifecycleListener implements ITestListener {
             // isolated by UM_TENANT_ID — so scenarios exercise the ×4 matrix (2 tenants × 2 store-user actors).
             if (Boolean.parseBoolean(param(context, PARAM_INIT_SECONDARY_USER_STORE))) {
                 SecondaryUserStoreProvisioner.provision(container, Constants.SUPER_TENANT_DOMAIN, "tenant1.com");
+            }
+
+            bootstrapThrottleDataInfrastructure(container, label,
+                    Boolean.parseBoolean(param(context, PARAM_INIT_TENANT_USERS)));
+
+            String throttleReadinessSeconds = param(context, PARAM_THROTTLE_DATA_READINESS_SECONDS);
+            if (throttleReadinessSeconds != null && !throttleReadinessSeconds.isBlank()) {
+                int timeoutSeconds = Integer.parseInt(throttleReadinessSeconds);
+                ThrottleDataReadiness.Result readiness = ThrottleDataReadiness.await(container, timeoutSeconds);
+                if (!readiness.ready()) {
+                    throw new IllegalStateException("Throttle-data infrastructure for block '" + label
+                            + "' did not become ready within " + timeoutSeconds + "s: " + readiness.diagnostics());
+                }
             }
 
             // External IS: start THIS block's own IS on the block's private network and publish its host-mapped
@@ -469,6 +478,46 @@ public class BlockLifecycleListener implements ITestListener {
             // reads it, and the block's shared entries persist (keyed by scope id in the static map), so
             // clearing the ThreadLocal here is safe and mirrors onFinish.
             TestContext.clearScope();
+        }
+    }
+
+    /**
+     * Repairs the registry parent hierarchy before any block scenario can trigger a throttle-data subscription.
+     * The product components start before the registry SOAP service is available, so repair is necessarily a
+     * post-boot bootstrap operation followed by a single, ordered component recovery when the first startup
+     * binding was rejected. Existing tests still assert the same enforcement responses; this only prepares the
+     * infrastructure they consume.
+     */
+    private void bootstrapThrottleDataInfrastructure(ApimRuntime runtime, String label, boolean tenantUsersEnabled)
+            throws Exception {
+
+        boolean repaired = RegistryAdminService.ensureThrottleDataHierarchy(Utils.getBaseUrl(),
+                Identity.resolveActor("admin"));
+        if (tenantUsersEnabled) {
+            repaired |= RegistryAdminService.ensureThrottleDataHierarchy(Utils.getBaseUrl(),
+                    Identity.resolveActor("admin@tenant1.com"));
+        }
+
+        ThrottleDataReadiness.Result observed = ThrottleDataReadiness.inspect(runtime);
+        if (!repaired && observed.ready()) {
+            return;
+        }
+
+        logger.warn("Throttle-data bootstrap for block '" + label + "' requires component recovery: repaired="
+                + repaired + ", observed=" + observed.diagnostics());
+        boolean unifiedRuntime = runtime.getServletHttpsUrl().equals(runtime.getGatewayManagementHttpsUrl());
+        if (unifiedRuntime) {
+            GracefulServerRestart.gateway();
+        } else {
+            GracefulServerRestart.controlPlane();
+            GracefulServerRestart.trafficManager();
+            GracefulServerRestart.gateway();
+        }
+
+        ThrottleDataReadiness.Result recovered = ThrottleDataReadiness.await(runtime, 180);
+        if (!recovered.ready()) {
+            throw new IllegalStateException("Throttle-data infrastructure for block '" + label
+                    + "' did not recover after registry bootstrap: " + recovered.diagnostics());
         }
     }
 

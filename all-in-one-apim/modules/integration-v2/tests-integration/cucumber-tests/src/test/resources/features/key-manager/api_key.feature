@@ -446,6 +446,8 @@ Feature: Key Manager API Key
     When I deploy the API with id "slApiId"
     Then The response status code should be 201
     And I wait until "apis" "slApiId" revision is deployed in the gateway
+    And the "apis" resource "slApiId" should be live on the gateway, redeploying if propagation is lost
+    And the Gateway key-manager consumer is ready within 180 seconds
 
     # An application that is NEVER subscribed to this API — generate an API key on it.
     When I put JSON payload from file "artifacts/payloads/create_apim_test_app.json" in context as "slAppPayload"

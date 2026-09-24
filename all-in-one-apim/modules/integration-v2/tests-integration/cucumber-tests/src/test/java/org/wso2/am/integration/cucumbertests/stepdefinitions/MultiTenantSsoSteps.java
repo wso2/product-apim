@@ -206,6 +206,12 @@ public class MultiTenantSsoSteps {
         browser.openConsoleExpectingSso(console);
     }
 
+    @When("I open the {string} console expecting multi-tenant SSO with one bounded recovery")
+    public void iOpenTheConsoleExpectingSsoWithOneBoundedRecovery(String console) {
+        Assert.assertEquals(console, "admin", "The bounded multi-tenant SSO recovery is only valid for Admin");
+        browser.openAdminConsoleExpectingSsoWithRecovery();
+    }
+
     @Then("I should not be prompted to log in again for multi-tenant SSO")
     public void iShouldNotBePromptedToLogInAgain() {
         browser.assertNotPromptedToLoginAgain();

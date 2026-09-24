@@ -251,6 +251,11 @@ public class DistributedDynamicApimContainer implements ApimRuntime {
     }
 
     @Override
+    public String getTrafficManagerManagementHttpsUrl() {
+        return url(tm, Constants.HTTPS_PORT, "https");
+    }
+
+    @Override
     public String getGatewayHttpUrl() {
         return url(gateway, Constants.GATEWAY_HTTP_PORT, "http");
     }

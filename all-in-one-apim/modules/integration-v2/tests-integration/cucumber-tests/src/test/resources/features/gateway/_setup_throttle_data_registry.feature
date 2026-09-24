@@ -9,5 +9,4 @@ Feature: Throttle-data registry infrastructure setup
     Given The system is ready
     When I ensure the throttleData registry hierarchy exists as "admin"
     And I ensure the throttleData registry hierarchy exists as "admin@tenant1.com"
-    And I gracefully restart the API Manager server
     And the Traffic Manager throttleData publisher and Gateway throttleData consumer are ready within 180 seconds

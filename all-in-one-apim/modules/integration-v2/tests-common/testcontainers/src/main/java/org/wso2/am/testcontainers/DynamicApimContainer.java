@@ -291,6 +291,11 @@ public class DynamicApimContainer extends GenericContainer<DynamicApimContainer>
         return getServletHttpsUrl();
     }
 
+    @Override
+    public String getTrafficManagerManagementHttpsUrl() {
+        return getServletHttpsUrl();
+    }
+
     public String getGatewayHttpUrl() {
         return String.format("http://%s:%d/", getHost(), getMappedPort(Constants.GATEWAY_HTTP_PORT));
     }

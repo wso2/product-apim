@@ -549,6 +549,61 @@ public final class PlaywrightSsoClient implements AutoCloseable {
     }
 
     /**
+     * Opens the Admin console for the multi-tenant DevPortal handoff, allowing one recovery from the observed
+     * stale DevPortal {@code prompt=none} redirect. The browser context is deliberately retained: replacing it
+     * would discard the resident-IS session and turn this into a fresh login rather than an SSO assertion.
+     */
+    public void openAdminConsoleExpectingSsoWithRecovery() {
+        try {
+            openConsoleExpectingSso("admin");
+            return;
+        } catch (AssertionError firstAttempt) {
+            if (!isRecoverableAdminNavigation()) {
+                throw firstAttempt;
+            }
+            log.info("[SSO] Admin navigation ended in the stale DevPortal prompt=none path; "
+                    + "attempting one fresh same-context navigation");
+            settle();
+            trailMarkAtConsoleOpen = docTrail.size();
+            try {
+                page.navigate(consoleEntryUrl("admin"),
+                        new Page.NavigateOptions().setWaitUntil(WaitUntilState.DOMCONTENTLOADED));
+                page.waitForLoadState(com.microsoft.playwright.options.LoadState.NETWORKIDLE);
+            } catch (PlaywrightException retryFailure) {
+                if (!isRedirectAborted(retryFailure)) {
+                    throw retryFailure;
+                }
+                try {
+                    waitForConsoleNavigationOutcome("admin", 30000);
+                } catch (AssertionError secondAttempt) {
+                    throw adminNavigationRecoveryFailure(firstAttempt, secondAttempt);
+                }
+            }
+            if (consoleTokenPart1("/admin") == null && !navigationServedLoginPage()) {
+                throw adminNavigationRecoveryFailure(firstAttempt,
+                        new AssertionError("the recovery navigation ended without an Admin token or login page"));
+            }
+        }
+    }
+
+    /** Whether the failed navigation matches the narrowly scoped stale DevPortal transaction signature. */
+    private boolean isRecoverableAdminNavigation() {
+        if (consoleTokenPart1("/admin") != null || navigationServedLoginPage()) {
+            return false;
+        }
+        java.util.List<String> hops = hopsSinceConsoleOpen();
+        return hops.stream().anyMatch(hop -> hop.contains("/devportal/services/configs?loginPrompt=false"))
+                && hops.stream().anyMatch(hop -> hop.contains("prompt=none"));
+    }
+
+    private AssertionError adminNavigationRecoveryFailure(AssertionError firstAttempt, AssertionError secondAttempt) {
+        return new AssertionError("Admin SSO navigation failed on the original attempt and its one bounded "
+                + "same-context recovery attempt. Original failure: " + firstAttempt.getMessage()
+                + "; recovery failure: " + secondAttempt.getMessage() + ". Final state: " + pageDiagnostic(),
+                secondAttempt);
+    }
+
+    /**
      * Waits for an aborted console navigation to reach a meaningful terminal state. Playwright can report
      * {@code ERR_ABORTED} when a redirect replaces the document while {@code navigate()} is waiting; returning
      * immediately would let the next assertion inspect the previous console's page and cookies.

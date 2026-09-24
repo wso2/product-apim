@@ -40,20 +40,22 @@ public final class RegistryAdminService {
     }
 
     /** Ensures the complete registry collection hierarchy required by the throttle-data subscription. */
-    public static void ensureThrottleDataHierarchy(String baseUrl, User actor) throws IOException {
+    public static boolean ensureThrottleDataHierarchy(String baseUrl, User actor) throws IOException {
 
         String current = "";
+        boolean repaired = false;
         for (String segment : THROTTLE_DATA_PATH.substring(1).split("/")) {
             current += "/" + segment;
-            ensureCollection(baseUrl, actor, current);
+            repaired |= ensureCollection(baseUrl, actor, current);
         }
+        return repaired;
     }
 
-    private static void ensureCollection(String baseUrl, User actor, String path) throws IOException {
+    private static boolean ensureCollection(String baseUrl, User actor, String path) throws IOException {
 
         HttpResponse existing = getResourceData(baseUrl, actor, path);
         if (existing != null && existing.getResponseCode() == 200) {
-            return;
+            return false;
         }
         if (existing == null || existing.getResponseCode() != 500) {
             throw new IOException("ResourceAdminService could not inspect registry collection " + path + ": got="
@@ -75,6 +77,7 @@ public final class RegistryAdminService {
             throw new IOException("Registry collection " + path + " was not readable after addCollection: got="
                     + describe(verified));
         }
+        return true;
     }
 
     /** Intermediate read: its response is consumed here and must not replace a scenario assertion response. */
