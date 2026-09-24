@@ -202,6 +202,14 @@ module.exports = {
     env: {
       PORT: 3024
     }
+  },
+  {
+    name: "network-access-control-fixtures",
+    script: "./network-access-control-fixtures/server.js",
+    cwd: "./",
+    env: {
+      PORT: 3026
+    }
   }
   ]
 };

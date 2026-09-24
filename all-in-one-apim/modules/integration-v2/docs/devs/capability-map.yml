@@ -18,6 +18,7 @@ capabilities:
       scopes:            { name: API scopes & shared scopes (assignment) }
       versioning:        { name: API versioning & version-copy }
       definitions:       { name: OAS / WSDL import-export, SOAP-to-REST }
+      network-access-control: { name: Outbound remote-reference host validation }
       docs:              { name: API documentation }
       products:          { name: API Products }
       revisions:         { name: API revisions }
