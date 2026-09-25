@@ -1,0 +1,55 @@
+{
+    "name": "${UNIQUE:PlatformGatewayApi}",
+    "context": "${UNIQUE:platformGwApiCtx}",
+    "version": "1.0.0",
+    "gatewayVendor": "wso2",
+    "gatewayType": "APIPlatform",
+    "endpointConfig": {
+        "endpoint_type": "http",
+        "production_endpoints": {
+            "template_not_supported": false,
+            "config": null,
+            "url": "http://nodebackend:3001/jaxrs_basic/services/customers/customerservice"
+        },
+        "sandbox_endpoints": {
+            "template_not_supported": false,
+            "config": null,
+            "url": "http://nodebackend:3001/jaxrs_basic/services/customers/customerservice"
+        }
+    },
+    "description": "REST API deployed to the API Platform Gateway",
+    "policies": [
+        "Unlimited",
+        "Bronze"
+    ],
+    "operations": [
+        {
+            "verb": "GET",
+            "target": "/reflect-headers",
+            "scopes": []
+        }
+    ],
+    "apiHubPolicies": [
+        {
+            "policyName": "api-key-auth",
+            "policyVersion": "v1",
+            "policyId": "api-key-auth::v1",
+            "parameters": { "in": "header", "key": "ApiKey" }
+        },
+        {
+            "policyName": "set-headers",
+            "policyVersion": "v1",
+            "policyId": "set-headers::v1",
+            "parameters": {
+                "request": {
+                    "headers": [
+                        { "name": "X-Injected-By-Policy", "value": "pgw-set-headers-applied" }
+                    ]
+                }
+            }
+        }
+    ],
+    "isDefaultVersion": true,
+    "additionalProperties": [],
+    "additionalPropertiesMap": {}
+}

@@ -33,11 +33,13 @@ import org.wso2.am.integration.cucumbertests.utils.TestContext;
 import org.wso2.am.integration.cucumbertests.utils.Utils;
 import org.wso2.am.integration.cucumbertests.utils.clients.SimpleHTTPClient;
 import org.wso2.am.integration.test.utils.Constants;
+import org.wso2.am.testcontainers.NodeAppServer;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -93,6 +95,9 @@ public class WebSubInvocationSteps {
     /** In-network host the APIM container reaches the node backend at (the shared-network alias). */
     private static final String NODE_BACKEND_HOST = "nodebackend";
 
+    /** Bounded host-side readiness window for the callback receiver's health and registration endpoints. */
+    private static final long CALLBACK_RECEIVER_READINESS_TIMEOUT_MILLIS = 30_000L;
+
     /** Suffix appended to the receiver's context key to hold its in-network callback URL. */
     private static final String CALLBACK_KEY_SUFFIX = "Callback";
 
@@ -104,6 +109,9 @@ public class WebSubInvocationSteps {
      * keeping the added cost to one quiet window per count assertion. Raise it if a count ever settles LOW.
      */
     private static final long DELIVERY_SETTLE_QUIET_MILLIS = 10_000L;
+
+    /** Minimum interval between measured event submissions in the single-subscriber delivery-count arc. */
+    private static final long MEASURED_EVENT_INTERVAL_MILLIS = 1_000L;
 
     /**
      * Internal (data-plane) REST resource listing the PERSISTED webhook subscriptions of one tenant — the
@@ -157,7 +165,7 @@ public class WebSubInvocationSteps {
      * No reset is needed (and none is issued): the name is unique per scenario, so nothing can be inherited.
      */
     @Given("I have a {string} WebSub callback receiver stored as {string}")
-    public void iHaveAWebSubCallbackReceiver(String flavour, String contextKey) throws IOException {
+    public void iHaveAWebSubCallbackReceiver(String flavour, String contextKey) throws Exception {
 
         String family = switch (flavour) {
             case "verifying" -> "receiver";
@@ -173,14 +181,71 @@ public class WebSubInvocationSteps {
         // DECLARE the name to the receiver app now. Its introspection route 404s for a name it has never seen, so
         // that a typo'd receiver key fails loudly instead of reading back an invented empty receiver and satisfying
         // an "expected 0 events" assertion. Registering here is what keeps a legitimate not-yet-delivered receiver
-        // answering 200 with a zero count. Infra-side call consumed inside the step, so it does NOT publish
-        // httpResponse (§7).
-        String registerUrl = Utils.getNodeBackendUrl(WEBSUB_RECEIVER_PORT) + "/register/" + name;
-        HttpResponse response = SimpleHTTPClient.getInstance().doPost(registerUrl, new HashMap<>(), "",
-                Constants.CONTENT_TYPES.APPLICATION_JSON);
-        Assert.assertTrue(response != null && response.getResponseCode() == 200,
-                "Could not register WebSub receiver '" + name + "' at " + registerUrl + "; got="
-                        + (response == null ? "null" : response.getResponseCode() + "/" + response.getData()));
+        // answering 200 with a zero count. The health check and idempotent registration are both host-side fixture
+        // operations: they do not publish httpResponse (§7), and they do not alter the in-network callback URL.
+        registerCallbackReceiver(name);
+    }
+
+    /**
+     * Waits for the host-published receiver port to be usable, then registers the named receiver through that same
+     * port. The NodeAppServer's container-level listening wait proves boot readiness, but a host-published port can
+     * still refuse a connection transiently while Docker/Testcontainers finishes the mapping. Registration is
+     * idempotent, so retrying this fixture operation cannot duplicate a subscription or hide a WebSub regression.
+     */
+    private void registerCallbackReceiver(String name) throws IOException, InterruptedException {
+        String baseUrl = Utils.getNodeBackendUrl(WEBSUB_RECEIVER_PORT);
+        String healthUrl = baseUrl + "/health";
+        String registerUrl = baseUrl + "/register/" + name;
+        ReceiverReadiness last = Utils.retryUntilWithInterval(CALLBACK_RECEIVER_READINESS_TIMEOUT_MILLIS,
+                Constants.RETRY_INTERVAL_TIME, () -> {
+                    HttpResponse health = SimpleHTTPClient.getInstance().doGet(healthUrl, new HashMap<>());
+                    if (!healthy(health)) {
+                        return new ReceiverReadiness(health, null);
+                    }
+                    HttpResponse registration = SimpleHTTPClient.getInstance().doPost(registerUrl, new HashMap<>(), "",
+                            Constants.CONTENT_TYPES.APPLICATION_JSON);
+                    return new ReceiverReadiness(health, registration);
+                }, ReceiverReadiness::ready);
+
+        Assert.assertTrue(last != null && last.ready(),
+                "Could not register WebSub receiver '" + name + "' within "
+                        + CALLBACK_RECEIVER_READINESS_TIMEOUT_MILLIS + "ms. "
+                        + receiverDiagnostics(baseUrl, healthUrl, registerUrl, last));
+    }
+
+    private static boolean healthy(HttpResponse response) {
+        if (response == null || response.getResponseCode() != 200 || response.getData() == null) {
+            return false;
+        }
+        try {
+            return "ok".equalsIgnoreCase(new JSONObject(response.getData()).optString("status"));
+        } catch (RuntimeException malformedHealthResponse) {
+            return false;
+        }
+    }
+
+    private static String receiverDiagnostics(String baseUrl, String healthUrl, String registerUrl,
+                                             ReceiverReadiness last) {
+        String livePort;
+        try {
+            livePort = String.valueOf(NodeAppServer.getInstance().livePublishedPort(WEBSUB_RECEIVER_PORT));
+        } catch (RuntimeException unavailable) {
+            livePort = "unavailable (" + unavailable.getMessage() + ")";
+        }
+        return "configuredBase=" + baseUrl + ", livePublishedPort=" + livePort + ", healthUrl=" + healthUrl
+                + ", registerUrl=" + registerUrl + ", lastHealth=" + describe(last == null ? null : last.health())
+                + ", lastRegistration=" + describe(last == null ? null : last.registration());
+    }
+
+    private static String describe(HttpResponse response) {
+        return response == null ? "no response" : response.getResponseCode() + "/" + response.getData();
+    }
+
+    private record ReceiverReadiness(HttpResponse health, HttpResponse registration) {
+
+        private boolean ready() {
+            return healthy(health) && registration != null && registration.getResponseCode() == 200;
+        }
     }
 
     /**
@@ -306,6 +371,155 @@ public class WebSubInvocationSteps {
             Assert.assertEquals(response.getResponseCode(), 200, "WebSub event " + i + " of " + times
                     + " was not accepted by the event receiver; response: " + response.getData());
         }
+    }
+
+    /**
+     * Publishes a multi-subscriber event sequence at a controlled cadence. This is deliberately a separate step
+     * from {@link #publishEventNTimes(String, String, String, String, int)}: the latter is used by scenarios whose
+     * contract is only the source response, while the legacy multi-subscription test waits between publishes and
+     * observes both callbacks before sending the next event.
+     *
+     * <p>The one-second interval is not the readiness mechanism. Each event must first return 200 and be observed by
+     * both named receivers; the interval then prevents the next request from overlapping the gateway's asynchronous
+     * fan-out of the preceding one. A signature-validation failure therefore remains an immediate failure and is not
+     * retried or converted into a success.
+     */
+    @When("I publish the WebSub event {string} to the event receiver at gateway context {string} topic {string} "
+            + "signed with secret {string} {int} times expecting status 200 one second apart and wait for receivers "
+            + "{string} and {string}")
+    public void publishEventNTimesPaced(String eventBody, String context, String topic, String secret, int times,
+                                        String firstReceiverKey, String secondReceiverKey) throws Exception {
+
+        String body = TestContext.resolve(eventBody).toString();
+        String receiverUrl = eventReceiverUrl(context, Utils.resolveContextPlaceholders(topic));
+        String signature = HmacTestUtils.hubSignature("SHA1", body,
+                Utils.resolveContextPlaceholders(secret));
+        String firstReceiver = TestContext.resolve(firstReceiverKey).toString();
+        String secondReceiver = TestContext.resolve(secondReceiverKey).toString();
+        int firstInitialCount = readReceiver(firstReceiver).getInt("count");
+        int secondInitialCount = readReceiver(secondReceiver).getInt("count");
+
+        for (int i = 1; i <= times; i++) {
+            final int eventNumber = i;
+            publishAndAwaitDelivery(body, receiverUrl, signature, eventNumber, times,
+                    () -> bothReceiversReached(firstReceiver, firstInitialCount + eventNumber, secondReceiver,
+                            secondInitialCount + eventNumber),
+                    "receivers '" + firstReceiver + "' and '" + secondReceiver + "'");
+        }
+    }
+
+    /**
+     * Publishes the measured five-event sequence for the single-subscriber delivery-count scenario. This is a
+     * separate step because that scenario has one receiver and must prove each event was delivered before sending
+     * the next one; the multi-subscriber step above retains its two-receiver contract.
+     */
+    @When("I publish the WebSub event {string} to the event receiver at gateway context {string} topic {string} "
+            + "signed with secret {string} {int} times expecting status 200 one second apart and wait for receiver "
+            + "{string}")
+    public void publishEventNTimesPacedSingleReceiver(String eventBody, String context, String topic, String secret,
+                                                       int times, String receiverKey) throws Exception {
+
+        String body = TestContext.resolve(eventBody).toString();
+        String receiverUrl = eventReceiverUrl(context, Utils.resolveContextPlaceholders(topic));
+        String signature = HmacTestUtils.hubSignature("SHA1", body,
+                Utils.resolveContextPlaceholders(secret));
+        String receiver = TestContext.resolve(receiverKey).toString();
+        int initialCount = readReceiver(receiver).getInt("count");
+
+        for (int i = 1; i <= times; i++) {
+            int expectedCount = initialCount + i;
+            publishAndAwaitDelivery(body, receiverUrl, signature, i, times,
+                    () -> readReceiver(receiver).getInt("count") >= expectedCount,
+                    "receiver '" + receiver + "'");
+        }
+    }
+
+    /** Publishes one event, preserves the exact 200 contract, and waits for its delivery before the next event. */
+    private void publishAndAwaitDelivery(String body, String receiverUrl, String signature, int eventNumber, int total,
+                                         Utils.RetryAttempt<Boolean> deliveryAttempt, String receiverDescription)
+            throws Exception {
+
+        long eventStart = System.currentTimeMillis();
+        HttpResponse response = Utils.retryUntil(Constants.RUNTIME_PROPAGATION_TIMEOUT,
+                () -> Requests.post(receiverUrl, signatureHeaders(signature), body,
+                        Constants.CONTENT_TYPES.APPLICATION_JSON),
+                completed -> true);
+        Assert.assertNotNull(response, "WebSub event " + eventNumber + " of " + total + " never completed — the event "
+                + "receiver at " + receiverUrl + " was unreachable within the warmup window.");
+        Assert.assertEquals(response.getResponseCode(), 200, "WebSub event " + eventNumber + " of " + total
+                + " was not accepted by the event receiver; response: " + response.getData());
+
+        Boolean delivered = Utils.retryUntil(Constants.RUNTIME_PROPAGATION_TIMEOUT,
+                deliveryAttempt, reached -> reached);
+        Assert.assertTrue(Boolean.TRUE.equals(delivered), "WebSub event " + eventNumber + " of " + total
+                + " was accepted with 200 but was not observed by " + receiverDescription
+                + " within the propagation window.");
+
+        if (eventNumber < total) {
+            Utils.pollPause(eventStart, MEASURED_EVENT_INTERVAL_MILLIS);
+        }
+    }
+
+    private static boolean bothReceiversReached(String firstReceiver, int firstExpected, String secondReceiver,
+                                                int secondExpected) throws IOException {
+        return readReceiver(firstReceiver).getInt("count") >= firstExpected
+                && readReceiver(secondReceiver).getInt("count") >= secondExpected;
+    }
+
+    /**
+     * Establishes a positive, delivery-side barrier before a scenario starts its measured event burst.
+     *
+     * <p>The persisted subscription check cannot prove that the Gateway's in-memory fan-out map has converged. A
+     * distributed Gateway can therefore accept a publish with 200 while cloning to zero subscribers. This step is an
+     * explicit, opt-in containment for scenarios that need to run against that product behaviour: it publishes a
+     * unique probe until the callback observes it, settles the probe deliveries, and clears the receiver before the
+     * scenario's actual event count begins. It deliberately does not alter the shared publish or subscribe steps.
+     *
+     * <p>This is not a replacement for the product fix. The product should eventually make the subscribe response
+     * wait for Gateway fan-out readiness. The positive delivery barrier only prevents the known asynchronous window
+     * from consuming the scenario's measured events while keeping the actual five-event assertion intact.
+     */
+    @When("I establish WebSub fan-out readiness for receiver {string} at gateway context {string} topic {string} "
+            + "signed with secret {string} within {int} seconds")
+    public void establishWebSubFanoutReadiness(String receiverKey, String context, String topic, String secret,
+                                                int timeoutSeconds) throws Exception {
+
+        String receiverName = TestContext.resolve(receiverKey).toString();
+        int initialCount = readReceiver(receiverName).getInt("count");
+        String body = "{\"__integration_v2_websub_readiness\":\""
+                + UUID.randomUUID() + "\"}";
+        String resolvedTopic = Utils.resolveContextPlaceholders(topic);
+        String receiverUrl = eventReceiverUrl(context, resolvedTopic);
+        String signature = HmacTestUtils.hubSignature("SHA1", body,
+                Utils.resolveContextPlaceholders(secret));
+
+        Integer reached = Utils.retryUntil(timeoutSeconds * 1000L,
+                () -> {
+                    HttpResponse response = Requests.post(receiverUrl, signatureHeaders(signature), body,
+                            Constants.CONTENT_TYPES.APPLICATION_JSON);
+                    Assert.assertNotNull(response, "WebSub readiness probe did not receive a response from "
+                            + receiverUrl);
+                    Assert.assertEquals(response.getResponseCode(), 200,
+                            "WebSub readiness probe was not accepted by " + receiverUrl + "; response: "
+                                    + response.getData());
+                    return readReceiver(receiverName).getInt("count");
+                }, count -> count > initialCount);
+
+        Assert.assertNotNull(reached, "WebSub fan-out readiness probe never completed for receiver '"
+                + receiverName + "' within " + timeoutSeconds + " seconds; last observed count was "
+                + (reached == null ? "unavailable" : reached));
+        Assert.assertTrue(reached > initialCount, "WebSub fan-out readiness probe did not reach receiver '"
+                + receiverName + "'; initial count=" + initialCount + ", observed=" + reached);
+
+        Utils.SettledCount settled = Utils.awaitSettledCount(DELIVERY_SETTLE_QUIET_MILLIS,
+                timeoutSeconds * 1000L, () -> readReceiver(receiverName).getInt("count"));
+        Assert.assertTrue(settled.settled(), "WebSub readiness probe deliveries for receiver '" + receiverName
+                + "' did not settle (last seen " + settled.value() + " over " + settled.samples()
+                + " sample(s), quiet window " + DELIVERY_SETTLE_QUIET_MILLIS + "ms)");
+
+        resetReceiver(receiverName);
+        log.info("WebSub fan-out readiness established for receiver '" + receiverName + "' at " + receiverUrl
+                + " after probe count reached " + settled.value() + "; receiver state was reset before the measured burst");
     }
 
     /**
@@ -787,5 +1001,18 @@ public class WebSubInvocationSteps {
                 "Failed to read the WebSub receiver introspection at " + url + "; got="
                         + (response == null ? "null" : response.getResponseCode() + "/" + response.getData()));
         return new JSONObject(response.getData());
+    }
+
+    /** Clears the test receiver's recorded state and restores its introspection registration. */
+    private void resetReceiver(String name) throws IOException, InterruptedException {
+        String url = Utils.getNodeBackendUrl(WEBSUB_RECEIVER_PORT) + "/events/" + name + "/reset";
+        HttpResponse response = SimpleHTTPClient.getInstance().doPost(url, new HashMap<>(), "",
+                Constants.CONTENT_TYPES.APPLICATION_JSON);
+        Assert.assertTrue(response != null && response.getResponseCode() == 200,
+                "Failed to reset WebSub receiver '" + name + "' at " + url + "; got="
+                        + (response == null ? "null" : response.getResponseCode() + "/" + response.getData()));
+        // The node fixture implements reset by deleting the in-memory receiver. Re-register it before the measured
+        // sequence so the first delivery barrier reads the same receiver that the callback URL addresses.
+        registerCallbackReceiver(name);
     }
 }

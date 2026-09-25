@@ -151,10 +151,11 @@ Feature: Gateway REST API Invocation
     When I find the Publisher API named "{{ieInvApiName}}" and store its id as "ieInvImportedApiId"
     Then The response status code should be 200
 
-    # Deploy + publish the RE-IMPORTED API, re-subscribe, and INVOKE AGAIN → 200 (still invocable after import).
+    # Import preserves the Published lifecycle state. Deploy the RE-IMPORTED API, verify that state, re-subscribe,
+    # and INVOKE AGAIN → 200 (still invocable after import). Do not send a second Publish action: Published APIs
+    # reject that lifecycle transition with 903234.
     When I deploy the API with id "ieInvImportedApiId"
     Then The response status code should be 201
-    When I publish the "apis" resource with id "ieInvImportedApiId"
     Then The lifecycle status of API "ieInvImportedApiId" should be "Published"
     When I retrieve the "apis" resource with id "ieInvImportedApiId"
     And I extract response field "context" and store it as "ieInvImportedContext"
@@ -507,6 +508,7 @@ Feature: Gateway REST API Invocation
     Given The system is ready
     And I have valid access tokens as "<actor>"
     And I have created an api from "artifacts/payloads/create_apim_prodonly_api.json" as "u1ApiId" and deployed it
+    And the "apis" resource "u1ApiId" should be live on the gateway, redeploying if propagation is lost
     When I publish the "apis" resource with id "u1ApiId"
     Then The lifecycle status of API "u1ApiId" should be "Published"
     When I retrieve the "apis" resource with id "u1ApiId"

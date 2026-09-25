@@ -99,6 +99,14 @@ public final class ResourceCleanup {
     public static final String CREATED_SERVICE_CATALOG_IDS = "createdServiceCatalogIds";
 
     /**
+     * Teardown list for API Platform Gateway environments registered via {@code POST /api/am/admin/v4/gateways},
+     * holding each gateway's id. An admin-plane resource; swept AFTER the APIs (deleting an API undeploys it from
+     * the gateway, so the gateway delete is unblocked). Deleted via the generic bearer-token
+     * {@link #deleteResources} with the admin token.
+     */
+    public static final String CREATED_PLATFORM_GATEWAY_IDS = "createdPlatformGatewayIds";
+
+    /**
      * Teardown list for carbon users a SCENARIO provisions at runtime (not the block-boot actors), holding each
      * username. A scenario needs its own user whenever it MUTATES a user account — a password change, say — since
      * mutating a shared block actor would break every parallel scenario that authenticates as it. Such a user is
@@ -286,6 +294,7 @@ public final class ResourceCleanup {
                 && TestContext.getList(CREATED_ENDPOINT_CERTIFICATE_ALIASES).isEmpty()
                 && TestContext.getList(CREATED_USER_NAMES).isEmpty()
                 && TestContext.getList(CREATED_SERVICE_CATALOG_IDS).isEmpty()
+                && TestContext.getList(CREATED_PLATFORM_GATEWAY_IDS).isEmpty()
                 && TestContext.getList(CREATED_SIGNUP_USERNAMES).isEmpty()
                 && TestContext.getList(CREATED_APPLICATION_KEY_MAPPINGS).isEmpty()
                 && TestContext.getList(CREATED_SUBSCRIPTION_IDS).isEmpty()
@@ -346,6 +355,10 @@ public final class ResourceCleanup {
             // Gateway environments (admin). No revisions are deployed to test envs, so delete is unblocked.
             deleteResources(Constants.CREATED_ENVIRONMENT_IDS, Identity::adminTokenKey,
                     id -> Utils.getEnvironmentByIdURL(baseUrl, id));
+            // Platform gateway environments (admin) AFTER the APIs — deleting an API undeploys it from the
+            // gateway, so the gateway delete is unblocked. Deleted with the admin token.
+            deleteResources(CREATED_PLATFORM_GATEWAY_IDS, Identity::adminTokenKey,
+                    id -> Utils.getPlatformGatewayByIdURL(baseUrl, id));
             // Governance policies BEFORE governance rulesets — a policy references rulesets, so a ruleset
             // delete is rejected with 409 while a policy still attaches it. Both deleted with the governance
             // token (apim:gov_*), not the admin token.
@@ -415,6 +428,7 @@ public final class ResourceCleanup {
             TestContext.remove(CREATED_MCP_SERVER_IDS);
             TestContext.remove(CREATED_DCR_CLIENT_IDS);
             TestContext.remove(CREATED_ENDPOINT_CERTIFICATE_ALIASES);
+            TestContext.remove(CREATED_PLATFORM_GATEWAY_IDS);
             TestContext.remove(CREATED_USER_NAMES);
             TestContext.remove(CREATED_SERVICE_CATALOG_IDS);
             TestContext.remove(CREATED_SIGNUP_USERNAMES);

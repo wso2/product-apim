@@ -26,6 +26,7 @@ Feature: Consumer Secret Rotation (single-secret model)
     Given The system is ready
     And I have valid access tokens as "<actor>"
     And I have created an api from "artifacts/payloads/create_apim_test_api.json" as "rotApiId" and deployed it
+    And the "apis" resource "rotApiId" should be live on the gateway, redeploying if propagation is lost
     When I publish the "apis" resource with id "rotApiId"
     Then The lifecycle status of API "rotApiId" should be "Published"
     When I retrieve the "apis" resource with id "rotApiId"

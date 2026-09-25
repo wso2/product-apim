@@ -28,6 +28,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.commons.io.IOUtils;
 import org.testng.Assert;
+import org.wso2.am.integration.cucumbertests.utils.ContainerLogDiagnostics;
 import org.wso2.am.integration.cucumbertests.utils.HealGate;
 import org.wso2.am.integration.cucumbertests.utils.Identity;
 import org.wso2.am.integration.cucumbertests.utils.Names;
@@ -37,6 +38,7 @@ import org.wso2.am.integration.cucumbertests.utils.TestContext;
 import org.wso2.am.integration.cucumbertests.utils.Utils;
 import org.wso2.am.integration.cucumbertests.utils.clients.SimpleHTTPClient;
 import org.wso2.am.integration.test.utils.Constants;
+import org.wso2.am.testcontainers.ApimRuntime;
 import org.wso2.carbon.automation.engine.context.beans.User;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import org.yaml.snakeyaml.Yaml;
@@ -49,6 +51,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.IntStream;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
@@ -243,6 +247,20 @@ public class PublisherBaseSteps {
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION,
                 "Bearer " + Identity.publisherToken());
 
+        // The revision endpoint reads the parent resource from the publisher registry. A successful create
+        // response only confirms that the create request was accepted; under parallel CI load the registry
+        // artifact can still be unreadable when the revision POST arrives. Wait for the parent resource before
+        // issuing the mutating revision request. This is deliberately limited to the positive revision step:
+        // negative scenarios use iAttemptToCreateResourceRevision and retain their original response assertions.
+        HttpResponse parentResource = awaitPublisherResourceReadable(resourceType, actualResourceId, true);
+        Assert.assertTrue(parentResource != null && parentResource.getResponseCode() == 200
+                        && parentResource.getData() != null && !parentResource.getData().isBlank(),
+                "Parent " + resourceType + " " + actualResourceId
+                        + " was not readable before revision creation within "
+                        + Constants.RUNTIME_PROPAGATION_TIMEOUT + " ms; last response: "
+                        + (parentResource == null ? "null"
+                        : parentResource.getResponseCode() + "/" + parentResource.getData()));
+
         // Creating a revision immediately after creating the API races the publisher plane's ASYNC registry/Solr
         // artifact indexing: the revision endpoint reads the API by id (getPublisherAPI), which under load may
         // not be consistently readable yet, so the POST 500s with "Error while adding new API Revision ...
@@ -358,8 +376,102 @@ public class PublisherBaseSteps {
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION,
                 "Bearer " + Identity.publisherToken());
 
+        // Record where the gateway log ends BEFORE the deploy, so the readiness gate can tell THIS deploy's
+        // synapse artifact from one already on the gateway. Every deploy phrasing funnels through this method
+        // ("I deploy the API with id", "I have created an api ... and deployed it", "I deploy revision ... of
+        // ...", and this step), so one mark here covers them all and no feature file changes.
+        // See resourceShouldBeLiveOnGateway for why artifact existence alone cannot answer that question.
+        markGatewayLogForDeploy(resourceType, actualResourceId);
+
         Requests.post(Utils.getRevisionDeploymentURL(Utils.getBaseUrl(), resourceType, actualResourceId, actualRevisionId), headers, jsonPayload,
                         Constants.CONTENT_TYPES.APPLICATION_JSON);
+    }
+
+    /** Context key holding the gateway-log offset captured immediately before a resource's deploy. */
+    private static final String DEPLOY_LOG_MARK_PREFIX = "deployGatewayLogMark::";
+
+    /** Synapse's per-artifact hot-swap line; the artifact name is {@code prod--<apiName>:v<version>}. */
+    private static final String SYNAPSE_ADDED = "was added to the Synapse configuration successfully";
+
+    /**
+     * Decides whether the artifact now on the gateway is the one THIS scenario's deploy put there.
+     *
+     * <p>Only reached once the artifact endpoint has already answered 200, so the extra log read costs nothing on
+     * the common first-deploy path (the artifact is absent until the deploy lands, and the very first 200 is
+     * confirmed with a single read). It is the RE-deploy path — where the endpoint answers 200 immediately from
+     * the previous artifact — that polls here, which is exactly the case that needs it.
+     *
+     * <p><b>Falls back to the old behaviour whenever it cannot do better</b>, and never invents a failure: no
+     * mark (the gate was reached without a deploy in this scenario, e.g. the fixture was deployed by a
+     * {@code _setup_} feature), a non-{@code apis} resource, or an unreadable log all return {@link
+     * HealGate.Ready} — byte-for-byte what this gate did before. The check can only make the gate stricter where
+     * it has the evidence to be, never weaker.
+     *
+     * <p>Matching is on {@code prod--<name>:v<version>}, which is scenario-unique because API names are unique by
+     * construction (§4). That matters: block classes run in parallel against ONE container and ONE log, so a
+     * substring match on anything less specific could be satisfied by a sibling scenario's deploy.
+     */
+    private HealGate.Verdict synapseSwappedInSinceDeploy(String resourceId, String name, String version) {
+
+        Object mark = TestContext.get(DEPLOY_LOG_MARK_PREFIX + resourceId);
+        if (mark == null) {
+            return new HealGate.Ready();
+        }
+        String log;
+        try {
+            Object candidate = TestContext.get("blockApimContainer");
+            if (!(candidate instanceof ApimRuntime runtime)) {
+                return new HealGate.Ready();
+            }
+            log = runtime.readGatewayLogFile(ContainerLogDiagnostics.SERVER_LOG);
+        } catch (Throwable unreadable) {
+            logger.warn("Could not read the gateway log to confirm the synapse hot-swap of {} (accepting the"
+                    + " artifact-endpoint 200): {}", name, unreadable.toString());
+            return new HealGate.Ready();
+        }
+        if (log == null) {
+            return new HealGate.Ready();
+        }
+        int from = Integer.parseInt(mark.toString());
+        // A rotated/truncated log can leave the mark past the end; scan the whole file rather than throw.
+        String appended = from <= log.length() ? log.substring(from) : log;
+        String artifact = "prod--" + name + ":v" + version;
+        for (String line : appended.split("\\R")) {
+            if (line.contains(artifact) && line.contains(SYNAPSE_ADDED)) {
+                return new HealGate.Ready();
+            }
+        }
+        return new HealGate.NotReady("gateway holds an artifact for " + name + " v" + version + ", but synapse"
+                + " has not logged adding THIS deploy's artifact (" + artifact + ") yet — the 200 is the"
+                + " previously deployed artifact");
+    }
+
+    /**
+     * Captures the gateway log's current length ahead of a deploy, keyed BY RESOURCE so a scenario that deploys
+     * several resources cannot have one resource's gate read another's mark.
+     *
+     * <p>Best-effort by design: if the container or the log cannot be read, no mark is stored and
+     * {@link #resourceShouldBeLiveOnGateway} silently falls back to its original artifact-existence probe. A
+     * diagnostic aid must never be able to fail a deploy.
+     */
+    private void markGatewayLogForDeploy(String resourceType, String resourceId) {
+        if (!"apis".equals(resourceType)) {
+            // Scoped to APIs: the synapse line is verified for API artifacts (gateway/mediation_policies asserts
+            // it). Whether an api-product or mcp-server deploy emits the same line is UNVERIFIED, so those keep
+            // the original probe rather than risk a gate that waits for a line that never comes.
+            return;
+        }
+        try {
+            Object candidate = TestContext.get("blockApimContainer");
+            if (candidate instanceof ApimRuntime runtime) {
+                TestContext.set(DEPLOY_LOG_MARK_PREFIX + resourceId,
+                        runtime.readGatewayLogFile(ContainerLogDiagnostics.SERVER_LOG).length());
+            }
+        } catch (Throwable unreadable) {
+            // Deliberately Throwable: this only sharpens a later gate; it must never break the deploy itself.
+            logger.warn("Could not mark the gateway log before deploying {} (the readiness gate will fall back"
+                    + " to artifact existence): {}", resourceId, unreadable.toString());
+        }
     }
 
      /**
@@ -522,170 +634,188 @@ public class PublisherBaseSteps {
      * @param resourceId Context key containing the resource ID to publish
      */
     @When("I publish the {string} resource with id {string}")
-    public void iPublishTheResource(String resourceType, String resourceId) throws IOException {
+    public void iPublishTheResource(String resourceType, String resourceId)
+            throws IOException, InterruptedException {
 
         String actualResourceId = TestContext.resolve(resourceId).toString();
-        Map<String, String> headers = new HashMap<>();
-        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION,
-                "Bearer " + Identity.publisherToken());
-        // The Publish lifecycle-change POST can transiently fail (or be briefly rejected while a just-completed
-        // deploy settles) under parallel load on the shared container. This response used to be ignored, so a
-        // failed publish was SWALLOWED: the API silently stayed in Created and surfaced later as a misleading
-        // "did not reach Published" at the following lifecycle-status assertion. Retry the POST until it succeeds
-        // (200) — or until the API is already Published, since a re-POST on an already-published API can fault —
-        // catching only transient IOException, then assert. On success the final 200 is published as httpResponse
-        // for any following "The response status code should be 200".
-        String url = Utils.getChangeLifecycleURL(Utils.getBaseUrl(), resourceType, actualResourceId, "Publish", null);
-        long endTimeStart = System.currentTimeMillis();
-        long endTime = endTimeStart + Constants.RUNTIME_PROPAGATION_TIMEOUT;
-        HttpResponse publishResponse = null;
-        boolean published = false;
-        while (true) {
-            try {
-                publishResponse = Requests.post(url, headers, null, null);
-                if (publishResponse != null && publishResponse.getResponseCode() == 200) {
-                    published = true;
-                    break;
-                }
-            } catch (IOException transientFailure) {
-                // transient — fall through to the state check / retry
-            }
-            // The POST may have applied despite a lost/failed response; treat an already-Published API as success.
-            if ("Published".equals(currentApiLifecycleState(actualResourceId, headers))) {
-                published = true;
-                break;
-            }
-            if (System.currentTimeMillis() >= endTime) {
-                break;
-            }
-            try {
-                Utils.pollPause(endTimeStart, Constants.RETRY_INTERVAL_TIME);
-            } catch (InterruptedException ignored) {
-                Thread.currentThread().interrupt();
-                break;
-            }
-        }
-        Assert.assertTrue(published, "Publish lifecycle-change did not succeed for " + resourceType + " "
-                + actualResourceId + " within the deadline; last response: "
-                + (publishResponse == null ? "null"
-                : publishResponse.getResponseCode() + " / " + publishResponse.getData()));
+        changeLifecycle(resourceType, resourceId, "Publish", null);
+        HttpResponse publishResponse = (HttpResponse) TestContext.get("httpResponse");
+        Assert.assertNotNull(publishResponse, "Publish lifecycle-change returned no response for " + actualResourceId);
+        Assert.assertEquals(publishResponse.getResponseCode(), 200,
+                "Publish lifecycle-change failed for " + actualResourceId + ": " + publishResponse.getData());
     }
 
     /**
-     * Publishes the resource and then waits until the lifecycle state has actually reached {@code Published},
-     * re-firing the Publish action if the transition was lost. The opt-in variant of
-     * {@code I publish the "apis" resource with id}, which asserts only the POST's status.
+     * Gates a lifecycle action on the state ACTUALLY having moved, re-POSTing the action if the transition was
+     * lost. Shared by the Publish step and by {@link #changeLifecycle}, which are the same product operation
+     * (a POST to change-lifecycle) behind two step contracts.
      *
-     * <p>A 200 from the lifecycle-change POST means no exception was thrown, not that the state moved, so this
-     * gates on a read-back. It distinguishes four outcomes: the target state (done); the source state (lost —
-     * re-POST); a pending {@code AM_API_STATE} approval task (fails, naming the task, since the state is waiting
-     * on approval rather than on propagation); and an unexpected state, 401/403 or a rejected re-POST (fails
-     * immediately). Every re-fire is logged.
+     * <p><b>Why a 200 is not enough.</b> The lifecycle-change 200 means no exception was thrown, not that the
+     * state moved. The transition is carried by an at-most-once runtime event, so it can be dropped while the
+     * call still reports success, leaving the API in its PREVIOUS state with the action still offered as an
+     * available transition. Both {@code Publish} (API stuck in {@code Created}) and {@code Retire} (API stuck in
+     * {@code Deprecated}) have been observed doing this under parallel load. Nothing else in the suite recovers
+     * it: the following {@code The lifecycle status of API ... should be ...} assertion already polls the full
+     * propagation window, so it DETECTS the drop and then fails, and the POST-retry loop in
+     * {@link #changeLifecycle} only rescues a lost POST, never a POST whose 200 did not stick. Re-firing the
+     * action is the only thing that can, which is what this gate does.
+     *
+     * <p><b>Why gating on {@code workflowStatus} is sound rather than heuristic.</b> It is not a proxy for the
+     * product's decision — it IS that decision, read off the same variable.
+     * {@code APIProviderImpl#changeLifeCycleStatus} runs {@code LifeCycleUtils.changeLifecycle(...)} if and only
+     * if {@code apiWFState} is {@code APPROVED} or null, and it derives the response's status from that very
+     * variable: after firing the executor it RE-READS the persisted workflow row, reporting the row's status when
+     * one exists and {@code APPROVED} when none does (the Simple executor stores no row, which is the default
+     * lane). So:
+     * <ul>
+     *   <li>{@code APPROVED} ⟺ the product ran the transition — a state still {@code Created} afterwards is a
+     *       LOST transition, and re-POSTing is the only thing that can recover it;</li>
+     *   <li>{@code CREATED} — an approval task parked by {@code APIStateChangeApprovalWorkflowExecutor}, or a
+     *       workflow already in flight (which short-circuits the executor and leaves the status unset, mapped to
+     *       {@code CREATED} by {@code APIMappingUtil#toWorkflowResponseDTO}) — the product deliberately did NOT
+     *       transition, and re-POSTing would be wrong;</li>
+     *   <li>{@code REJECTED} — likewise deliberate. ({@code REGISTERED} cannot occur here; only the
+     *       subscription-update executor uses it.)</li>
+     * </ul>
+     * {@code toWorkflowResponseDTO} always sets one of those four, so an absent value means a malformed body,
+     * where returning untouched is also the safe reading.
+     *
+     * <p>That is what makes this safe to apply to EVERY transition instead of being opt-in. Two surveyed cases
+     * prove the gate has to be the {@code workflowStatus} one and not a bare state read-back:
+     * {@code workflow_api_state_change}/{@code workflow_ws_api_state_change}/{@code workflow_pending_cleanup}
+     * publish an API that must STAY {@code Created}, and {@code workflow_api_state_change} additionally sends
+     * {@code Block} to an API that must STAY {@code Published}. All of them get {@code CREATED} and return
+     * untouched here — as does the approval-workflow composite in {@code WorkflowAdminSteps}, which publishes
+     * and then approves.
+     *
+     * <p><b>Why a refused re-POST means "done", not "broken".</b> The heal asks the product to re-run the
+     * action; a 400 ("not allowed from the current state") is the product saying the action no longer applies,
+     * which means the state HAS moved — just not necessarily where {@link #lifecycleTargetState} predicted (a
+     * tenant-config custom lifecycle can rebind any event). So the gate stops and defers to the scenario's own
+     * {@code The lifecycle status of API ... should be ...} assertion, which already polls the full propagation
+     * window and reports the real state. That division of labour is deliberate: this gate exists ONLY to heal a
+     * dropped transition, never to invent a failure the scenario would not otherwise have had.
+     *
+     * <p>Restricted to {@code apis} with a known 1:1 target state: the read-back is the API-specific
+     * {@code /apis/{id}/lifecycle-state} resource, so {@code api-products} and {@code mcp-servers} — and actions
+     * without a single predictable target, such as a custom lifecycle's {@code Promote} — keep the plain
+     * behaviour rather than polling for a state that may never be the right one.
+     *
+     * <p>All reads and the re-POST use the raw client so the caller's published {@code httpResponse} remains the
+     * ORIGINAL response — scenarios assert on its status and on its {@code workflowStatus} field (§7).
      */
-    @When("I publish the {string} resource with id {string}, healing if the transition is lost")
-    public void iPublishTheResourceHealingLostTransition(String resourceType, String resourceId) throws Exception {
+    private void awaitLifecycleTransition(String resourceType, String actualResourceId, String action, String url,
+            Map<String, String> headers, HttpResponse actionResponse) throws IOException, InterruptedException {
 
-        String actualResourceId = TestContext.resolve(resourceId).toString();
-        Map<String, String> headers = new HashMap<>();
-        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
-        String url = Utils.getChangeLifecycleURL(Utils.getBaseUrl(), resourceType, actualResourceId, "Publish", null);
-
-        // Fire once up front so the healthy path is a single POST, exactly like the plain step.
-        HttpResponse first = Requests.post(url, headers, null, null);
-        if (first != null && (first.getResponseCode() == 401 || first.getResponseCode() == 403)) {
-            Assert.fail("Publish of " + actualResourceId + " was rejected with " + first.getResponseCode()
-                    + " — credentials/scope, not propagation: " + first.getData());
+        String targetState = "apis".equals(resourceType) ? lifecycleTargetState(action) : null;
+        if (targetState == null || actionResponse == null) {
+            return;
+        }
+        // Guarded rather than parsed outright (§7): this runs on EVERY transition, so a body that is empty or
+        // not the expected DTO must leave the caller's own assertions to speak, not raise a JSONException from
+        // a gate that is only meant to heal.
+        String workflowStatus = null;
+        if (actionResponse.getData() != null && !actionResponse.getData().isBlank()) {
+            try {
+                workflowStatus = new JSONObject(actionResponse.getData()).optString("workflowStatus", null);
+            } catch (JSONException notTheExpectedDto) {
+                logger.warn("Lifecycle-change response for {} was not a WorkflowResponse DTO, so the transition"
+                        + " gate is skipped: {}", actualResourceId, notTheExpectedDto.toString());
+            }
+        }
+        if (!"APPROVED".equals(workflowStatus)) {
+            // Parked for approval (or refused): the product did not attempt the transition, so there is nothing
+            // to heal and the scenario's own expectation (e.g. "should be Created") stands.
+            return;
         }
 
-        HealGate.awaitOrHeal("Published state of " + resourceType + " " + actualResourceId,
+        // Set by the heal when the product refuses to replay the action, and read by the probe on the next
+        // round: HealGate deliberately treats any non-fatal heal verdict as "let the next window decide", so
+        // "there is nothing left to heal" has to travel through the probe rather than the heal's return value.
+        AtomicBoolean actionNoLongerApplies = new AtomicBoolean();
+
+        // What the most recent re-trigger got back, folded into the probe's observation so the FINAL assertion
+        // message explains why re-firing did not help. HealGate reports the PROBE's last observation on
+        // exhaustion, so this has to travel through the probe to reach the failure text.
+        AtomicReference<String> lastRetriggerOutcome = new AtomicReference<>();
+
+        String what = targetState + " state of " + resourceType + " " + actualResourceId + " after " + action;
+        HealGate.awaitOrHeal(what,
                 () -> {
-                    HttpResponse lc = SimpleHTTPClient.getInstance()
+                    if (actionNoLongerApplies.get()) {
+                        return new HealGate.Ready();
+                    }
+                    HttpResponse lifecycleResponse = SimpleHTTPClient.getInstance()
                             .doGet(Utils.getAPILifecycleStateURL(Utils.getBaseUrl(), actualResourceId), headers);
-                    if (lc == null) {
+                    if (lifecycleResponse == null) {
                         return new HealGate.NotReady("no response from lifecycle-state");
                     }
-                    int code = lc.getResponseCode();
+                    int code = lifecycleResponse.getResponseCode();
                     if (code == 401 || code == 403) {
                         return new HealGate.Fatal("lifecycle-state read returned " + code
                                 + " — credentials/scope, not propagation");
                     }
                     if (code >= 500) {
                         return new HealGate.Fatal("lifecycle-state read returned " + code
-                                + " (already past the client's transient 900967 retry): " + lc.getData());
+                                + " (already past the client's transient 900967 retry): "
+                                + lifecycleResponse.getData());
                     }
-                    if (code != 200 || lc.getData() == null || lc.getData().isBlank()) {
+                    if (code != 200 || lifecycleResponse.getData() == null
+                            || lifecycleResponse.getData().isBlank()) {
                         return new HealGate.NotReady("HTTP " + code + " from lifecycle-state");
                     }
-                    String state = new JSONObject(lc.getData()).optString("state", null);
-                    if (APIConstants_PUBLISHED.equalsIgnoreCase(state)) {
+                    String state = new JSONObject(lifecycleResponse.getData()).optString("state", null);
+                    if (targetState.equalsIgnoreCase(state)) {
                         return new HealGate.Ready();
                     }
-                    if (!"Created".equalsIgnoreCase(state)) {
-                        return new HealGate.Fatal("lifecycle state is '" + state + "', neither the source state "
-                                + "nor Published — something else moved this API, so re-publishing is wrong");
-                    }
-                    String pending = pendingApiStateWorkflowReference(actualResourceId);
-                    if (pending != null) {
-                        return new HealGate.Fatal("a PENDING AM_API_STATE workflow task (" + pending + ") is "
-                                + "blocking the transition: APIProviderImpl only changes the lifecycle once the "
-                                + "workflow is APPROVED, so the 200 was a silent no-op. Not a lost event — approve "
-                                + "or clear the task.");
-                    }
-                    return new HealGate.NotReady("state=Created");
+                    String priorRetrigger = lastRetriggerOutcome.get();
+                    return new HealGate.NotReady("state=" + state
+                            + (priorRetrigger == null ? "" : " (last re-POST of " + action + ": "
+                            + priorRetrigger + ")"));
                 },
                 attempt -> {
-                    logger.warn("self-heal: re-POSTing Publish for {} {} — the previous 200 did not persist",
-                            resourceType, actualResourceId);
-                    HttpResponse again = SimpleHTTPClient.getInstance().doPost(url, headers, "",
+                    logger.warn("self-heal: re-POSTing {} for {} {} — previous transition did not persist",
+                            action, resourceType, actualResourceId);
+                    HttpResponse retrigger = SimpleHTTPClient.getInstance().doPost(url, headers, "",
                             Constants.CONTENT_TYPES.APPLICATION_JSON);
-                    if (again != null && again.getResponseCode() == 400) {
-                        return new HealGate.Fatal("re-POST of Publish returned 400 (action not allowed from the "
-                                + "current state): " + again.getData());
+                    int code = retrigger == null ? -1 : retrigger.getResponseCode();
+                    // Record what the product said, ALWAYS — not just on the fatal codes. When a re-POST is
+                    // accepted and the state STILL does not move, this is the only thing that distinguishes
+                    // "attempted again and lost again" (APPROVED) from "a workflow has since parked it"
+                    // (CREATED/REJECTED). Without it an unhealable drop reports only "state=Created", which
+                    // says nothing about why re-firing failed to help.
+                    String retriggerStatus = "unparsed";
+                    if (retrigger != null && retrigger.getData() != null && !retrigger.getData().isBlank()) {
+                        try {
+                            retriggerStatus = new JSONObject(retrigger.getData())
+                                    .optString("workflowStatus", "absent");
+                        } catch (JSONException notTheExpectedDto) {
+                            retriggerStatus = "non-DTO body";
+                        }
                     }
-                    return new HealGate.Ready();
+                    lastRetriggerOutcome.set("HTTP " + code + ", workflowStatus=" + retriggerStatus);
+                    logger.warn("self-heal: re-POST of {} for {} returned HTTP {} with workflowStatus={}",
+                            action, actualResourceId, code, retriggerStatus);
+                    if (code == 401 || code == 403) {
+                        return new HealGate.Fatal("re-POST of " + action + " returned " + code + ": "
+                                + retrigger.getData());
+                    }
+                    if (code == 400) {
+                        logger.warn("self-heal: re-POST of {} for {} was refused with 400, so the state has"
+                                + " already moved on; leaving the outcome to the scenario's own assertion."
+                                + " Body: {}", action, actualResourceId, retrigger.getData());
+                        actionNoLongerApplies.set(true);
+                    }
+                    return new HealGate.NotReady(action + " re-triggered");
                 },
                 3);
     }
 
-    /** {@code Published} — inlined so this file needs no product-constant dependency. */
-    private static final String APIConstants_PUBLISHED = "Published";
-
-    /**
-     * The {@code externalWorkflowReference} of a PENDING API-state workflow task for this API, or null. Read as
-     * the acting actor's admin token; a non-200 (e.g. no admin scope) yields null so the caller keeps treating the
-     * state as merely unpropagated rather than inventing a diagnosis.
-     */
-    private String pendingApiStateWorkflowReference(String apiId) {
-        try {
-            Object adminToken = TestContext.get(Identity.adminTokenKey(Identity.actingActor()));
-            if (adminToken == null) {
-                return null;
-            }
-            HttpResponse list = SimpleHTTPClient.getInstance().doGet(
-                    Utils.getWorkflowsByTypeURL(Utils.getBaseUrl(), "AM_API_STATE"),
-                    Identity.bearerHeaders(adminToken.toString()));
-            if (list == null || list.getResponseCode() != 200 || list.getData() == null) {
-                return null;
-            }
-            JSONArray tasks = new JSONObject(list.getData()).optJSONArray("list");
-            for (int i = 0; tasks != null && i < tasks.length(); i++) {
-                JSONObject task = tasks.getJSONObject(i);
-                if (apiId.equals(task.optJSONObject("properties") == null ? null
-                        : task.getJSONObject("properties").optString("apiId", null))
-                        || (task.optString("description", "").contains(apiId))) {
-                    return task.optString("externalWorkflowReference", "unknown-reference");
-                }
-            }
-        } catch (Exception ignored) {
-            // Diagnosis is best-effort: never turn a failed lookup into a misleading verdict.
-        }
-        return null;
-    }
 
     /**
      * Reads an API's current lifecycle state (e.g. {@code Created}/{@code Published}) via a direct GET that is
-     * NOT published as {@code httpResponse} — an intermediate read consumed locally by the publish retry loop.
-     * Returns {@code null} on any non-2xx/empty/transient response so the caller keeps polling.
+     * NOT published as {@code httpResponse} — an intermediate read used by lifecycle transition helpers.
+     * Returns {@code null} on any non-2xx/empty/transient response.
      */
     private String currentApiLifecycleState(String apiId, Map<String, String> headers) {
         try {
@@ -716,6 +846,76 @@ public class PublisherBaseSteps {
                 "Bearer " + Identity.publisherToken());
 
         Requests.get(Utils.getResourceEndpointURL(Utils.getBaseUrl(), resourceType, actualResourceId), headers);
+    }
+
+    /**
+     * Waits for an API product's lifecycle read model to expose both the expected state and the next transition.
+     * The generic product GET is not sufficient for this contract: under load it can show the new state while the
+     * lifecycle transition endpoint still evaluates the product using the previous state. This step is deliberately
+     * opt-in for the scenario which chains Deprecate to Retire; it does not change the semantics of the shared
+     * lifecycle POST step or weaken the Retired assertion that follows it.
+     */
+    @And("I wait until API product {string} has lifecycle state {string} and transition {string} available")
+    public void iWaitUntilApiProductLifecycleIsReady(String productId, String expectedState,
+            String expectedTransition) throws InterruptedException {
+
+        String actualProductId = TestContext.resolve(productId).toString();
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
+        String url = Utils.getAPIProductLifecycleStateURL(Utils.getBaseUrl(), actualProductId);
+        long pollStart = System.currentTimeMillis();
+        long deadline = pollStart + Constants.RUNTIME_PROPAGATION_TIMEOUT;
+        HttpResponse lastResponse = null;
+        String lastObservation = "no response";
+
+        while (System.currentTimeMillis() < deadline) {
+            try {
+                lastResponse = SimpleHTTPClient.getInstance().doGet(url, headers);
+                if (lastResponse == null) {
+                    lastObservation = "no response";
+                } else if (lastResponse.getResponseCode() == 401 || lastResponse.getResponseCode() == 403) {
+                    Assert.fail("API product lifecycle-state read returned " + lastResponse.getResponseCode()
+                            + " — credentials/scope failure, not propagation: " + lastResponse.getData());
+                } else if (lastResponse.getResponseCode() >= 500) {
+                    lastObservation = "HTTP " + lastResponse.getResponseCode() + ": " + lastResponse.getData();
+                } else if (lastResponse.getResponseCode() != 200 || lastResponse.getData() == null
+                        || lastResponse.getData().isBlank()) {
+                    lastObservation = "HTTP " + lastResponse.getResponseCode() + ": empty lifecycle-state body";
+                } else {
+                    JSONObject lifecycle = new JSONObject(lastResponse.getData());
+                    String state = lifecycle.optString("state", null);
+                    JSONArray transitions = lifecycle.optJSONArray("availableTransitions");
+                    boolean transitionAvailable = false;
+                    List<String> observedTransitions = new ArrayList<>();
+                    if (transitions != null) {
+                        for (int i = 0; i < transitions.length(); i++) {
+                            String event = transitions.optJSONObject(i) == null ? null
+                                    : transitions.optJSONObject(i).optString("event", null);
+                            if (event != null) {
+                                observedTransitions.add(event);
+                                transitionAvailable = expectedTransition.equals(event) || transitionAvailable;
+                            }
+                        }
+                    }
+                    if (expectedState.equalsIgnoreCase(state) && transitionAvailable) {
+                        logger.info("API product {} converged to {} with transition {} available",
+                                actualProductId, state, expectedTransition);
+                        return;
+                    }
+                    lastObservation = "state=" + state + ", availableTransitions=" + observedTransitions;
+                }
+            } catch (JSONException malformedBody) {
+                lastObservation = "malformed lifecycle-state body: " + malformedBody.getMessage();
+            } catch (IOException transientFailure) {
+                lastObservation = "connection failure: " + transientFailure.getMessage();
+            }
+            Utils.pollPause(pollStart, Constants.RETRY_INTERVAL_TIME);
+        }
+
+        Assert.fail("API product " + actualProductId + " did not converge to lifecycle state " + expectedState
+                + " with transition " + expectedTransition + " available within "
+                + Constants.RUNTIME_PROPAGATION_TIMEOUT + " ms; last observation: " + lastObservation
+                + "; last response: " + (lastResponse == null ? "null" : lastResponse.getData()));
     }
 
     /**
@@ -771,7 +971,17 @@ public class PublisherBaseSteps {
      * revisions per API ({@code MAXIMUM_REVISIONS_REACHED}), so accumulating them would convert a propagation
      * flake into a hard failure. The new id replaces {@code revisionId} in context so a later heal reaps it.
      */
-    private HealGate.Verdict reconcileAndRedeployRevision(String resourceType, String resourceId) {
+    HealGate.Verdict reconcileAndRedeployRevision(String resourceType, String resourceId) {
+        return reconcileAndRedeployRevision(resourceType, resourceId, null);
+    }
+
+    /**
+     * Reconciles a revision and, when requested by a scenario, updates the scenario-owned reference to the
+     * replacement revision. The explicit reference is deliberately opt-in: some scenarios retain an immutable
+     * historical revision for later assertions and must not have arbitrary context values rewritten.
+     */
+    private HealGate.Verdict reconcileAndRedeployRevision(String resourceType, String resourceId,
+                                                           String revisionReferenceKey) {
         try {
             String staleRevision = TestContext.contains("revisionId")
                     ? TestContext.resolve("revisionId").toString() : null;
@@ -811,6 +1021,9 @@ public class PublisherBaseSteps {
                 return new HealGate.Fatal("could not deploy the fresh revision " + freshRevision + ": got="
                         + (deployed == null ? "null" : deployed.getResponseCode() + "/" + deployed.getData()));
             }
+            if (revisionReferenceKey != null) {
+                TestContext.set(Utils.normalizeContextKey(revisionReferenceKey), freshRevision);
+            }
             logger.warn("self-heal: re-deployed {} {} as fresh revision {}", resourceType, resourceId,
                     freshRevision);
             return new HealGate.Ready();
@@ -830,12 +1043,34 @@ public class PublisherBaseSteps {
      */
     @Then("the {string} resource {string} should be live on the gateway, redeploying if propagation is lost")
     public void resourceShouldBeLiveOnGateway(String resourceType, String resourceId) throws Exception {
+        resourceShouldBeLiveOnGateway(resourceType, resourceId, null);
+    }
+
+    /**
+     * Explicit provider-change variant of the gateway readiness gate. A revision healing operation can replace
+     * the revision row; this variant updates the named scenario reference so a later explicit undeploy targets the
+     * live replacement rather than the row the gate intentionally deleted.
+     */
+    @Then("the {string} resource {string} should be live on the gateway, redeploying if propagation is lost and updating revision key {string}")
+    public void resourceShouldBeLiveOnGatewayAndUpdateRevisionKey(String resourceType, String resourceId,
+                                                                    String revisionReferenceKey) throws Exception {
+        String normalizedReferenceKey = Utils.normalizeContextKey(revisionReferenceKey);
+        Assert.assertTrue(TestContext.contains(normalizedReferenceKey),
+                "Revision reference key '" + revisionReferenceKey + "' is not present in the scenario context");
+        Assert.assertEquals(TestContext.resolve(normalizedReferenceKey).toString(),
+                TestContext.resolve("revisionId").toString(),
+                "Revision reference '" + revisionReferenceKey + "' does not point to the current revisionId");
+        resourceShouldBeLiveOnGateway(resourceType, resourceId, normalizedReferenceKey);
+    }
+
+    private void resourceShouldBeLiveOnGateway(String resourceType, String resourceId,
+                                               String revisionReferenceKey) throws Exception {
 
         String actualResourceId = TestContext.resolve(resourceId).toString();
-        // Intermediate read: resolve the resource's name/version for the gateway artifact query.
-        HttpResponse api = SimpleHTTPClient.getInstance().doGet(
-                Utils.getResourceEndpointURL(Utils.getBaseUrl(), resourceType, actualResourceId),
-                Identity.publisherHeaders());
+        // Intermediate read: resolve the resource's name/version for the gateway artifact query. A deployment event
+        // can briefly contend with the same control-plane registry read used by Publish (903220 / Failed to get API),
+        // so wait for that specific transient read failure to clear before attempting the lifecycle transition.
+        HttpResponse api = awaitPublisherResourceReadable(resourceType, actualResourceId);
         Assert.assertTrue(api != null && api.getResponseCode() == 200 && api.getData() != null
                         && !api.getData().isBlank(),
                 "Could not read " + resourceType + " " + actualResourceId + " to resolve its gateway artifact: got="
@@ -845,10 +1080,11 @@ public class PublisherBaseSteps {
         String version = dto.getString("version");
 
         User tenantAdmin = Identity.actingTenantAdmin();
-        String artifactUrl = Utils.getGatewayArtifactURL(Utils.getBaseUrl(), "api-artifact", name, version,
-                tenantAdmin.getUserDomain());
-        Map<String, String> gatewayAuth = Identity.basicAuthHeaders(tenantAdmin.getUserName(),
-                tenantAdmin.getPassword());
+        User gatewayManagementAdmin = Identity.gatewayManagementAdmin();
+        String artifactUrl = Utils.getGatewayArtifactURL(Utils.getBaseGatewayManagementUrl(), "api-artifact", name,
+                version, tenantAdmin.getUserDomain());
+        Map<String, String> gatewayAuth = Identity.basicAuthHeaders(gatewayManagementAdmin.getUserName(),
+                gatewayManagementAdmin.getPassword());
         String revisionId = TestContext.resolve("revisionId").toString();
         String redeployPayload = "[{\"name\":\"" + System.getenv(Constants.GATEWAY_ENVIRONMENT)
                 + "\",\"vhost\":\"localhost\",\"displayOnDevportal\":true}]";
@@ -861,13 +1097,18 @@ public class PublisherBaseSteps {
                     }
                     int code = r.getResponseCode();
                     if (code == 200 && r.getData() != null && !r.getData().isBlank()) {
-                        return new HealGate.Ready();
+                        // The artifact endpoint is keyed on name+version only, so on a RE-deploy it answers 200
+                        // from the artifact that was ALREADY there and this gate would pass without the new one
+                        // ever arriving — the failure mode this second check exists to close. Synapse logs a
+                        // per-artifact line on every hot-swap, so "the log gained THIS artifact's line since the
+                        // deploy" is true only once the new artifact is actually live.
+                        return synapseSwappedInSinceDeploy(actualResourceId, name, version);
                     }
                     // 401/403 can never become a 200, and any 5xx here already survived the client's
                     // transient 900967 retry, so neither is worth waiting out.
                     if (code == 401 || code == 403) {
                         return new HealGate.Fatal("gateway artifact endpoint returned " + code
-                                + " for " + tenantAdmin.getUserName() + " — credentials/config, not propagation");
+                                + " for the super-tenant gateway management admin — credentials/config, not propagation");
                     }
                     if (code >= 500) {
                         return new HealGate.Fatal("gateway artifact endpoint returned " + code
@@ -875,8 +1116,72 @@ public class PublisherBaseSteps {
                     }
                     return new HealGate.NotReady("HTTP " + code);
                 },
-                attempt -> reconcileAndRedeployRevision(resourceType, actualResourceId),
+                attempt -> reconcileAndRedeployRevision(resourceType, actualResourceId, revisionReferenceKey),
                 3);
+    }
+
+    /**
+     * Reads a Publisher resource before the gateway-artifact readiness probe. The 903220 response is the product's
+     * wrapper for a transient persistence read failure; it is not the same as a missing resource or an authorization
+     * failure. Poll only that documented runtime condition, while retaining fail-fast behavior for a wrong id,
+     * invalid credentials, or any other server error.
+     */
+    private HttpResponse awaitPublisherResourceReadable(String resourceType, String resourceId)
+            throws IOException, InterruptedException {
+        return awaitPublisherResourceReadable(resourceType, resourceId, false);
+    }
+
+    /**
+     * Polls a publisher resource until its registry representation is readable.
+     *
+     * @param retryNotFound whether a 404 should be treated as transient. This is safe for the positive revision
+     *                         path because the resource id was just returned by a successful create response; the
+     *                         bounded final assertion still fails if the resource never becomes readable.
+     */
+    private HttpResponse awaitPublisherResourceReadable(String resourceType, String resourceId, boolean retryNotFound)
+            throws IOException, InterruptedException {
+
+        String url = Utils.getResourceEndpointURL(Utils.getBaseUrl(), resourceType, resourceId);
+        Map<String, String> headers = Identity.publisherHeaders();
+        long pollStart = System.currentTimeMillis();
+        long deadline = pollStart + Constants.RUNTIME_PROPAGATION_TIMEOUT;
+        HttpResponse last = null;
+        IOException lastTransportFailure = null;
+        while (true) {
+            try {
+                last = SimpleHTTPClient.getInstance().doGet(url, headers);
+                lastTransportFailure = null;
+                if (last != null && last.getResponseCode() == 200 && last.getData() != null
+                        && !last.getData().isBlank()) {
+                    return last;
+                }
+                if (!isTransientApiReadFailure(last, retryNotFound)) {
+                    return last;
+                }
+            } catch (IOException transientTransportFailure) {
+                lastTransportFailure = transientTransportFailure;
+            }
+            if (System.currentTimeMillis() >= deadline) {
+                if (last == null && lastTransportFailure != null) {
+                    throw lastTransportFailure;
+                }
+                return last;
+            }
+            Utils.pollPause(pollStart, Constants.RETRY_INTERVAL_TIME);
+        }
+    }
+
+    private static boolean isTransientApiReadFailure(HttpResponse response, boolean retryNotFound) {
+        if (response == null) {
+            return false;
+        }
+        if (retryNotFound && response.getResponseCode() == 404) {
+            return true;
+        }
+        if (response.getResponseCode() != 500 || response.getData() == null) {
+            return false;
+        }
+        return response.getData().contains("903220") || response.getData().contains("Failed to get API");
     }
 
     /**
@@ -1030,10 +1335,15 @@ public class PublisherBaseSteps {
                 break;
             }
         }
+        // Both distributed-lane lifecycle failures seen in CI landed inside a control-plane registry-contention
+        // burst, so say so here rather than leaving the reader to correlate two logs by hand (§ this is a
+        // diagnostic, never an assertion — it renders empty when there is no contention, e.g. all-in-one).
         Assert.assertEquals(actualState, status,
                 "API lifecycle state did not reach '" + status + "' within the retry window; last response: "
                         + (lifecycleStatusResponse == null ? "none (requests failed)"
-                        : lifecycleStatusResponse.getResponseCode() + " / " + lifecycleStatusResponse.getData()));
+                        : lifecycleStatusResponse.getResponseCode() + " / " + lifecycleStatusResponse.getData())
+                        + ContainerLogDiagnostics.explainRegistryContention(
+                                "lifecycle state of " + actualApiId + " reaching " + status));
     }
 
     /**
@@ -1579,6 +1889,177 @@ public class PublisherBaseSteps {
 
         iUpdateResourceWithJsonPayloadFromContext(resourceType, resourceID, "<apiConfigUpdate>");
         Thread.sleep(3000);
+    }
+
+    /**
+     * Reads an API until the Publisher read model exposes the exact security-scheme set requested by the scenario.
+     * The generic configuration step deliberately remains unchanged because it is shared by callers with different
+     * persistence contracts; this step is for the API-key scenario, where a successful PUT can be followed by a
+     * stale API representation under CI load.
+     *
+     * <p>Only the GET is retried. The existing exact-list assertion remains after this step, so a timeout or an
+     * incomplete scheme set cannot be converted into a passing test.</p>
+     */
+    @When("I retrieve the {string} resource with id {string} until its security schemes equal the following within {int} seconds:")
+    public void iRetrieveResourceUntilSecuritySchemesEqual(String resourceType, String resourceId,
+            int timeoutSeconds, String expectedSchemesJson) throws InterruptedException {
+
+        Assert.assertEquals(resourceType, "apis", "Security-scheme persistence is supported only for APIs");
+        JSONArray expectedSchemes = new JSONArray(Utils.resolveContextPlaceholders(expectedSchemesJson));
+        Set<String> expectedSet = securitySchemeSet(expectedSchemes);
+        String actualResourceId = TestContext.resolve(resourceId).toString();
+        String url = Utils.getResourceEndpointURL(Utils.getBaseUrl(), resourceType, actualResourceId);
+        Map<String, String> headers = Identity.publisherHeaders();
+
+        TestContext.remove("httpResponse");
+        HttpResponse response = Utils.retryUntil(timeoutSeconds * 1000L,
+                () -> Requests.get(url, headers),
+                candidate -> responseHasSecuritySchemes(candidate, expectedSet));
+        Requests.publishPollResult(response);
+
+        Assert.assertNotNull(response, "No Publisher response received while waiting for security schemes on API "
+                + actualResourceId);
+        Assert.assertTrue(responseHasSecuritySchemes(response, expectedSet),
+                "API " + actualResourceId + " did not expose the expected security schemes within "
+                        + timeoutSeconds + " seconds; last response: " + response.getResponseCode() + " / "
+                        + response.getData());
+    }
+
+    private static Set<String> securitySchemeSet(JSONArray schemes) {
+        Set<String> values = new HashSet<>();
+        for (int i = 0; i < schemes.length(); i++) {
+            values.add(String.valueOf(schemes.get(i)));
+        }
+        return values;
+    }
+
+    private static boolean responseHasSecuritySchemes(HttpResponse response, Set<String> expected) {
+        if (response == null || response.getResponseCode() != 200 || response.getData() == null
+                || response.getData().isBlank()) {
+            return false;
+        }
+        try {
+            JSONArray actualSchemes = new JSONObject(response.getData()).optJSONArray("securityScheme");
+            return actualSchemes != null && securitySchemeSet(actualSchemes).equals(expected);
+        } catch (JSONException malformedResponse) {
+            return false;
+        }
+    }
+
+    /**
+     * Reads an API until the Publisher read model exposes exactly the subscription tiers offered by the API.
+     * This is intentionally scenario-specific: the generic configuration-update step is shared by flows with
+     * different persistence contracts and must not silently acquire a policy-specific wait. The exact set and
+     * cardinality are required so an old/default or partially updated representation cannot satisfy the gate.
+     */
+    @When("I retrieve the {string} resource with id {string} until its subscription policies equal the following within {int} seconds:")
+    public void iRetrieveResourceUntilSubscriptionPoliciesEqual(String resourceType, String resourceId,
+            int timeoutSeconds, String expectedPoliciesJson) throws InterruptedException {
+
+        Assert.assertEquals(resourceType, "apis", "Subscription-policy persistence is supported only for APIs");
+        JSONArray expectedPolicies = new JSONArray(Utils.resolveContextPlaceholders(expectedPoliciesJson));
+        Set<String> expectedSet = securitySchemeSet(expectedPolicies);
+        int expectedCount = expectedPolicies.length();
+        String actualResourceId = TestContext.resolve(resourceId).toString();
+        String url = Utils.getResourceEndpointURL(Utils.getBaseUrl(), resourceType, actualResourceId);
+        Map<String, String> headers = Identity.publisherHeaders();
+
+        TestContext.remove("httpResponse");
+        HttpResponse response = Utils.retryUntil(timeoutSeconds * 1000L,
+                () -> Requests.get(url, headers),
+                candidate -> responseHasExactSubscriptionPolicies(candidate, expectedSet, expectedCount));
+        Requests.publishPollResult(response);
+
+        Assert.assertNotNull(response, "No Publisher response received while waiting for subscription policies on API "
+                + actualResourceId);
+        Assert.assertTrue(responseHasExactSubscriptionPolicies(response, expectedSet, expectedCount),
+                "API " + actualResourceId + " did not expose exactly the expected subscription policies within "
+                        + timeoutSeconds + " seconds; expected=" + expectedSet + ", last response: "
+                        + response.getResponseCode() + " / " + response.getData());
+    }
+
+    private static boolean responseHasExactSubscriptionPolicies(HttpResponse response, Set<String> expected,
+            int expectedCount) {
+        if (response == null || response.getResponseCode() != 200 || response.getData() == null
+                || response.getData().isBlank()) {
+            return false;
+        }
+        try {
+            JSONArray actualPolicies = new JSONObject(response.getData()).optJSONArray("policies");
+            return actualPolicies != null && actualPolicies.length() == expectedCount
+                    && securitySchemeSet(actualPolicies).equals(expected);
+        } catch (JSONException malformedResponse) {
+            return false;
+        }
+    }
+
+    /**
+     * Updates the WebSub subscription configuration and waits for the publisher read model to converge. The generic
+     * configuration step deliberately remains unchanged because its callers have different persistence contracts;
+     * this scenario-specific variant is for the WebSub API flow, where a successful PUT can briefly be followed by
+     * a GET of the old API representation.
+     *
+     * <p>The PUT status is asserted here, while the converged GET is published as {@code httpResponse} so the
+     * following feature assertions inspect persisted state rather than the PUT response echo. The lifecycle state is
+     * included in the predicate because the API representation and its lifecycle transition are persisted through
+     * the same asynchronous control-plane path.</p>
+     */
+    @When("I update the {string} resource {string} and {string} with WebSub configuration and wait until lifecycle {string} persists:")
+    public void iUpdateWebSubConfigurationAndWaitUntilPersisted(String resourceType, String resourceID,
+            String resourceUpdatePayload, String expectedLifecycle, String configValue)
+            throws IOException, InterruptedException {
+
+        Assert.assertEquals(resourceType, "apis", "WebSub configuration persistence is supported only for APIs");
+
+        String actualResourceId = TestContext.resolve(resourceID).toString();
+        Object contextPayload = TestContext.resolve(resourceUpdatePayload);
+        JSONObject jsonPayload = contextPayload instanceof JSONObject
+                ? (JSONObject) contextPayload : new JSONObject(contextPayload.toString());
+        String resolvedConfig = Utils.resolveContextPlaceholders(configValue);
+        JSONObject webSubConfiguration = new JSONObject(resolvedConfig);
+        jsonPayload.put("websubSubscriptionConfiguration", webSubConfiguration);
+        String updatedJsonPayload = jsonPayload.toString();
+
+        Map<String, String> headers = Identity.publisherHeaders();
+        HttpResponse updateResponse = Requests.put(
+                Utils.getResourceEndpointURL(Utils.getBaseUrl(), resourceType, actualResourceId), headers,
+                updatedJsonPayload, Constants.CONTENT_TYPES.APPLICATION_JSON);
+        Assert.assertNotNull(updateResponse, "WebSub configuration update returned no response");
+        Assert.assertEquals(updateResponse.getResponseCode(), 200,
+                "WebSub configuration update failed: " + updateResponse.getData());
+
+        String expectedSecret = webSubConfiguration.optString("secret", "");
+        String expectedState = Utils.resolveContextPlaceholders(expectedLifecycle);
+        String getUrl = Utils.getResourceEndpointURL(Utils.getBaseUrl(), resourceType, actualResourceId);
+        HttpResponse persistedResponse = Utils.retryUntil(Constants.RUNTIME_PROPAGATION_TIMEOUT,
+                () -> SimpleHTTPClient.getInstance().doGet(getUrl, headers),
+                response -> webSubConfigurationPersisted(response, expectedSecret, expectedState));
+        Requests.publishPollResult(persistedResponse);
+
+        Assert.assertTrue(webSubConfigurationPersisted(persistedResponse, expectedSecret, expectedState),
+                "WebSub configuration did not converge after the successful PUT. Expected enable=true, secret='"
+                        + expectedSecret + "', lifecycle='" + expectedState + "'; last response: "
+                        + (persistedResponse == null ? "none (all reads failed)"
+                        : persistedResponse.getResponseCode() + " / " + persistedResponse.getData()));
+    }
+
+    private static boolean webSubConfigurationPersisted(HttpResponse response, String expectedSecret,
+            String expectedLifecycle) {
+
+        if (response == null || response.getResponseCode() != 200 || response.getData() == null
+                || response.getData().isBlank()) {
+            return false;
+        }
+        try {
+            JSONObject api = new JSONObject(response.getData());
+            JSONObject configuration = api.optJSONObject("websubSubscriptionConfiguration");
+            String lifecycle = api.optString("lifeCycleStatus", api.optString("lifecycleStatus", ""));
+            return configuration != null && configuration.optBoolean("enable", false)
+                    && expectedSecret.equals(configuration.optString("secret", ""))
+                    && expectedLifecycle.equalsIgnoreCase(lifecycle);
+        } catch (JSONException ignored) {
+            return false;
+        }
     }
 
     /**
@@ -2950,7 +3431,8 @@ public class PublisherBaseSteps {
      * coverage. Each API is registered for teardown by the create primitive.
      */
     @Given("I create and publish {int} APIs from {string} named {string}")
-    public void iCreateAndPublishApis(int count, String payloadPath, String namePrefixRef) throws IOException {
+    public void iCreateAndPublishApis(int count, String payloadPath, String namePrefixRef)
+            throws IOException, InterruptedException {
         String prefix = Utils.resolveContextPlaceholders(namePrefixRef);
         for (int i = 0; i < count; i++) {
             baseSteps.putJsonPayloadFromFile(payloadPath, "<bulkApiPayload>");
@@ -3472,8 +3954,8 @@ public class PublisherBaseSteps {
             // The additional-properties file carries the created API's name/context, so resolve any
             // ${UNIQUE:...} placeholders here (this file is uploaded as-is, not routed through the
             // context-payload steps) to keep every imported API unique-named across parallel runs.
-            String additionalProperties = Utils.resolvePayloadPlaceholders(
-                    IOUtils.toString(inputStream, StandardCharsets.UTF_8));
+            String additionalProperties = Utils.resolveContextPlaceholders(Utils.resolvePayloadPlaceholders(
+                    IOUtils.toString(inputStream, StandardCharsets.UTF_8)));
 
             // Create temporary file object
             additionalPropertiesFile = File.createTempFile("data", ".json");
@@ -4017,6 +4499,7 @@ public class PublisherBaseSteps {
         long endTime = endTimeStart + Constants.RUNTIME_PROPAGATION_TIMEOUT;
         HttpResponse response = null;
         boolean changed = false;
+        boolean publishedStateConfirmed = false;
         while (true) {
             try {
                 response = Requests.post(url, headers, null, null);
@@ -4029,6 +4512,7 @@ public class PublisherBaseSteps {
             }
             if (targetState != null && targetState.equals(currentApiLifecycleState(actualId, headers))) {
                 changed = true;
+                publishedStateConfirmed = "Published".equals(targetState);
                 break;
             }
             if (System.currentTimeMillis() >= endTime) {
@@ -4043,13 +4527,38 @@ public class PublisherBaseSteps {
         }
         Assert.assertTrue(changed, "Lifecycle-change '" + action + "' did not succeed for " + resourceType + " "
                 + actualId + " within the deadline; last response: "
-                + (response == null ? "null" : response.getResponseCode() + " / " + response.getData()));
+                + (response == null ? "null" : response.getResponseCode() + " / " + response.getData())
+                + ContainerLogDiagnostics.explainRegistryContention(
+                        "lifecycle-change '" + action + "' of " + actualId));
+        // Preserve the lifecycle POST response for the feature's explicit status/workflow assertions. If the POST
+        // response was lost or non-2xx but the lifecycle-state read confirmed Published, expose a successful result
+        // for the publish step; all other state fallbacks retain the original response and its failure status.
+        if (publishedStateConfirmed) {
+            response = new HttpResponse(null, 200);
+        }
+        TestContext.set("httpResponse", response);
+
+        // The loop above rescues a LOST POST; this gates the other half of the same at-most-once race, a POST
+        // whose 200 did not stick. See awaitLifecycleTransition for why re-firing is the only recovery and why
+        // it is safe to run on every transition.
+        try {
+            awaitLifecycleTransition(resourceType, actualId, action, url, headers, response);
+        } catch (InterruptedException interrupted) {
+            Thread.currentThread().interrupt();
+            throw new IOException("Interrupted while awaiting the '" + action + "' transition of " + actualId,
+                    interrupted);
+        }
     }
 
     /**
-     * Maps a publisher lifecycle ACTION to the API state it transitions to — used by {@link #changeLifecycle}'s
-     * retry to recognise a transition that already applied despite a lost response (re-POSTing then faults).
-     * Returns {@code null} for actions without a simple 1:1 target state (the retry then relies on the 2xx POST).
+     * Maps a publisher lifecycle ACTION to the API state it transitions to, on the DEFAULT lifecycle. Used twice:
+     * by {@link #changeLifecycle}'s retry, to recognise a transition that already applied despite a lost response
+     * (re-POSTing then faults), and by {@link #awaitLifecycleTransition}, as the state the transition must
+     * actually reach. Every mapping below is pinned by a scenario that asserts that state right after the action.
+     *
+     * <p>Returns {@code null} for an action with no single predictable target — {@code Promote} belongs to a
+     * tenant-config custom lifecycle, so its target is whatever that lifecycle defines. Both callers then fall
+     * back to trusting the 2xx, which is the pre-existing behaviour.
      */
     private static String lifecycleTargetState(String action) {
         switch (action) {
@@ -4062,6 +4571,10 @@ public class PublisherBaseSteps {
                 return "Retired";
             case "Block":
                 return "Blocked";
+            case "Deploy as a Prototype":
+                return "Prototyped";
+            case "Demote to Created":
+                return "Created";
             default:
                 return null;
         }

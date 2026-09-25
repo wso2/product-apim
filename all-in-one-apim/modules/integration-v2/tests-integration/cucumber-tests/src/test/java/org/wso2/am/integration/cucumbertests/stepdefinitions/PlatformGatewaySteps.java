@@ -1,0 +1,376 @@
+/*
+ *  Copyright (c) 2026, WSO2 LLC. (http://www.wso2.org) All Rights Reserved.
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *  http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *
+ */
+
+package org.wso2.am.integration.cucumbertests.stepdefinitions;
+
+import io.cucumber.java.en.Then;
+import io.cucumber.java.en.When;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.testng.Assert;
+import org.wso2.am.integration.cucumbertests.utils.HealGate;
+import org.wso2.am.integration.cucumbertests.utils.Identity;
+import org.wso2.am.integration.cucumbertests.utils.Requests;
+import org.wso2.am.integration.cucumbertests.utils.ResourceCleanup;
+import org.wso2.am.integration.cucumbertests.utils.TestContext;
+import org.wso2.am.integration.cucumbertests.utils.Utils;
+import org.wso2.am.testcontainers.DynamicPlatformGatewayContainer;
+import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
+
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
+
+/**
+ * Steps for the API Platform Gateway journey (@cap:gateway @feat:platform-gateway). Registration and connection
+ * are ADMIN PRODUCT BEHAVIOUR performed here as steps (§14) — the block only boots the gateway infrastructure
+ * (see {@code BlockLifecycleListener.bootPlatformGateway}); these steps register it via the admin REST API,
+ * connect the running gateway with the minted registration token, and assert it reaches the connected state.
+ *
+ * <p>Shared-scope keys the block publishes: {@code blockPlatformGateway} (the container),
+ * {@code platformGatewayControlPlaneHost} (the {@code host.docker.internal:<port>} the gateway dials).
+ */
+public class PlatformGatewaySteps {
+
+    private static final Logger logger = LoggerFactory.getLogger(PlatformGatewaySteps.class);
+
+    private static final String GATEWAY_ID_KEY = "platformGatewayId";
+    private static final String GATEWAY_NAME_KEY = "platformGatewayName";
+    private static final String GATEWAY_TOKEN_KEY = "platformGatewayRegistrationToken";
+    private static final String CONTAINER_KEY = "blockPlatformGateway";
+    private static final String CONTROLPLANE_HOST_KEY = "platformGatewayControlPlaneHost";
+    private static final String DATA_PLANE_URL_KEY = "platformGatewayDataPlaneUrl";
+    private static final String API_CONTEXT_KEY = "pgApiContext";
+
+    @When("I register a platform gateway {string}")
+    public void registerPlatformGateway(String name) throws IOException {
+        String resolvedName = resolveRegistrationName(name);
+        String payload = new JSONObject()
+                .put("name", resolvedName)
+                .put("displayName", resolvedName)
+                .put("vhost", "https://localhost:8443")
+                .put("description", "integration-v2 platform gateway")
+                .toString();
+        HttpResponse resp = Requests.post(Utils.getPlatformGatewaysURL(Utils.getBaseUrl()),
+                Identity.adminHeaders(), payload, "application/json");
+        // On a successful create, capture the id (for failure-safe cleanup) + the one-time registrationToken and
+        // the assigned name (for the connect step). The response is published as httpResponse for the status check.
+        int status = resp == null ? -1 : resp.getResponseCode();
+        String responseBody = resp == null ? null : resp.getData();
+        Assert.assertEquals(status, 201, "Platform gateway registration failed; status=" + status + ", body="
+                + responseBody);
+        Assert.assertTrue(responseBody != null && !responseBody.isBlank(),
+                "Platform gateway registration returned a blank body; status=" + status + ", body="
+                        + responseBody);
+        JSONObject body = new JSONObject(responseBody);
+        String id = body.getString("id");
+        ResourceCleanup.register(ResourceCleanup.CREATED_PLATFORM_GATEWAY_IDS, id);
+        TestContext.set(GATEWAY_ID_KEY, id);
+        TestContext.set(GATEWAY_NAME_KEY, body.getString("name"));
+        TestContext.set(GATEWAY_TOKEN_KEY, body.getString("registrationToken"));
+    }
+
+    @When("I connect the platform gateway with the issued registration token")
+    public void connectPlatformGateway() {
+        DynamicPlatformGatewayContainer gateway = platformGateway();
+        String controlPlaneHost = (String) TestContext.get(CONTROLPLANE_HOST_KEY);
+        String token = (String) TestContext.resolve(GATEWAY_TOKEN_KEY);
+        String name = (String) TestContext.resolve(GATEWAY_NAME_KEY);
+        gateway.connect(controlPlaneHost, token, name);
+        // connect() restarts the gateway compose, so the data-plane host port changes — re-publish the current
+        // URL (the listener's pre-connect value is now stale) for the invocation step.
+        TestContext.setShared(DATA_PLANE_URL_KEY, gateway.getDataPlaneHttpsUrl());
+    }
+
+    @Then("the platform gateway {string} becomes active within {int} seconds")
+    public void gatewayBecomesActive(String name, int timeoutSeconds) throws InterruptedException {
+        String resolvedName = resolveGatewayName(name);
+        String url = Utils.getPlatformGatewaysURL(Utils.getBaseUrl());
+        HttpResponse resp = Utils.retryUntil(timeoutSeconds * 1000L,
+                () -> Requests.get(url, Identity.adminHeaders()),
+                r -> isGatewayActive(r, resolvedName));
+        Assert.assertTrue(isGatewayActive(resp, resolvedName),
+                "Platform gateway '" + resolvedName + "' did not report isActive=true within " + timeoutSeconds
+                        + "s; last response=" + (resp == null ? "null" : resp.getData()));
+    }
+
+    @Then("the platform gateway {string} is inactive")
+    public void gatewayIsInactive(String name) throws IOException {
+        String resolvedName = resolveGatewayName(name);
+        HttpResponse resp = Requests.get(Utils.getPlatformGatewaysURL(Utils.getBaseUrl()), Identity.adminHeaders());
+        Assert.assertFalse(isGatewayActive(resp, resolvedName),
+                "Platform gateway '" + resolvedName + "' should be inactive (registered but never connected) but reports "
+                        + "isActive=true; " + (resp == null ? "null" : resp.getData()));
+    }
+
+    private static String resolveGatewayName(String name) {
+        if (name.contains("${UNIQUE:") && TestContext.get(GATEWAY_NAME_KEY) != null) {
+            return String.valueOf(TestContext.get(GATEWAY_NAME_KEY));
+        }
+        return resolveRegistrationName(name);
+    }
+
+    /**
+     * Platform gateway names have a narrower contract than the general resource-name placeholders: they must
+     * contain only lowercase letters, digits, and hyphens. Keep the general unique-name generator unchanged for
+     * other resources and normalize only names created through this platform-gateway step. The UUID portion still
+     * guarantees uniqueness; replacing the generator's separators does not make the name reusable.
+     */
+    private static String resolveRegistrationName(String name) {
+        String resolved = Utils.resolvePayloadPlaceholders(name);
+        if (!name.contains("${UNIQUE:")) {
+            return resolved;
+        }
+        String normalized = resolved.toLowerCase(Locale.ROOT).replaceAll("[^a-z0-9-]+", "-")
+                .replaceAll("^-+|-+$", "");
+        if (normalized.isEmpty()) {
+            throw new IllegalArgumentException("Platform gateway unique name resolved to an empty value: " + name);
+        }
+        return normalized;
+    }
+
+    @When("I create and deploy a REST API from {string} to the platform gateway as {string}")
+    public void createAndDeployToPlatformGateway(String payloadPath, String apiIdKey)
+            throws IOException, InterruptedException {
+        BaseSteps baseSteps = new BaseSteps();
+        PublisherBaseSteps publisher = new PublisherBaseSteps();
+        // Reuse the publisher glue: create the API (asserts 201, registers it for cleanup), create a revision,
+        // then deploy that revision to THIS platform gateway's environment — registration auto-creates a
+        // deployable environment named after the gateway. The deploy `vhost` is the vhost HOST (parsed from the
+        // registration vhost URL "https://localhost:8443" -> "localhost"), not the vhost name.
+        baseSteps.putJsonPayloadFromFile(payloadPath, "<createApiPayload>");
+        // The platform gateway runs in a separate Compose network and cannot resolve the APIM block's
+        // nodebackend alias. Route through the singleton NodeAppServer's stable host-published REST port;
+        // the compose provides host.docker.internal for this purpose.
+        String nodeBackendUrl = Utils.containerReachable(Utils.getNodeBackendUrl(3001))
+                + "/jaxrs_basic/services/customers/customerservice";
+        baseSteps.iReplaceInPayload("http://nodebackend:3001/jaxrs_basic/services/customers/customerservice",
+                nodeBackendUrl, "<createApiPayload>");
+        publisher.iCreateAnAPIWithPayloadAs("apis", "<createApiPayload>", apiIdKey);
+        // Capture the API context (to build the gateway invocation URL); the create response is the httpResponse.
+        Object createResp = TestContext.get("httpResponse");
+        if (createResp instanceof HttpResponse hr) {
+            TestContext.set(API_CONTEXT_KEY, Utils.extractValueFromPayload(hr.getData(), "context"));
+        }
+        baseSteps.putJsonPayloadInContext("<createRevisionPayload>", "{\"description\":\"Initial Revision\"}");
+        publisher.iCreateResourceRevision("apis", apiIdKey, "<createRevisionPayload>");
+        String gatewayName = (String) TestContext.resolve(GATEWAY_NAME_KEY);
+        baseSteps.putJsonPayloadInContext("<deployRevisionPayload>",
+                "[{\"name\":\"" + gatewayName + "\",\"vhost\":\"localhost\",\"displayOnDevportal\":true}]");
+        publisher.iDeployApiRevisionGivenPayload("<revisionId>", "apis", apiIdKey, "<deployRevisionPayload>");
+    }
+
+    @When("I invoke the deployed API on the platform gateway with access token {string} "
+            + "until response status code becomes {int} within {int} seconds")
+    public void invokeThroughPlatformGateway(String tokenKey, int expectedStatus, int timeoutSeconds)
+            throws InterruptedException {
+        Map<String, String> headers = new HashMap<>();
+        headers.put("Authorization", "Bearer " + (String) TestContext.resolve(tokenKey));
+        invokeAndAssert(headers, expectedStatus, timeoutSeconds);
+    }
+
+    @When("I invoke the deployed API on the platform gateway without authentication "
+            + "until response status code becomes {int} within {int} seconds")
+    public void invokeThroughPlatformGatewayNoAuth(int expectedStatus, int timeoutSeconds)
+            throws InterruptedException {
+        invokeAndAssert(new HashMap<>(), expectedStatus, timeoutSeconds);
+    }
+
+    @When("I invoke the deployed API on the platform gateway with an invalid access token "
+            + "until response status code becomes {int} within {int} seconds")
+    public void invokeThroughPlatformGatewayInvalidToken(int expectedStatus, int timeoutSeconds)
+            throws InterruptedException {
+        Map<String, String> headers = new HashMap<>();
+        headers.put("Authorization", "Bearer invalid-token-deadbeef00000000");
+        invokeAndAssert(headers, expectedStatus, timeoutSeconds);
+    }
+
+    @When("I invoke the deployed API on the platform gateway with header {string} set to {string} "
+            + "until response status code becomes {int} within {int} seconds")
+    public void invokeThroughPlatformGatewayWithHeader(String header, String value, int expectedStatus,
+            int timeoutSeconds) throws InterruptedException {
+        // If value is a context key (e.g. a generated api-key), resolve it; otherwise use the literal — the
+        // negative rows pass a deliberately wrong key ("totally-wrong-api-key") that is NOT a context key.
+        // Log the fallback: a mistyped or never-stored context key would otherwise be sent as its own literal
+        // name and rejected with 401, which is indistinguishable from the real dropped-key defect this
+        // scenario exists to catch.
+        Map<String, String> headers = new HashMap<>();
+        if (!TestContext.contains(value)) {
+            logger.warn("Platform gateway invoke: '{}' is not a context key, sending it as a LITERAL header"
+                    + " value. Intended for the wrong-key negatives; if this was meant to be a stored key,"
+                    + " the resulting 401 is a TEST defect, not a propagation failure.", value);
+        }
+        headers.put(header, TestContext.contains(value) ? String.valueOf(TestContext.get(value)) : value);
+        invokeAndAssert(headers, expectedStatus, timeoutSeconds);
+    }
+
+    /**
+     * Gates on the API key having actually REACHED the platform gateway, re-deploying the API if the publication
+     * was lost. Fixture readiness, never an assertion target — the scenario's own invoke still asserts the 200.
+     *
+     * <p><b>Why this is needed.</b> The control plane publishes the key to the gateway as an
+     * {@code APIKeyState} xDS resource, ONCE. CI run 24b29536 shows what happens when that single push is lost:
+     * {@code APIKeyState} sat at {@code version=0 num_resources=0} while {@code RouteConfig} and
+     * {@code PolicyChainConfig} advanced to v2 on the SAME stream — so the channel was alive and the API itself
+     * arrived, but the key never did, and every invoke was correctly rejected with 401 "Valid API key required".
+     * The passing run of the same scenario shows the contrast: {@code APIKeyState} v1 then v2, ACKed in the same
+     * second as {@code RouteConfig} v2. Nothing re-sends a dropped push, so the invoke's retry — however long —
+     * can never recover it.
+     *
+     * <p>This is NOT a concurrency or isolation defect, which was the first hypothesis: the block is
+     * {@code thread-count="1"} with a single runner, the gateway container is booted PER BLOCK
+     * ({@code new DynamicPlatformGatewayContainer(label)}) rather than shared, no other block boots one, and
+     * {@code TestContext}'s shared scope is keyed per block. There is no second writer to race with; the push is
+     * simply at-most-once.
+     *
+     * <p>The heal RE-DEPLOYS the API rather than re-minting the key, because key state rides on the deploy: in
+     * the passing run {@code APIKeyState} v1/v2 were ACKed in the same second as {@code RouteConfig} v2. A
+     * measured experiment ruled the alternative out — forcing two re-mints left {@code APIKeyState} at the
+     * version the original deploy had set, and the freshly minted key was REJECTED because it had never been
+     * published. Re-minting swaps a working credential for an unpublished one, which is worse than no heal.
+     *
+     * <p><b>Both halves are measured.</b> Detection: a healthy run never fires the gate, and the failure is
+     * reported as "the key never reached the gateway" at the point it happens rather than as an opaque 401 after
+     * a long invoke retry. Healing: with the probe forced to report not-accepted until two heals had fired,
+     * {@code APIKeyState} advanced to v3 — past the v2 a healthy run ends on — alongside {@code RouteConfig} and
+     * {@code PolicyChainConfig} v3. So re-deploying to the gateway's own environment really does make the control
+     * plane republish key state, which is the mechanism by which a dropped push is recovered.
+     */
+    @Then("the platform gateway serves the API key {string} for API {string}, re-deploying the API if the key never "
+            + "reaches the gateway")
+    public void gatewayServesApiKey(String keyContextKey, String apiIdKey) throws Exception {
+
+        String resolvedKeyContext = Utils.normalizeContextKey(keyContextKey);
+        PublisherBaseSteps publisher = new PublisherBaseSteps();
+
+        HealGate.awaitOrHeal("platform gateway acceptance of the API key for " + apiIdKey,
+                () -> {
+                    Object key = TestContext.get(resolvedKeyContext);
+                    if (key == null) {
+                        return new HealGate.Fatal("no API key stored under '" + resolvedKeyContext
+                                + "' — the generate-key step did not run or stored a different key");
+                    }
+                    Map<String, String> headers = new HashMap<>();
+                    headers.put("ApiKey", String.valueOf(key));
+                    HttpResponse probe = Requests.get(platformGatewayInvokeUrl(), headers);
+                    if (probe == null) {
+                        return new HealGate.NotReady("no response from the platform gateway data plane");
+                    }
+                    int code = probe.getResponseCode();
+                    if (code == 200) {
+                        return new HealGate.Ready();
+                    }
+                    // 401 is precisely the dropped-key symptom: the gateway is serving the route (it answered)
+                    // but does not know this key. Anything else is reported verbatim rather than guessed at.
+                    return new HealGate.NotReady("HTTP " + code + " from the gateway"
+                            + (code == 401 ? " (key not known to the gateway)" : "") + ": " + probe.getData());
+                },
+                attempt -> {
+                    // RE-DEPLOY TO THIS GATEWAY'S OWN ENVIRONMENT. Two other candidates were measured and are
+                    // both WRONG — recorded so neither is reintroduced:
+                    //
+                    //  - Re-minting the key does NOT re-publish APIKeyState. Across two forced heals the
+                    //    gateway's version stayed exactly where the original deploy left it and the freshly
+                    //    minted key was REJECTED, so re-minting swaps a working credential for an unpublished
+                    //    one — strictly worse than no heal at all.
+                    //  - PublisherBaseSteps#reconcileAndRedeployRevision targets
+                    //    System.getenv(GATEWAY_ENVIRONMENT), the DEFAULT synapse environment, NOT this gateway's.
+                    //    Measured: two heals through it produced ZERO xDS pushes — RouteConfig and
+                    //    PolicyChainConfig never advanced either — because the redeploy landed somewhere the
+                    //    platform gateway does not watch, after deleting the revision that was serving it.
+                    //
+                    // Gateway registration auto-creates a deployable environment named after the gateway, and
+                    // that is what the original deploy targets, so the heal must name it too. Key state rides on
+                    // the deploy: in the passing CI run APIKeyState v1/v2 were ACKed in the same second as
+                    // RouteConfig v2.
+                    String gatewayName = (String) TestContext.resolve(GATEWAY_NAME_KEY);
+                    logger.warn("self-heal: re-deploying {} to platform gateway environment '{}' — the"
+                            + " APIKeyState publication did not reach the gateway", apiIdKey, gatewayName);
+                    BaseSteps healSteps = new BaseSteps();
+                    healSteps.putJsonPayloadInContext("<pgwHealRevisionPayload>",
+                            "{\"description\":\"self-heal revision for platform gateway key republication\"}");
+                    publisher.iCreateResourceRevision("apis", apiIdKey, "<pgwHealRevisionPayload>");
+                    healSteps.putJsonPayloadInContext("<pgwHealDeployPayload>",
+                            "[{\"name\":\"" + gatewayName + "\",\"vhost\":\"localhost\","
+                                    + "\"displayOnDevportal\":true}]");
+                    publisher.iDeployApiRevisionGivenPayload("<revisionId>", "apis", apiIdKey,
+                            "<pgwHealDeployPayload>");
+                    return new HealGate.NotReady("re-deployed to the platform gateway environment");
+                },
+                3);
+    }
+
+    /** The data-plane URL the scenario's API is served on; shared by the readiness gate and the invoke steps. */
+    private String platformGatewayInvokeUrl() {
+        String dataPlaneUrl = (String) TestContext.get(DATA_PLANE_URL_KEY);
+        String context = ((String) TestContext.resolve(API_CONTEXT_KEY)).trim();
+        String base = dataPlaneUrl.endsWith("/") ? dataPlaneUrl.substring(0, dataPlaneUrl.length() - 1) : dataPlaneUrl;
+        String path = context.startsWith("/") ? context : "/" + context;
+        return base + path + "/1.0.0/reflect-headers";
+    }
+
+    private void invokeAndAssert(Map<String, String> headers, int expectedStatus, int timeoutSeconds)
+            throws InterruptedException {
+        String url = platformGatewayInvokeUrl();
+        // Data plane is HTTPS with a self-signed listener cert (CN=localhost); the shared Requests funnel uses
+        // SimpleHTTPClient, which trusts all in the test lane. Invocation is async (the deploy propagates to the
+        // gateway over the WS), so retry until ready.
+        HttpResponse resp = Utils.retryUntil(timeoutSeconds * 1000L,
+                () -> Requests.get(url, headers),
+                r -> r != null && r.getResponseCode() == expectedStatus);
+        if (resp != null) {
+            TestContext.set("httpResponse", resp);
+        }
+        Assert.assertEquals(resp == null ? -1 : resp.getResponseCode(), expectedStatus,
+                "Invoke via platform gateway " + url + " -> "
+                        + (resp == null ? "null" : resp.getResponseCode() + " " + resp.getData()));
+    }
+
+    private static boolean isGatewayActive(HttpResponse resp, String name) {
+        if (resp == null || resp.getResponseCode() != 200 || resp.getData() == null || resp.getData().isBlank()) {
+            return false;
+        }
+        try {
+            JSONArray list = new JSONObject(resp.getData()).optJSONArray("list");
+            if (list == null) {
+                return false;
+            }
+            for (int i = 0; i < list.length(); i++) {
+                JSONObject gateway = list.getJSONObject(i);
+                if (name.equals(gateway.optString("name")) && gateway.optBoolean("isActive")) {
+                    return true;
+                }
+            }
+        } catch (JSONException e) {
+            // A transient non-JSON response should not abort polling; the caller reports the last response.
+        }
+        return false;
+    }
+
+    private static DynamicPlatformGatewayContainer platformGateway() {
+        Object gateway = TestContext.get(CONTAINER_KEY);
+        if (!(gateway instanceof DynamicPlatformGatewayContainer container)) {
+            throw new IllegalStateException("No platform gateway booted for this block — set "
+                    + "bootPlatformGateway=\"true\" on the <test> block");
+        }
+        return container;
+    }
+}
