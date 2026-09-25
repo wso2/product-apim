@@ -846,12 +846,7 @@ public final class PlaywrightSsoClient implements AutoCloseable {
      */
     public void assertNoSessionCookieResidue() {
         java.util.List<String> residue = new java.util.ArrayList<>();
-        String apimHost = URI.create(apimInternal).getHost();
-        for (Cookie c : context.cookies()) {
-            String cookieDomain = c.domain == null ? "" : c.domain.replaceFirst("^\\.", "");
-            if (!apimHost.equalsIgnoreCase(cookieDomain)) {
-                continue;
-            }
+        for (Cookie c : context.cookies(apimInternal)) {
             boolean isSessionCookie = IS_SESSION_COOKIE.equals(c.name)
                     || c.name.startsWith("AM_ACC_TOKEN")
                     || c.name.startsWith("WSO2_AM_TOKEN_1");

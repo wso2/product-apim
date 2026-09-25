@@ -329,6 +329,7 @@
         <parameter name="blockLabel" value="gateway-isolated-runtime"/>
         <parameter name="initTenantUsers" value="true"/>
         <parameter name="initBackend" value="true"/>
+        <parameter name="tomlExtraOverlayPath" value="src/test/resources/artifacts/configFiles/logging/deployment.toml"/>
         <parameter name="bootstrapThrottleData" value="true"/>
         <parameter name="throttleDataReadinessSeconds" value="180"/>
         <classes>
