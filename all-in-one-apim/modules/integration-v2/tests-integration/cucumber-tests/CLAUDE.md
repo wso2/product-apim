@@ -477,16 +477,29 @@ of forking it locally. (The §7 context/funnel primitives — `TestContext.resol
   the loop's base cadence for the first minute, then max(base, 5s), then max(base, 10s) — fast pass-detection
   where polls almost always succeed, easing off the struggling server in the long tail. Never hand-write a
   loop-tail `Thread.sleep`; capture the poll start (the instant the deadline was computed from) and use this.
-- **Three retry contracts, one shared loop — picking one IS the statement of intent** (like
-  `TestContext.resolve/get/contains`). All sit on the same private `pollWithin` mechanics, so never fork the
-  loop; extend here instead.
-  - `awaitWithRetry(what, probe, reTrigger, maxAttempts)` — SELF-HEALING readiness gate for PREREQUISITE
+- **Three retry contracts — picking one IS the statement of intent** (like `TestContext.resolve/get/contains`).
+  `retryUntil` and `awaitSettledCount` live here and share the private `pollWithin` mechanics, so never fork
+  that loop; the self-healing gate is its own class (`utils/HealGate`) because it owns a different shape — nested
+  windows with a mutating re-trigger between them — and shares only `Utils.pollPause` for pacing. Extend the
+  relevant one; never hand-roll either.
+  - `HealGate.awaitOrHeal(what, probe, heal, maxAttempts)` — SELF-HEALING readiness gate for PREREQUISITE
     state only (never a scenario's assertion target): full propagation-window wait, then re-fire the action
     (60s retry windows, max attempts) because runtime-propagation events are at-most-once — a dropped deploy
     event can only be fixed by re-emitting it. Treats EVERY exception as not-ready (during warm-up "not ready"
     and "probe threw" are indistinguishable), and fails the test itself on exhaustion. Logs a grep-able
-    "self-heal:" WARN per heal so occurrences stay countable. First consumer: the gateway deploy-readiness gate
-    step ("should be live on the gateway, redeploying if propagation is lost") used by the GraphQL features.
+    "self-heal:" WARN per heal so occurrences stay countable.
+    - The probe returns `Ready` / `NotReady(observed)` / `Fatal(why)`; `Fatal` fails the test IMMEDIATELY rather
+      than waiting out a window that cannot succeed (a 401/403 is credentials, not propagation).
+    - The heal returns a verdict too, but ONLY `Fatal` is acted on (it aborts the gate). Any other value —
+      including `Ready` — just hands control to the next probe window, and several call sites return `Ready`
+      as a neutral "nothing to report". So a heal that discovers the gate is already settled must signal that
+      THROUGH ITS PROBE (e.g. a flag the probe reads), not by returning `Ready`.
+    - Consumers today: the gateway deploy-readiness gate ("should be live on the gateway, redeploying if
+      propagation is lost"), the endpoint-certificate trust gate, and `awaitLifecycleTransition` — which gates
+      every publish and every `changeLifecycle` action, and is the worked example to copy: it keys the decision
+      to heal on the PRODUCT's own signal (`workflowStatus == APPROVED`, the same variable that guards
+      `LifeCycleUtils.changeLifecycle`) rather than guessing from a state read-back, which is what makes it safe
+      to run on all ~470 call sites including the approval-workflow ones that must NOT transition.
   - `retryUntil(timeoutMillis, attempt, accept)` — THE envelope when the result IS the assertion target (an
     invocation retried while a freshly published API becomes routable). Returns the LAST result so the caller
     publishes it as `httpResponse` and asserts the exact value itself; retries only `IOException`; is
