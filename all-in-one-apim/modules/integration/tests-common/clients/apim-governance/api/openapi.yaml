@@ -1432,6 +1432,7 @@ components:
         - 94566543-d21b-34d5-b678-912345678900
         - 94566543-d21b-34d5-b678-912345678900
         updatedBy: admin@wso2.com
+        complianceAffectingSeverities: ERROR,WARN
         createdBy: admin@wso2.com
         name: API Security Policy
         description: Policy for enforcing security standards across all APIs.
@@ -1519,6 +1520,25 @@ components:
           example: 2024-08-02T12:00:00Z
           readOnly: true
           type: string
+        complianceAffectingSeverities:
+          description: |
+            Comma separated rule severities that make this policy fail. Violations of other severities are still
+            reported but do not affect the policy adherence status.
+
+            Three states are meaningful. Null means per policy severity filtering is not enabled on this
+            deployment, and clients should not offer it. An empty string means it is enabled but nothing has been
+            configured for this policy, so every severity affects compliance. A value lists the severities that do.
+
+            Allowed severities are `ERROR`, `WARN` and `INFO`, matched case-insensitively. Any other value is
+            rejected with 400 and error code 990212. An accepted value is stored normalised: surrounding
+            whitespace is dropped, case is folded to upper case and repeats are removed, so it may read back in a
+            different form from the one sent. A selection sent to a deployment which has not enabled the feature
+            is also rejected with 400, under error code 990213, rather than being accepted and dropped.
+
+            Omitting the field on an update preserves whatever is stored; sending it empty clears the selection.
+          example: ERROR,WARN
+          nullable: true
+          type: string
       required:
       - actions
       - governableStates
@@ -1583,6 +1603,7 @@ components:
           - 94566543-d21b-34d5-b678-912345678900
           - 94566543-d21b-34d5-b678-912345678900
           updatedBy: admin@wso2.com
+          complianceAffectingSeverities: ERROR,WARN
           createdBy: admin@wso2.com
           name: API Security Policy
           description: Policy for enforcing security standards across all APIs.
@@ -1605,6 +1626,7 @@ components:
           - 94566543-d21b-34d5-b678-912345678900
           - 94566543-d21b-34d5-b678-912345678900
           updatedBy: admin@wso2.com
+          complianceAffectingSeverities: ERROR,WARN
           createdBy: admin@wso2.com
           name: API Security Policy
           description: Policy for enforcing security standards across all APIs.

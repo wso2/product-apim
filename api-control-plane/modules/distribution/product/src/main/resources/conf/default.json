@@ -607,6 +607,7 @@
   "apim.governance.scheduler.queue_size": "20",
   "apim.governance.scheduler.task_check_interval_minutes": "2",
   "apim.governance.scheduler.task_cleanup_interval_minutes": "30",
+  "apim.governance.per_policy_severity_filtering_enabled": false,
   "apim.ai.default_request_timeout": "30",
   "apim.ai.failover_configurations.failover_endpoints_limit": "10",
   "apim.ai.failover_configurations.default_request_timeout": "30",
