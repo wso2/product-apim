@@ -15,10 +15,10 @@
         "suspendDuration": "0",
         "suspendMaxDuration": "0"
       },
-      "url": "https://nodebackend:3023/jaxrs_basic/services/customers/customerservice/"
+      "url": "{{tlsBackendUrl}}/jaxrs_basic/services/customers/customerservice/"
     },
     "sandbox_endpoints": {
-      "url": "https://nodebackend:3023/jaxrs_basic/services/customers/customerservice/",
+      "url": "{{tlsBackendUrl}}/jaxrs_basic/services/customers/customerservice/",
       "config": {
         "actionDuration": "30000",
         "actionSelect": "fault",

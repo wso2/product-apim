@@ -19,7 +19,7 @@
         "enabled": true,
         "type": "OAUTH",
         "grantType": "CLIENT_CREDENTIALS",
-        "tokenUrl": "https://localhost:9443/oauth2/token",
+        "tokenUrl": "{{backendOAuthTokenUrl}}",
         "clientId": "epProdClientId0001",
         "clientSecret": "epProdClientSecret0001",
         "customParameters": {}
@@ -28,7 +28,7 @@
         "enabled": true,
         "type": "OAUTH",
         "grantType": "CLIENT_CREDENTIALS",
-        "tokenUrl": "https://localhost:9443/oauth2/token",
+        "tokenUrl": "{{backendOAuthTokenUrl}}",
         "clientId": "epSandClientId0002",
         "clientSecret": "epSandClientSecret0002",
         "customParameters": {}

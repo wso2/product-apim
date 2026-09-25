@@ -1,5 +1,5 @@
 # Feature-specific TOML overlay for the IntegrationV2-EndpointCertificateTls block, merged ON TOP of the shared
-# `basic` overlay via tomlExtraOverlayPath — only the two keys the endpoint-certificate INVOCATION arc needs.
+# `basic` overlay via tomlExtraOverlayPath — only the keys the endpoint-certificate INVOCATION arc needs.
 #
 # Why this overlay is unavoidable (measured against the product defaults, do not "simplify" it away):
 #
@@ -18,6 +18,10 @@
 # the 500 -> upload -> 200 -> delete -> 500 transition observable. The values match the legacy
 # APIEndpointCertificateTestCase config (endpointCertificate/deployment.toml: interval = 30000, period = "1m").
 #
+# 3. server.enable_restart_from_api — enables the one-shot Gateway restart used only after the trust-store
+#    propagation gate observes the product's unrecoverable SSL-client failure. The restart is a server-process
+#    recovery, not a container restart, and is followed by exactly one delete/upload event re-trigger.
+#
 # NOTE — this is the SENDER (outbound / backend-facing) side. Do NOT confuse it with
 # transport.http.listener.ssl_profile.read_interval (the mtlsWsCors overlay), which is the LISTENER /
 # client-certificate side and has no effect on endpoint (backend) certificates.
@@ -27,3 +31,6 @@ interval = 30000
 
 [apim.certificate_reloader]
 period = "1m"
+
+[server]
+enable_restart_from_api = true

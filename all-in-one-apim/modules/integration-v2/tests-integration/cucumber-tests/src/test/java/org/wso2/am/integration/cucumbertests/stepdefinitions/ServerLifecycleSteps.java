@@ -18,17 +18,8 @@
 package org.wso2.am.integration.cucumbertests.stepdefinitions;
 
 import io.cucumber.java.en.When;
-import org.testng.Assert;
+import org.wso2.am.integration.cucumbertests.utils.GracefulServerRestart;
 import org.wso2.am.integration.cucumbertests.utils.ServerReadiness;
-import org.wso2.am.integration.cucumbertests.utils.TestContext;
-import org.wso2.am.integration.cucumbertests.utils.clients.SimpleHTTPClient;
-import org.wso2.am.integration.test.utils.Constants;
-import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
-
-import java.nio.charset.StandardCharsets;
-import java.util.Base64;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Steps that act on the APIM server process itself (as opposed to its REST resources). Used by features that
@@ -48,36 +39,14 @@ public class ServerLifecycleSteps {
     @When("I gracefully restart the API Manager server")
     public void iGracefullyRestartTheApiManagerServer() throws Exception {
 
-        String baseUrl = TestContext.get("baseUrl").toString();
-        String endpoint = baseUrl + "services/ServerAdmin.ServerAdminHttpsSoap11Endpoint/";
+        // Restart the component that serves Gateway traffic. In all-in-one this resolves to the same unified
+        // APIM URL; in distributed topology it resolves to the Gateway management listener rather than CP.
+        GracefulServerRestart.gateway();
+    }
 
-        String soapBody = "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" "
-                + "xmlns:xsd=\"http://org.apache.axis2/xsd\"><soapenv:Header/><soapenv:Body>"
-                + "<xsd:restartGracefully/></soapenv:Body></soapenv:Envelope>";
-
-        String credentials = Constants.SUPER_TENANT_ADMIN_USERNAME + ":" + Constants.SUPER_TENANT_ADMIN_PASSWORD;
-        String basicAuth = Base64.getEncoder().encodeToString(credentials.getBytes(StandardCharsets.UTF_8));
-
-        Map<String, String> headers = new HashMap<>();
-        headers.put("Authorization", "Basic " + basicAuth);
-        headers.put("SOAPAction", "urn:restartGracefully");
-
-        HttpResponse response = SimpleHTTPClient.getInstance()
-                .doPost(endpoint, headers, soapBody, "text/xml;charset=UTF-8");
-
-        Assert.assertEquals(response.getResponseCode(), 200,
-                "ServerAdmin restartGracefully call failed: " + response.getData());
-        // Pin the RETURN ELEMENT, not the bare word: the envelope carries several namespaces and any fault text, so
-        // contains("true") is satisfiable without restartGracefully having returned true. Same form as the
-        // isExistingUser assertions in SecondaryUserStoreSteps.
-        Assert.assertTrue(response != null && response.getData() != null && !response.getData().isBlank(),
-                "ServerAdmin restartGracefully returned no SOAP body to inspect; got "
-                        + (response == null ? "no response" : String.valueOf(response.getResponseCode())));
-        Assert.assertTrue(response.getData().contains("<ns:return>true</ns:return>"),
-                "ServerAdmin restartGracefully did not return true; response: " + response.getData());
-
-        boolean restarted = ServerReadiness.awaitRestart(baseUrl);
-        Assert.assertTrue(restarted, "APIM server did not come back ready within "
-                + (Constants.SERVER_STARTUP_WAIT_TIME / 1000) + "s after a graceful restart");
+    /** Gracefully restarts the distributed Control Plane, or the unified APIM server in all-in-one topology. */
+    @When("I gracefully restart the Control Plane")
+    public void iGracefullyRestartTheControlPlane() throws Exception {
+        GracefulServerRestart.controlPlane();
     }
 }

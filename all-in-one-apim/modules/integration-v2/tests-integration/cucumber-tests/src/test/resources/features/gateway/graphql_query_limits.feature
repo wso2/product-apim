@@ -27,11 +27,11 @@ Feature: Gateway GraphQL Query Limits (HTTP)
     And I set the GraphQL complexity for API "gqlQApiId" from payload "gqlQComplexityPayload"
     Then The response status code should be 200
     And I deploy the API with id "gqlQApiId"
+    # Publish reads the API from the control-plane registry while the deployment event is still asynchronous.
+    # Establish gateway artifact and Publisher-read readiness before issuing the lifecycle transition.
+    And the "apis" resource "gqlQApiId" should be live on the gateway, redeploying if propagation is lost
     When I publish the "apis" resource with id "gqlQApiId"
     Then The lifecycle status of API "gqlQApiId" should be "Published"
-    # Deploy-readiness gate (self-healing): the JMS deploy event is at-most-once — if the gateway dropped
-    # it, waiting alone can never succeed, so this re-deploys the revision after an exhausted window.
-    And the "apis" resource "gqlQApiId" should be live on the gateway, redeploying if propagation is lost
     When I have set up application with keys, subscribed to API "gqlQApiId" with plan "{{subThrottlePolicyName}}", and obtained access token for "gqlQComplexSubId"
     Then The response status code should be 200
     When I put the following JSON payload in context as "gqlComplexQuery"
@@ -70,11 +70,11 @@ Feature: Gateway GraphQL Query Limits (HTTP)
     """
     Then The response status code should be 200
     And I deploy the API with id "gqlQApiId2"
+    # Establish gateway artifact and Publisher-read readiness before issuing Publish; a deployment 201 is only
+    # management-plane acknowledgement and does not mean the asynchronous deployment event has converged.
+    And the "apis" resource "gqlQApiId2" should be live on the gateway, redeploying if propagation is lost
     When I publish the "apis" resource with id "gqlQApiId2"
     Then The lifecycle status of API "gqlQApiId2" should be "Published"
-    # Deploy-readiness gate (self-healing): the JMS deploy event is at-most-once — if the gateway dropped
-    # it, waiting alone can never succeed, so this re-deploys the revision after an exhausted window.
-    And the "apis" resource "gqlQApiId2" should be live on the gateway, redeploying if propagation is lost
     When I have set up application with keys, subscribed to API "gqlQApiId2" with plan "{{subThrottlePolicyName}}", and obtained access token for "gqlQDepthSubId"
     Then The response status code should be 200
     When I put the following JSON payload in context as "gqlDeepQuery"
@@ -138,11 +138,11 @@ Feature: Gateway GraphQL Query Limits (HTTP)
     And I set the GraphQL complexity for API "gqlLimApiId" from payload "gqlLimComplexityPayload"
     Then The response status code should be 200
     And I deploy the API with id "gqlLimApiId"
+    # Establish gateway artifact and Publisher-read readiness before Publish; the exact query-limit assertions
+    # below remain the behavioral test and are not relaxed by this fixture gate.
+    And the "apis" resource "gqlLimApiId" should be live on the gateway, redeploying if propagation is lost
     When I publish the "apis" resource with id "gqlLimApiId"
     Then The lifecycle status of API "gqlLimApiId" should be "Published"
-    # Deploy-readiness gate (self-healing): the JMS deploy event is at-most-once — if the gateway dropped
-    # it, waiting alone can never succeed, so this re-deploys the revision after an exhausted window.
-    And the "apis" resource "gqlLimApiId" should be live on the gateway, redeploying if propagation is lost
     When I have set up a "<tokenType>" token type application with keys, subscribed to API "gqlLimApiId" with plan "{{subThrottlePolicyName}}", and obtained access token for "gqlLimSubId"
     Then The response status code should be 200
 

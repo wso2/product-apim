@@ -24,7 +24,10 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.testng.Assert;
 import org.wso2.am.integration.cucumbertests.utils.TestContext;
+import org.wso2.am.integration.cucumbertests.utils.Utils;
 import org.wso2.am.testcontainers.SquidProxyServer;
+
+import java.io.IOException;
 
 /**
  * Step definitions for asserting HTTP CONNECT proxy behaviour in WS proxy profile tests.
@@ -47,6 +50,19 @@ public class WebSocketProxySteps {
 
     private static final String SQUID_PROXY_KEY = "blockSquidProxy";
 
+    /**
+     * How long the CONNECT count must hold still before it is asserted. Comfortably above the gap between Squid
+     * accepting a tunnel request and appending its access-log line (sub-second), and well below the interval
+     * between two invocations any scenario makes — so it cannot settle early and under-count.
+     */
+    private static final long QUIET_MILLIS = 5000L;
+    /**
+     * Deadline for settling. {@link Utils#awaitSettledCount} floors this at the shared propagation ceiling, so a
+     * counter that never goes quiet is bounded there rather than here; a settled counter returns after one quiet
+     * window regardless.
+     */
+    private static final long SETTLE_TIMEOUT_MILLIS = 30_000L;
+
     @Given("the proxy access logs are cleared")
     public void clearProxyLogs() throws Exception {
         getProxy().clearLogs();
@@ -54,19 +70,86 @@ public class WebSocketProxySteps {
     }
 
     @Then("the anonymous proxy should have received exactly {int} CONNECT request\\(s)")
-    public void assertAnonConnectCount(int expected) throws Exception {
-        int actual = getProxy().getAnonConnectCount();
-        Assert.assertEquals(actual, expected,
-                "Anonymous proxy CONNECT count mismatch: expected=" + expected + " actual=" + actual
-                        + " — check that the proxy profile target_hosts and bypass_hosts are configured correctly");
+    public void assertAnonConnectCount(int expected) throws InterruptedException {
+        assertSettledConnectCount("Anonymous", expected,
+                () -> sample(getProxy()::getAnonConnectCount),
+                "check that the proxy profile target_hosts and bypass_hosts are configured correctly");
     }
 
     @Then("the authenticated proxy should have received exactly {int} CONNECT request\\(s)")
-    public void assertAuthConnectCount(int expected) throws Exception {
-        int actual = getProxy().getAuthConnectCount();
-        Assert.assertEquals(actual, expected,
-                "Authenticated proxy CONNECT count mismatch: expected=" + expected + " actual=" + actual
-                        + " — check that the proxy profile credentials and target_hosts are configured correctly");
+    public void assertAuthConnectCount(int expected) throws InterruptedException {
+        assertSettledConnectCount("Authenticated", expected,
+                () -> sample(getProxy()::getAuthConnectCount),
+                "check that the proxy profile credentials and target_hosts are configured correctly");
+    }
+
+    /**
+     * Asserts that the authenticated proxy was reached at least once, after its CONNECT count has settled.
+     * Negative proxy scenarios must prove that the request reached the configured authenticated proxy, but the
+     * number of denied CONNECT attempts is an implementation detail of the gateway's failed transport path.
+     */
+    @Then("the authenticated proxy should have received at least {int} CONNECT request\\(s)")
+    public void assertAuthConnectCountAtLeast(int minimum) throws InterruptedException {
+        Utils.SettledCount settled = Utils.awaitSettledCount(QUIET_MILLIS, SETTLE_TIMEOUT_MILLIS,
+                () -> sample(getProxy()::getAuthConnectCount));
+        Assert.assertTrue(settled.settled(),
+                "Authenticated proxy CONNECT count never stopped changing (last=" + settled.value() + " after "
+                        + settled.samples() + " samples) — something is still opening tunnels.");
+        Assert.assertTrue(settled.value() >= minimum,
+                "Authenticated proxy CONNECT count mismatch: expected at least=" + minimum + " actual="
+                        + settled.value() + " (settled over " + settled.samples() + " samples) — the configured "
+                        + "authenticated proxy was not reached.");
+    }
+
+    /**
+     * Asserts a Squid CONNECT count once it has STOPPED CHANGING, then asserts the exact value (§12/§15).
+     *
+     * <p>Reading the log once is unsound in BOTH directions and the failure is silent either way. Squid appends a
+     * line per CONNECT — including one it denies with {@code TCP_DENIED/407} — but it does so after the gateway's
+     * connection attempt returns, so a single read taken too early under-counts. That makes an "exactly 0"
+     * assertion pass for the wrong reason (nothing logged YET, rather than nothing attempted), which is precisely
+     * how the wrong-credentials scenario used to go green while the gateway had in fact been refused by the proxy.
+     * An "exactly N" assertion has the mirror-image problem: {@code retryUntil} accepting on {@code >= N} would
+     * pass the instant the counter touches N and never see an extra arrival. Settling is the only formulation
+     * that bounds the wait AND can observe an over-count.
+     *
+     * <p>Sound here because the counter is monotonic and goes quiescent: every scenario asserts after its
+     * invocations have completed, so no further CONNECT can arrive once the value holds still.
+     */
+    private void assertSettledConnectCount(String which, int expected, Utils.CountProbe probe, String hint)
+            throws InterruptedException {
+
+        Utils.SettledCount settled = Utils.awaitSettledCount(QUIET_MILLIS, SETTLE_TIMEOUT_MILLIS, probe);
+        Assert.assertTrue(settled.settled(),
+                which + " proxy CONNECT count never stopped changing (last=" + settled.value() + " after "
+                        + settled.samples() + " samples) — something is still opening tunnels, so no exact count "
+                        + "can be asserted. " + hint);
+        Assert.assertEquals(settled.value(), expected,
+                which + " proxy CONNECT count mismatch: expected=" + expected + " actual=" + settled.value()
+                        + " (settled over " + settled.samples() + " samples) — " + hint);
+    }
+
+    /**
+     * Adapts a Squid log read to {@link Utils.CountProbe}. Only {@link IOException} is retried by the envelope, so
+     * an interrupt is restored and surfaced as one (the next poll pause rethrows it) while anything else fails
+     * fast rather than being mistaken for a transient.
+     */
+    private static int sample(ConnectCountRead read) throws IOException {
+        try {
+            return read.get();
+        } catch (IOException transientRead) {
+            throw transientRead;
+        } catch (InterruptedException interrupted) {
+            Thread.currentThread().interrupt();
+            throw new IOException("interrupted while reading the Squid access log", interrupted);
+        } catch (Exception unexpected) {
+            throw new IllegalStateException("Could not read the Squid access log", unexpected);
+        }
+    }
+
+    @FunctionalInterface
+    private interface ConnectCountRead {
+        int get() throws Exception;
     }
 
     private SquidProxyServer getProxy() {

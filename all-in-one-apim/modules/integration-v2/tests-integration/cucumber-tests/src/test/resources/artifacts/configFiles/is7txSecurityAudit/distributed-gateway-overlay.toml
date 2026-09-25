@@ -1,0 +1,3 @@
+# Distributed Gateway portion of the token-exchange/security-audit overlay.
+[apim.token.validation]
+enforce_type_header_validation = true

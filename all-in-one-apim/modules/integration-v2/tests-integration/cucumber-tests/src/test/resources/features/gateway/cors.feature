@@ -11,6 +11,7 @@ Feature: Gateway CORS
     Given The system is ready
     And I have valid access tokens as "<actor>"
     And I have created an api from "artifacts/payloads/create_apim_cors_api.json" as "corsApiId" and deployed it
+    And the "apis" resource "corsApiId" should be live on the gateway, redeploying if propagation is lost
     When I publish the "apis" resource with id "corsApiId"
     Then The lifecycle status of API "corsApiId" should be "Published"
     When I retrieve the "apis" resource with id "corsApiId"
@@ -45,6 +46,7 @@ Feature: Gateway CORS
     Given The system is ready
     And I have valid access tokens as "<actor>"
     And I have created an api from "artifacts/payloads/create_apim_cors_api.json" as "corsPfApiId" and deployed it
+    And the "apis" resource "corsPfApiId" should be live on the gateway, redeploying if propagation is lost
     When I publish the "apis" resource with id "corsPfApiId"
     Then The lifecycle status of API "corsPfApiId" should be "Published"
     When I retrieve the "apis" resource with id "corsPfApiId"
@@ -96,6 +98,7 @@ Feature: Gateway CORS
     Given The system is ready
     And I have valid access tokens as "<actor>"
     And I have created an api from "artifacts/payloads/create_apim_default_cors_api.json" as "dcApiId" and deployed it
+    And the "apis" resource "dcApiId" should be live on the gateway, redeploying if propagation is lost
     When I publish the "apis" resource with id "dcApiId"
     Then The lifecycle status of API "dcApiId" should be "Published"
     When I retrieve the "apis" resource with id "dcApiId"
@@ -151,6 +154,7 @@ Feature: Gateway CORS
     Given The system is ready
     And I have valid access tokens as "<actor>"
     And I have created an api from "artifacts/payloads/create_apim_cors_nocred_api.json" as "ncApiId" and deployed it
+    And the "apis" resource "ncApiId" should be live on the gateway, redeploying if propagation is lost
     When I publish the "apis" resource with id "ncApiId"
     Then The lifecycle status of API "ncApiId" should be "Published"
     When I retrieve the "apis" resource with id "ncApiId"
@@ -193,6 +197,7 @@ Feature: Gateway CORS
     Given The system is ready
     And I have valid access tokens as "<actor>"
     And I have created an api from "artifacts/payloads/create_apim_default_cors_api.json" as "cuApiId" and deployed it
+    And the "apis" resource "cuApiId" should be live on the gateway, redeploying if propagation is lost
     When I publish the "apis" resource with id "cuApiId"
     Then The lifecycle status of API "cuApiId" should be "Published"
     When I retrieve the "apis" resource with id "cuApiId"
@@ -254,6 +259,7 @@ Feature: Gateway CORS
     Given The system is ready
     And I have valid access tokens as "<actor>"
     And I have created an api from "artifacts/payloads/create_apim_backend_cors_api.json" as "bcApiId" and deployed it
+    And the "apis" resource "bcApiId" should be live on the gateway, redeploying if propagation is lost
     When I publish the "apis" resource with id "bcApiId"
     Then The lifecycle status of API "bcApiId" should be "Published"
     When I retrieve the "apis" resource with id "bcApiId"
@@ -289,6 +295,7 @@ Feature: Gateway CORS
     Given The system is ready
     And I have valid access tokens as "<actor>"
     And I have created an api from "artifacts/payloads/create_apim_cors_soap_api.json" as "corsSoapApiId" and deployed it
+    And the "apis" resource "corsSoapApiId" should be live on the gateway, redeploying if propagation is lost
     When I publish the "apis" resource with id "corsSoapApiId"
     Then The lifecycle status of API "corsSoapApiId" should be "Published"
     When I retrieve the "apis" resource with id "corsSoapApiId"
@@ -337,6 +344,7 @@ Feature: Gateway CORS
     And I deploy revision "revisionId" of "apis" resource "corsGraphQLApiId"
     Then The response status code should be 201
     And I wait for deployment of the resource in "corsGraphQLRetrievedPayload"
+    And the "apis" resource "corsGraphQLApiId" should be live on the gateway, redeploying if propagation is lost
     And I publish the "apis" resource with id "corsGraphQLApiId"
     Then The lifecycle status of API "corsGraphQLApiId" should be "Published"
 
@@ -371,6 +379,7 @@ Feature: Gateway CORS
     Given The system is ready
     And I have valid access tokens as "<actor>"
     And I have created an api from "artifacts/payloads/create_apim_cors_sse_api.json" as "corsSseApiId" and deployed it
+    And the "apis" resource "corsSseApiId" should be live on the gateway, redeploying if propagation is lost
     When I publish the "apis" resource with id "corsSseApiId"
     Then The lifecycle status of API "corsSseApiId" should be "Published"
     When I retrieve the "apis" resource with id "corsSseApiId"
@@ -406,6 +415,7 @@ Feature: Gateway CORS
     When I import openapi definition from "artifacts/payloads/ai/mistral-def.json" with additional properties "artifacts/payloads/ai/mistral_cors_add_props.json" as "corsAiApiId"
     Then The response status code should be 201
     When I deploy the API with id "corsAiApiId"
+    And the "apis" resource "corsAiApiId" should be live on the gateway, redeploying if propagation is lost
     When I publish the "apis" resource with id "corsAiApiId"
     Then The lifecycle status of API "corsAiApiId" should be "Published"
     When I retrieve the "apis" resource with id "corsAiApiId"
@@ -450,6 +460,7 @@ Feature: Gateway CORS
     And I import a WSDL API from file "artifacts/wsdl/hello.wsdl" with additional properties "corsS2RAddProps" and implementation type "SOAPTOREST" as "corsS2RApiId"
     Then The response status code should be 201
     When I deploy the API with id "corsS2RApiId"
+    And the "apis" resource "corsS2RApiId" should be live on the gateway, redeploying if propagation is lost
     When I publish the "apis" resource with id "corsS2RApiId"
     Then The lifecycle status of API "corsS2RApiId" should be "Published"
     When I retrieve the "apis" resource with id "corsS2RApiId"
@@ -500,6 +511,7 @@ Feature: Gateway CORS
     Given The system is ready
     And I have valid access tokens as "<actor>"
     And I have created an api from "artifacts/payloads/create_apim_similar_template_cors_api.json" as "stApiId" and deployed it
+    And the "apis" resource "stApiId" should be live on the gateway, redeploying if propagation is lost
     When I publish the "apis" resource with id "stApiId"
     Then The lifecycle status of API "stApiId" should be "Published"
     When I retrieve the "apis" resource with id "stApiId"

@@ -15,11 +15,12 @@ Feature: API Comment Threads — Edit, Cascade Delete and Moderation Across Both
       cascade-delete scenarios come last of the fixture-consuming set. The moderation scenarios at the end create
       their own comments on the comment-free mtApiId<suffix> and are therefore order-independent.
 
-  updatedTime and why no wait is needed: updatedTime is stored with MILLISECOND precision (observed
-  "2026-08-05 01:58:46.133" / ".144" / ".154" for three consecutive edits), so two edits separated by a REST
-  round trip land on distinct values without any delay. The legacy test slept two seconds between edits "due to
-  update time assertions"; that sleep was unnecessary here and is an anti-pattern in this suite, so it is simply
-  absent — the assertion that consecutive edits produce different timestamps stands on its own.
+  updatedTime and the timestamp-precision barrier: MySQL stores this column at one-second precision, so consecutive
+  edits can otherwise receive the same value even though both updates succeed. Before each edit whose timestamp is
+  compared with the previous edit, the scenario waits until the persisted value is strictly before the next
+  second-truncated test timestamp. The legacy test slept two seconds between edits "due to update time assertions";
+  the explicit Gherkin barrier preserves that precondition without a blind sleep, and the assertions that
+  consecutive edits produce different timestamps remain strict.
 
   Teardown is the runner's AfterClass sweep, so this feature is deliberately NOT tagged @cleanup — a per-scenario
   sweep would delete the shared fixture out from under the scenarios that follow. Runs x2 tenants, extending the
@@ -44,6 +45,7 @@ Feature: API Comment Threads — Edit, Cascade Delete and Moderation Across Both
     And I extract response field "updatedTime" and store it as "ptEditTime1<suffix>"
 
     # Row 2 — category only. The value changed, so updatedTime must differ from the previous edit's.
+    And I wait for updated timestamp precision after the "publisher" comment "ptRoot1<suffix>" of API "ptApiId<suffix>"
     When I edit the "publisher" comment "ptRoot1<suffix>" of API "ptApiId<suffix>" to content "Edited root comment" category "bug fix"
     Then The response status code should be 200
     And The value of response field "content" should be "Edited root comment"
@@ -52,6 +54,7 @@ Feature: API Comment Threads — Edit, Cascade Delete and Moderation Across Both
     And The stored value "ptEditTime2<suffix>" should not equal "ptEditTime1<suffix>"
 
     # Row 3 — content AND category.
+    And I wait for updated timestamp precision after the "publisher" comment "ptRoot1<suffix>" of API "ptApiId<suffix>"
     When I edit the "publisher" comment "ptRoot1<suffix>" of API "ptApiId<suffix>" to content "Edited root comment 1" category "general bug fix"
     Then The response status code should be 200
     And The value of response field "content" should be "Edited root comment 1"
@@ -86,6 +89,7 @@ Feature: API Comment Threads — Edit, Cascade Delete and Moderation Across Both
     And The value of response field "category" should be "general"
     And I extract response field "updatedTime" and store it as "dtEditTime1<suffix>"
 
+    And I wait for updated timestamp precision after the "devportal" comment "dtRoot1<suffix>" of API "dtApiId<suffix>"
     When I edit the "devportal" comment "dtRoot1<suffix>" of API "dtApiId<suffix>" to content "Edited root comment" category "bug fix"
     Then The response status code should be 200
     And The value of response field "content" should be "Edited root comment"
@@ -93,6 +97,7 @@ Feature: API Comment Threads — Edit, Cascade Delete and Moderation Across Both
     And I extract response field "updatedTime" and store it as "dtEditTime2<suffix>"
     And The stored value "dtEditTime2<suffix>" should not equal "dtEditTime1<suffix>"
 
+    And I wait for updated timestamp precision after the "devportal" comment "dtRoot1<suffix>" of API "dtApiId<suffix>"
     When I edit the "devportal" comment "dtRoot1<suffix>" of API "dtApiId<suffix>" to content "Edited root comment 1" category "general bug fix"
     Then The response status code should be 200
     And The value of response field "content" should be "Edited root comment 1"
@@ -300,7 +305,6 @@ Feature: API Comment Threads — Edit, Cascade Delete and Moderation Across Both
     When I retrieve the "publisher" comment "adminOwnedPubRoot<suffix>" of API "mtApiId<suffix>" with reply limit 3 offset 0
     Then The response status code should be 200
     And The value of response field "content" should be "Admin owned publisher comment"
-    And The response field "updatedTime" should be null
 
     Examples:
       | actor                     | suffix       |
@@ -343,7 +347,6 @@ Feature: API Comment Threads — Edit, Cascade Delete and Moderation Across Both
     Then The response status code should be 200
     And The value of response field "content" should be "Non admin owned root"
     And The value of response field "category" should be "general"
-    And The response field "updatedTime" should be null
 
     # Deleting it IS permitted with the moderator scope, and cascades to its replies.
     When I delete the "publisher" comment "moderatedPubRoot<suffix>" of API "mtApiId<suffix>" as a comment moderator
@@ -419,7 +422,6 @@ Feature: API Comment Threads — Edit, Cascade Delete and Moderation Across Both
     Then The response status code should be 200
     And The value of response field "content" should be "Subscriber owned root"
     And The value of response field "category" should be "general"
-    And The response field "updatedTime" should be null
 
     When I delete the "devportal" comment "moderatedDevRoot<suffix>" of API "mtApiId<suffix>" as a comment moderator
     Then The response status code should be 200

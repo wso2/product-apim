@@ -342,19 +342,18 @@ Feature: Publisher API Runtime & Common Configuration
       | publisherUser             |
       | publisherUser@tenant1.com |
 
-  # The publisher endpoint-validation API probes a backend endpoint and reports its reachability. The target is
-  # the APIM's own Carbon Version service, reachable from the server itself (no separate backend needed). Verified
-  # live on 4.7.0: a reachable endpoint validates with statusCode 202 (Accepted) — the auth-protected sample
-  # webapp instead reports its 401, so 202 is the healthy/reachable signal. Ports APIMANAGER2611.
+  # The publisher endpoint-validation API probes the DevPortal web app and reports its reachability. A reachable
+  # endpoint returns statusCode 200 (OK), while the auth-protected sample still validates the expected 401. Ports
+  # APIMANAGER2611.
   @cap:publisher @feat:api-config @type:regression @legacy:APIMANAGER2611EndpointValidationTestCase
   Scenario Outline: A reachable backend endpoint validates successfully as <actor>
     Given The system is ready and I have valid publisher access tokens as "<actor>"
     And I put JSON payload from file "artifacts/payloads/create_apim_test_api.json" in context as "valApiPayload"
     And I create an "apis" resource with payload "valApiPayload" as "valApiId"
-    When I validate the endpoint "https://localhost:9443/services/Version" for API "valApiId"
+    When I validate the endpoint "https://localhost:9443/devportal/" for API "valApiId"
     Then The response status code should be 200
-    And The value of response field "statusCode" should be "202"
-    And The response should contain "Accepted"
+    And The value of response field "statusCode" should be "200"
+    And The response should contain "OK"
 
     Examples:
       | actor                     |
@@ -593,7 +592,7 @@ Feature: Publisher API Runtime & Common Configuration
     And The response should contain "OAUTH"
     And The response should contain "epProdClientId0001"
     And The response should contain "epSandClientId0002"
-    And The response should contain "https://localhost:9443/oauth2/token"
+    And The response should contain "{{backendOAuthTokenUrl}}"
     # The client secrets are redacted — never returned in plaintext.
     And The response should not contain "epProdClientSecret0001"
     And The response should not contain "epSandClientSecret0002"

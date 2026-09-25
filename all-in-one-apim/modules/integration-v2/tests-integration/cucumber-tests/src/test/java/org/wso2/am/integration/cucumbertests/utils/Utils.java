@@ -47,6 +47,7 @@ import org.wso2.carbon.automation.engine.context.beans.User;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import java.io.*;
+import java.net.URI;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -111,6 +112,27 @@ public class Utils {
         return NodeAppServer.getInstance().getBaseUrl(containerPort);
     }
 
+    /**
+     * Rewrites a host-published URL for a container that reaches the Docker host. Testcontainers may report
+     * {@code localhost} (or a loopback address) for a published port; that address is valid from the test JVM but
+     * points back to the calling container when used by a containerized product component.
+     */
+    public static String containerReachable(String url) {
+        URI uri = URI.create(url);
+        String host = uri.getHost();
+        boolean loopback = host == null || host.isBlank() || "localhost".equalsIgnoreCase(host)
+                || host.startsWith("127.");
+        if (!loopback) {
+            return url;
+        }
+        try {
+            return new URI(uri.getScheme(), uri.getUserInfo(), "host.docker.internal", uri.getPort(),
+                    uri.getPath(), uri.getQuery(), uri.getFragment()).toString();
+        } catch (java.net.URISyntaxException e) {
+            throw new IllegalArgumentException("Unable to make URL container-reachable: " + url, e);
+        }
+    }
+
     private static String requiredContextUrl(String key) {
         Object url = TestContext.get(key);
         if (url == null) {
@@ -164,12 +186,17 @@ public class Utils {
      */
     private static <T> T pollWithin(long pollStart, long deadline, PollAttempt<T> attempt)
             throws InterruptedException {
+        return pollWithin(pollStart, deadline, attempt, Constants.RETRY_INTERVAL_TIME);
+    }
+
+    private static <T> T pollWithin(long pollStart, long deadline, PollAttempt<T> attempt, long pollIntervalMillis)
+            throws InterruptedException {
         while (System.currentTimeMillis() < deadline) {
             T outcome = attempt.attempt();
             if (outcome != null) {
                 return outcome;
             }
-            pollPause(pollStart, Constants.RETRY_INTERVAL_TIME);
+            pollPause(pollStart, pollIntervalMillis);
         }
         return null;
     }
@@ -207,8 +234,24 @@ public class Utils {
      */
     public static <T> T retryUntil(long timeoutMillis, RetryAttempt<T> attempt, RetryAccept<T> accept)
             throws InterruptedException {
+        return retryUntil(timeoutMillis, Constants.RETRY_INTERVAL_TIME, true, attempt, accept);
+    }
+
+    /**
+     * Same retry contract as {@link #retryUntil(long, RetryAttempt, RetryAccept)}, with an explicit poll interval
+     * and an exact timeout. This is for short, test-specific temporal preconditions; normal product readiness
+     * polling must continue to use the shared propagation-timeout floor of the three-argument overload.
+     */
+    public static <T> T retryUntilWithInterval(long timeoutMillis, long pollIntervalMillis, RetryAttempt<T> attempt,
+                                               RetryAccept<T> accept) throws InterruptedException {
+        return retryUntil(timeoutMillis, pollIntervalMillis, false, attempt, accept);
+    }
+
+    private static <T> T retryUntil(long timeoutMillis, long pollIntervalMillis, boolean applyPropagationFloor,
+                                    RetryAttempt<T> attempt, RetryAccept<T> accept) throws InterruptedException {
         long pollStart = System.currentTimeMillis();
-        long deadline = pollStart + Math.max(timeoutMillis, Constants.RUNTIME_PROPAGATION_TIMEOUT);
+        long deadline = pollStart + (applyPropagationFloor
+                ? Math.max(timeoutMillis, Constants.RUNTIME_PROPAGATION_TIMEOUT) : timeoutMillis);
         AtomicReference<T> lastResult = new AtomicReference<>();
         T accepted = pollWithin(pollStart, deadline, () -> {
             try {
@@ -221,7 +264,7 @@ public class Utils {
                 // typo'd key) escapes to fail fast instead of being reported as a timeout.
                 return null;
             }
-        });
+        }, pollIntervalMillis);
         return accepted != null ? accepted : lastResult.get();
     }
 
@@ -538,6 +581,16 @@ public class Utils {
                 + "&tenantDomain=" + URLEncoder.encode(tenantDomain, StandardCharsets.UTF_8);
     }
 
+    /** Gateway management URL, distinct from the data-plane invocation URL in a distributed runtime. */
+    public static String getBaseGatewayManagementUrl() {
+        return requiredContextUrl("baseGatewayManagementUrl");
+    }
+
+    /** Traffic Manager management URL, distinct from the Gateway management URL in distributed topology. */
+    public static String getBaseTrafficManagerManagementUrl() {
+        return requiredContextUrl("baseTrafficManagerManagementUrl");
+    }
+
     /** Publisher — endpoint-certificate collection: {@code /endpoint-certificates} (POST multipart upload). */
     public static String getEndpointCertificatesURL(String baseUrl) {
         return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "endpoint-certificates";
@@ -848,6 +901,11 @@ public class Utils {
 
     public static String getAPILifecycleStateURL(String baseUrl, String apiId) {
         return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "apis/" + apiId + "/lifecycle-state";
+    }
+
+    /** Publisher — retrieve the authoritative lifecycle state of an API product (GET). */
+    public static String getAPIProductLifecycleStateURL(String baseUrl, String apiProductId) {
+        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "api-products/" + apiProductId + "/lifecycle-state";
     }
 
     /** Publisher — the lifecycle audit-trail / state-transition history of an API (GET). */
@@ -1545,6 +1603,14 @@ public class Utils {
     /** Admin REST API — a single gateway environment by id (get/update/delete). */
     public static String getEnvironmentByIdURL(String baseUrl, String environmentId) {
         return baseUrl + Constants.DEFAULT_APIM_ADMIN + "environments/" + environmentId;
+    }
+
+    public static String getPlatformGatewaysURL(String baseUrl) {
+        return baseUrl + Constants.DEFAULT_APIM_ADMIN + "gateways";
+    }
+
+    public static String getPlatformGatewayByIdURL(String baseUrl, String gatewayId) {
+        return baseUrl + Constants.DEFAULT_APIM_ADMIN + "gateways/" + gatewayId;
     }
 
     /** Admin REST API — the gateway instances of an environment. */
