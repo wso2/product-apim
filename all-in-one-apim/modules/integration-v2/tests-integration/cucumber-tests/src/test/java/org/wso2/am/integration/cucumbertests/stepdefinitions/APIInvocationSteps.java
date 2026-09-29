@@ -25,6 +25,7 @@ import org.apache.commons.logging.LogFactory;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.testng.Assert;
+import org.wso2.am.integration.cucumbertests.utils.HealGate;
 import org.wso2.am.integration.cucumbertests.utils.Identity;
 import org.wso2.am.integration.cucumbertests.utils.Requests;
 import org.wso2.am.integration.cucumbertests.utils.TestContext;
@@ -57,6 +58,7 @@ import java.util.stream.Collectors;
 public class APIInvocationSteps {
 
     private static final Log log = LogFactory.getLog(APIInvocationSteps.class);
+    private final PublisherBaseSteps publisherBaseSteps = new PublisherBaseSteps();
 
     /** Context key under which every invocation publishes its response for the following assertion step. */
     private static final String HTTP_RESPONSE_KEY = "httpResponse";
@@ -93,42 +95,32 @@ public class APIInvocationSteps {
     private HttpResponse execute(CurlOption.HttpMethod method, String endpointUrl, Map<String, String> headers,
                                  String payload, String contentType, boolean rawGet) throws IOException {
 
-        TestContext.remove(HTTP_RESPONSE_KEY);
-        SimpleHTTPClient client = SimpleHTTPClient.getInstance();
-        HttpResponse response;
-        if (rawGet) {
-            // GET with the client's URI normalization DISABLED, so a percent-encoded path segment reaches the
-            // gateway verbatim; method/payload/contentType are unused on this path.
-            response = client.doGetRaw(endpointUrl, headers);
-        } else {
+        return Requests.execute(() -> {
+            SimpleHTTPClient client = SimpleHTTPClient.getInstance();
+            if (rawGet) {
+                // GET with the client's URI normalization DISABLED, so a percent-encoded path segment reaches the
+                // gateway verbatim; method/payload/contentType are unused on this path.
+                return client.doGetRaw(endpointUrl, headers);
+            }
             switch (method) {
                 case GET:
-                    response = client.doGet(endpointUrl, headers);
-                    break;
+                    return client.doGet(endpointUrl, headers);
                 case DELETE:
-                    response = client.doDelete(endpointUrl, headers);
-                    break;
+                    return client.doDelete(endpointUrl, headers);
                 case POST:
-                    response = client.doPost(endpointUrl, headers, payload, contentType);
-                    break;
+                    return client.doPost(endpointUrl, headers, payload, contentType);
                 case PUT:
-                    response = client.doPut(endpointUrl, headers, payload, contentType);
-                    break;
+                    return client.doPut(endpointUrl, headers, payload, contentType);
                 case PATCH:
-                    response = client.doPatch(endpointUrl, headers, payload, contentType);
-                    break;
+                    return client.doPatch(endpointUrl, headers, payload, contentType);
                 case HEAD:
-                    response = client.doHead(endpointUrl, headers);
-                    break;
+                    return client.doHead(endpointUrl, headers);
                 case OPTIONS:
-                    response = client.doOptions(endpointUrl, headers);
-                    break;
+                    return client.doOptions(endpointUrl, headers);
                 default:
                     throw new IllegalArgumentException("Unsupported HTTP method for invocation: " + method);
             }
-        }
-        TestContext.set(HTTP_RESPONSE_KEY, response);
-        return response;
+        });
     }
 
     /** {@link #execute(CurlOption.HttpMethod, String, Map, String, String, boolean)} for a normalized request. */
@@ -730,6 +722,72 @@ public class APIInvocationSteps {
         Assert.assertTrue(body != null && body.contains(marker),
                 "Response body was missing/null or never contained '" + marker + "' within the deadline; last response: "
                         + body);
+    }
+
+    /**
+     * Response-transformation variant for a scenario that changes a member API and redeploys an existing product.
+     * The ordinary body-marker step deliberately has no side effects: it is an assertion-target poll. This
+     * explicit variant is for the propagation-sensitive flow where a lost product deployment event leaves the
+     * gateway returning a valid 200 with the old body. It re-fires deployment once only after that distinguishing
+     * stale behavior is observed, then polls the same data-plane marker again.
+     */
+    @When("I invoke the API at gateway context {string} with method {string} using access token {string} and payload {string} with content type {string} until response body contains {string} within {int} seconds, re-deploying the {string} resource {string} if propagation is lost")
+    public void invokeApiByContextWithContentTypeUntilBodyContainsAndRedeploy(String context, String httpMethod,
+                                                                                String accessToken, String payload,
+                                                                                String contentType, String expectedBody,
+                                                                                int timeoutSeconds, String resourceType,
+                                                                                String resourceId) throws Exception {
+
+        String resolvedContext = Utils.resolveContextPlaceholders(context);
+        String marker = Utils.resolveContextPlaceholders(expectedBody);
+        long timeoutMillis = timeoutSeconds * 1000L;
+        long started = System.currentTimeMillis();
+        HttpResponse last = invokeUntilBodyMarker(resolvedContext, httpMethod, accessToken, payload, contentType,
+                marker, timeoutMillis);
+
+        // Reconcile only the evidence this step is intended to heal: a valid response whose body is still the
+        // pre-change representation. Auth/connectivity/status failures remain ordinary invocation failures.
+        boolean staleBehavior = last != null && last.getResponseCode() == 200 && last.getData() != null
+                && !last.getData().contains(marker);
+        if (staleBehavior) {
+            HealGate.Verdict verdict = publisherBaseSteps.reconcileAndRedeployRevision(resourceType,
+                    TestContext.resolve(resourceId).toString());
+            if (verdict instanceof HealGate.Fatal fatal) {
+                Assert.fail("Could not re-deploy " + resourceType + " " + resourceId
+                        + " after observing stale gateway behavior: " + fatal.why());
+            }
+            last = invokeUntilBodyMarker(resolvedContext, httpMethod, accessToken, payload, contentType, marker,
+                    timeoutMillis);
+        }
+
+        Requests.publishPollResult(last);
+        if (last != null && last.getResponseCode() == 401) {
+            Utils.logAuthRejection(resolvedContext, accessToken, credentialForDiagnostic(accessToken),
+                    last.getResponseCode(), last.getData(), System.currentTimeMillis() - started);
+        }
+        assertReachedExpectedStatus(last, 200);
+        String body = last == null ? null : last.getData();
+        Assert.assertTrue(body != null && body.contains(marker),
+                "Response body was missing/null or never contained '" + marker + "' after the bounded deployment "
+                        + "heal; last response: " + body);
+    }
+
+    /** Polls the data plane for the behavior that identifies the newly deployed policy. */
+    private HttpResponse invokeUntilBodyMarker(String resolvedContext, String httpMethod, String accessToken,
+                                               String payload, String contentType, String marker,
+                                               long timeoutMillis) throws Exception {
+        return Utils.retryUntil(timeoutMillis, () -> {
+            String actualAccessToken = TestContext.resolve(accessToken).toString();
+            String actualPayload = (payload == null || payload.isEmpty())
+                    ? "" : TestContext.resolve(payload).toString();
+            String endpointUrl = Utils.getBaseGatewayUrl()
+                    + (resolvedContext.startsWith("/") ? "" : "/") + resolvedContext;
+            Map<String, String> headers = new HashMap<>();
+            headers.put("Authorization", "Bearer " + actualAccessToken);
+            return execute(CurlOption.HttpMethod.valueOf(httpMethod.toUpperCase()), endpointUrl, headers,
+                    actualPayload, contentType);
+        }, response -> response.getResponseCode() == 200 && response.getData() != null
+                && response.getData().contains(marker));
     }
 
     /** Single invocation addressing the API by its full gateway context path (no tenant prefixing). */

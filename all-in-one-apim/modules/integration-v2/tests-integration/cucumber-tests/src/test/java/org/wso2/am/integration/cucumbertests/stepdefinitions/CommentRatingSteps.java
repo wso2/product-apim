@@ -18,6 +18,7 @@
 package org.wso2.am.integration.cucumbertests.stepdefinitions;
 
 import com.google.gson.JsonObject;
+import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import org.json.JSONObject;
 import org.testng.Assert;
@@ -31,6 +32,13 @@ import org.wso2.carbon.automation.engine.context.beans.User;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import java.io.IOException;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
+import java.time.temporal.ChronoField;
+import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -45,6 +53,15 @@ import java.util.Set;
  * sub-resources of the API and cascade-delete with it, so no separate cleanup registration is needed.
  */
 public class CommentRatingSteps {
+
+    private static final long TIMESTAMP_PRECISION_DELAY_MILLIS = 1000L;
+    private static final long TIMESTAMP_PRECISION_TIMEOUT_MILLIS = 10_000L;
+    private static final DateTimeFormatter[] COMMENT_TIMESTAMP_FORMATTERS = {
+            new DateTimeFormatterBuilder().appendPattern("yyyy-MM-dd HH:mm:ss")
+                    .optionalStart().appendFraction(ChronoField.NANO_OF_SECOND, 0, 9, true).optionalEnd().toFormatter(),
+            new DateTimeFormatterBuilder().appendPattern("yyyy-MM-dd-HH:mm:ss")
+                    .optionalStart().appendFraction(ChronoField.NANO_OF_SECOND, 0, 9, true).optionalEnd().toFormatter()
+    };
 
     private final BaseSteps baseSteps = new BaseSteps();
 
@@ -184,6 +201,82 @@ public class CommentRatingSteps {
         HttpResponse response = Requests.post(Utils.getAPIReplyToComment(Utils.getBaseUrl(), plane, apiId, parentId),
                 planeAuthHeaders(plane), commentBody(content, "general"), Constants.CONTENT_TYPES.APPLICATION_JSON);
         storeCommentId(response, replyKey);
+    }
+
+    /**
+     * Waits until a persisted comment's timestamp has advanced beyond the previous database timestamp precision.
+     * MySQL stores the comment table's TIMESTAMP columns at one-second precision, while H2 commonly preserves
+     * milliseconds. This is a data-ordering precondition for the legacy pagination contract, not a relaxation of
+     * the ordering assertion. The GET also proves the POSTed row is readable before the next write.
+     */
+    @Then("I wait for timestamp precision after the {string} comment {string} of API {string}")
+    public void iWaitForTimestampPrecision(String plane, String commentKey, String apiKey) throws IOException,
+            InterruptedException {
+        waitForTimestampPrecision(plane, commentKey, apiKey, "createdTime");
+    }
+
+    /** Waits for the next edit to receive a different value at the database timestamp precision. */
+    @Then("I wait for updated timestamp precision after the {string} comment {string} of API {string}")
+    public void iWaitForUpdatedTimestampPrecision(String plane, String commentKey, String apiKey) throws IOException,
+            InterruptedException {
+        waitForTimestampPrecision(plane, commentKey, apiKey, "updatedTime");
+    }
+
+    private void waitForTimestampPrecision(String plane, String commentKey, String apiKey, String timestampField)
+            throws IOException, InterruptedException {
+        String apiId = TestContext.resolve(apiKey).toString();
+        String commentId = TestContext.resolve(commentKey).toString();
+        Instant persisted = Utils.retryUntilWithInterval(TIMESTAMP_PRECISION_TIMEOUT_MILLIS,
+                TIMESTAMP_PRECISION_DELAY_MILLIS,
+                () -> readCommentTimestamp(plane, apiId, commentId, timestampField),
+                timestamp -> timestamp != null
+                        && truncateToDatabasePrecision(Instant.now()).isAfter(truncateToDatabasePrecision(timestamp)));
+        Assert.assertNotNull(persisted, "Comment '" + commentKey + "' did not become timestamp-separated within "
+                + TIMESTAMP_PRECISION_TIMEOUT_MILLIS + "ms at one-second precision");
+    }
+
+    private Instant readCommentTimestamp(String plane, String apiId, String commentId, String timestampField)
+            throws IOException {
+        HttpResponse response = SimpleHTTPClient.getInstance().doGet(
+                Utils.getAPIComment(Utils.getBaseUrl(), plane, apiId, commentId), planeAuthHeaders(plane));
+        if (response == null || response.getResponseCode() != 200 || response.getData() == null
+                || response.getData().isBlank()) {
+            return null;
+        }
+        try {
+            Object timestamp = Utils.extractValueFromPayload(response.getData(), timestampField);
+            return parseCommentTimestamp(timestamp);
+        } catch (RuntimeException | IOException e) {
+            throw new IOException("Could not read persisted " + timestampField + " for comment " + commentId + ": "
+                    + e, e);
+        }
+    }
+
+    private static Instant parseCommentTimestamp(Object value) throws IOException {
+        if (value instanceof Number number) {
+            return Instant.ofEpochMilli(number.longValue());
+        }
+        if (value == null || value.toString().isBlank()) {
+            throw new IOException("createdTime was blank");
+        }
+        String text = value.toString().trim();
+        try {
+            return Instant.parse(text);
+        } catch (RuntimeException ignored) {
+            // The APIM comment API examples use a local date-time representation; parse that below.
+        }
+        for (DateTimeFormatter formatter : COMMENT_TIMESTAMP_FORMATTERS) {
+            try {
+                return LocalDateTime.parse(text, formatter).atOffset(ZoneOffset.UTC).toInstant();
+            } catch (RuntimeException ignored) {
+                // Try the next documented representation.
+            }
+        }
+        throw new IOException("Unsupported createdTime format: " + text);
+    }
+
+    private static Instant truncateToDatabasePrecision(Instant timestamp) {
+        return timestamp.truncatedTo(ChronoUnit.SECONDS);
     }
 
     /** Retrieves ALL root comments of an API (paginated) on the given plane; publishes the list for assertion. */

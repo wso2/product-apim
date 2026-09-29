@@ -1,0 +1,243 @@
+/*
+ * Copyright (c) 2026, WSO2 LLC. (http://wso2.com) All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ */
+package org.wso2.am.testcontainers;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.dataformat.toml.TomlMapper;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+
+/** Builds one distributed component TOML without copying a developer full-file configuration. */
+public final class DistributedApimTomlBuilder {
+
+    private static final ObjectMapper TOML = new TomlMapper();
+
+    private DistributedApimTomlBuilder() {
+    }
+
+    public enum Component {
+        CP("cp"),
+        TM("tm"),
+        GATEWAY("gateway");
+
+        private final String parameterName;
+
+        Component(String parameterName) {
+            this.parameterName = parameterName;
+        }
+
+        public String parameterName() {
+            return parameterName;
+        }
+    }
+
+    /**
+     * Merge order is product defaults, distributed base, component extra, then generated runtime values.
+     * Runtime values are deliberately last so a user overlay cannot redirect a component to localhost.
+     */
+    public static String build(String productDefaults, String distributedBaseOverlay,
+                               String extraOverlay, Map<String, ?> finalRuntimeValues) throws IOException {
+        ObjectNode result = mergedConfiguration(productDefaults, distributedBaseOverlay, extraOverlay);
+        applyRuntimeValues(result, finalRuntimeValues == null ? Collections.emptyMap() : finalRuntimeValues);
+        return TOML.writerWithDefaultPrettyPrinter().writeValueAsString(result);
+    }
+
+    /** Returns whether the merged defaults and overlays declare the supplied dotted TOML path. */
+    public static boolean hasMergedPath(String productDefaults, String distributedBaseOverlay,
+                                        String extraOverlay, String path) throws IOException {
+        if (path == null || path.isBlank()) {
+            throw new IllegalArgumentException("TOML path must not be empty");
+        }
+        JsonNode cursor = mergedConfiguration(productDefaults, distributedBaseOverlay, extraOverlay);
+        for (String segment : path.split("\\.")) {
+            if (!cursor.isObject()) {
+                return false;
+            }
+            cursor = cursor.get(segment);
+            if (cursor == null) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /** Combines overlays in declaration order so later overlay values take precedence. */
+    public static String combineOverlays(String first, String second) throws IOException {
+        ObjectNode result = parse(first, "first overlay");
+        merge(result, parse(second, "second overlay"));
+        return TOML.writerWithDefaultPrettyPrinter().writeValueAsString(result);
+    }
+
+    /** Resolves only a qualified extra overlay; distributed mode rejects the ambiguous legacy key. */
+    public static String resolveExtraOverlay(Map<String, String> parameters, Component component)
+            throws IOException {
+        Objects.requireNonNull(parameters, "parameters");
+        Objects.requireNonNull(component, "component");
+        String legacy = parameters.get("tomlExtraOverlayPath");
+        if (legacy != null && !legacy.isBlank()) {
+            throw new IllegalArgumentException("Distributed APIM requires a qualified overlay parameter: "
+                    + "tomlExtraOverlayPath." + component.parameterName());
+        }
+        return readOptional(parameters.get("tomlExtraOverlayPath." + component.parameterName()));
+    }
+
+    /** Resolves boot files for one component and rejects cross-component ambiguity. */
+    public static List<ServerFile> resolveServerFiles(Map<String, String> parameters, Component component)
+            throws IOException {
+        Objects.requireNonNull(parameters, "parameters");
+        String legacy = parameters.get("serverFilesToCopy");
+        if (legacy != null && !legacy.isBlank()) {
+            throw new IllegalArgumentException("Distributed APIM requires qualified server files: "
+                    + "serverFilesToCopy." + component.parameterName());
+        }
+        String value = parameters.get("serverFilesToCopy." + component.parameterName());
+        if (value == null || value.isBlank()) {
+            return List.of();
+        }
+        List<ServerFile> files = new ArrayList<>();
+        for (String entry : value.split(",")) {
+            String[] parts = entry.trim().split("::", 2);
+            if (parts.length != 2 || parts[0].isBlank() || parts[1].isBlank()) {
+                throw new IllegalArgumentException("Malformed serverFilesToCopy." + component.parameterName()
+                        + " entry '" + entry + "'; expected <hostPath>::<serverRelativePath>");
+            }
+            Path source = Path.of(parts[0].trim()).normalize();
+            if (!Files.isRegularFile(source)) {
+                throw new IllegalArgumentException("Server file does not exist: " + source);
+            }
+            files.add(new ServerFile(source, parts[1].trim()));
+        }
+        return List.copyOf(files);
+    }
+
+    public static final class ServerFile {
+        private final Path source;
+        private final String serverRelativePath;
+
+        public ServerFile(Path source, String serverRelativePath) {
+            this.source = source;
+            this.serverRelativePath = serverRelativePath;
+        }
+
+        public Path source() {
+            return source;
+        }
+
+        public String serverRelativePath() {
+            return serverRelativePath;
+        }
+    }
+
+    private static String readOptional(String path) throws IOException {
+        return path == null || path.isBlank() ? null : Files.readString(Path.of(path).normalize());
+    }
+
+    private static ObjectNode parse(String content, String description) throws IOException {
+        if (content == null || content.isBlank()) {
+            throw new IllegalArgumentException(description + " must not be empty");
+        }
+        JsonNode node = TOML.readTree(content);
+        if (node == null || !node.isObject()) {
+            throw new IllegalArgumentException(description + " must contain a TOML table");
+        }
+        return (ObjectNode) node;
+    }
+
+    private static ObjectNode mergedConfiguration(String productDefaults, String distributedBaseOverlay,
+                                                  String extraOverlay) throws IOException {
+        ObjectNode result = parse(productDefaults, "product defaults");
+        merge(result, parse(distributedBaseOverlay, "distributed base overlay"));
+        if (extraOverlay != null && !extraOverlay.isBlank()) {
+            merge(result, parse(extraOverlay, "component extra overlay"));
+        }
+        return result;
+    }
+
+    private static void merge(ObjectNode target, ObjectNode overlay) {
+        overlay.fields().forEachRemaining(field -> {
+            JsonNode incoming = field.getValue();
+            JsonNode existing = target.get(field.getKey());
+            if (existing != null && existing.isObject() && incoming.isObject()) {
+                merge((ObjectNode) existing, (ObjectNode) incoming);
+            } else {
+                target.set(field.getKey(), incoming);
+            }
+        });
+    }
+
+    private static void applyRuntimeValues(ObjectNode target, Map<String, ?> values) {
+        values.forEach((path, value) -> {
+            if (path == null || path.isBlank() || value == null) {
+                throw new IllegalArgumentException("Runtime TOML keys and values must be non-empty");
+            }
+            String[] segments = path.split("\\.");
+            JsonNode cursor = target;
+            for (int i = 0; i < segments.length - 1; i++) {
+                String segment = segments[i];
+                if (cursor.isObject()) {
+                    ObjectNode object = (ObjectNode) cursor;
+                    JsonNode child = object.get(segment);
+                    if (child == null) {
+                        if (isArrayIndex(segments[i + 1])) {
+                            throw new IllegalArgumentException("Runtime TOML path requires an existing array parent: "
+                                    + path);
+                        }
+                        child = object.putObject(segment);
+                    } else if (!child.isObject() && !child.isArray()) {
+                        throw new IllegalArgumentException("Runtime TOML path crosses a scalar: " + path);
+                    }
+                    cursor = child;
+                } else if (cursor.isArray()) {
+                    int index = arrayIndex(segment, path);
+                    JsonNode child = cursor.get(index);
+                    if (child == null || (!child.isObject() && !child.isArray())) {
+                        throw new IllegalArgumentException("Runtime TOML path crosses a scalar: " + path);
+                    }
+                    cursor = child;
+                } else {
+                    throw new IllegalArgumentException("Runtime TOML path crosses a scalar: " + path);
+                }
+            }
+            String leaf = segments[segments.length - 1];
+            JsonNode runtimeValue = TOML.valueToTree(value);
+            if (cursor.isObject()) {
+                ((ObjectNode) cursor).set(leaf, runtimeValue);
+            } else if (cursor.isArray()) {
+                ((ArrayNode) cursor).set(arrayIndex(leaf, path), runtimeValue);
+            } else {
+                throw new IllegalArgumentException("Runtime TOML path crosses a scalar: " + path);
+            }
+        });
+    }
+
+    private static boolean isArrayIndex(String segment) {
+        try {
+            Integer.parseInt(segment);
+            return true;
+        } catch (NumberFormatException e) {
+            return false;
+        }
+    }
+
+    private static int arrayIndex(String segment, String path) {
+        try {
+            return Integer.parseInt(segment);
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("Runtime TOML path requires an array index: " + path, e);
+        }
+    }
+}

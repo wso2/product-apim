@@ -32,6 +32,7 @@ Feature: Per-API Logging Configuration
     Given The system is ready
     And I have valid access tokens as "<actor>"
     And I have created an api from "artifacts/payloads/create_apim_test_api.json" as "loggingApiId" and deployed it
+    And the "apis" resource "loggingApiId" should be live on the gateway, redeploying if propagation is lost
     When I publish the "apis" resource with id "loggingApiId"
     Then The lifecycle status of API "loggingApiId" should be "Published"
     When I retrieve the "apis" resource with id "loggingApiId"
@@ -80,6 +81,7 @@ Feature: Per-API Logging Configuration
     Given The system is ready
     And I have valid access tokens as "<actor>"
     And I have created an api from "artifacts/payloads/create_apim_api_logging_api.json" as "resourceLogApiId" and deployed it
+    And the "apis" resource "resourceLogApiId" should be live on the gateway, redeploying if propagation is lost
     When I publish the "apis" resource with id "resourceLogApiId"
     Then The lifecycle status of API "resourceLogApiId" should be "Published"
     When I retrieve the "apis" resource with id "resourceLogApiId"

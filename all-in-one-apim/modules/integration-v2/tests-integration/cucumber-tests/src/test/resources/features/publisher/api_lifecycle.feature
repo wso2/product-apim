@@ -330,9 +330,7 @@ Feature: Publisher API Lifecycle
     When I retrieve the "apis" resource with id "hyphenApiId"
     Then The response status code should be 200
     And The response should contain "hyphen-api-name"
-    # Healing variant, used here only: gates on the transition having persisted and re-fires it if lost. The plain
-    # publish step is left untouched because nearly every publisher and gateway scenario uses it.
-    When I publish the "apis" resource with id "hyphenApiId", healing if the transition is lost
+    When I publish the "apis" resource with id "hyphenApiId"
     And The lifecycle status of API "hyphenApiId" should be "Published"
 
     Examples:

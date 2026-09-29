@@ -31,6 +31,23 @@ under the License.
     <packaging>pom</packaging>
 
     <profiles>
+        <!--
+            The v2 framework replaces legacy backend and restart tests while benchmark coverage remains
+            applicable to both frameworks. This profile is activated by the same user property as the
+            all-in-one integration-v2 reactor profile.
+        -->
+        <profile>
+            <id>integration-v2</id>
+            <activation>
+                <property>
+                    <name>enableV2IntegrationTests</name>
+                    <value>true</value>
+                </property>
+            </activation>
+            <modules>
+                <module>tests-benchmark</module>
+            </modules>
+        </profile>
         <profile>
             <id>default</id>
             <activation>

@@ -565,15 +565,9 @@ Feature: Gateway WebSocket API Invocation
   # over /*, which is what makes the wildcard row discriminate too (a /* token is refused on /orders, and an
   # /orders token is refused on the wildcard path).
   #
-  # Also pins the token response legacy asserted for each scope: the granted scope comes back in the `scope` field,
-  # and the token's advertised lifetime is exactly the server's configured user-access-token validity. Legacy
-  # asserted expires_in == 3600 and read that as "the 3600 the keys were generated with" — VERIFIED LIVE TO BE
-  # WRONG: with the keys generated as validityTime 3600 the password-grant token still came back
-  # expires_in = 86400, i.e. the value of [oauth.token_validation] user_access_token_validity in this block's
-  # config (artifacts/configFiles/basic/deployment.toml). A key-generation validityTime governs the APPLICATION
-  # (client_credentials) token, not the user token, so legacy's 3600 was simply the stock default of that same
-  # server setting. The assertion below therefore pins the configured value, which is the property legacy was
-  # actually observing.
+  # Also pins the token response: the granted scope comes back in the `scope` field, and the token's advertised
+  # lifetime is the product-default user-access-token validity. The application-key validity configured above
+  # governs the application credential, not this password-grant user token.
   @cap:gateway @feat:streaming-invocation @rule:per-template-scopes @type:regression @dep:publisher @legacy:WebSocketAPIScopeTestCase
   Scenario Outline: Four per-template scopes on a WS API each open only their own sub-path as <actor>
     Given The system is ready
@@ -635,8 +629,7 @@ Feature: Gateway WebSocket API Invocation
     When I request an OAuth access token for the current user using password grant with scope "{{wsTplScopeA}}"
     Then The response status code should be 200
     And The response should contain "{{wsTplScopeA}}"
-    # 86400 = [oauth.token_validation] user_access_token_validity for this block (see the note above)
-    And The value of response field "expires_in" should be "86400"
+    And The value of response field "expires_in" should be "3600"
     When I invoke the WebSocket API at gateway ws context "{{wsTplContext}}/1.0.0/products/catalog/1" with message "hello ws" using access token "generatedAccessToken" expecting echo "HELLO WS" within 60 seconds
     When I invoke the WebSocket API at gateway ws context "{{wsTplContext}}/1.0.0/products/popular" using access token "generatedAccessToken" expecting rejection within 30 seconds
     When I invoke the WebSocket API at gateway ws context "{{wsTplContext}}/1.0.0/orders" using access token "generatedAccessToken" expecting rejection within 30 seconds
@@ -646,8 +639,7 @@ Feature: Gateway WebSocket API Invocation
     When I request an OAuth access token for the current user using password grant with scope "{{wsTplScopeB}}"
     Then The response status code should be 200
     And The response should contain "{{wsTplScopeB}}"
-    # 86400 = [oauth.token_validation] user_access_token_validity for this block (see the note above)
-    And The value of response field "expires_in" should be "86400"
+    And The value of response field "expires_in" should be "3600"
     When I invoke the WebSocket API at gateway ws context "{{wsTplContext}}/1.0.0/products/popular" with message "hello ws" using access token "generatedAccessToken" expecting echo "HELLO WS" within 60 seconds
     When I invoke the WebSocket API at gateway ws context "{{wsTplContext}}/1.0.0/products/catalog/1" using access token "generatedAccessToken" expecting rejection within 30 seconds
     When I invoke the WebSocket API at gateway ws context "{{wsTplContext}}/1.0.0/orders" using access token "generatedAccessToken" expecting rejection within 30 seconds
@@ -657,8 +649,7 @@ Feature: Gateway WebSocket API Invocation
     When I request an OAuth access token for the current user using password grant with scope "{{wsTplScopeC}}"
     Then The response status code should be 200
     And The response should contain "{{wsTplScopeC}}"
-    # 86400 = [oauth.token_validation] user_access_token_validity for this block (see the note above)
-    And The value of response field "expires_in" should be "86400"
+    And The value of response field "expires_in" should be "3600"
     When I invoke the WebSocket API at gateway ws context "{{wsTplContext}}/1.0.0/orders" with message "hello ws" using access token "generatedAccessToken" expecting echo "HELLO WS" within 60 seconds
     When I invoke the WebSocket API at gateway ws context "{{wsTplContext}}/1.0.0/products/catalog/1" using access token "generatedAccessToken" expecting rejection within 30 seconds
     When I invoke the WebSocket API at gateway ws context "{{wsTplContext}}/1.0.0/products/popular" using access token "generatedAccessToken" expecting rejection within 30 seconds
@@ -668,8 +659,7 @@ Feature: Gateway WebSocket API Invocation
     When I request an OAuth access token for the current user using password grant with scope "{{wsTplScopeD}}"
     Then The response status code should be 200
     And The response should contain "{{wsTplScopeD}}"
-    # 86400 = [oauth.token_validation] user_access_token_validity for this block (see the note above)
-    And The value of response field "expires_in" should be "86400"
+    And The value of response field "expires_in" should be "3600"
     When I invoke the WebSocket API at gateway ws context "{{wsTplContext}}/1.0.0/noexactmatch" with message "hello ws" using access token "generatedAccessToken" expecting echo "HELLO WS" within 60 seconds
     When I invoke the WebSocket API at gateway ws context "{{wsTplContext}}/1.0.0/products/catalog/1" using access token "generatedAccessToken" expecting rejection within 30 seconds
     When I invoke the WebSocket API at gateway ws context "{{wsTplContext}}/1.0.0/products/popular" using access token "generatedAccessToken" expecting rejection within 30 seconds

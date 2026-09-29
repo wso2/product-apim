@@ -66,6 +66,8 @@ Feature: Gateway SOAP API Invocation
     Then The response status code should be 201
     When I deploy the API with id "srApiId"
     Then The response status code should be 201
+    And I wait until "apis" "srApiId" revision is deployed in the gateway
+    And the "apis" resource "srApiId" should be live on the gateway, redeploying if propagation is lost
     When I publish the "apis" resource with id "srApiId"
     Then The lifecycle status of API "srApiId" should be "Published"
     When I retrieve the "apis" resource with id "srApiId"

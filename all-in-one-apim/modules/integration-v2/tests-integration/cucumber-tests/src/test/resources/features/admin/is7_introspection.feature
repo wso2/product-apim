@@ -23,6 +23,7 @@ Feature: External Key Manager Introspection Mode
     And I have valid access tokens as "admin"
     When I create a key manager from payload "artifacts/payloads/keymanagers/wso2is7-introspect.json" as "superKmId" and wait until it is operational
     And I have created an api from "artifacts/payloads/create_apim_test_api.json" as "createdApiId" and deployed it
+    And the "apis" resource "createdApiId" should be live on the gateway, redeploying if propagation is lost
     When I publish the "apis" resource with id "createdApiId"
     Then The lifecycle status of API "createdApiId" should be "Published"
     When I retrieve the "apis" resource with id "createdApiId"
@@ -66,6 +67,7 @@ Feature: External Key Manager Introspection Mode
     And I have valid access tokens as "admin@tenant1.com"
     When I create a key manager from payload "artifacts/payloads/keymanagers/wso2is7-introspect.json" as "tenantKmId" and wait until it is operational
     And I have created an api from "artifacts/payloads/create_apim_test_api.json" as "createdApiId" and deployed it
+    And the "apis" resource "createdApiId" should be live on the gateway, redeploying if propagation is lost
     When I publish the "apis" resource with id "createdApiId"
     Then The lifecycle status of API "createdApiId" should be "Published"
     When I retrieve the "apis" resource with id "createdApiId"

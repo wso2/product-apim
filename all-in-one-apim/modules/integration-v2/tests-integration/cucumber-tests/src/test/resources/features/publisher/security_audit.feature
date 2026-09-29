@@ -40,6 +40,7 @@ Feature: Publisher API Security Audit
     Then The response status code should be 201
     When I deploy the API with id "auditApiId"
     Then The response status code should be 201
+    And the "apis" resource "auditApiId" should be live on the gateway, redeploying if propagation is lost
     When I publish the "apis" resource with id "auditApiId"
     Then The lifecycle status of API "auditApiId" should be "Published"
 
@@ -74,6 +75,7 @@ Feature: Publisher API Security Audit
     Then The response status code should be 201
     When I deploy the API with id "reAuditApiId"
     Then The response status code should be 201
+    And the "apis" resource "reAuditApiId" should be live on the gateway, redeploying if propagation is lost
     When I publish the "apis" resource with id "reAuditApiId"
     Then The lifecycle status of API "reAuditApiId" should be "Published"
 

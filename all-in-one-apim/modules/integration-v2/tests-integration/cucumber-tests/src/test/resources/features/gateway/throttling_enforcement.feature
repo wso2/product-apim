@@ -41,9 +41,12 @@ Feature: Gateway Throttling Enforcement
   # trips deterministically via the cumulative until-429 retry rather than a sub-second window that would reset
   # between attempts.
 
+  Background:
+    Given The system is ready
+    And the Traffic Manager throttleData publisher and Gateway throttleData consumer are ready within 180 seconds
+
   @cap:gateway @feat:throttling-enforcement @type:regression @dep:admin @dep:publisher @dep:devportal @legacy:APIThrottlingTestCase
   Scenario Outline: An application is throttled with 429 once it exceeds its request-count limit as <actor>
-    Given The system is ready
     And I have valid access tokens as "<actor>"
 
     # A bespoke application policy allowing only 3 requests/min, so the limit is reachable in a test.
@@ -92,7 +95,6 @@ Feature: Gateway Throttling Enforcement
 
   @cap:gateway @feat:throttling-enforcement @type:regression @dep:admin @dep:publisher @dep:devportal @legacy:BurstControlServerRestartTestCase
   Scenario Outline: An application is throttled with 429 once it exceeds its SUBSCRIPTION request-count limit as <actor>
-    Given The system is ready
     And I have valid access tokens as "<actor>"
 
     # A bespoke subscription policy allowing only 3 requests/min.
@@ -151,7 +153,6 @@ Feature: Gateway Throttling Enforcement
 
   @cap:gateway @feat:throttling-enforcement @type:regression @dep:admin @dep:publisher @dep:devportal @legacy:BurstControlServerRestartTestCase
   Scenario Outline: An application is throttled with 429 by SUBSCRIPTION burst control as <actor>
-    Given The system is ready
     And I have valid access tokens as "<actor>"
 
     # A subscription policy with a HIGH quota (1000/min) but a LOW burst limit (5/min): any early 429 is the
@@ -168,6 +169,12 @@ Feature: Gateway Throttling Enforcement
     ["Unlimited","{{subThrottlePolicyName}}"]
     """
     Then The response status code should be 200
+    # Do not subscribe until the policy update is visible in the Publisher read model. The exact offered set
+    # prevents a stale/default policy response from turning into a misleading subscription failure.
+    And I retrieve the "apis" resource with id "burstApiId" until its subscription policies equal the following within 180 seconds:
+    """
+    ["Unlimited","{{subThrottlePolicyName}}"]
+    """
     When I publish the "apis" resource with id "burstApiId"
     Then The lifecycle status of API "burstApiId" should be "Published"
     When I retrieve the "apis" resource with id "burstApiId"
@@ -224,7 +231,6 @@ Feature: Gateway Throttling Enforcement
   # floored at the 180s propagation window — three burst windows — so a 60s rollover always fits inside it.
   @cap:gateway @feat:throttling-enforcement @rule:burst-tier-swap @type:regression @dep:admin @dep:publisher @dep:devportal @legacy:BurstControlTestCase
   Scenario Outline: A subscription's burst limit rises once it is re-subscribed on a higher burst tier as <actor>
-    Given The system is ready
     And I have valid access tokens as "<actor>"
 
     # Two subscription tiers, same 1000/min quota, burst 5/min and 25/min. Captured by name from each create
@@ -246,6 +252,13 @@ Feature: Gateway Throttling Enforcement
     ["Unlimited","{{lowBurstTier}}","{{highBurstTier}}"]
     """
     Then The response status code should be 200
+    # The policy PUT is accepted before the Publisher read model/cache necessarily exposes the new tiers. Do not
+    # attempt a subscription until the exact offered set is readable; accepting defaults here would hide a product
+    # persistence or propagation regression and would produce a misleading subscription failure.
+    And I retrieve the "apis" resource with id "swapBurstApiId" until its subscription policies equal the following within 180 seconds:
+    """
+    ["Unlimited","{{lowBurstTier}}","{{highBurstTier}}"]
+    """
     When I publish the "apis" resource with id "swapBurstApiId"
     Then The lifecycle status of API "swapBurstApiId" should be "Published"
     When I retrieve the "apis" resource with id "swapBurstApiId"
@@ -314,7 +327,6 @@ Feature: Gateway Throttling Enforcement
 
   @cap:gateway @feat:throttling-enforcement @type:regression @dep:admin @dep:publisher @dep:devportal @legacy:JWTBandwidthThrottlingServerRestartTestCase
   Scenario Outline: An API is throttled with 429 once it exceeds its API-LEVEL (advanced) request-count limit as <actor>
-    Given The system is ready
     And I have valid access tokens as "<actor>"
 
     # A bespoke advanced (API-level) policy allowing only 3 requests/min across the whole API.
@@ -373,7 +385,6 @@ Feature: Gateway Throttling Enforcement
 
   @cap:gateway @feat:throttling-enforcement @type:regression @dep:admin @dep:publisher @dep:devportal @legacy:JWTBandwidthThrottlingServerRestartTestCase
   Scenario Outline: An application is throttled with 429 once it exceeds its BANDWIDTH quota as <actor>
-    Given The system is ready
     And I have valid access tokens as "<actor>"
 
     # A bespoke application BANDWIDTH policy: 1 KB/min (the BANDWIDTHLIMIT type) — a BYTE quota, not a request count.
@@ -429,7 +440,6 @@ Feature: Gateway Throttling Enforcement
   # and the level-specific code were never pinned).
   @cap:gateway @feat:throttling-enforcement @type:regression @dep:admin @dep:publisher @dep:devportal @legacy:JWTBandwidthThrottlingTestCase
   Scenario Outline: An application is throttled with 429 once it exceeds its SUBSCRIPTION BANDWIDTH quota as <actor>
-    Given The system is ready
     And I have valid access tokens as "<actor>"
 
     # A bespoke subscription BANDWIDTH policy: 1 KB/min (the BANDWIDTHLIMIT type) — a BYTE quota, not a request count.
@@ -493,7 +503,6 @@ Feature: Gateway Throttling Enforcement
   # #testAPILevelThrottling (whose ~230-byte-body/15-request loop only asserted a bare 429).
   @cap:gateway @feat:throttling-enforcement @type:regression @dep:admin @dep:publisher @dep:devportal @legacy:JWTBandwidthThrottlingTestCase
   Scenario Outline: An API is throttled with 429 once it exceeds its API-LEVEL (advanced) BANDWIDTH quota as <actor>
-    Given The system is ready
     And I have valid access tokens as "<actor>"
 
     # A bespoke advanced (API-level) BANDWIDTH policy: 1 KB/min (the BANDWIDTHLIMIT type) across the whole API.
@@ -557,7 +566,6 @@ Feature: Gateway Throttling Enforcement
   # only run in the super tenant, unlike the per-app/subscription/API dimensions above.
   @cap:gateway @feat:throttling-enforcement @type:regression @dep:admin @dep:publisher @dep:devportal @legacy:CustomThrottlingPolicyServerRestartTestCase
   Scenario: An API is throttled with 429 by a custom (Siddhi) throttling rule
-    Given The system is ready
     And I have valid access tokens as "admin"
 
     And I have created an api from "artifacts/payloads/create_apim_test_api.json" as "custApiId" and deployed it
@@ -590,7 +598,6 @@ Feature: Gateway Throttling Enforcement
   # above — together they port the operation↔API-level change of AdvancedThrottlingPolicyTestCase (#9/#10).
   @cap:gateway @feat:rest-invocation @type:regression @dep:admin @legacy:AdvancedThrottlingPolicyTestCase
   Scenario Outline: An operation is throttled with 429 once it exceeds its OPERATION-LEVEL advanced limit as <actor>
-    Given The system is ready
     And I have valid access tokens as "<actor>"
 
     # A bespoke advanced policy allowing only 3 requests/min, assigned to a single operation.
@@ -651,13 +658,13 @@ Feature: Gateway Throttling Enforcement
   # again — without waiting out the throttle window. Ports ApplicationThrottlingResetTestCase.
   @cap:gateway @feat:throttling-enforcement @rule:throttle-reset @type:regression @dep:admin @dep:publisher @dep:devportal @legacy:ApplicationThrottlingResetTestCase
   Scenario Outline: Resetting an application's throttle counter clears the 429 as <actor>
-    Given The system is ready
     And I have valid access tokens as "<actor>"
 
     # A bespoke application policy allowing only 3 requests/min, so the limit is reachable in a test.
     When I create an application throttling policy "${UNIQUE:resetThrottle3}" allowing 3 requests per minute
     Then The response status code should be 201
     And I have created an api from "artifacts/payloads/create_apim_test_api.json" as "resetApiId" and deployed it
+    And the "apis" resource "resetApiId" should be live on the gateway, redeploying if propagation is lost
     When I publish the "apis" resource with id "resetApiId"
     Then The lifecycle status of API "resetApiId" should be "Published"
     When I retrieve the "apis" resource with id "resetApiId"
@@ -708,7 +715,6 @@ Feature: Gateway Throttling Enforcement
   # variant of ApplicationThrottlingResetTestCase.
   @cap:gateway @feat:throttling-enforcement @rule:throttle-reset @type:regression @dep:admin @dep:publisher @dep:devportal @legacy:ApplicationThrottlingResetTestCase
   Scenario Outline: Resetting an application's BANDWIDTH throttle counter clears the 429 as <actor>
-    Given The system is ready
     And I have valid access tokens as "<actor>"
 
     # A bespoke application BANDWIDTH policy: 1 KB/min (the BANDWIDTHLIMIT type) — a BYTE quota, tripped by one
@@ -716,6 +722,7 @@ Feature: Gateway Throttling Enforcement
     When I create an application throttling policy "${UNIQUE:resetBw1KB}" allowing 1 KB per minute
     Then The response status code should be 201
     And I have created an api from "artifacts/payloads/create_apim_postbody_api.json" as "resetBwApiId" and deployed it
+    And the "apis" resource "resetBwApiId" should be live on the gateway, redeploying if propagation is lost
     When I publish the "apis" resource with id "resetBwApiId"
     Then The lifecycle status of API "resetBwApiId" should be "Published"
     When I retrieve the "apis" resource with id "resetBwApiId"
@@ -774,7 +781,6 @@ Feature: Gateway Throttling Enforcement
   # over their OWN application (restAPIStore.resetApplicationThrottlePolicy with applicationDTO.getOwner()).
   @cap:gateway @feat:throttling-enforcement @rule:throttle-reset @type:regression @dep:admin @dep:publisher @dep:devportal @legacy:ApplicationThrottlingResetTestCase
   Scenario Outline: A subscriber resets their own application's throttle counter clearing the 429 as <ownerActor>
-    Given The system is ready
     And I have valid access tokens as "<adminActor>"
 
     # A bespoke application policy allowing only 3 requests/min, reachable in a test (admin-only op).
@@ -835,7 +841,6 @@ Feature: Gateway Throttling Enforcement
   # ApplicationThrottlingResetTestCase over a non-admin application owner.
   @cap:gateway @feat:throttling-enforcement @rule:throttle-reset @type:regression @dep:admin @dep:publisher @dep:devportal @legacy:ApplicationThrottlingResetTestCase
   Scenario Outline: A subscriber resets their own application's BANDWIDTH throttle counter clearing the 429 as <ownerActor>
-    Given The system is ready
     And I have valid access tokens as "<adminActor>"
 
     # A bespoke application BANDWIDTH policy: 1 KB/min (the BANDWIDTHLIMIT type), tripped by one oversized POST.
@@ -901,7 +906,6 @@ Feature: Gateway Throttling Enforcement
   # quota, so it WOULD trip any low policy — its all-200 outcome therefore has teeth.
   @cap:gateway @feat:throttling-enforcement @type:regression @dep:admin @dep:publisher @dep:devportal @legacy:JWTRequestCountThrottlingTestCase
   Scenario Outline: An API on the Unlimited API tier is not throttled however much traffic it receives as <actor>
-    Given The system is ready
     And I have valid access tokens as "<actor>"
 
     And I have created an api from "artifacts/payloads/create_apim_test_api.json" as "unlThrottleApiId" and deployed it
@@ -961,7 +965,6 @@ Feature: Gateway Throttling Enforcement
   # deployed. Again no IP condition, for the same reason as above.
   @cap:gateway @feat:throttling-enforcement @type:regression @dep:admin @dep:publisher @dep:devportal @legacy:JWTRequestCountThrottlingTestCase
   Scenario Outline: An API-level throttling policy change is not enforced until the API is redeployed as <actor>
-    Given The system is ready
     And I have valid access tokens as "<actor>"
 
     # A bespoke advanced (API-level) policy allowing only 3 requests/min — the low limit we will switch TO.
@@ -1019,6 +1022,11 @@ Feature: Gateway Throttling Enforcement
     {{advThrottlePolicyName}}
     """
     Then The response status code should be 200
+    # Updating apiThrottlingPolicy can asynchronously replace the already-deployed gateway artifact even without an
+    # explicit redeploy. Wait for the existing route to return 200, then require it to remain 200 before starting the
+    # exact burst. This is a data-plane settling gate only: it never redeploys the API or accepts a non-200 response.
+    And I invoke the API at gateway context "{{redeployApiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 180 seconds
+    And I invoke the API at gateway context "{{redeployApiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and the response status code should remain 200 for 10 seconds
     When I invoke the API at gateway context "{{redeployApiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" 12 times expecting status 200
 
     # Now REDEPLOY: a new revision carrying the low policy replaces the Unlimited one. The until-429 loop keeps
@@ -1044,7 +1052,6 @@ Feature: Gateway Throttling Enforcement
   # from the app/subscription/API taxonomy — the asserted code below was OBSERVED in the run, not copied from legacy.
   @cap:gateway @feat:throttling-enforcement @type:regression @dep:admin @dep:publisher @legacy:JWTRequestCountThrottlingTestCase
   Scenario Outline: An unauthenticated resource is throttled with 429 once it exceeds its operation-level limit as <actor>
-    Given The system is ready
     And I have valid access tokens as "<actor>"
 
     # A bespoke advanced policy allowing only 3 requests/min, assigned to the (soon-to-be) unauthenticated operation.

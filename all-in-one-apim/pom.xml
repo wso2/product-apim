@@ -85,6 +85,23 @@
     </pluginRepositories>
 
     <profiles>
+        <!--
+            Opt-in integration-v2 reactor. The default all-in-one build retains the legacy integration
+            modules; when this property is enabled, the nested legacy integration profile selects benchmark
+            tests only and this reactor adds integration-v2.
+        -->
+        <profile>
+            <id>integration-v2</id>
+            <activation>
+                <property>
+                    <name>enableV2IntegrationTests</name>
+                    <value>true</value>
+                </property>
+            </activation>
+            <modules>
+                <module>modules/integration-v2</module>
+            </modules>
+        </profile>
         <profile>
             <id>jdk14</id>
             <activation>
@@ -1302,6 +1319,9 @@
 
 
     <properties>
+
+        <!-- Opt-in switch for the integration-v2 reactor; legacy integration remains the default. -->
+        <enableV2IntegrationTests>false</enableV2IntegrationTests>
 
         <project.scm.id>scm-server</project.scm.id>
 

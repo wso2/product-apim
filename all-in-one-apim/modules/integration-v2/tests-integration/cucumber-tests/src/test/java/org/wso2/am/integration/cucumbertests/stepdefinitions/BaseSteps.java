@@ -34,10 +34,12 @@ import org.skyscreamer.jsonassert.JSONCompareMode;
 import org.testng.Assert;
 import org.wso2.am.integration.cucumbertests.utils.Identity;
 import org.wso2.am.integration.cucumbertests.utils.Names;
+import org.wso2.am.integration.cucumbertests.utils.ResourceCleanup;
 import org.wso2.am.integration.cucumbertests.utils.ServerReadiness;
 import org.wso2.am.integration.cucumbertests.utils.TestContext;
 import org.wso2.am.integration.test.utils.Constants;
 import org.wso2.am.integration.cucumbertests.utils.Utils;
+import org.wso2.am.testcontainers.DistributedDynamicApimContainer;
 import org.wso2.am.integration.cucumbertests.utils.clients.SimpleHTTPClient;
 import org.wso2.carbon.automation.engine.context.beans.User;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
@@ -104,26 +106,61 @@ public class BaseSteps {
     @When("I have a valid DCR application as {string}")
     public void iHaveADCRApplicationAs(String actorRef) throws IOException {
 
-        createDcrApplication(Identity.resolveActor(actorRef));
+        createDcrApplication(Identity.resolveActor(actorRef), actorRef);
+    }
+
+    /**
+     * Creates a DCR client for a token subject while registering the client as a different actor. This is a
+     * deliberately explicit legacy-parity path: the legacy DevPortal client registered its DCR application as the
+     * super-tenant admin and then requested a password-grant token whose subject was the custom-role user.
+     * Generic DCR steps must keep their actor-owned semantics.
+     */
+    @Given("I have a valid DCR application for token subject {string} registered by {string}")
+    public void iHaveADCRApplicationForTokenSubjectRegisteredBy(String tokenSubjectRef, String ownerRef)
+            throws IOException {
+
+        User tokenSubject = Identity.resolveActor(tokenSubjectRef);
+        User registrationOwner = Identity.resolveActor(ownerRef);
+        createDcrApplication(tokenSubject, ownerRef, registrationOwner, "Production");
     }
 
     private void createDcrApplication(User actor) throws IOException {
 
+        createDcrApplication(actor, Identity.actingActorRef(), actor, null);
+    }
+
+    private void createDcrApplication(User actor, String ownerActorRef) throws IOException {
+
+        createDcrApplication(actor, ownerActorRef, actor, null);
+    }
+
+    private void createDcrApplication(User tokenSubject, String ownerActorRef, User registrationOwner,
+                                      String tokenScope) throws IOException {
+
         //Create json payload for DCR endpoint. The DCR client name must adhere to ^[\sa-zA-Z0-9._-]*$ — a
         // secondary-store actor's username carries the store-domain separator (e.g. SECONDARY.COM/secondaryAdmin1),
         // whose '/' is outside that set, so sanitize any disallowed char to '_' when DERIVING the name. This is
-        // cosmetic only: the actual OAuth identity is the untouched `owner` (actor.getUserName()) below.
-        String clientNameSafe = ("integration_test_app_" + actor.getUserNameWithoutDomain() + "_"
-                + actor.getUserDomain()).replaceAll("[^\\sa-zA-Z0-9._-]", "_");
+        // cosmetic only: the actual OAuth identity is the untouched owner below.
+        // The DCR client is scenario-owned. A deterministic actor-only name would make every scenario/runners share
+        // one OAuth client, and APIM can return that client's still-active access token with its remaining lifetime
+        // instead of minting a fresh 3600-second token. Keep this generated name stable for the bounded DCR retry
+        // below, but make each registration invocation unique across parallel runners and scenarios.
+        String clientNameBase = ("integration_test_app_" + tokenSubject.getUserNameWithoutDomain() + "_"
+                + tokenSubject.getUserDomain()).replaceAll("[^\\sa-zA-Z0-9._-]", "_");
+        String clientNameSafe = Names.unique(clientNameBase);
         JsonObject json = new JsonObject();
         json.addProperty("callbackUrl", "test.com");
         json.addProperty("clientName", clientNameSafe);
         json.addProperty("grantType", "client_credentials password refresh_token");
         json.addProperty("saasApp", true);
-        json.addProperty("owner", actor.getUserName());
+        json.addProperty("owner", registrationOwner.getUserName());
+        if (tokenScope != null && !tokenScope.isBlank()) {
+            json.addProperty("tokenScope", tokenScope);
+        }
 
         String encodedCredentials = Base64.getEncoder().encodeToString(
-                    (actor.getUserName() + ':' + actor.getPassword()).getBytes(StandardCharsets.UTF_8));
+                    (registrationOwner.getUserName() + ':' + registrationOwner.getPassword())
+                            .getBytes(StandardCharsets.UTF_8));
 
         Map<String, String> headers = new HashMap<>();
         headers.put("Authorization", "Basic " + encodedCredentials);
@@ -131,10 +168,10 @@ public class BaseSteps {
         // The gateway health-check can pass before the client-registration webapp finishes deploying, so a
         // DCR POST fired immediately after boot can hit a transient 500 "Dynamic Client Registration Service
         // not available" — a race that parallel runners sharing one freshly-booted container widen. Retrying
-        // the POST blindly is safe for THIS endpoint: DCR is an idempotent upsert keyed on clientName (which
-        // is deterministic per actor above — every token acquisition re-POSTs it and receives the existing
-        // client back), so even a create that committed server-side with a lost response just returns the
-        // same client on the retry. Retry until 200 or the startup window elapses, mirroring
+        // the POST blindly is safe for THIS endpoint: DCR is an idempotent upsert keyed on clientName, and the
+        // generated name remains stable across retries within this registration invocation. Therefore, even if
+        // a create committed server-side with a lost response, the retry returns the same client. Retry until
+        // 200 or the startup window elapses, mirroring
         // TenantUserProvisioner.awaitTenantMgtServiceReady for the admin services.
         String dcrUrl = Utils.getDCREndpointURL(getBaseUrl());
         long deadlineStart = System.currentTimeMillis();
@@ -174,7 +211,11 @@ public class BaseSteps {
         String dcrCredentials = Base64.getEncoder().encodeToString((clientId + ":" + clientSecret)
                 .getBytes(StandardCharsets.UTF_8));
 
-        TestContext.set(Identity.dcrCredentialsKey(actor), dcrCredentials);
+        TestContext.set(Identity.dcrCredentialsKey(tokenSubject), dcrCredentials);
+        // DCR clients are standalone OAuth service providers; application cleanup does not remove them. Register the
+        // client immediately after a successful response, preserving the explicit owner for tenant-scoped SOAP
+        // deregistration. A null owner reference correctly means the super-tenant admin.
+        ResourceCleanup.registerFor(ResourceCleanup.CREATED_DCR_CLIENT_IDS, clientId, ownerActorRef);
     }
 
     /**
@@ -239,26 +280,63 @@ public class BaseSteps {
 
     private void mintDevportalToken(User actor) throws Exception {
 
+        HttpResponse response = requestDevportalToken(actor);
+        Assert.assertEquals(response.getResponseCode(), 200, response.getData());
+
+        storeDevportalToken(actor, response);
+        log.info("Obtained Devportal access token for user " + actor.getUserName()
+                + " with expires_in (seconds): "
+                + Utils.extractValueFromPayload(response.getData(), "expires_in"));
+    }
+
+    private HttpResponse requestDevportalToken(User actor) throws IOException {
+
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION,
                 "Basic " + TestContext.get(Identity.dcrCredentialsKey(actor)).toString());
 
-        // create json payload to obtain devportal access token
         JsonObject json = new JsonObject();
         json.addProperty("grant_type", "password");
         json.addProperty("username", actor.getUserName());
         json.addProperty("password", actor.getPassword());
         json.addProperty("scope", "apim:app_manage apim:sub_manage apim:subscribe");
 
-        HttpResponse response = SimpleHTTPClient.getInstance().doPost(Utils.getAPIMTokenEndpointURL(getBaseUrl()), headers,
-            json.toString(), Constants.CONTENT_TYPES.APPLICATION_JSON);
-        Assert.assertEquals(response.getResponseCode(), 200, response.getData());
+        return SimpleHTTPClient.getInstance().doPost(Utils.getAPIMTokenEndpointURL(getBaseUrl()), headers,
+                json.toString(), Constants.CONTENT_TYPES.APPLICATION_JSON);
+    }
+
+    private void storeDevportalToken(User actor, HttpResponse response) throws IOException {
 
         String accessToken = Utils.extractValueFromPayload(response.getData(), "access_token").toString();
         TestContext.set(Identity.devportalTokenKey(actor), accessToken);
-        log.info("Obtained Devportal access token for user " + actor.getUserName()
-                + " with expires_in (seconds): "
-                + Utils.extractValueFromPayload(response.getData(), "expires_in"));
+    }
+
+    /**
+     * Read-only semantic barrier for the role-alias DevPortal path. A successful token response alone is not enough:
+     * APIM may issue a reduced-scope token while its role-alias mapping is still absent from the OAuth scope
+     * evaluator. Listing applications exercises the same app-management authorization used by the following create
+     * request without mutating any product state. Each poll mints a fresh token so a stale token cannot make this
+     * barrier pass.
+     */
+    @Given("the DevPortal application-management scope is ready for {string}")
+    public void theDevportalApplicationManagementScopeIsReadyFor(String actorRef) throws Exception {
+
+        User actor = Identity.resolveActor(actorRef);
+        HttpResponse last = Utils.retryUntil(Constants.RUNTIME_PROPAGATION_TIMEOUT,
+                () -> {
+                    HttpResponse tokenResponse = requestDevportalToken(actor);
+                    if (tokenResponse == null || tokenResponse.getResponseCode() != 200) {
+                        return tokenResponse;
+                    }
+                    storeDevportalToken(actor, tokenResponse);
+                    return SimpleHTTPClient.getInstance().doGet(Utils.getApplicationCreateURL(getBaseUrl()),
+                            Identity.bearerHeaders(Identity.devportalToken(actor)));
+                }, response -> response != null && response.getResponseCode() == 200);
+
+        Assert.assertNotNull(last, "DevPortal scope probe returned no response for '" + actorRef + "'");
+        Assert.assertEquals(last.getResponseCode(), 200,
+                "DevPortal application-management scope did not converge for '" + actorRef + "': "
+                        + last.getData());
     }
 
     /**
@@ -440,6 +518,12 @@ public class BaseSteps {
         TestContext.set(Utils.normalizeContextKey(contextKey), resolvedValue.toString());
     }
 
+    /** Stores a literal Examples-table value for subsequent payload placeholder expansion. */
+    @When("I put literal value {string} in context as {string}")
+    public void iPutLiteralValueInContextAs(String value, String contextKey) {
+        TestContext.set(Utils.normalizeContextKey(contextKey), Utils.resolveContextPlaceholders(value));
+    }
+
     /**
      * Decodes the JWT stored under a context key (a {@code header.payload.signature} token) and asserts its
      * payload segment contains the expected substring. Used to verify token claims such as the internal API
@@ -477,7 +561,8 @@ public class BaseSteps {
                 throw new FileNotFoundException("File not found on classpath: " + jsonFilePath);
             }
             String jsonPayload = IOUtils.toString(inputStream, StandardCharsets.UTF_8);
-            TestContext.set(Utils.normalizeContextKey(key), Utils.resolvePayloadPlaceholders(jsonPayload));
+            TestContext.set(Utils.normalizeContextKey(key),
+                    Utils.resolveContextPlaceholders(Utils.resolvePayloadPlaceholders(jsonPayload)));
         }
     }
 
@@ -1659,7 +1744,10 @@ public class BaseSteps {
     @Then("I wait for the APIM server to be ready")
     public void waitForAPIMServerToBeReady() {
 
-        boolean isServerReady = ServerReadiness.awaitReady(getBaseUrl());
+        boolean distributed = TestContext.get("blockApimContainer") instanceof DistributedDynamicApimContainer;
+        boolean isServerReady = distributed
+                ? ServerReadiness.awaitHttpEndpoint(getBaseUrl() + "carbon/admin/login.jsp")
+                : ServerReadiness.awaitReady(getBaseUrl());
         // Report the window awaitReady ACTUALLY used (its no-arg overload passes SERVER_STARTUP_WAIT_TIME);
         // quoting the propagation timeout here understated the real wait and misled triage.
         Assert.assertTrue(isServerReady, "APIM server is not ready even after waiting for "
@@ -1693,15 +1781,17 @@ public class BaseSteps {
         // The deployed-revisions list is the publisher-plane distinguishing state — it flips as soon as the
         // revision is deployed, so it is available to the same actor that owns the API.
         String apiId = Utils.extractValueFromPayload(actualApiDetailsPayload, "id").toString();
-        // Use the tenant ADMIN (not the acting actor) — the gateway-artifact admin endpoint requires admin
-        // credentials, which a least-privilege publisher actor does not have.
+        // Use the Carbon super-tenant admin (not the acting actor) — the gateway-artifact controller endpoint is an
+        // SRE/admin operation. The target tenant remains selected by tenantDomain below.
         User tenantAdmin = Identity.actingTenantAdmin();
+        User gatewayManagementAdmin = Identity.gatewayManagementAdmin();
         String tenantDomain = tenantAdmin.getUserDomain();
 
         String artifactUrl = Utils.getAPIArtifactDeployedInGatewayURL(getBaseUrl(), apiName, apiVersion, tenantDomain);
 
         String encodedCredentials = Base64.getEncoder().encodeToString(
-                (tenantAdmin.getUserName() + ':' + tenantAdmin.getPassword()).getBytes(StandardCharsets.UTF_8));
+                (gatewayManagementAdmin.getUserName() + ':' + gatewayManagementAdmin.getPassword())
+                        .getBytes(StandardCharsets.UTF_8));
         Map<String, String> artifactHeaders = new HashMap<>();
         artifactHeaders.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Basic " + encodedCredentials);
 

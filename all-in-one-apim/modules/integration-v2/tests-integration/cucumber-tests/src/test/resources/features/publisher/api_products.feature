@@ -403,6 +403,7 @@ Feature: Publisher API Products
     And The value of response field "workflowStatus" should be "APPROVED"
     When I retrieve the "api-products" resource with id "storeProductId"
     Then The response should contain "DEPRECATED"
+    And I wait until API product "storeProductId" has lifecycle state "Deprecated" and transition "Retire" available
     # Retiring removes the subscription, which is what then allows the delete to succeed.
     When I change the lifecycle of "api-products" resource "storeProductId" with action "Retire"
     Then The response status code should be 200
