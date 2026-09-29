@@ -679,6 +679,26 @@ public class Utils {
     }
 
     public static String getAPISearchEndpointURL(String baseUrl, String query, Integer limit, Integer offset) {
+        return getAPISearchEndpointURL(baseUrl, query, limit, offset, null);
+    }
+
+    /**
+     * Builds a publisher API listing URL, optionally opting in to the additional properties of each entry.
+     *
+     * <p>{@code expandProperties} is the listing's opt-in for {@code additionalProperties} /
+     * {@code additionalPropertiesMap}: omitted or {@code false} the listing returns both empty, {@code true}
+     * populates them. Passing {@code null} leaves the parameter off the URL entirely, which is the distinct
+     * "caller did not ask" case and is NOT the same request as an explicit {@code false}.
+     *
+     * @param baseUrl          the server base URL
+     * @param query            search condition, or null for an unfiltered listing
+     * @param limit            page size, or null for the server default
+     * @param offset           page offset, or null for the server default
+     * @param expandProperties true/false to send the parameter explicitly, null to omit it
+     * @return the assembled listing URL
+     */
+    public static String getAPISearchEndpointURL(String baseUrl, String query, Integer limit, Integer offset,
+                                                 Boolean expandProperties) {
 
         StringBuilder urlBuilder = new StringBuilder(baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "apis/");
 
@@ -691,6 +711,9 @@ public class Utils {
         }
         if (offset != null) {
             params.add("offset=" + offset);
+        }
+        if (expandProperties != null) {
+            params.add("expandProperties=" + expandProperties);
         }
 
         if (!params.isEmpty()) {

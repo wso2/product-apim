@@ -912,6 +912,67 @@ public class PublisherBaseSteps {
     }
 
     /**
+     * Searches the Publisher listing for a single API by name, optionally opting in to its additional
+     * properties, and publishes the listing response for the following assertions.
+     *
+     * <p>The search is scoped to one name rather than reading the whole listing because the listing is
+     * tenant-global: sibling classes in the same block create APIs concurrently, so an unfiltered read has no
+     * stable contents or count to assert against.
+     *
+     * <p>Like {@link #theApiShouldBeInTheListOfAllApis}, the read is retried because the listing is served from
+     * the search index and is NOT read-your-writes; a single read would race indexing of the API under test.
+     * The retry RE-ISSUES the search, so the response left in context is the one that satisfied the condition.
+     *
+     * @param apiNameKey       context key holding the API name to search for
+     * @param expandProperties "true"/"false" to send the parameter explicitly, or "" to omit it entirely
+     */
+    @When("I search the Publisher API listing for name {string} with expandProperties {string} until it is listed")
+    public void iSearchTheApiListingByName(String apiNameKey, String expandProperties)
+            throws IOException, InterruptedException {
+
+        String apiName = TestContext.resolve(apiNameKey).toString();
+        Boolean expand = (expandProperties == null || expandProperties.isBlank())
+                ? null : Boolean.valueOf(expandProperties);
+
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
+        // The name is QUOTED because an unquoted "name:<x>" is a prefix match, not an exact one: a sibling
+        // class's API whose name merely starts with this one's would be returned too, and the single-entry
+        // expectation below would fail against a correct product. Quoting makes the search exact.
+        String listUrl = Utils.getAPISearchEndpointURL(Utils.getBaseUrl(), "name:\"" + apiName + "\"",
+                null, null, expand);
+
+        HttpResponse lastResponse = Utils.retryUntil(Constants.RUNTIME_PROPAGATION_TIMEOUT,
+                () -> Requests.get(listUrl, headers),
+                listResponse -> listedEntryCount(listResponse) == 1);
+
+        // Carry the last body into the failure text: without it, diagnosing "not listed" costs another full run.
+        Assert.assertEquals(listedEntryCount(lastResponse), 1,
+                "Publisher listing did not return exactly one entry for name '" + apiName
+                        + "' within the retry window; last response: "
+                        + (lastResponse == null ? "none (requests failed)"
+                        : lastResponse.getResponseCode() + " / " + lastResponse.getData()));
+    }
+
+    /**
+     * Number of entries in a publisher-listing response, or -1 when the response carries no usable list.
+     * Tolerates a null/empty/non-2xx response so a read during warm-up keeps the poll going instead of throwing
+     * out of the accept condition.
+     */
+    private static int listedEntryCount(HttpResponse response) {
+        if (response == null || response.getResponseCode() < 200 || response.getResponseCode() >= 300
+                || response.getData() == null || response.getData().isBlank()) {
+            return -1;
+        }
+        try {
+            JSONObject payload = new JSONObject(response.getData());
+            return payload.has("list") ? payload.getJSONArray("list").length() : -1;
+        } catch (JSONException malformedDuringWarmup) {
+            return -1;
+        }
+    }
+
+    /**
      * Verifies that a specific API ID exists in the list of all APIs.
      *
      * <p>The publisher listing is served from the search index, which is NOT read-your-writes: a 201 from

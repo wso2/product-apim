@@ -632,3 +632,64 @@ Feature: Publisher API Runtime & Common Configuration
       | actor                     |
       | publisherUser             |
       | publisherUser@tenant1.com |
+
+  # The listing is served from the search index and is tenant-global, so every read below is scoped to this
+  # API's unique name and retried; an unfiltered read has no stable contents to assert against while sibling
+  # classes create APIs in the same block.
+  @cap:publisher @feat:api-config @rule:additional-properties @type:regression @legacy:APIM534GetAllTheAPIsCreatedThroughThePublisherRestAPITestCase
+  Scenario Outline: The API listing reports additional properties only when expandProperties is requested in <tenant>
+    Given I act as "admin<tenantSuffix>"
+    When I update the "apis" resource "configApiId<tenantSuffix>" and "configApiPayload<tenantSuffix>" with configuration type "additionalProperties" and value:
+      """
+      [{"name":"dept","value":"finance","display":false},{"name":"owner","value":"jane","display":true}]
+      """
+    Then The response status code should be 200
+    When I retrieve the "apis" resource with id "configApiId<tenantSuffix>"
+    Then The response status code should be 200
+    And I extract response field "name" and store it as "expandPropsApiName<tenantSuffix>"
+
+    # Baseline: the single-API endpoint carries the properties unconditionally.
+    And The response array field "additionalProperties" should have exactly 2 entries
+    And The response array field "additionalPropertiesMap.*" should have exactly 2 entries
+    And The value of response field "additionalPropertiesMap.dept.value" should be "finance"
+    And The value of response field "additionalPropertiesMap.owner__display.value" should be "jane"
+
+    # Omitting the parameter leaves both fields empty, which is the pre-existing listing behaviour.
+    When I search the Publisher API listing for name "expandPropsApiName<tenantSuffix>" with expandProperties "" until it is listed
+    Then The response array field "list" should have exactly 1 entries
+    And The response array field "list[0].additionalProperties" should have exactly 0 entries
+    And The response array field "list[0].additionalPropertiesMap.*" should have exactly 0 entries
+    And The response should not contain "finance"
+    And The response should not contain "jane"
+
+    # An explicit false is the same request as omitting it.
+    When I search the Publisher API listing for name "expandPropsApiName<tenantSuffix>" with expandProperties "false" until it is listed
+    Then The response array field "list" should have exactly 1 entries
+    And The response array field "list[0].additionalProperties" should have exactly 0 entries
+    And The response array field "list[0].additionalPropertiesMap.*" should have exactly 0 entries
+    And The response should not contain "finance"
+    And The response should not contain "jane"
+
+    # Opted in, the listing reports what the single-API endpoint reports. The map is keyed by the raw property
+    # name, so a Developer Portal visible property keeps its __display suffix in the key while its name is
+    # stripped, and its map entry's display is false even though the array entry's is true.
+    When I search the Publisher API listing for name "expandPropsApiName<tenantSuffix>" with expandProperties "true" until it is listed
+    Then The response array field "list" should have exactly 1 entries
+    And The response array field "list[0].additionalProperties" should have exactly 2 entries
+    And The response array field "list[0].additionalPropertiesMap.*" should have exactly 2 entries
+    And The response field "list[0].additionalProperties[*].name" should be exactly the list "dept,owner"
+    And The response field "list[0].additionalProperties[?(@.name=='dept')].value" should be exactly the list "finance"
+    And The response field "list[0].additionalProperties[?(@.name=='dept')].display" should be exactly the list "false"
+    And The response field "list[0].additionalProperties[?(@.name=='owner')].value" should be exactly the list "jane"
+    And The response field "list[0].additionalProperties[?(@.name=='owner')].display" should be exactly the list "true"
+    And The value of response field "list[0].additionalPropertiesMap.dept.name" should be "dept"
+    And The value of response field "list[0].additionalPropertiesMap.dept.value" should be "finance"
+    And The value of response field "list[0].additionalPropertiesMap.dept.display" should be "false"
+    And The value of response field "list[0].additionalPropertiesMap.owner__display.name" should be "owner"
+    And The value of response field "list[0].additionalPropertiesMap.owner__display.value" should be "jane"
+    And The value of response field "list[0].additionalPropertiesMap.owner__display.display" should be "false"
+
+    Examples:
+      | tenant      | tenantSuffix |
+      | super       |              |
+      | tenant1.com | @tenant1.com |
