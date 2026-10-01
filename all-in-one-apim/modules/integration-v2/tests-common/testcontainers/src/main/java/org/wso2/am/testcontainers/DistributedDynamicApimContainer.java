@@ -411,6 +411,12 @@ public class DistributedDynamicApimContainer implements ApimRuntime {
         return cp.getContainerId();
     }
 
+    @Override
+    public String getKeyManagerJmsBrokerUrl() {
+        return "amqp://admin:admin@clientid/carbon?brokerlist='tcp://" + cp.getHost() + ":"
+                + cp.getMappedPort(5672) + "'";
+    }
+
     public String getControlPlaneContainerId() {
         return cp.getContainerId();
     }

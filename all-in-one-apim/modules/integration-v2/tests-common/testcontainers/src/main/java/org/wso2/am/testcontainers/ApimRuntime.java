@@ -108,4 +108,7 @@ public interface ApimRuntime {
     Container.ExecResult execInContainer(String... command) throws IOException, InterruptedException;
 
     String getContainerId();
+
+    /** Host-reachable AMQP URL for the APIM key-manager event broker in this block runtime. */
+    String getKeyManagerJmsBrokerUrl();
 }

@@ -475,6 +475,57 @@ public final class TenantUserProvisioner {
         }
     }
 
+    /** Creates a role with initial permissions and assigns it to an existing tenant user via UserAdmin. */
+    public static void createRoleAndAssign(String tenantDomain, String roleName, String username,
+                                           List<String> permissions) throws IOException {
+
+        Tenant tenant = Utils.getTenantFromContext(tenantDomain);
+        StringBuilder permissionsXml = new StringBuilder();
+        for (String permission : permissions) {
+            permissionsXml.append("<xsd:permissions>").append(Utils.escapeXml(permission))
+                    .append("</xsd:permissions>");
+        }
+        String payload = "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" "
+                + "xmlns:xsd=\"http://org.apache.axis2/xsd\"><soapenv:Header/><soapenv:Body>"
+                + "<xsd:addRole><xsd:roleName>" + Utils.escapeXml(roleName) + "</xsd:roleName>"
+                + "<xsd:userList>" + Utils.escapeXml(username) + "</xsd:userList>" + permissionsXml
+                + "<xsd:isSharedRole>false</xsd:isSharedRole></xsd:addRole></soapenv:Body></soapenv:Envelope>";
+        HttpResponse response = SimpleHTTPClient.getInstance().sendSoapRequest(
+                Utils.getMultipleCredentialsUserAdminServiceURL(Utils.getBaseUrl()), payload, "urn:addRole",
+                tenant.getTenantAdmin().getUserName(), tenant.getTenantAdmin().getPassword());
+        assertSoapSuccess("UserAdmin.addRole", tenantDomain, response);
+    }
+
+    /** Replaces a role's UI permission set, matching UserManagementClient.setRoleUIPermission semantics. */
+    public static void setRoleUIPermissions(String tenantDomain, String roleName, List<String> permissions)
+            throws IOException {
+
+        Tenant tenant = Utils.getTenantFromContext(tenantDomain);
+        StringBuilder resourcesXml = new StringBuilder();
+        for (String permission : permissions) {
+            resourcesXml.append("<xsd:rawResources>").append(Utils.escapeXml(permission))
+                    .append("</xsd:rawResources>");
+        }
+        String payload = "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" "
+                + "xmlns:xsd=\"http://org.apache.axis2/xsd\"><soapenv:Header/><soapenv:Body>"
+                + "<xsd:setRoleUIPermission><xsd:roleName>" + Utils.escapeXml(roleName) + "</xsd:roleName>"
+                + resourcesXml + "</xsd:setRoleUIPermission></soapenv:Body></soapenv:Envelope>";
+        HttpResponse response = SimpleHTTPClient.getInstance().sendSoapRequest(
+                Utils.getMultipleCredentialsUserAdminServiceURL(Utils.getBaseUrl()), payload,
+                "urn:setRoleUIPermission", tenant.getTenantAdmin().getUserName(), tenant.getTenantAdmin().getPassword());
+        assertSoapSuccess("UserAdmin.setRoleUIPermission", tenantDomain, response);
+    }
+
+    private static void assertSoapSuccess(String operation, String tenantDomain, HttpResponse response)
+            throws IOException {
+
+        int code = response == null ? -1 : response.getResponseCode();
+        if (code < 200 || code >= 300) {
+            throw new IOException(operation + " for tenant '" + tenantDomain + "' failed with " + code + ": "
+                    + (response == null ? "no response" : response.getData()));
+        }
+    }
+
     /**
      * Returns the roles of a user via RemoteUserStoreManagerService {@code getRoleListOfUser} (the raw response
      * body). Used to verify case-insensitive-username resolution on the secondary store (an UPPERCASE username

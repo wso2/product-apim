@@ -39,7 +39,13 @@ const getCustomer = (req, res) => {
     const customer = customers.get(idNumber);
 
     if (customer) {
-        res.json(customer.toJSON());
+        const accept = req.get('Accept') || '';
+        if (accept.split(',').some((mediaType) => mediaType.trim().toLowerCase() === 'text/xml')) {
+            const value = customer.toJSON();
+            res.type('text/xml').send(`<Customer><id>${value.id}</id><name>${value.name}</name></Customer>`);
+        } else {
+            res.json(customer.toJSON());
+        }
     } else {
         res.status(404).json({ error: 'Customer not found' });
     }

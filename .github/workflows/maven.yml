@@ -389,6 +389,21 @@ jobs:
             exit 1
           fi
           echo "Coverage report present and valid ($(wc -c <"$REPORT") bytes)"
+          # A block whose block-end dump is missing contributed nothing, yet the merged report still looks valid.
+          SUMMARY=all-in-one-apim/modules/integration-v2/tests-integration/cucumber-tests/target/coverage/output/txt/coverage-summary.properties
+          if [ ! -s "$SUMMARY" ]; then
+            echo "::error::Coverage dump summary missing at $SUMMARY — cannot confirm every block was dumped."
+            exit 1
+          fi
+          expected=$(sed -n 's/^blocks\.expected=//p' "$SUMMARY")
+          dumped=$(sed -n 's/^blocks\.dumped=//p' "$SUMMARY")
+          missing=$(sed -n 's/^blocks\.missing=//p' "$SUMMARY")
+          restarts=$(sed -n 's/^restart\.dumps=//p' "$SUMMARY")
+          if [ -z "$expected" ] || [ "$expected" != "$dumped" ]; then
+            echo "::error::Coverage dumped ${dumped:-?} of ${expected:-?} blocks; missing: ${missing:-unknown}. Their counters are absent from the report."
+            exit 1
+          fi
+          echo "Coverage dumps: $dumped/$expected blocks, $restarts pre-restart dump(s)"
       - name: Upload v2 integration coverage to Codecov
         if: ${{ always() && matrix.coverage }}
         uses: codecov/codecov-action@v5

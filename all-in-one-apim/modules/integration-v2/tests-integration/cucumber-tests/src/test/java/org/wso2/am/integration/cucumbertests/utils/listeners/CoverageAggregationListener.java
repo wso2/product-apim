@@ -21,13 +21,20 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.testng.ISuite;
 import org.testng.ISuiteListener;
+import org.testng.xml.XmlTest;
 import org.wso2.am.integration.cucumbertests.utils.CoverageSupport;
 import org.wso2.am.integration.cucumbertests.utils.ModulePathResolver;
 import org.wso2.am.testcontainers.JacocoCoverage;
 
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
+import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * Suite-level coverage aggregation (opt-in; {@code -Dapim.coverage=true}). Runs once when the whole suite
@@ -36,6 +43,10 @@ import java.util.List;
  *
  * <p>No-op when coverage is off, so it can stay registered in any suite without affecting normal runs.
  * All failures are logged and swallowed — coverage reporting must never turn a green suite red.
+ *
+ * <p>It also tallies the dumps against the suite's blocks and writes {@code coverage-summary.properties}: a block
+ * whose final {@code <label>.exec} is missing contributed nothing, which a valid-looking report would otherwise
+ * hide. CI fails the run on a mismatch; locally it is a WARN.
  */
 public class CoverageAggregationListener implements ISuiteListener {
 
@@ -73,7 +84,12 @@ public class CoverageAggregationListener implements ISuiteListener {
                 return;
             }
             List<File> execFiles = new ArrayList<>(List.of(execs));
-            logger.info("Aggregating coverage from " + execFiles.size() + " block exec file(s): " + execDir);
+            try {
+                writeDumpSummary(suite, execFiles, CoverageSupport.outputSummary(moduleDir));
+            } catch (Exception e) {
+                logger.warn("Could not write the coverage dump summary (report still rendered): " + e.getMessage());
+            }
+            logger.info("Aggregating coverage from " + execFiles.size() + " exec file(s): " + execDir);
 
             File classfiles = CoverageSupport.classfilesDir(moduleDir);
             List<File> classfileRoots;
@@ -108,10 +124,53 @@ public class CoverageAggregationListener implements ISuiteListener {
                     CoverageSupport.outputXml(moduleDir), CoverageSupport.outputHtml(moduleDir),
                     "apim-integration");
             logger.info("Integration coverage report generated: " + String.format("%.2f", linePct)
-                    + "% line coverage across " + execFiles.size() + " block(s) -> "
+                    + "% line coverage across " + execFiles.size() + " exec file(s) -> "
                     + CoverageSupport.outputXml(moduleDir));
         } catch (Exception e) {
             logger.warn("Coverage aggregation failed (suite result unaffected): " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Compares the block labels the suite declares with the block-end dumps present, logs the tally, and writes it
+     * to {@code summaryFile}. Pre-restart dumps are counted separately; they never stand in for a block-end dump.
+     */
+    private static void writeDumpSummary(ISuite suite, List<File> execFiles, File summaryFile) throws IOException {
+        Set<String> expected = new TreeSet<>();
+        for (XmlTest test : suite.getXmlSuite().getTests()) {
+            String label = test.getParameter("blockLabel");
+            if (label != null && !label.isBlank()) {
+                expected.add(label);
+            }
+        }
+        Set<String> dumped = new TreeSet<>();
+        int restartDumps = 0;
+        for (File exec : execFiles) {
+            String name = exec.getName();
+            if (name.contains(CoverageSupport.RESTART_EXEC_INFIX)) {
+                restartDumps++;
+            } else {
+                dumped.add(name.substring(0, name.length() - ".exec".length()));
+            }
+        }
+        Set<String> missing = new TreeSet<>(expected);
+        missing.removeAll(dumped);
+
+        logger.info("Coverage dumps: blocks expected=" + expected.size() + ", block-end dumps=" + dumped.size()
+                + ", pre-restart dumps=" + restartDumps);
+        if (!missing.isEmpty()) {
+            logger.warn("Coverage is missing the block-end dump of " + missing.size() + " block(s) — their "
+                    + "counters are absent from the report: " + missing);
+        }
+
+        Properties summary = new Properties();
+        summary.setProperty("blocks.expected", String.valueOf(expected.size()));
+        summary.setProperty("blocks.dumped", String.valueOf(dumped.size()));
+        summary.setProperty("blocks.missing", String.join(",", missing));
+        summary.setProperty("restart.dumps", String.valueOf(restartDumps));
+        summaryFile.getParentFile().mkdirs();
+        try (OutputStream os = new FileOutputStream(summaryFile)) {
+            summary.store(os, "Integration coverage dump tally");
         }
     }
 }

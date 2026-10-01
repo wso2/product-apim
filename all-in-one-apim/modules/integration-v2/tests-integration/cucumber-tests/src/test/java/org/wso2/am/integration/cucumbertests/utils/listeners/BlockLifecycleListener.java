@@ -77,6 +77,7 @@ public class BlockLifecycleListener implements ITestListener {
     static final String CONTAINER_KEY = "blockApimContainer";
     static final String BASE_URL_KEY = "baseUrl";
     static final String BASE_GATEWAY_URL_KEY = "baseGatewayUrl";
+    static final String BASE_GATEWAY_HTTP_URL_KEY = "baseGatewayHttpUrl";
     static final String BASE_GATEWAY_MANAGEMENT_URL_KEY = "baseGatewayManagementUrl";
     static final String BASE_TRAFFIC_MANAGER_MANAGEMENT_URL_KEY = "baseTrafficManagerManagementUrl";
     static final String BASE_GATEWAY_WS_URL_KEY = "baseGatewayWsUrl";
@@ -390,6 +391,7 @@ public class BlockLifecycleListener implements ITestListener {
 
             String baseUrl = container.getServletHttpsUrl();
             String gatewayUrl = container.getGatewayHttpsUrl();
+            String gatewayHttpUrl = container.getGatewayHttpUrl();
             String gatewayManagementUrl = container.getGatewayManagementHttpsUrl();
             if (!awaitApimReady(container)) {
                 throw new IllegalStateException("APIM block '" + label + "' did not become ready within "
@@ -397,9 +399,11 @@ public class BlockLifecycleListener implements ITestListener {
             }
 
             TestContext.setShared(CONTAINER_KEY, container);
+            TestContext.setShared(CoverageSupport.BLOCK_LABEL_KEY, label);
             TestContext.setShared(BASE_URL_KEY, baseUrl);
             TestContext.setShared(BACKEND_OAUTH_TOKEN_URL_KEY, container.getBackendOAuthTokenUrl());
             TestContext.setShared(BASE_GATEWAY_URL_KEY, gatewayUrl);
+            TestContext.setShared(BASE_GATEWAY_HTTP_URL_KEY, gatewayHttpUrl);
             TestContext.setShared(BASE_GATEWAY_MANAGEMENT_URL_KEY, gatewayManagementUrl);
             TestContext.setShared(BASE_TRAFFIC_MANAGER_MANAGEMENT_URL_KEY,
                     container.getTrafficManagerManagementHttpsUrl());

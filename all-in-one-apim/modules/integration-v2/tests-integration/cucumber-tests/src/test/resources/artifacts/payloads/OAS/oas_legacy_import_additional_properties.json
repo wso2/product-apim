@@ -1,0 +1,35 @@
+{
+  "name": "${UNIQUE:OASLegacyPetstoreImport}",
+  "context": "${UNIQUE:OASLegacyImportContext}",
+  "version": "1.0.0",
+  "description": null,
+  "apiThrottlingPolicy": "Unlimited",
+  "authorizationHeader": null,
+  "policies": ["Unlimited"],
+  "securityScheme": ["oauth2", "oauth_basic_auth_mandatory"],
+  "visibility": "PUBLIC",
+  "transport": ["http", "https"],
+  "subscriptionAvailability": "ALL_TENANTS",
+  "accessControl": "NONE",
+  "accessControlRoles": [],
+  "cacheTimeout": 300,
+  "responseCachingEnabled": false,
+  "enableSchemaValidation": false,
+  "corsConfiguration": {
+    "corsConfigurationEnabled": true,
+    "accessControlAllowOrigins": ["*"],
+    "accessControlAllowCredentials": false,
+    "accessControlAllowHeaders": ["authorization", "Access-Control-Allow-Origin", "Content-Type", "SOAPAction"],
+    "accessControlAllowMethods": ["GET", "PUT", "POST", "DELETE", "PATCH", "OPTIONS"]
+  },
+  "endpointConfig": {
+    "endpoint_type": "http",
+    "production_endpoints": {
+      "url": "http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/"
+    },
+    "sandbox_endpoints": {
+      "url": "http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/"
+    }
+  },
+  "tags": []
+}

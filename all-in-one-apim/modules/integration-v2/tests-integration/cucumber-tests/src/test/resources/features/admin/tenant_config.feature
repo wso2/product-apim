@@ -29,15 +29,30 @@ Feature: Admin Tenant Configuration
     And I have valid access tokens as "<actor>"
     When I capture the tenant configuration as "tcOriginal"
     And I register tenant configuration "tcOriginal" for cleanup
+    And I extract response field "EnableMonetization" and store it as "tcOriginalMonetization"
+    # First submit the unchanged legacy fixture so this still exercises the exact legacy update request.
+    # The second update below is an additional V2 mutation that proves a changed value persists and can be restored.
+    And I put JSON payload from file "artifacts/payloads/legacy_tenant_conf.json" in context as "tcLegacyUpdate"
+    And I update the tenant configuration from "tcLegacyUpdate"
+    Then The response status code should be 200
+    When I retrieve the tenant configuration until field "EnableMonetization" is "false" within 180 seconds
+    Then The response status code should be 200
+    And The value of response field "EnableMonetization" should be "false"
+    And The value of response field "ExtensionHandlerPosition" should be "bottom"
+
     And I capture the tenant configuration as "tcModified"
     And I set the boolean field "EnableMonetization" to "true" in the payload "tcModified"
     And I update the tenant configuration from "tcModified"
     Then The response status code should be 200
-    When I retrieve the tenant configuration
+    When I retrieve the tenant configuration until field "EnableMonetization" is "true" within 180 seconds
     Then The response status code should be 200
-    And The response should contain "EnableMonetization"
+    And The value of response field "EnableMonetization" should be "true"
+    And The value of response field "ExtensionHandlerPosition" should be "bottom"
     When I update the tenant configuration from "tcOriginal"
     Then The response status code should be 200
+    When I retrieve the tenant configuration until field "EnableMonetization" is "{{tcOriginalMonetization}}" within 180 seconds
+    Then The response status code should be 200
+    And The value of response field "EnableMonetization" should be "{{tcOriginalMonetization}}"
 
     Examples:
       | actor             |

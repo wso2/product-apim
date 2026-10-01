@@ -212,6 +212,7 @@ Feature: Gateway REST API Invocation
     Given The system is ready
     And I have valid access tokens as "<actor>"
     And I have created an api from "artifacts/payloads/create_apim_version_first_api.json" as "vfApiId" and deployed it
+    And the "apis" resource "vfApiId" should be live on the gateway, redeploying if propagation is lost
     When I publish the "apis" resource with id "vfApiId"
     Then The lifecycle status of API "vfApiId" should be "Published"
     When I retrieve the "apis" resource with id "vfApiId"
@@ -221,12 +222,15 @@ Feature: Gateway REST API Invocation
     And I replace "{version}" with "1.0.0" in context "vfContext"
     When I have set up application with keys, subscribed to API "vfApiId", and obtained access token for "subscriptionId"
     Then The response status code should be 200
-    # The body pins that the version-first URL actually routed THROUGH to the backend: routing is the subject
-    # here, so a 200 that never reached node-customer-service would be a vacuous pass.
+    # Keep the existing JSON body assertions, then exercise the legacy XML Accept negotiation contract without
+    # replacing or weakening the original version-first routing assertion.
     When I invoke the API at gateway context "{{vfContext}}/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
     And The value of response field "id" should be "123"
     And The value of response field "name" should be "John"
+    When I invoke the API at gateway context "{{vfContext}}/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" with request header "Accept" set to "text/xml" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    And The response should contain "<id>123</id><name>John</name></Customer>"
 
     Examples:
       | actor             |
@@ -269,6 +273,7 @@ Feature: Gateway REST API Invocation
     Given The system is ready
     And I have valid access tokens as "<actor>"
     And I have created an api from "artifacts/payloads/create_apim_test_api.json" as "resApiId" and deployed it
+    And the "apis" resource "resApiId" should be live on the gateway, redeploying if propagation is lost
     When I publish the "apis" resource with id "resApiId"
     Then The lifecycle status of API "resApiId" should be "Published"
     When I retrieve the "apis" resource with id "resApiId"
@@ -282,11 +287,17 @@ Feature: Gateway REST API Invocation
     Then The response status code should be 200
     And The value of response field "id" should be "123"
     And The value of response field "name" should be "John"
+    # Legacy AddEditRemoveRESTResourceTestCase explicitly requested XML and checked the XML response before
+    # changing the API. Keep that representation contract in addition to the JSON field assertions above.
+    When I invoke the API at gateway context "{{resContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" with request header "Accept" set to "text/xml" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    And The response should contain "<id>123</id><name>John</name></Customer>"
     # POST to an as-yet-undefined resource is refused (405 — path matches GET /customers/{id}, POST not allowed).
+    # Keep the trailing slash used by the legacy invocation; the API context is resolved from this scenario's own API.
     # Body pinned too: the gateway distinguishes "URI matched, verb did not" from "no URI matched" with two
     # different messages, so status alone cannot tell the two dispatch outcomes apart (CORSRequestHandler
     # #handleResourceNotFound → METHOD_NOT_FOUND_ERROR_MSG here, RESOURCE_NOT_FOUND_ERROR_MSG below).
-    When I invoke the API at gateway context "{{resContext}}/1.0.0/customers/name" with method "POST" using access token "generatedAccessToken" and payload "" until response status code becomes 405 within 60 seconds
+    When I invoke the API at gateway context "{{resContext}}/1.0.0/customers/name/" with method "POST" using access token "generatedAccessToken" and payload "" until response status code becomes 405 within 60 seconds
     Then The response status code should be 405
     And The response should contain "Method not allowed for given API resource"
     # Add a POST /customers/name operation and redeploy.
@@ -294,14 +305,23 @@ Feature: Gateway REST API Invocation
     And I put the response payload in context as "resApiPayload"
     When I update the "apis" resource "resApiId" and "resApiPayload" with configuration type "operations" and value:
       """
-      [{"target":"/customers/{id}","verb":"GET"},{"target":"/customers/{id}","verb":"DELETE"},{"target":"/customers/name","verb":"POST"}]
+      [{"target":"/customers/{id}","verb":"GET"},{"target":"/customers/{id}","verb":"DELETE"},{"target":"/customers/name/","verb":"POST"}]
       """
     Then The response status code should be 200
+    And The value of response field "id" should be "{{resApiId}}"
     When I deploy the API with id "resApiId"
     Then The response status code should be 201
     And I wait until "apis" "resApiId" revision is deployed in the gateway
+    # The original GET must remain available after the resource update and deployment.
+    When I invoke the API at gateway context "{{resContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
+    When I invoke the API at gateway context "{{resContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" with request header "Accept" set to "text/xml" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    And The response should contain "<id>123</id><name>John</name></Customer>"
     # The newly added POST resource is now invocable and routes to the backend.
-    When I invoke the API at gateway context "{{resContext}}/1.0.0/customers/name" with method "POST" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
+    When I invoke the API at gateway context "{{resContext}}/1.0.0/customers/name/" with method "POST" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
     And The response should contain "Tom"
     # An undefined path is refused by the gateway — status AND the gateway's own message (legacy's
@@ -309,6 +329,60 @@ Feature: Gateway REST API Invocation
     # 404 would also be produced by the BACKEND for an unmapped upstream path, so the message is what proves the
     # refusal came from the gateway's resource dispatcher rather than from node-customer-service.
     When I invoke the API at gateway context "{{resContext}}/1.0.0/customers/123/invalid" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 404 within 60 seconds
+    Then The response status code should be 404
+    And The response should contain "No matching resource found for given API Request"
+
+    Examples:
+      | actor             |
+      | admin             |
+      | admin@tenant1.com |
+
+  # The legacy AddEditRemoveRESTResourceTestCase uses the version-first {version}/api route over the HTTP
+  # gateway and sends text/plain requests. Keep that specific wire/path contract alongside the context-first
+  # resource-mutation scenario above; a similar GET or POST on a different route is not equivalent parity.
+  @cap:gateway @feat:rest-invocation @rule:version-first-resource-mutation @type:regression @dep:publisher @legacy:AddEditRemoveRESTResourceTestCase
+  Scenario Outline: Version-first API resource mutation preserves the legacy HTTP contract as <actor>
+    Given The system is ready
+    And I have valid access tokens as "<actor>"
+    And I have created an api from "artifacts/payloads/create_apim_version_first_api.json" as "aerApiId" and deployed it
+    And the "apis" resource "aerApiId" should be live on the gateway, redeploying if propagation is lost
+    When I publish the "apis" resource with id "aerApiId"
+    Then The lifecycle status of API "aerApiId" should be "Published"
+    When I retrieve the "apis" resource with id "aerApiId"
+    And I extract response field "context" and store it as "aerContext"
+    And I replace "{version}" with "1.0.0" in context "aerContext"
+    And I have set up application with keys, subscribed to API "aerApiId", and obtained access token for "aerSubscriptionId"
+    Then The response status code should be 200
+
+    # Baseline GET: exact HTTP listener, version-first path, Accept header, and XML body contract from legacy.
+    When I invoke the API at HTTP gateway context "{{aerContext}}/customers/123" with method "GET" using access token "generatedAccessToken" and payload "" with content type "application/json" and request header "Accept" set to "text/xml" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    And The response should contain "<id>123</id><name>John</name></Customer>"
+
+    # Before the operation is added, POST must be rejected as a method/path mismatch, not served by the backend.
+    When I invoke the API at HTTP gateway context "{{aerContext}}/customers/name/" with method "POST" using access token "generatedAccessToken" and payload "id=25" with content type "text/plain" and request header "Accept" set to "text/plain" until response status code becomes 405 within 60 seconds
+    Then The response status code should be 405
+    And The response should contain "Method not allowed for given API resource"
+
+    When I retrieve the "apis" resource with id "aerApiId"
+    And I put the response payload in context as "aerApiPayload"
+    And I update the "apis" resource "aerApiId" and "aerApiPayload" with configuration type "operations" and value:
+      """
+      [{"target":"/customers/{id}","verb":"GET"},{"target":"/customers/name/","verb":"POST"}]
+      """
+    Then The response status code should be 200
+    And The value of response field "id" should be "{{aerApiId}}"
+    When I deploy the API with id "aerApiId"
+    Then The response status code should be 201
+    And I wait until "apis" "aerApiId" revision is deployed in the gateway
+
+    When I invoke the API at HTTP gateway context "{{aerContext}}/customers/123" with method "GET" using access token "generatedAccessToken" and payload "" with content type "application/json" and request header "Accept" set to "text/xml" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    And The response should contain "<id>123</id><name>John</name></Customer>"
+    When I invoke the API at HTTP gateway context "{{aerContext}}/customers/name/" with method "POST" using access token "generatedAccessToken" and payload "id=25" with content type "text/plain" and request header "Accept" set to "text/plain" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    And The response should contain "Tom"
+    When I invoke the API at HTTP gateway context "{{aerContext}}/customers/123/invalid" with method "GET" using access token "generatedAccessToken" and payload "" with content type "application/json" and request header "Accept" set to "text/xml" until response status code becomes 404 within 60 seconds
     Then The response status code should be 404
     And The response should contain "No matching resource found for given API Request"
 
@@ -395,6 +469,7 @@ Feature: Gateway REST API Invocation
     Then The response status code should be 200
     # The invoke gated on "echo/prod"; also pin the OTHER endpoint's signature ABSENT, so this phase's pass is
     # unreachable from the sandbox endpoint and the two phases cannot collapse into each other.
+    And The value of response field "received" should be "/jaxrs_basic/services/customers/customerservice/echo/prod/x"
     And The response should not contain "echo/sandbox"
 
     # SANDBOX token → sandbox endpoint (echo/sandbox)
@@ -412,6 +487,7 @@ Feature: Gateway REST API Invocation
     Then The response status code should be 200
     When I invoke the API at gateway context "{{psContext}}/1.0.0/x" with method "GET" using access token "generatedAccessToken" and payload "" until response body contains "echo/sandbox" within 60 seconds
     Then The response status code should be 200
+    And The value of response field "received" should be "/jaxrs_basic/services/customers/customerservice/echo/sandbox/x"
     And The response should not contain "echo/prod"
 
     Examples:
@@ -534,12 +610,29 @@ Feature: Gateway REST API Invocation
     """
     And I request an access token for application id "createdAppId" using payload "u1Token"
     Then The response status code should be 200
+    And I extract response field "accessToken" and store it as "u1SandboxToken"
+    When I put the following JSON payload in context as "u1ProdKeys"
+    """
+    {"keyType": "PRODUCTION", "grantTypesToBeSupported": ["client_credentials"]}
+    """
+    And I generate client credentials for application id "createdAppId" with payload "u1ProdKeys"
+    Then The response status code should be 200
+    When I put the following JSON payload in context as "u1ProdTokenRequest"
+    """
+    {"consumerSecret": "{{appConsumerSecret}}", "validityPeriod": 3600}
+    """
+    And I request an access token for application id "createdAppId" using payload "u1ProdTokenRequest"
+    Then The response status code should be 200
+    And I extract response field "accessToken" and store it as "u1ProdToken"
 
     # Secured baseline: the SANDBOX token is rejected 403 + 900901 (this prod-only API has no sandbox endpoint).
     # The baseline is what makes the post-flip 200 attributable — it proves the resource was genuinely secured.
-    When I invoke the API at gateway context "{{u1Context}}/1.0.0/x" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 403 within 60 seconds
+    When I invoke the API at gateway context "{{u1Context}}/1.0.0/x" with method "GET" using access token "u1SandboxToken" and payload "" until response status code becomes 403 within 60 seconds
     Then The response status code should be 403
     And The error response should have code "900901" message "Runtime Error" and description containing "Sandbox key offered to the API with no sandbox endpoint"
+    When I invoke the API at gateway context "{{u1Context}}/1.0.0/x" with method "GET" using access token "u1ProdToken" and payload "" until response body contains "echo/prod" within 60 seconds
+    Then The response status code should be 200
+    And The value of response field "received" should be "/jaxrs_basic/services/customers/customerservice/echo/prod/x"
 
     # Flip the resource to authType None, redeploy, and gate on propagation before reading — a read before the new
     # config reaches the gateway returns a false 403.
@@ -550,14 +643,20 @@ Feature: Gateway REST API Invocation
       [{"target":"/x","verb":"GET","authType":"None","throttlingPolicy":"Unlimited"}]
       """
     Then The response status code should be 200
+    And The response body should not be null
     When I deploy the API with id "u1ApiId"
     And the "apis" resource "u1ApiId" should be live on the gateway, redeploying if propagation is lost
     And I wait until "apis" "u1ApiId" revision is deployed in the gateway
 
     # Unsecured reading: the SANDBOX token is ignored; the production endpoint answers. The body gate proves
     # echo/prod answered; the not-contains proves echo/sandbox (which does not exist) did not.
-    When I invoke the API at gateway context "{{u1Context}}/1.0.0/x" with method "GET" using access token "generatedAccessToken" and payload "" until response body contains "echo/prod" within 60 seconds
+    When I invoke the API at gateway context "{{u1Context}}/1.0.0/x" with method "GET" using access token "u1SandboxToken" and payload "" until response body contains "echo/prod" within 60 seconds
     Then The response status code should be 200
+    And The value of response field "received" should be "/jaxrs_basic/services/customers/customerservice/echo/prod/x"
+    And The response should not contain "echo/sandbox"
+    When I invoke the API at gateway context "{{u1Context}}/1.0.0/x" with method "GET" using access token "u1ProdToken" and payload "" until response body contains "echo/prod" within 60 seconds
+    Then The response status code should be 200
+    And The value of response field "received" should be "/jaxrs_basic/services/customers/customerservice/echo/prod/x"
     And The response should not contain "echo/sandbox"
 
     Examples:
@@ -598,11 +697,28 @@ Feature: Gateway REST API Invocation
     """
     And I request an access token for application id "createdAppId" using payload "u2Token"
     Then The response status code should be 200
+    And I extract response field "accessToken" and store it as "u2ProdToken"
+    When I put the following JSON payload in context as "u2SandboxKeys"
+    """
+    {"keyType": "SANDBOX", "grantTypesToBeSupported": ["client_credentials"]}
+    """
+    And I generate client credentials for application id "createdAppId" with payload "u2SandboxKeys"
+    Then The response status code should be 200
+    When I put the following JSON payload in context as "u2SandboxTokenRequest"
+    """
+    {"consumerSecret": "{{appConsumerSecret}}", "validityPeriod": 3600}
+    """
+    And I request an access token for application id "createdAppId" using payload "u2SandboxTokenRequest"
+    Then The response status code should be 200
+    And I extract response field "accessToken" and store it as "u2SandboxToken"
 
     # Secured baseline: the PRODUCTION token is rejected 403 + 900901 (this sandbox-only API has no production endpoint).
-    When I invoke the API at gateway context "{{u2Context}}/1.0.0/x" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 403 within 60 seconds
+    When I invoke the API at gateway context "{{u2Context}}/1.0.0/x" with method "GET" using access token "u2ProdToken" and payload "" until response status code becomes 403 within 60 seconds
     Then The response status code should be 403
     And The error response should have code "900901" message "Runtime Error" and description containing "Production key offered to the API with no production endpoint"
+    When I invoke the API at gateway context "{{u2Context}}/1.0.0/x" with method "GET" using access token "u2SandboxToken" and payload "" until response body contains "echo/sandbox" within 60 seconds
+    Then The response status code should be 200
+    And The value of response field "received" should be "/jaxrs_basic/services/customers/customerservice/echo/sandbox/x"
 
     # Flip the resource to authType None, redeploy, and gate on propagation before reading.
     When I retrieve the "apis" resource with id "u2ApiId"
@@ -612,14 +728,20 @@ Feature: Gateway REST API Invocation
       [{"target":"/x","verb":"GET","authType":"None","throttlingPolicy":"Unlimited"}]
       """
     Then The response status code should be 200
+    And The response body should not be null
     When I deploy the API with id "u2ApiId"
     And the "apis" resource "u2ApiId" should be live on the gateway, redeploying if propagation is lost
     And I wait until "apis" "u2ApiId" revision is deployed in the gateway
 
     # Unsecured reading: the PRODUCTION token is ignored; the sole (sandbox) endpoint answers. Body gate proves
     # echo/sandbox answered; the not-contains proves echo/prod (which does not exist) did not.
-    When I invoke the API at gateway context "{{u2Context}}/1.0.0/x" with method "GET" using access token "generatedAccessToken" and payload "" until response body contains "echo/sandbox" within 60 seconds
+    When I invoke the API at gateway context "{{u2Context}}/1.0.0/x" with method "GET" using access token "u2ProdToken" and payload "" until response body contains "echo/sandbox" within 60 seconds
     Then The response status code should be 200
+    And The value of response field "received" should be "/jaxrs_basic/services/customers/customerservice/echo/sandbox/x"
+    And The response should not contain "echo/prod"
+    When I invoke the API at gateway context "{{u2Context}}/1.0.0/x" with method "GET" using access token "u2SandboxToken" and payload "" until response body contains "echo/sandbox" within 60 seconds
+    Then The response status code should be 200
+    And The value of response field "received" should be "/jaxrs_basic/services/customers/customerservice/echo/sandbox/x"
     And The response should not contain "echo/prod"
 
     Examples:
@@ -661,11 +783,30 @@ Feature: Gateway REST API Invocation
     """
     And I request an access token for application id "createdAppId" using payload "u3Token"
     Then The response status code should be 200
+    And I extract response field "accessToken" and store it as "u3SandboxToken"
+    When I put the following JSON payload in context as "u3ProdKeys"
+    """
+    {"keyType": "PRODUCTION", "grantTypesToBeSupported": ["client_credentials"]}
+    """
+    And I generate client credentials for application id "createdAppId" with payload "u3ProdKeys"
+    Then The response status code should be 200
+    When I put the following JSON payload in context as "u3ProdTokenRequest"
+    """
+    {"consumerSecret": "{{appConsumerSecret}}", "validityPeriod": 3600}
+    """
+    And I request an access token for application id "createdAppId" using payload "u3ProdTokenRequest"
+    Then The response status code should be 200
+    And I extract response field "accessToken" and store it as "u3ProdToken"
 
     # Secured baseline A: the SANDBOX token routes to the sandbox endpoint (echo/sandbox), matching :278.
-    When I invoke the API at gateway context "{{u3Context}}/1.0.0/x" with method "GET" using access token "generatedAccessToken" and payload "" until response body contains "echo/sandbox" within 60 seconds
+    When I invoke the API at gateway context "{{u3Context}}/1.0.0/x" with method "GET" using access token "u3SandboxToken" and payload "" until response body contains "echo/sandbox" within 60 seconds
     Then The response status code should be 200
+    And The value of response field "received" should be "/jaxrs_basic/services/customers/customerservice/echo/sandbox/x"
     And The response should not contain "echo/prod"
+    When I invoke the API at gateway context "{{u3Context}}/1.0.0/x" with method "GET" using access token "u3ProdToken" and payload "" until response body contains "echo/prod" within 60 seconds
+    Then The response status code should be 200
+    And The value of response field "received" should be "/jaxrs_basic/services/customers/customerservice/echo/prod/x"
+    And The response should not contain "echo/sandbox"
 
     # Secured baseline B: with NO credential the gateway rejects the call 401 + 900902 (Missing Credentials).
     When I invoke the API at gateway context "{{u3Context}}/1.0.0/x" with method "GET" without authentication until response status code becomes 401 within 60 seconds
@@ -680,19 +821,26 @@ Feature: Gateway REST API Invocation
       [{"target":"/x","verb":"GET","authType":"None","throttlingPolicy":"Unlimited"}]
       """
     Then The response status code should be 200
+    And The response body should not be null
     When I deploy the API with id "u3ApiId"
     And the "apis" resource "u3ApiId" should be live on the gateway, redeploying if propagation is lost
     And I wait until "apis" "u3ApiId" revision is deployed in the gateway
 
     # Unsecured reading, SANDBOX token: the presented key type is ignored; the production endpoint answers. This
     # body-gated invoke is also the propagation gate for the no-credential read that follows.
-    When I invoke the API at gateway context "{{u3Context}}/1.0.0/x" with method "GET" using access token "generatedAccessToken" and payload "" until response body contains "echo/prod" within 60 seconds
+    When I invoke the API at gateway context "{{u3Context}}/1.0.0/x" with method "GET" using access token "u3SandboxToken" and payload "" until response body contains "echo/prod" within 60 seconds
     Then The response status code should be 200
+    And The value of response field "received" should be "/jaxrs_basic/services/customers/customerservice/echo/prod/x"
+    And The response should not contain "echo/sandbox"
+    When I invoke the API at gateway context "{{u3Context}}/1.0.0/x" with method "GET" using access token "u3ProdToken" and payload "" until response body contains "echo/prod" within 60 seconds
+    Then The response status code should be 200
+    And The value of response field "received" should be "/jaxrs_basic/services/customers/customerservice/echo/prod/x"
     And The response should not contain "echo/sandbox"
 
     # Unsecured reading, NO credential: the missing credential no longer 401s; the same production endpoint answers.
     When I invoke the API at gateway context "{{u3Context}}/1.0.0/x" with method "GET" without authentication until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
+    And The value of response field "received" should be "/jaxrs_basic/services/customers/customerservice/echo/prod/x"
     And The response should contain "echo/prod"
     And The response should not contain "echo/sandbox"
 
@@ -702,62 +850,61 @@ Feature: Gateway REST API Invocation
       | admin@tenant1.com |
 
   # Swapping the endpoint URL of an ALREADY-DEPLOYED API repoints it at a DIFFERENT upstream. Ports
-  # ChangeAPIEndPointURLTestCase (testAPIInvocationBeforeChangeTheEndPointURL + testEditEndPointURL +
-  # testInvokeAPIAfterChangeAPIEndPointURLWithNewEndPointURL, which are one arc on one API).
+  # ChangeAPIEndPointURLTestCase and the API its AdvancedWebAppDeploymentConfig fixture provisions: a version-first
+  # {version}/<ctx> API exposing GET / and GET /customers/{id}, invoked over the HTTP gateway listener.
   #
   # The API's context, resource set, revision lineage and subscription all stay put; only endpointConfig changes.
   # That is what separates this from default_version_routing (which routes to a changed backend on a NEW version)
   # and from the endpoint-security scenarios (which change credentials, not the upstream).
   #
-  # Legacy observed the switch with a second Synapse API returning "HelloWSO2" from name-check1_SB/name. That
-  # backend exists here (nodebackend:3009) but serves ONLY GET /name, so it cannot answer this API's
-  # /customers/{id} resource. The switch is therefore observed between two EXISTING backends, the same way the
-  # API-product endpoint-change scenario does it (gateway/api_product_invocation.feature):
-  #   * node-customer-service (nodebackend:3001, /jaxrs_basic/services/customers/customerservice/) answers
-  #     GET /customers/123 with {"id":123,"name":"John"};
-  #   * wildcard            (nodebackend:3017) answers ANY path/method with the plain text "Hello World".
-  # Each phase asserts its OWN backend's signature present AND the other's absent — legacy's assertTrue(API2)
-  # + assertFalse(API1) pair — so neither phase can pass against the wrong upstream and the "after" state is
-  # unreachable from the "before" state. No new backend was added.
-  @cap:gateway @feat:rest-invocation @rule:endpoint-routing @type:regression @dep:publisher @legacy:ChangeAPIEndPointURLTestCase
+  #   * BEFORE: node-customer-service (nodebackend:3001) answers GET /customers/123 with the XML customer, and has
+  #     no root route, so GET / answers 404 there.
+  #   * AFTER:  name-check1_SB (nodebackend:3009) serves ONLY GET /name, and the new endpoint URL carries that
+  #     /name base path. The root resource therefore reaches "Hello WSO2 from File 1_Sandbox" only when the gateway
+  #     composes the FULL new URL (host + base path); the old upstream can never answer the root with 200, so the
+  #     until-200 poll on the root cannot be satisfied by a stale route.
+  @cap:gateway @feat:rest-invocation @rule:endpoint-routing @type:regression @dep:publisher @legacy:ChangeAPIEndPointURLTestCase @legacy:AdvancedWebAppDeploymentConfig
   Scenario Outline: Swapping a deployed API's endpoint URL repoints it to the new backend as <actor>
     Given The system is ready
     And I have valid access tokens as "<actor>"
-    And I have created an api from "artifacts/payloads/create_apim_test_api.json" as "ceApiId" and deployed it
+    And I have created an api from "artifacts/payloads/create_apim_change_endpoint_api.json" as "ceApiId" and deployed it
+    And the "apis" resource "ceApiId" should be live on the gateway, redeploying if propagation is lost
     When I publish the "apis" resource with id "ceApiId"
     Then The lifecycle status of API "ceApiId" should be "Published"
     When I retrieve the "apis" resource with id "ceApiId"
     And I extract response field "context" and store it as "ceContext"
+    And I replace "{version}" with "1.0.0" in context "ceContext"
     When I have set up application with keys, subscribed to API "ceApiId", and obtained access token for "ceSubId"
     Then The response status code should be 200
 
-    # BEFORE: the original upstream (node-customer-service) serves the call.
-    When I invoke the API at gateway context "{{ceContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
+    # BEFORE: the original upstream serves the customer resource, id and name pinned by the XML fragment.
+    When I invoke the API at HTTP gateway context "{{ceContext}}/customers/123" with method "GET" using access token "generatedAccessToken" and payload "" with content type "application/json" and request header "Accept" set to "text/xml" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
-    And The response should contain "\"name\":\"John\""
-    And The response should not contain "Hello World"
+    And The response should contain "<id>123</id><name>John</name></Customer>"
+    And The response should not contain "Hello WSO2"
 
-    # Change ONLY the endpoint URL (production and sandbox both) to the wildcard backend, then redeploy.
+    # Change ONLY the endpoint URL (production and sandbox both), then create and deploy a new revision.
     When I retrieve the "apis" resource with id "ceApiId"
     And I put the response payload in context as "ceApiPayload"
     When I put the following JSON payload in context as "ceNewEndpoint"
     """
-    {"endpoint_type":"http","production_endpoints":{"url":"http://nodebackend:3017/"},"sandbox_endpoints":{"url":"http://nodebackend:3017/"}}
+    {"endpoint_type":"http","production_endpoints":{"url":"http://nodebackend:3009/name"},"sandbox_endpoints":{"url":"http://nodebackend:3009/name"}}
     """
     When I update the "apis" resource "ceApiId" and "ceApiPayload" with configuration type "endpointConfig" and value:
       """
       ceNewEndpoint
       """
     Then The response status code should be 200
+    And The value of response field "id" should be "{{ceApiId}}"
     When I deploy the API with id "ceApiId"
     Then The response status code should be 201
     And I wait until "apis" "ceApiId" revision is deployed in the gateway
 
-    # AFTER: the SAME context, resource and token now reach the NEW upstream, and the old backend's body is gone.
-    When I invoke the API at gateway context "{{ceContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response body contains "Hello World" within 120 seconds
+    # AFTER: the root resource reaches the new upstream through the full new URL, and the old body is gone.
+    When I invoke the API at HTTP gateway context "{{ceContext}}" with method "GET" using access token "generatedAccessToken" and payload "" with content type "application/json" and request header "Accept" set to "*/*" until response status code becomes 200 within 120 seconds
     Then The response status code should be 200
-    And The response should contain "Hello World"
-    And The response should not contain "\"name\":\"John\""
+    And The response should contain "Hello WSO2 from File 1_Sandbox"
+    And The response should not contain "<id>123</id><name>John</name></Customer>"
 
     Examples:
       | actor             |
@@ -1026,6 +1173,112 @@ Feature: Gateway REST API Invocation
       | admin             |
       | admin@tenant1.com |
 
+  # The same verb dispatch of overlapping resources, against a backend that echoes the method and path it received
+  # (/verb-echo), so each invocation proves the gateway forwarded the ORIGINAL verb and the full request path. Two
+  # dispatch variants: targets ending in "/*" are url-mapping resources, while the legacy targets with the wildcard
+  # stuck onto the segment (/comp/cartes*, /comp/cartes/op*) are uri-template resources (velocity_template.xml).
+  # The publisher readback pins each target verbatim, so a target normalised into the other form fails the row.
+  # The echoed path carries no /t/<tenant> prefix: the backend path is tenant-agnostic.
+  @cap:gateway @feat:rest-invocation @rule:verb-routing @type:regression @dep:publisher @legacy:APIInvocationWithSimilarResourcesAndDifferentVerbsTestCase
+  Scenario Outline: Overlapping <dispatch> resource paths forward the original verb and path to the backend as <actor>
+    Given The system is ready
+    And I have valid access tokens as "<actor>"
+    And I have created an api from "<payload>" as "sveApiId" and deployed it
+    When I publish the "apis" resource with id "sveApiId"
+    Then The lifecycle status of API "sveApiId" should be "Published"
+    When I retrieve the "apis" resource with id "sveApiId"
+    Then The response status code should be 200
+    And The response array field "operations" should have exactly 2 entries
+    And The response field "operations[?(@.verb=='GET')].target" should be exactly the list "<getTarget>"
+    And The response field "operations[?(@.verb=='POST')].target" should be exactly the list "<postTarget>"
+    And I extract response field "context" and store it as "sveContext"
+    When I have set up application with keys, subscribed to API "sveApiId", and obtained access token for "sveSub"
+    Then The response status code should be 200
+
+    When I invoke the API at gateway context "{{sveContext}}/1.0.0/comp/cartes/op/123" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    And The value of response field "method" should be "GET"
+    And The value of response field "path" should be "/jaxrs_basic/services/customers/customerservice/verb-echo/comp/cartes/op/123"
+    When I invoke the API at gateway context "{{sveContext}}/1.0.0/comp/cartes/op/123" with method "POST" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    And The value of response field "method" should be "POST"
+    And The value of response field "path" should be "/jaxrs_basic/services/customers/customerservice/verb-echo/comp/cartes/op/123"
+
+    Examples:
+      | dispatch     | payload                                                              | getTarget      | postTarget        | actor             |
+      | url-mapping  | artifacts/payloads/create_apim_similar_resources_verb_echo_api.json  | /comp/cartes/* | /comp/cartes/op/* | admin             |
+      | url-mapping  | artifacts/payloads/create_apim_similar_resources_verb_echo_api.json  | /comp/cartes/* | /comp/cartes/op/* | admin@tenant1.com |
+      | uri-template | artifacts/payloads/create_apim_similar_resources_uritemplate_api.json | /comp/cartes*  | /comp/cartes/op*  | admin             |
+      | uri-template | artifacts/payloads/create_apim_similar_resources_uritemplate_api.json | /comp/cartes*  | /comp/cartes/op*  | admin@tenant1.com |
+
+  # An operation-specific scope is the authorization discriminator for the overlapping path: GET and POST address
+  # /comp/cartes/op/123, but each method must resolve to its own operation and accept only that operation's scope.
+  # The URL-mapping and URI-template dispatch forms are both exercised, as are super-tenant and tenant admins. Each
+  # denial is a one-shot exact 403 after the gateway-live gate; polling could hide an initial cross-scope success.
+  @cap:gateway @feat:security-enforcement @rule:verb-routing @type:regression @dep:publisher @legacy:APIInvocationWithSimilarResourcesAndDifferentVerbsTestCase
+  Scenario Outline: Overlapping <dispatch> operations authorize only their matching method scope as <actor>
+    Given The system is ready
+    And I have valid access tokens as "<actor>"
+    And I have created an api from "<payload>" as "sveScopeApiId" and deployed it
+    And the "apis" resource "sveScopeApiId" should be live on the gateway, redeploying if propagation is lost
+    When I publish the "apis" resource with id "sveScopeApiId"
+    Then The lifecycle status of API "sveScopeApiId" should be "Published"
+    When I retrieve the "apis" resource with id "sveScopeApiId"
+    Then The response status code should be 200
+    And The response array field "operations" should have exactly 2 entries
+    And The response field "operations[?(@.verb=='GET')].target" should be exactly the list "<getTarget>"
+    And The response field "operations[?(@.verb=='POST')].target" should be exactly the list "<postTarget>"
+    And The response field "operations[?(@.verb=='GET')].scopes" should be exactly the list "sve_get_scope"
+    And The response field "operations[?(@.verb=='POST')].scopes" should be exactly the list "sve_post_scope"
+    And I extract response field "context" and store it as "sveScopeContext"
+
+    When I put JSON payload from file "artifacts/payloads/create_apim_test_app.json" in context as "sveScopeAppPayload"
+    And I create an application with payload "sveScopeAppPayload"
+    Then The response status code should be 201
+    When I put the following JSON payload in context as "sveScopeKeysPayload"
+    """
+    {"keyType":"PRODUCTION","grantTypesToBeSupported":["client_credentials","password"]}
+    """
+    And I generate client credentials for application id "createdAppId" with payload "sveScopeKeysPayload"
+    Then The response status code should be 200
+    When I put the following JSON payload in context as "sveScopeSubPayload"
+    """
+    {"applicationId":"{{applicationId}}","apiId":"{{apiId}}","throttlingPolicy":"Unlimited"}
+    """
+    And I subscribe to API "sveScopeApiId" using application "createdAppId" with payload "sveScopeSubPayload" as "sveScopeSubId"
+    Then The response status code should be 201
+
+    # A token with only the GET scope reaches GET and is denied on POST at the same overlapping path.
+    When I request an OAuth access token for the current user using password grant with scope "sve_get_scope"
+    Then The response status code should be 200
+    And The issued token scope list should include "sve_get_scope" and exclude "sve_post_scope"
+    And I copy context value "generatedAccessToken" to "sveGetScopeToken"
+    When I invoke the API at gateway context "{{sveScopeContext}}/1.0.0/comp/cartes/op/123" once with method "GET" using access token "sveGetScopeToken" and payload ""
+    Then The response status code should be 200
+    And The value of response field "method" should be "GET"
+    And The value of response field "path" should be "/jaxrs_basic/services/customers/customerservice/verb-echo/comp/cartes/op/123"
+    When I invoke the API at gateway context "{{sveScopeContext}}/1.0.0/comp/cartes/op/123" once with method "POST" using access token "sveGetScopeToken" and payload ""
+    Then The response status code should be 403
+
+    # Conversely, the POST-only scope reaches POST and is denied on GET at that same path.
+    When I request an OAuth access token for the current user using password grant with scope "sve_post_scope"
+    Then The response status code should be 200
+    And The issued token scope list should include "sve_post_scope" and exclude "sve_get_scope"
+    And I copy context value "generatedAccessToken" to "svePostScopeToken"
+    When I invoke the API at gateway context "{{sveScopeContext}}/1.0.0/comp/cartes/op/123" once with method "POST" using access token "svePostScopeToken" and payload ""
+    Then The response status code should be 200
+    And The value of response field "method" should be "POST"
+    And The value of response field "path" should be "/jaxrs_basic/services/customers/customerservice/verb-echo/comp/cartes/op/123"
+    When I invoke the API at gateway context "{{sveScopeContext}}/1.0.0/comp/cartes/op/123" once with method "GET" using access token "svePostScopeToken" and payload ""
+    Then The response status code should be 403
+
+    Examples:
+      | dispatch     | payload                                                                    | getTarget      | postTarget        | actor             |
+      | url-mapping  | artifacts/payloads/create_apim_similar_resources_scoped_verb_echo_api.json  | /comp/cartes/* | /comp/cartes/op/* | admin             |
+      | url-mapping  | artifacts/payloads/create_apim_similar_resources_scoped_verb_echo_api.json  | /comp/cartes/* | /comp/cartes/op/* | admin@tenant1.com |
+      | uri-template | artifacts/payloads/create_apim_similar_resources_scoped_uritemplate_api.json | /comp/cartes*  | /comp/cartes/op*  | admin             |
+      | uri-template | artifacts/payloads/create_apim_similar_resources_scoped_uritemplate_api.json | /comp/cartes*  | /comp/cartes/op*  | admin@tenant1.com |
+
   # Ports APIResourceWithSpecialCharactersInvocation — a resource whose path NAME contains non-reserved special
   # characters (comma, hyphen, period, underscore, tilde per RFC 3986 §2.2: /special,-._~resource) is routed to the
   # backend and invoked successfully (200). The comma is the crux: it must NOT be treated as a delimiter (GraphQL
@@ -1045,6 +1298,30 @@ Feature: Gateway REST API Invocation
     When I invoke the API at gateway context "{{scContext}}/1.0.0/special,-._~resource" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
     And The response should contain "Hello World"
+
+    Examples:
+      | actor             |
+      | admin             |
+      | admin@tenant1.com |
+
+  # The same special-character resource against the path echo backend (/echo), which returns the raw path it
+  # received: the non-reserved characters ,-._~ reach the backend verbatim, not percent-encoded or split.
+  @cap:gateway @feat:rest-invocation @rule:special-char-resource @type:regression @dep:publisher @legacy:APIResourceWithSpecialCharactersInvocation
+  Scenario Outline: A resource path with non-reserved special characters reaches the backend verbatim as <actor>
+    Given The system is ready
+    And I have valid access tokens as "<actor>"
+    And I have created an api from "artifacts/payloads/create_apim_special_char_resource_echo_api.json" as "sceApiId" and deployed it
+    When I publish the "apis" resource with id "sceApiId"
+    Then The lifecycle status of API "sceApiId" should be "Published"
+    When I retrieve the "apis" resource with id "sceApiId"
+    And I extract response field "context" and store it as "sceContext"
+    When I have set up application with keys, subscribed to API "sceApiId", and obtained access token for "sceSub"
+    Then The response status code should be 200
+
+    When I invoke the API at gateway context "{{sceContext}}/1.0.0/special,-._~resource" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    And The response should contain "echo/special,-._~resource"
+    And The value of response field "received" should be "/jaxrs_basic/services/customers/customerservice/echo/special,-._~resource"
 
     Examples:
       | actor             |
@@ -1150,17 +1427,17 @@ Feature: Gateway REST API Invocation
       | admin             |
       | admin@tenant1.com |
 
-  # Ports DuplicateHeaderTestCase — the gateway must NOT collapse duplicate response headers coming from the
-  # backend. The node duplicate-header-backend (port 3005, GET /duplicate) emits TWO Set-Cookie headers
+  # Additional duplicate-header regression: the gateway must NOT collapse duplicate response headers coming from
+  # the backend. The node duplicate-header-backend (port 3005, GET /duplicate) emits TWO Set-Cookie headers
   # ("12wesdsfdffdsfff" and "3456wesfdsfdsfdf"); both must reach the client, since collapsing them silently
   # breaks backend session handling. This assertion cannot be expressed by the generic header steps: the shared
   # HttpResponse.getHeaders() is a Map<String,String>, which cannot hold two values for one key, so a raw
   # java.net.http.HttpClient is used (see APIInvocationSteps#invokeAndAssertMultiValuedHeader) to read
   # allValues("Set-Cookie") and assert the EXACT count AND both values — a count-only check would pass if the
   # gateway duplicated one value twice, a values-only check if it emitted three.
-  # (Legacy's driver — a jaggery client — was removed, so this row was never actually blocked, only driverless;
-  # the raw JDK client here restores the observation the legacy client used to make.)
-  @cap:gateway @feat:header-transformation @rule:duplicate-headers @type:regression @dep:publisher @legacy:DuplicateHeaderTestCase
+  # The legacy test method remains in source but its TestNG registration is commented out. V2 restores the
+  # intended duplicate-header behavior with a raw HTTP client, without depending on that dormant registration.
+  @cap:gateway @feat:header-transformation @rule:duplicate-headers @type:regression @dep:publisher
   Scenario Outline: The gateway preserves duplicate Set-Cookie response headers from the backend as <actor>
     Given The system is ready
     And I have valid access tokens as "<actor>"
@@ -1175,6 +1452,30 @@ Feature: Gateway REST API Invocation
 
     # Both Set-Cookie headers the backend emits must survive to the client — exact count AND exact values.
     When I invoke the API at gateway context "{{dupContext}}/1.0.0/" with method "GET" using access token "generatedAccessToken" and assert the response carries exactly 2 "Set-Cookie" headers with values "12wesdsfdffdsfff, 3456wesfdsfdsfdf" within 60 seconds
+
+    Examples:
+      | actor             |
+      | admin             |
+      | admin@tenant1.com |
+
+  # Exact parity for the legacy DuplicateHeaderTestCase: its WAR returns two response headers named "Cookie"
+  # (not Set-Cookie), and the test asserts that both survive the APIM gateway. This is a distinct header contract;
+  # keep it separate from the Set-Cookie scenario above. The raw backend response avoids Node's header normalization.
+  @cap:gateway @feat:header-transformation @rule:duplicate-headers @type:regression @dep:publisher @legacy:DuplicateHeaderTestCase
+  Scenario Outline: The gateway preserves duplicate Cookie response headers from the backend as <actor>
+    Given The system is ready
+    And I have valid access tokens as "<actor>"
+    And I have created an api from "artifacts/payloads/create_apim_duplicate_cookie_header_api.json" as "dupCookieApiId" and deployed it
+    And the "apis" resource "dupCookieApiId" should be live on the gateway, redeploying if propagation is lost
+    When I publish the "apis" resource with id "dupCookieApiId"
+    Then The lifecycle status of API "dupCookieApiId" should be "Published"
+    When I retrieve the "apis" resource with id "dupCookieApiId"
+    And I extract response field "context" and store it as "dupCookieContext"
+    When I have set up application with keys, subscribed to API "dupCookieApiId", and obtained access token for "dupCookieSubId"
+    Then The response status code should be 200
+
+    # Match legacy's exact count and improve it by checking both original values, not just count=2.
+    When I invoke the API at gateway context "{{dupCookieContext}}/1.0.0/" with method "GET" using access token "generatedAccessToken" and assert the response carries exactly 2 "Cookie" headers with values "12wesdsfdffdsfff, 3456wesfdsfdsfdf" within 60 seconds
 
     Examples:
       | actor             |

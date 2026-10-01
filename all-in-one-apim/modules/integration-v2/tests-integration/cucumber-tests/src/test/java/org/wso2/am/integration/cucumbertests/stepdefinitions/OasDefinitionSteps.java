@@ -104,10 +104,45 @@ public class OasDefinitionSteps {
     @When("I retrieve the devportal swagger of API {string}")
     public void iRetrieveDevportalSwagger(String apiIdKey) throws IOException {
 
+        retrieveDevportalSwagger(apiIdKey, null);
+    }
+
+    /** Retrieves a DevPortal definition for an explicitly selected gateway environment. */
+    @When("I retrieve the devportal swagger of API {string} in environment {string}")
+    public void iRetrieveDevportalSwaggerInEnvironment(String apiIdKey, String environmentName) throws IOException {
+
+        retrieveDevportalSwagger(apiIdKey, environmentName);
+    }
+
+    private void retrieveDevportalSwagger(String apiIdKey, String environmentName) throws IOException {
+
         String apiId = TestContext.resolve(apiIdKey).toString();
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
-        Requests.get(Utils.getDevportalApiSwaggerURL(Utils.getBaseUrl(), apiId), headers);
+        String url = environmentName == null
+                ? Utils.getDevportalApiSwaggerURL(Utils.getBaseUrl(), apiId)
+                : Utils.getDevportalApiSwaggerURL(Utils.getBaseUrl(), apiId, environmentName);
+        Requests.get(url, headers);
+    }
+
+    /** Requires an exact nested JSON-object match, including the absence of unexpected properties. */
+    @Then("The response object field {string} should equal")
+    public void responseObjectFieldShouldEqual(String fieldPath, String expectedJson) throws IOException {
+
+        HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
+        Assert.assertTrue(response != null && response.getResponseCode() >= 200 && response.getResponseCode() < 300
+                        && response.getData() != null && !response.getData().isBlank(),
+                "Expected a successful JSON response to compare object field '" + fieldPath + "', but got "
+                        + (response == null ? "null" : response.getResponseCode() + "/" + response.getData()));
+        JSONObject root = new JSONObject(response.getData());
+        Object actual = Utils.extractValueFromPayload(root.toString(), fieldPath);
+        Assert.assertTrue(actual instanceof Map,
+                "Response field '" + fieldPath + "' is not a JSON object: " + actual);
+        JSONObject actualObject = new JSONObject((Map<?, ?>) actual);
+        JSONObject expectedObject = new JSONObject(expectedJson);
+        Assert.assertTrue(actualObject.similar(expectedObject),
+                "Response object field '" + fieldPath + "' differs. Expected=" + expectedObject + ", actual="
+                        + actualObject + ", fullResponse=" + response.getData());
     }
 
     /**
@@ -374,7 +409,20 @@ public class OasDefinitionSteps {
         JSONObject definition = definitionFromContext(definitionKey);
         JSONObject dto = retrieveApiDto(apiIdKey);
 
-        String expectedBasePath = dto.getString("context") + "/" + dto.getString("version");
+        String apiContext = dto.getString("context");
+        String provider = dto.optString("provider", "");
+        int tenantSeparator = provider.lastIndexOf('@');
+        if (tenantSeparator >= 0) {
+            String tenantDomain = provider.substring(tenantSeparator + 1);
+            String tenantPrefix = "/t/" + tenantDomain;
+            // Publisher exposes tenant APIs under /t/{tenant-domain}, even though the API DTO's context omits
+            // that routing prefix. This mirrors the legacy OASBaseUtils assertion; without it the tenant rows
+            // would either fail against the correct basePath or silently skip checking the tenant namespace.
+            if (!"carbon.super".equals(tenantDomain) && !apiContext.startsWith(tenantPrefix + "/")) {
+                apiContext = tenantPrefix + apiContext;
+            }
+        }
+        String expectedBasePath = apiContext + "/" + dto.getString("version");
         Assert.assertEquals(definition.optString("x-wso2-basePath", null), expectedBasePath,
                 "x-wso2-basePath of the definition stored as '" + definitionKey + "' does not match the API's "
                         + "context/version. Definition root keys=" + definition.keySet());
@@ -508,6 +556,34 @@ public class OasDefinitionSteps {
         }
     }
 
+    /** The legacy Store contract forbids x-mediation-script on every operation, even when Publisher omitted it. */
+    @Then("The definition stored as {string} should not contain x-mediation-script on any operation")
+    public void definitionShouldNotContainMediationScriptOnAnyOperation(String definitionKey) {
+
+        JSONObject definition = definitionFromContext(definitionKey);
+        JSONObject paths = definition.optJSONObject("paths");
+        Assert.assertNotNull(paths, "Definition '" + definitionKey + "' has no paths section: " + definition);
+        int operationCount = 0;
+        for (String path : paths.keySet()) {
+            JSONObject pathItem = paths.optJSONObject(path);
+            if (pathItem == null) {
+                continue;
+            }
+            for (String method : pathItem.keySet()) {
+                if (!HTTP_METHODS.contains(method.toLowerCase())) {
+                    continue;
+                }
+                operationCount++;
+                JSONObject operation = pathItem.optJSONObject(method);
+                Assert.assertTrue(operation != null && !operation.has("x-mediation-script"),
+                        "Store definition '" + definitionKey + "' exposes x-mediation-script on "
+                                + method.toUpperCase() + " " + path + ": " + operation);
+            }
+        }
+        Assert.assertTrue(operationCount > 0,
+                "UNEXERCISED: definition '" + definitionKey + "' has no HTTP operations for x-mediation-script check");
+    }
+
     /**
      * Asserts two stored definitions are IDENTICAL, not merely operation-compatible — a semantic (canonicalised)
      * comparison via {@code JSONObject.similar}, so a re-serialisation that reorders keys is not a difference.
@@ -590,6 +666,57 @@ public class OasDefinitionSteps {
             Assert.assertEquals(verbsOf(secondPaths.optJSONObject(pathKey)), verbsOf(firstPaths.optJSONObject(pathKey)),
                     "Path '" + pathKey + "' declares different verbs in '" + secondKey + "' than in '" + firstKey
                             + "'");
+        }
+    }
+
+    /**
+     * Asserts full OpenAPI operation-object equality for every path and verb. This mirrors the legacy
+     * OAS2Utils/OAS3Utils validateUpdatedDefinition comparison of parsed Operation objects; the weaker
+     * same-path-and-verb check intentionally remains available for scenarios where APIM is expected to enrich
+     * operation fields between planes.
+     */
+    @Then("The OpenAPI operations in {string} and {string} should be identical")
+    public void openApiOperationsShouldBeIdentical(String firstKey, String secondKey) {
+
+        JSONObject firstPaths = definitionFromContext(firstKey).optJSONObject("paths");
+        JSONObject secondPaths = definitionFromContext(secondKey).optJSONObject("paths");
+        Assert.assertNotNull(firstPaths, "Definition '" + firstKey + "' has no paths section");
+        Assert.assertNotNull(secondPaths, "Definition '" + secondKey + "' has no paths section");
+        Assert.assertEquals(new TreeSet<>(firstPaths.keySet()), new TreeSet<>(secondPaths.keySet()),
+                "Definitions '" + firstKey + "' and '" + secondKey + "' declare different path sets");
+
+        for (String path : firstPaths.keySet()) {
+            JSONObject firstPath = firstPaths.optJSONObject(path);
+            JSONObject secondPath = secondPaths.optJSONObject(path);
+            Assert.assertNotNull(firstPath, "Path '" + path + "' is not an object in '" + firstKey + "'");
+            Assert.assertNotNull(secondPath, "Path '" + path + "' is not an object in '" + secondKey + "'");
+            Assert.assertEquals(verbsOf(firstPath), verbsOf(secondPath),
+                    "Path '" + path + "' declares different HTTP methods");
+            for (String verb : verbsOf(firstPath)) {
+                JSONObject firstOperation = firstPath.optJSONObject(verb.toLowerCase());
+                JSONObject secondOperation = secondPath.optJSONObject(verb.toLowerCase());
+                Assert.assertTrue(firstOperation.similar(secondOperation),
+                        "Operation " + verb + " " + path + " differs between '" + firstKey + "' and '" + secondKey
+                                + "'. First=" + firstOperation + "; second=" + secondOperation);
+            }
+        }
+    }
+
+    /** Pins the version discriminator itself, not just a fixture filename or request parameter. */
+    @Then("The definition stored as {string} should declare OpenAPI version {string}")
+    public void definitionShouldDeclareOpenApiVersion(String definitionKey, String expectedVersion) {
+
+        JSONObject definition = definitionFromContext(definitionKey);
+        if ("2.0".equals(expectedVersion)) {
+            Assert.assertEquals(definition.optString("swagger", null), "2.0",
+                    "Definition '" + definitionKey + "' is not Swagger 2.0");
+            Assert.assertTrue(!definition.has("openapi") || definition.isNull("openapi"),
+                    "Swagger 2.0 definition '" + definitionKey + "' unexpectedly declares an OpenAPI version");
+        } else {
+            Assert.assertEquals(definition.optString("openapi", null), expectedVersion,
+                    "Definition '" + definitionKey + "' has the wrong OpenAPI version");
+            Assert.assertTrue(!definition.has("swagger") || definition.isNull("swagger"),
+                    "OpenAPI " + expectedVersion + " definition '" + definitionKey + "' unexpectedly declares Swagger");
         }
     }
 

@@ -1,0 +1,23 @@
+[admin_service]
+deny_list = [
+    "ClassMediatorAdmin",
+    "CommandMediatorAdmin",
+    "CustomMeteringService",
+    "DeploymentSynchronizerAdmin",
+    "EndpointTemplateAdminService",
+    "ESBNTaskAdmin",
+    "MediationLibraryAdminService",
+    "MediationLibraryUploader",
+    "MediationSecurityAdminService",
+    "MetricsDataService",
+    "ModuleAdminService",
+    "RemoteTaskAdmin",
+    "StatisticsAdmin",
+    "SynapseApplicationAdmin",
+    "SynapseArtifactUploaderAdmin",
+    "TemplateAdminService",
+    "ThemeMgtService",
+    "TierCacheService",
+    "WebappAdmin",
+    "NDataSourceAdmin"
+]

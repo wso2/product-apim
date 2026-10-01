@@ -1,0 +1,36 @@
+{
+  "name": "${UNIQUE:APIMVersionFirstResource}",
+  "context": "{version}/${UNIQUE:versionFirstResourceCtx}",
+  "version": "1.0.0",
+  "endpointConfig": {
+    "endpoint_type": "http",
+    "production_endpoints": {
+      "template_not_supported": false,
+      "config": null,
+      "url": "http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/"
+    },
+    "sandbox_endpoints": {
+      "url": "http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/",
+      "config": null,
+      "template_not_supported": false
+    }
+  },
+  "description": "Version-first API for REST resource mutation parity",
+  "tags": ["versionfirst", "resource-mutation"],
+  "policies": ["Gold", "Bronze", "Unlimited"],
+  "operations": [
+    {
+      "verb": "GET",
+      "target": "/customers/{id}",
+      "scopes": []
+    },
+    {
+      "verb": "DELETE",
+      "target": "/customers/{id}",
+      "scopes": []
+    }
+  ],
+  "isDefaultVersion": true,
+  "additionalProperties": [],
+  "additionalPropertiesMap": {}
+}

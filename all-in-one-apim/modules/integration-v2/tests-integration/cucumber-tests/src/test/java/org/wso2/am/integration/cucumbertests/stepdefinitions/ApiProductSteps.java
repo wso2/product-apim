@@ -52,6 +52,12 @@ public class ApiProductSteps {
 
     private final BaseSteps baseSteps = new BaseSteps();
     private final ApplicationBaseSteps applicationSteps = new ApplicationBaseSteps();
+    private final APIInvocationSteps invocationSteps = new APIInvocationSteps();
+
+    /** The leasing member's five resources (legacy leasing-api), invoked as verb + path under the product context. */
+    private static final String[][] LEASING_OPERATIONS = {
+            {"GET", "/assets"}, {"POST", "/assets"}, {"GET", "/assets/1"}, {"PUT", "/assets/1"},
+            {"DELETE", "/assets/1"}};
 
     /**
      * Page size for the unfiltered listing reads. Generous enough that a shared block's accumulated APIs and
@@ -64,6 +70,10 @@ public class ApiProductSteps {
     private static final String SANDBOX_APP_TOKEN = "sandboxAppToken";
     private static final String PRODUCTION_USER_TOKEN = "productionUserToken";
     private static final String SANDBOX_USER_TOKEN = "sandboxUserToken";
+    private static final String KEYGEN_CALLBACK_URL = "http://localhost";
+    private static final String KEYGEN_VALIDITY = "3600";
+    private static final String PRODUCTION_SUBSCRIBER_TOKEN = "productionSubscriberToken";
+    private static final String SANDBOX_SUBSCRIBER_TOKEN = "sandboxSubscriberToken";
 
     /**
      * Sets up ONE application subscribed to the given API/product and obtains the FOUR credentials the legacy
@@ -81,6 +91,32 @@ public class ApiProductSteps {
      */
     @When("I have set up application with production and sandbox keys, subscribed to API {string} with plan {string}, and obtained the four credentials as {string}")
     public void iSetUpFourCredentials(String apiIdKey, String plan, String subscriptionIdKey) throws Exception {
+        setUpFourCredentials(apiIdKey, plan, subscriptionIdKey, null, null);
+    }
+
+    /**
+     * The four-credential composite, plus a PRODUCTION and a SANDBOX password-grant token for a SECOND resource
+     * owner ({@code productionSubscriberToken} / {@code sandboxSubscriberToken}) minted with the same application
+     * keys — legacy invoked products with tokens of least-privileged subscribers, not the application owner.
+     */
+    @When("I have set up application with production and sandbox keys, subscribed to API {string} with plan {string}, and obtained the four credentials as {string} plus user tokens for {string}")
+    public void iSetUpFourCredentialsPlusUserTokens(String apiIdKey, String plan, String subscriptionIdKey,
+                                                    String userTokenActor) throws Exception {
+        setUpFourCredentials(apiIdKey, plan, subscriptionIdKey, userTokenActor, "");
+    }
+
+    /**
+     * As above, but the second resource owner's tokens request {@code scope}, and the token response must grant
+     * exactly that scope set (legacy asserted the echoed scope set equal to the requested one).
+     */
+    @When("I have set up application with production and sandbox keys, subscribed to API {string} with plan {string}, and obtained the four credentials as {string} plus user tokens for {string} with scope {string}")
+    public void iSetUpFourCredentialsPlusScopedUserTokens(String apiIdKey, String plan, String subscriptionIdKey,
+                                                          String userTokenActor, String scope) throws Exception {
+        setUpFourCredentials(apiIdKey, plan, subscriptionIdKey, userTokenActor, scope);
+    }
+
+    private void setUpFourCredentials(String apiIdKey, String plan, String subscriptionIdKey,
+                                      String userTokenActor, String userTokenScope) throws Exception {
 
         baseSteps.putJsonPayloadFromFile("artifacts/payloads/create_apim_test_app.json", "<createAppPayload>");
         applicationSteps.iCreateAnApplicationWithJsonPayload("<createAppPayload>");
@@ -92,23 +128,146 @@ public class ApiProductSteps {
                 + "\"apiId\": \"{{apiId}}\",\"throttlingPolicy\": \"" + plan + "\"}");
         applicationSteps.iSubscribeToApi(apiIdKey, "<createdAppId>", "<apiSubscriptionPayload>", subscriptionIdKey);
         baseSteps.theResponseStatusCodeShouldBe(201);
+        assertSubscription(currentResponseJson("subscription"), TestContext.resolve(apiIdKey).toString(),
+                TestContext.resolve("createdAppId").toString(), plan);
 
         captureApplicationToken(PRODUCTION_APP_TOKEN);
         captureUserToken(PRODUCTION_USER_TOKEN);
+        if (userTokenActor != null) {
+            captureNamedUserToken(userTokenActor, userTokenScope, PRODUCTION_SUBSCRIBER_TOKEN);
+        }
 
         generateKeysOfType("SANDBOX");
 
         captureApplicationToken(SANDBOX_APP_TOKEN);
         captureUserToken(SANDBOX_USER_TOKEN);
+        if (userTokenActor != null) {
+            captureNamedUserToken(userTokenActor, userTokenScope, SANDBOX_SUBSCRIBER_TOKEN);
+        }
+    }
+
+    /**
+     * Legacy verifyInvocation: EVERY resource of the product's leasing member (create_apim_product_leasing_api.json)
+     * is invoked through the product with each credential, and each call must answer the expected status and body.
+     */
+    @When("I invoke every operation of the product leasing member at {string} with access tokens {string} expecting status {int} and body {string}")
+    public void iInvokeEveryLeasingOperation(String productBase, String tokenKeysCsv, int expectedStatus,
+                                             String expectedBody) throws Exception {
+        for (String tokenKey : tokenKeysCsv.split(",")) {
+            for (String[] operation : LEASING_OPERATIONS) {
+                invocationSteps.invokeApiByContextUntilStatus(productBase + operation[1], operation[0],
+                        tokenKey.trim(), "", expectedStatus, 60);
+                baseSteps.theResponseStatusCodeShouldBe(expectedStatus);
+                baseSteps.responseShouldContainFieldValue(expectedBody);
+            }
+        }
+    }
+
+    /**
+     * Legacy verifyInvocation with a body: the same request is sent with each credential and every response must be
+     * the expected status with EXACTLY the expected body. Where an earlier state could also answer that status, gate
+     * on the new body first — this step stops polling at the first matching status.
+     */
+    @When("I invoke {string} with method {string}, payload {string} and content type {string} using each of the access tokens {string} and expect status {int} with body exactly {string}")
+    public void iInvokeWithEachTokenExpectingExactBody(String context, String method, String payloadKey,
+                                                       String contentType, String tokenKeysCsv, int expectedStatus,
+                                                       String expectedBody) throws Exception {
+        String expected = Utils.resolveContextPlaceholders(expectedBody);
+        for (String tokenKey : tokenKeysCsv.split(",")) {
+            invocationSteps.invokeApiByContextWithContentTypeUntilStatus(context, method, tokenKey.trim(), payloadKey,
+                    contentType, expectedStatus, 60);
+            baseSteps.theResponseStatusCodeShouldBe(expectedStatus);
+            HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
+            Assert.assertEquals(response.getData(), expected, method + " " + context + " with token '" + tokenKey.trim()
+                    + "' did not return exactly the expected body");
+        }
     }
 
     /** Generates keys of the given keyType for the created application, with the password grant enabled. */
     private void generateKeysOfType(String keyType) throws Exception {
         baseSteps.putJsonPayloadInContext("<generateApplicationKeysPayload>", "{\"keyType\": \"" + keyType + "\","
-                + "\"grantTypesToBeSupported\": [\"client_credentials\", \"password\"]}");
+                + "\"grantTypesToBeSupported\": [\"client_credentials\", \"password\"],"
+                + "\"callbackUrl\": \"" + KEYGEN_CALLBACK_URL + "\",\"validityTime\": \"" + KEYGEN_VALIDITY + "\"}");
         applicationSteps.iGenerateClientCredentialsForApplication("<createdAppId>",
                 "<generateApplicationKeysPayload>");
         baseSteps.theResponseStatusCodeShouldBe(200);
+        JSONObject keys = currentResponseJson(keyType + " key generation");
+        Assert.assertEquals(keys.optString("callbackUrl"), KEYGEN_CALLBACK_URL, "Generated keys callbackUrl mismatch: "
+                + keys);
+        JSONObject keyToken = keys.optJSONObject("token");
+        Assert.assertNotNull(keyToken, "Generated keys carry no token: " + keys);
+        Assert.assertEquals(toStringSet(keyToken.optJSONArray("tokenScopes")),
+                new HashSet<>(java.util.Collections.singletonList("default")),
+                "Key token scopes are not exactly {default}: " + keys);
+        Assert.assertEquals(keyToken.optLong("validityTime"), Long.parseLong(KEYGEN_VALIDITY),
+                "Key token validity mismatch: " + keys);
+        Assert.assertEquals(keys.optString("keyType"), keyType, "Generated key type mismatch: " + keys);
+        Assert.assertEquals(keys.optString("keyState"), "APPROVED", "Generated keys are not APPROVED: " + keys);
+        Assert.assertEquals(toStringSet(keys.optJSONArray("supportedGrantTypes")),
+                new HashSet<>(java.util.Arrays.asList("client_credentials", "password")),
+                "Generated keys do not support exactly the requested grant types: " + keys);
+    }
+
+    /** Legacy verifySubscription: the subscription binds THIS api and application, on the plan, UNBLOCKED. */
+    private void assertSubscription(JSONObject subscription, String apiId, String applicationId, String plan) {
+        Assert.assertEquals(subscription.optString("apiId"), apiId, "Subscription apiId mismatch: " + subscription);
+        Assert.assertEquals(subscription.optString("applicationId"), applicationId,
+                "Subscription applicationId mismatch: " + subscription);
+        Assert.assertEquals(subscription.optString("throttlingPolicy"), plan,
+                "Subscription throttling policy mismatch: " + subscription);
+        Assert.assertEquals(subscription.optString("status"), "UNBLOCKED",
+                "Subscription is not UNBLOCKED: " + subscription);
+        JSONObject apiInfo = subscription.optJSONObject("apiInfo");
+        Assert.assertNotNull(apiInfo, "Subscription carries no apiInfo: " + subscription);
+        Assert.assertEquals(apiInfo.optString("id"), apiId, "Subscription apiInfo.id mismatch: " + subscription);
+        // Legacy verifySubscriptionApiInfo compared apiInfo with the devportal representation of the subscribed API.
+        Map<String, String> devportalHeaders = new HashMap<>();
+        devportalHeaders.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
+        JSONObject portal = readJsonWhenAvailableQuietly(Utils.getDevportalApiDetailURL(Utils.getBaseUrl(), apiId),
+                devportalHeaders, "devportal API " + apiId);
+        for (String field : new String[] {"name", "provider", "context", "lifeCycleStatus", "description"}) {
+            Assert.assertEquals(apiInfo.optString(field, null), portal.optString(field, null),
+                    "Subscription apiInfo." + field + " differs from the devportal representation: apiInfo="
+                            + apiInfo + " devportal=" + portal);
+        }
+        JSONObject applicationInfo = subscription.optJSONObject("applicationInfo");
+        Assert.assertNotNull(applicationInfo, "Subscription carries no applicationInfo: " + subscription);
+        Assert.assertEquals(applicationInfo.optString("applicationId"), applicationId,
+                "Subscription applicationInfo.applicationId mismatch: " + subscription);
+        // A freshly created application's first subscription (legacy: the app's count before subscribing + 1).
+        Assert.assertEquals(applicationInfo.optInt("subscriptionCount", -1), 1,
+                "Subscription applicationInfo.subscriptionCount mismatch: " + subscription);
+    }
+
+    private JSONObject readJsonWhenAvailableQuietly(String url, Map<String, String> headers, String what) {
+        try {
+            return readJsonWhenAvailable(url, headers, what);
+        } catch (Exception e) {
+            throw new AssertionError("Failed to read " + what, e);
+        }
+    }
+
+    /** Password-grant token for a NAMED actor with the current client credentials; a requested scope must be echoed. */
+    private void captureNamedUserToken(String actorRef, String scope, String contextKey) throws Exception {
+        applicationSteps.iRequestOAuthAccessTokenAsActorWithScope(actorRef, scope);
+        baseSteps.theResponseStatusCodeShouldBe(200);
+        if (scope != null && !scope.isBlank()) {
+            JSONObject tokenResponse = currentResponseJson("password-grant token");
+            Set<String> requested = new HashSet<>(java.util.Arrays.asList(
+                    Utils.resolveContextPlaceholders(scope).trim().split("\\s+")));
+            Set<String> granted = new HashSet<>(java.util.Arrays.asList(
+                    tokenResponse.optString("scope").trim().split("\\s+")));
+            Assert.assertEquals(granted, requested, "Token for " + actorRef + " was not granted exactly the requested "
+                    + "scopes: " + tokenResponse);
+        }
+        stowGeneratedToken(contextKey);
+    }
+
+    private JSONObject currentResponseJson(String what) {
+        HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
+        Assert.assertTrue(response != null && response.getData() != null && !response.getData().isBlank(),
+                "No " + what + " response body to inspect");
+        return new JSONObject(response.getData());
     }
 
     /** Requests an application (client-credentials) token for the CURRENT key mapping and stows it under a key. */
@@ -231,8 +390,133 @@ public class ApiProductSteps {
         assertSameField(entry, product, "description", productId);
         assertSameField(entry, product, "provider", productId);
         assertSameField(entry, product, "state", productId);
+        assertSameField(entry, product, "hasThumbnail", productId);
         assertSameStringSet(entry.optJSONArray("securityScheme"), product.optJSONArray("securityScheme"),
                 "securityScheme", productId);
+    }
+
+    /**
+     * Legacy createAPIProductInPublisher: the create response echoes the requested name, version 1.0.0, the
+     * requested context (prefixed {@code /t/<domain>} for a tenant provider) and the provider.
+     */
+    @Then("The create response of API product {string} should echo its name, context, version and the provider of actor {string}")
+    public void theCreateResponseShouldEchoRequest(String productIdKey, String providerActorRef) {
+
+        JSONObject created = new JSONObject(TestContext.resolve(
+                productIdKey + PublisherBaseSteps.PRODUCT_CREATE_RESPONSE_SUFFIX).toString());
+        String requestedName = TestContext.resolve(productIdKey + PublisherBaseSteps.PRODUCT_REQUESTED_NAME_SUFFIX)
+                .toString();
+        String requestedContext = TestContext.resolve(
+                productIdKey + PublisherBaseSteps.PRODUCT_REQUESTED_CONTEXT_SUFFIX).toString();
+        String bareContext = requestedContext.startsWith("/") ? requestedContext : "/" + requestedContext;
+        String tenantDomain = Identity.resolveActor(Utils.resolveContextPlaceholders(providerActorRef))
+                .getUserDomain();
+        String expectedContext = Constants.SUPER_TENANT_DOMAIN.equals(tenantDomain)
+                ? bareContext : "/t/" + tenantDomain + bareContext;
+
+        Assert.assertEquals(created.optString("name"), requestedName, "Create response name mismatch: " + created);
+        Assert.assertEquals(created.optString("version"), "1.0.0", "Create response version mismatch: " + created);
+        Assert.assertEquals(created.optString("context"), expectedContext,
+                "Create response context mismatch: " + created);
+        Assert.assertEquals(created.optString("provider"), PublisherBaseSteps.providerOf(providerActorRef),
+                "Create response provider mismatch: " + created);
+    }
+
+    /** Checks the full product-create representation when an admin supplies an arbitrary provider value. */
+    @Then("The create response of API product {string} should echo its name, context, version and requested provider for actor {string}")
+    public void theCreateResponseShouldEchoExplicitProvider(String productIdKey, String actorRef) {
+        JSONObject created = new JSONObject(TestContext.resolve(
+                productIdKey + PublisherBaseSteps.PRODUCT_CREATE_RESPONSE_SUFFIX).toString());
+        String requestedName = TestContext.resolve(productIdKey + PublisherBaseSteps.PRODUCT_REQUESTED_NAME_SUFFIX)
+                .toString();
+        String requestedContext = TestContext.resolve(
+                productIdKey + PublisherBaseSteps.PRODUCT_REQUESTED_CONTEXT_SUFFIX).toString();
+        String expectedProvider = TestContext.resolve(
+                productIdKey + PublisherBaseSteps.PRODUCT_REQUESTED_PROVIDER_SUFFIX).toString();
+        String bareContext = requestedContext.startsWith("/") ? requestedContext : "/" + requestedContext;
+        String tenantDomain = Identity.resolveActor(Utils.resolveContextPlaceholders(actorRef)).getUserDomain();
+        String expectedContext = Constants.SUPER_TENANT_DOMAIN.equals(tenantDomain)
+                ? bareContext : "/t/" + tenantDomain + bareContext;
+
+        Assert.assertEquals(created.optString("name"), requestedName, "Create response name mismatch: " + created);
+        Assert.assertEquals(created.optString("version"), "1.0.0", "Create response version mismatch: " + created);
+        Assert.assertEquals(created.optString("context"), expectedContext,
+                "Create response context mismatch: " + created);
+        Assert.assertEquals(created.optString("provider"), expectedProvider,
+                "Create response provider mismatch: " + created);
+    }
+
+    /** Legacy verfiyApiProductInPublisher: the product read back by id equals its create response field by field. */
+    @Then("The API product {string} read from the publisher should match its create response")
+    public void theProductShouldMatchItsCreateResponse(String productIdKey) throws IOException {
+
+        String productId = TestContext.resolve(productIdKey).toString();
+        JSONObject created = new JSONObject(TestContext.resolve(
+                productIdKey + PublisherBaseSteps.PRODUCT_CREATE_RESPONSE_SUFFIX).toString());
+        JSONObject current = readJson(Utils.getResourceEndpointURL(Utils.getBaseUrl(), "api-products", productId),
+                publisherHeaders(), "API product " + productId);
+
+        for (String field : new String[] {"id", "name", "context", "version", "description", "provider",
+                "hasThumbnail", "state", "enableSchemaValidation", "responseCachingEnabled", "cacheTimeout",
+                "visibility", "accessControl", "apiType", "authorizationHeader", "subscriptionAvailability",
+                "apiThrottlingPolicy", "createdTime", "lastUpdatedTime", "isDefaultVersion"}) {
+            if (created.has(field)) {
+                assertSameField(current, created, field, productId);
+            }
+        }
+        for (String field : new String[] {"visibleRoles", "visibleTenants", "accessControlRoles", "transport",
+                "tags", "policies", "securityScheme", "subscriptionAvailableTenants"}) {
+            assertSameStringSet(current.optJSONArray(field), created.optJSONArray(field), field, productId);
+        }
+        for (String field : new String[] {"businessInformation", "corsConfiguration", "monetization"}) {
+            Object expected = created.isNull(field) ? null : created.get(field);
+            Object actual = current.isNull(field) ? null : current.get(field);
+            Assert.assertTrue(expected == null ? actual == null
+                            : actual != null && new JSONObject(actual.toString()).similar(
+                                    new JSONObject(expected.toString())),
+                    "'" + field + "' differs between the create response and GET of " + productId
+                            + ": created=" + expected + " current=" + actual);
+        }
+        Assert.assertEquals(apiIdsOf(current), apiIdsOf(created),
+                "Member APIs differ between the create response and GET of " + productId);
+        Assert.assertEquals(productScopesOf(current), productScopesOf(created),
+                "Scopes (name, description, bindings) differ between the create response and GET of " + productId);
+        Assert.assertEquals(additionalPropertiesOf(current), additionalPropertiesOf(created),
+                "additionalProperties differ between the create response and GET of " + productId);
+    }
+
+    /**
+     * Legacy verifyInvocation read the gateway URLs the devportal advertises for a DEPLOYED product: at least one
+     * environment entry carrying an http or https gateway URL.
+     */
+    @Then("The devportal should advertise gateway endpoint URLs for API product {string}")
+    public void theDevportalShouldAdvertiseEndpointUrls(String productIdKey) throws Exception {
+
+        String productId = TestContext.resolve(productIdKey).toString();
+        Map<String, String> devportalHeaders = new HashMap<>();
+        devportalHeaders.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
+        JSONObject portalProduct = readJsonUntil(Utils.getDevportalApiDetailURL(Utils.getBaseUrl(), productId),
+                devportalHeaders, "devportal API product " + productId, body -> {
+                    JSONArray urls = body.optJSONArray("endpointURLs");
+                    return urls != null && urls.length() > 0;
+                });
+        JSONObject urls = portalProduct.getJSONArray("endpointURLs").getJSONObject(0).optJSONObject("URLs");
+        Assert.assertTrue(urls != null && (!urls.optString("https").isBlank() || !urls.optString("http").isBlank()),
+                "Devportal endpointURLs carry no gateway URL for API product " + productId + ": "
+                        + portalProduct.getJSONArray("endpointURLs"));
+    }
+
+    /** Devportal read of the product by id, polled until its lifeCycleStatus is the expected state. */
+    @Then("The devportal should report API product {string} with lifecycle status {string}")
+    public void theDevportalShouldReportLifecycleStatus(String productIdKey, String expectedStatus) throws Exception {
+
+        String productId = TestContext.resolve(productIdKey).toString();
+        Map<String, String> devportalHeaders = new HashMap<>();
+        devportalHeaders.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
+        JSONObject portalProduct = readJsonUntil(Utils.getDevportalApiDetailURL(Utils.getBaseUrl(), productId),
+                devportalHeaders, "devportal API product " + productId,
+                body -> expectedStatus.equals(body.optString("lifeCycleStatus")));
+        Assert.assertEquals(portalProduct.optString("id"), productId, "Devportal returned another resource");
     }
 
     /**
@@ -246,10 +530,28 @@ public class ApiProductSteps {
      */
     @Then("The devportal should report API product {string} exactly once with the same fields")
     public void theDevportalShouldReportProductOnce(String productIdKey) throws Exception {
+        devportalShouldReportProductOnce(productIdKey, publisherHeaders());
+    }
+
+    /**
+     * As above, for a consumer that cannot read the publisher plane: the acting actor reads the devportal, and the
+     * reference publisher DTO is read with the named publisher's token.
+     */
+    @Then("The devportal should report API product {string} exactly once with the same fields as published by {string}")
+    public void theDevportalShouldReportProductOnceAsPublishedBy(String productIdKey, String publisherActorRef)
+            throws Exception {
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken(
+                Identity.resolveActor(Utils.resolveContextPlaceholders(publisherActorRef))));
+        devportalShouldReportProductOnce(productIdKey, headers);
+    }
+
+    private void devportalShouldReportProductOnce(String productIdKey, Map<String, String> publisherHeaders)
+            throws Exception {
 
         String productId = TestContext.resolve(productIdKey).toString();
         JSONObject product = readJson(Utils.getResourceEndpointURL(Utils.getBaseUrl(), "api-products", productId),
-                publisherHeaders(), "API product " + productId);
+                publisherHeaders, "API product " + productId);
 
         Map<String, String> devportalHeaders = new HashMap<>();
         devportalHeaders.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
@@ -297,9 +599,115 @@ public class ApiProductSteps {
         Assert.assertEquals(portalOperations.length(), productOperationCount,
                 "Devportal operation count does not match the product's aggregated resources for " + productId);
 
+        Assert.assertEquals(operationKeys(portalOperations), productOperationKeys(productApis),
+                "Devportal operations (verb + target) differ from the product's aggregated resources for "
+                        + productId);
+        assertSameStringSet(portalProduct.optJSONArray("securityScheme"), product.optJSONArray("securityScheme"),
+                "securityScheme", productId);
+        assertSameStringSet(portalProduct.optJSONArray("tags"), product.optJSONArray("tags"), "tags", productId);
+        assertSameStringSet(portalProduct.optJSONArray("transport"), product.optJSONArray("transport"),
+                "transport", productId);
+        JSONObject portalBusiness = portalProduct.optJSONObject("businessInformation");
+        JSONObject productBusiness = product.optJSONObject("businessInformation");
+        for (String field : new String[] {"businessOwner", "businessOwnerEmail", "technicalOwner",
+                "technicalOwnerEmail"}) {
+            Assert.assertEquals(portalBusiness == null ? null : portalBusiness.optString(field, null),
+                    productBusiness == null ? null : productBusiness.optString(field, null),
+                    "Devportal businessInformation." + field + " differs for " + productId);
+        }
+        Assert.assertEquals(additionalPropertiesOf(portalProduct), additionalPropertiesOf(product),
+                "Devportal additionalProperties differ for " + productId);
+        Assert.assertEquals(portalScopesOf(portalProduct), productScopesOf(product),
+                "Devportal scopes (name, description, roles) differ for " + productId);
+
         JSONObject listing = readJsonUntil(Utils.getDevportalApiListURL(Utils.getBaseUrl(), PRODUCT_LIST_PAGE_SIZE),
                 devportalHeaders, "devportal listing", body -> countEntriesWithId(body, productId) == 1);
-        onlyEntryWithId(listing, productId, "devportal listing");
+        JSONObject entry = onlyEntryWithId(listing, productId, "devportal listing");
+        assertSameField(entry, product, "name", productId);
+        assertSameField(entry, product, "description", productId);
+        assertSameField(entry, product, "provider", productId);
+        assertSameField(entry, product, "context", productId);
+        Assert.assertEquals(entry.optString("lifeCycleStatus"), productState,
+                "Devportal listing lifeCycleStatus does not match the product's state for " + productId);
+        assertSameStringSet(entry.optJSONArray("throttlingPolicies"), product.optJSONArray("policies"),
+                "throttlingPolicies/policies", productId);
+    }
+
+    private Set<String> operationKeys(JSONArray operations) {
+        Set<String> keys = new HashSet<>();
+        for (int i = 0; i < operations.length(); i++) {
+            JSONObject operation = operations.getJSONObject(i);
+            keys.add(operation.optString("verb") + " " + operation.optString("target"));
+        }
+        return keys;
+    }
+
+    private Set<String> productOperationKeys(JSONArray productApis) {
+        Set<String> keys = new HashSet<>();
+        for (int i = 0; i < productApis.length(); i++) {
+            JSONArray operations = productApis.getJSONObject(i).optJSONArray("operations");
+            if (operations != null) {
+                keys.addAll(operationKeys(operations));
+            }
+        }
+        return keys;
+    }
+
+    private Set<String> apiIdsOf(JSONObject product) {
+        Set<String> ids = new HashSet<>();
+        JSONArray apis = product.optJSONArray("apis");
+        if (apis != null) {
+            for (int i = 0; i < apis.length(); i++) {
+                ids.add(apis.getJSONObject(i).optString("apiId"));
+            }
+        }
+        return ids;
+    }
+
+    /** Publisher scopes[].scope → "name|description|sorted bindings", the devportal scopes[] counterpart. */
+    private Set<String> productScopesOf(JSONObject product) {
+        Set<String> scopes = new HashSet<>();
+        JSONArray list = product.optJSONArray("scopes");
+        if (list != null) {
+            for (int i = 0; i < list.length(); i++) {
+                JSONObject scope = list.getJSONObject(i).optJSONObject("scope");
+                if (scope != null) {
+                    scopes.add(scopeKey(scope.optString("name"), scope.optString("description"),
+                            scope.optJSONArray("bindings")));
+                }
+            }
+        }
+        return scopes;
+    }
+
+    private Set<String> portalScopesOf(JSONObject portalProduct) {
+        Set<String> scopes = new HashSet<>();
+        JSONArray list = portalProduct.optJSONArray("scopes");
+        if (list != null) {
+            for (int i = 0; i < list.length(); i++) {
+                JSONObject scope = list.getJSONObject(i);
+                scopes.add(scopeKey(scope.optString("name"), scope.optString("description"),
+                        scope.optJSONArray("roles")));
+            }
+        }
+        return scopes;
+    }
+
+    private String scopeKey(String name, String description, JSONArray roles) {
+        return name + "|" + description + "|" + new java.util.TreeSet<>(toStringSet(roles));
+    }
+
+    /** additionalProperties as a set of "name=value" (both planes expose a list of {name, value, display}). */
+    private Set<String> additionalPropertiesOf(JSONObject resource) {
+        Set<String> properties = new HashSet<>();
+        JSONArray list = resource.optJSONArray("additionalProperties");
+        if (list != null) {
+            for (int i = 0; i < list.length(); i++) {
+                JSONObject property = list.getJSONObject(i);
+                properties.add(property.optString("name") + "=" + property.optString("value"));
+            }
+        }
+        return properties;
     }
 
     /**
@@ -313,10 +721,22 @@ public class ApiProductSteps {
      */
     @Then("The client certificates of API product {string} should list alias {string}")
     public void theProductClientCertificatesShouldListAlias(String productIdKey, String alias) throws IOException {
-
         String productId = TestContext.resolve(productIdKey).toString();
-        JSONObject listing = readJson(Utils.getClientCertificatesURL(Utils.getBaseUrl(), productId),
-                publisherHeaders(), "client certificates of API product " + productId);
+        assertCertificateListingHasAlias(Utils.getClientCertificatesURL(Utils.getBaseUrl(), productId), productId,
+                alias);
+    }
+
+    /** As above, against the key-type-scoped listing ({@code /client-certs/{keyType}}). */
+    @Then("The {string} client certificates of API product {string} should list alias {string}")
+    public void theProductTypedClientCertificatesShouldListAlias(String keyType, String productIdKey, String alias)
+            throws IOException {
+        String productId = TestContext.resolve(productIdKey).toString();
+        assertCertificateListingHasAlias(Utils.getClientCertificatesByKeyTypeURL(Utils.getBaseUrl(), productId,
+                keyType), productId, alias);
+    }
+
+    private void assertCertificateListingHasAlias(String url, String productId, String alias) throws IOException {
+        JSONObject listing = readJson(url, publisherHeaders(), "client certificates of API product " + productId);
         JSONArray certificates = listing.optJSONArray("certificates");
         Assert.assertNotNull(certificates,
                 "Client-certificate listing for API product " + productId + " has no certificates array: " + listing);

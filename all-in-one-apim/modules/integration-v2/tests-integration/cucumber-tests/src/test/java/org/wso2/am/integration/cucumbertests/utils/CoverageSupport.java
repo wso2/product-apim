@@ -19,11 +19,16 @@ package org.wso2.am.integration.cucumbertests.utils;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.wso2.am.testcontainers.ApimRuntime;
+import org.wso2.am.testcontainers.JacocoCoverage;
 
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Central gate + path layout for the (opt-in) integration-coverage collection.
@@ -32,6 +37,12 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * JaCoCo agent on each block's container and dumps that block's counters to {@link #execFile} before stopping
  * it; the suite-level {@code CoverageAggregationListener} then merges all per-block {@code .exec} files and
  * renders {@code jacoco-it.xml} + HTML (see docs/devs/v2-coverage-architecture.md). All-in-one lane only.
+ *
+ * <p>In tcpserver mode the agent's counters live only in the server JVM's memory and are never written to a file,
+ * and a Carbon graceful restart exits that JVM ({@code System.exit(121)}) so {@code api-manager.sh} launches a new
+ * one. {@link #dumpBeforeRestart} therefore
+ * saves the outgoing JVM's counters to {@link #restartExecFile} before every restart; each JVM is its own JaCoCo
+ * session, so merging the restart dumps with the block-end dump unions what every JVM of the block executed.
  */
 public final class CoverageSupport {
 
@@ -49,6 +60,16 @@ public final class CoverageSupport {
      * ⇒ the zip path ({@link #distributionZip}) is used.
      */
     public static final String CLASSFILES_PROPERTY = "apim.coverage.classfiles";
+
+    /** Shared-context key holding the booted block's label, published by {@code BlockLifecycleListener}. */
+    public static final String BLOCK_LABEL_KEY = "blockLabel";
+    /** Shared-context key holding the booted block's {@link ApimRuntime}, published by {@code BlockLifecycleListener}. */
+    private static final String CONTAINER_KEY = "blockApimContainer";
+    /** Infix that marks an {@code .exec} as a pre-restart dump rather than a block-end dump. */
+    public static final String RESTART_EXEC_INFIX = ".restart-";
+
+    /** Per-block count of pre-restart dumps, so each restart of a block gets its own {@code .exec}. */
+    private static final Map<String, AtomicInteger> RESTART_DUMPS = new ConcurrentHashMap<>();
 
     /** Warn at most once if the property is present-but-not-truthy (enabled() is polled per block + at suite ends). */
     private static final AtomicBoolean WARNED_NOT_TRUTHY = new AtomicBoolean(false);
@@ -95,6 +116,38 @@ public final class CoverageSupport {
         return new File(execDir(moduleDir), blockLabel + ".exec");
     }
 
+    /** The {@code .exec} destination for the {@code n}-th (1-based) JVM a block replaced by a graceful restart. */
+    public static File restartExecFile(String moduleDir, String blockLabel, int n) {
+        return new File(execDir(moduleDir), blockLabel + RESTART_EXEC_INFIX + n + ".exec");
+    }
+
+    /**
+     * Dumps the current server JVM's counters before a graceful restart replaces it (no-op when coverage is off).
+     * Must be called while the old JVM is still serving, i.e. before the restart is requested. Best-effort like the
+     * block-end dump: a failure is logged as a WARN and never fails the calling step.
+     */
+    public static void dumpBeforeRestart() {
+        if (!enabled()) {
+            return;
+        }
+        Object runtime = TestContext.get(CONTAINER_KEY);
+        Object label = TestContext.get(BLOCK_LABEL_KEY);
+        if (!(runtime instanceof ApimRuntime container) || !(label instanceof String blockLabel)) {
+            logger.warn("Coverage dump before restart skipped: no booted block in context (container=" + runtime
+                    + ", label=" + label + ") — counters of the JVM being restarted are lost");
+            return;
+        }
+        int n = RESTART_DUMPS.computeIfAbsent(blockLabel, k -> new AtomicInteger()).incrementAndGet();
+        try {
+            String moduleDir = ModulePathResolver.getModuleDir(CoverageSupport.class);
+            JacocoCoverage.dump(container.getCoverageDumpHost(), container.getCoverageDumpPort(),
+                    restartExecFile(moduleDir, blockLabel, n));
+        } catch (Exception e) {
+            logger.warn("Coverage dump before restart " + n + " of block '" + blockLabel + "' failed — counters of "
+                    + "the JVM being restarted are lost: " + e.getMessage());
+        }
+    }
+
     /** Where APIM class files extracted from the distribution zip are staged for the report. */
     public static File classfilesDir(String moduleDir) {
         return root(moduleDir).resolve("classfiles").toFile();
@@ -102,6 +155,11 @@ public final class CoverageSupport {
 
     public static File outputXml(String moduleDir) {
         return root(moduleDir).resolve(Paths.get("output", "txt", "jacoco-it.xml").toString()).toFile();
+    }
+
+    /** Per-suite dump tally ({@code blocks.expected}, {@code blocks.dumped}, ...) that CI checks for a lost block. */
+    public static File outputSummary(String moduleDir) {
+        return root(moduleDir).resolve(Paths.get("output", "txt", "coverage-summary.properties").toString()).toFile();
     }
 
     public static File outputHtml(String moduleDir) {

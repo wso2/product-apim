@@ -65,7 +65,7 @@ public class DynamicApimContainer extends GenericContainer<DynamicApimContainer>
         // exposed ports), so only list ports the server always binds — 9021 does, unconditionally, at boot.
         withExposedPorts(Constants.HTTPS_PORT, Constants.HTTP_PORT,
                 Constants.GATEWAY_HTTPS_PORT, Constants.GATEWAY_HTTP_PORT, Constants.GATEWAY_WS_PORT,
-                Constants.GATEWAY_WSS_PORT, Constants.WEBSUB_EVENT_RECEIVER_PORT);
+                Constants.GATEWAY_WSS_PORT, Constants.WEBSUB_EVENT_RECEIVER_PORT, 5672);
 
         // Env vars for APIMGT_DB
         withEnv(Constants.API_MANAGER_DATABASE_TYPE, System.getenv(Constants.API_MANAGER_DATABASE_TYPE));
@@ -265,6 +265,11 @@ public class DynamicApimContainer extends GenericContainer<DynamicApimContainer>
     /** Ephemeral host port mapped to the in-container JaCoCo agent tcpserver (valid after start). */
     public int getCoverageDumpPort() {
         return getMappedPort(JacocoCoverage.TCP_PORT);
+    }
+
+    @Override
+    public String getKeyManagerJmsBrokerUrl() {
+        return "amqp://admin:admin@clientid/carbon?brokerlist='tcp://" + getHost() + ":" + getMappedPort(5672) + "'";
     }
 
     public String getServletHttpsUrl() {

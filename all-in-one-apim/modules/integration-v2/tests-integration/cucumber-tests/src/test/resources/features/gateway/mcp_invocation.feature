@@ -10,9 +10,10 @@ Feature: MCP tool invocation through the gateway
   Scenario Outline: Invoke a tool on a proxied MCP server through the gateway as <actor>
     Given The system is ready
     And I have valid access tokens as "<actor>"
-    When I create an MCP server proxy to "http://nodebackend:3020/mcp" exposing tools "echo,add,get_pets" as "mcpId"
+    When I create an MCP server proxy to "http://nodebackend:3020/mcp" exposing tools "echo,add,get_pets,viewPizzaMenu" as "mcpId"
     Then The response status code should be 201
     When I deploy the "mcp-servers" resource with id "mcpId"
+    And the "mcp-servers" resource "mcpId" should be live on the gateway, redeploying if propagation is lost
     # The revisions LIST endpoint (never retrieved before): the revision the deploy step created is listed, and its
     # apiInfo.id ties it to THIS MCP server — an MCP server's revisions must not be reported against another id.
     When I retrieve the revisions of "mcp-servers" resource "mcpId"
@@ -22,6 +23,7 @@ Feature: MCP tool invocation through the gateway
     And The value of response field "list[0].description" should be "new Revision"
     When I publish the "mcp-servers" resource with id "mcpId"
     Then The response status code should be 200
+    And The value of response field "lifecycleState.state" should be "Published"
     When I retrieve the "mcp-servers" resource with id "mcpId"
     And I extract response field "context" and store it as "mcpContext"
     When I have set up application with keys, subscribed to API "mcpId" with plan "Unlimited", and obtained access token for "mcpSubId"
@@ -35,12 +37,24 @@ Feature: MCP tool invocation through the gateway
       """
     # Full MCP handshake through the gateway: initialize (session) → notifications/initialized → tools/list
     # (must advertise echo) → tools/call echo — the stateful round-trip to the real SDK-backed MCP server.
+    Then the MCP tools list at gateway context "{{mcpContext}}" version "1.0.0" using access token "generatedAccessToken" should advertise tool "viewPizzaMenu" with exact description "View the pizza menu. This tool provides a list of available pizzas." and input schema within 90 seconds:
+      """
+      {"type":"object","properties":{},"required":[]}
+      """
     When I invoke the MCP tool "echo" with arguments "{\"message\":\"hello mcp\"}" at gateway context "{{mcpContext}}" version "1.0.0" using access token "generatedAccessToken" expecting exact result text "hello mcp" within 90 seconds
     # …and the WHOLE JSON-RPC result, exactly: the proxy subtype relays the upstream MCP server's result verbatim,
     # so there is exactly ONE text content block and NO isError field (the DirectBackend subtype adds one).
     Then the MCP tool "echo" with arguments "{\"message\":\"hello mcp\"}" at gateway context "{{mcpContext}}" version "1.0.0" using access token "generatedAccessToken" should return exactly this result within 90 seconds:
       """
       {"content":[{"type":"text","text":"hello mcp"}]}
+      """
+    # Legacy's proxy echo contract sends "echo" and expects the complete tool result to be the literal echo value.
+    # Keep the richer argument-forwarding assertion above as additional coverage; this separate call restores the
+    # exact legacy input/result contract without weakening the stateful round-trip.
+    When I invoke the MCP tool "echo" with arguments "{\"message\":\"echo\"}" at gateway context "{{mcpContext}}" version "1.0.0" using access token "generatedAccessToken" expecting exact result text "echo" within 90 seconds
+    Then the MCP tool "echo" with arguments "{\"message\":\"echo\"}" at gateway context "{{mcpContext}}" version "1.0.0" using access token "generatedAccessToken" should return exactly this result within 90 seconds:
+      """
+      {"content":[{"type":"text","text":"echo"}]}
       """
     # Value-add 1 — REAL tool execution (legacy asserted only canned echoes): args are forwarded and the real
     # result is computed/returned by the SDK server (add 2+3=5; get_pets returns actual pet data).
@@ -80,6 +94,7 @@ Feature: MCP tool invocation through the gateway
     When I create an MCP server proxy to "http://nodebackend:3020/mcp" exposing tools "get_weather" as "mcpId"
     Then The response status code should be 201
     When I deploy the "mcp-servers" resource with id "mcpId"
+    And the "mcp-servers" resource "mcpId" should be live on the gateway, redeploying if propagation is lost
     When I publish the "mcp-servers" resource with id "mcpId"
     Then The response status code should be 200
     When I retrieve the "mcp-servers" resource with id "mcpId"
@@ -97,17 +112,79 @@ Feature: MCP tool invocation through the gateway
       | admin             |
       | admin@tenant1.com |
 
+  # Legacy proxy tool-update parity: add a discovered third-party tool while replacing the kept echo tool's description.
+  # Pin persisted operation order/schema/descriptions and the deployed gateway tool set. The proxy Publisher read
+  # model sorts these operations by target (echo before orderPizza), while gateway tools/list has its own ordering.
+  @cap:gateway @feat:mcp-invocation @rule:proxy @type:regression @dep:publisher @legacy:MCPServerTestCase
+  Scenario Outline: Updating proxied tools adds the discovered schema and persists the kept tool description as <actor>
+    Given The system is ready
+    And I have valid access tokens as "<actor>"
+    When I create an MCP server proxy to "http://nodebackend:3020/mcp" exposing tools "echo,add,orderPizza" as "mcpId"
+    Then The response status code should be 201
+    When I deploy the "mcp-servers" resource with id "mcpId"
+    And the "mcp-servers" resource "mcpId" should be live on the gateway, redeploying if propagation is lost
+    When I publish the "mcp-servers" resource with id "mcpId"
+    Then The response status code should be 200
+    When I retrieve the "mcp-servers" resource with id "mcpId"
+    And I extract response field "context" and store it as "mcpContext"
+    When I have set up application with keys, subscribed to API "mcpId" with plan "Unlimited", and obtained access token for "mcpSubId"
+    Then The response status code should be 200
+    When I update the MCP server "mcpId" replacing its tools with "TOOL orderPizza" then "echo" re-described as "Returns the input as output"
+    Then The response status code should be 200
+    And the MCP server operations should be exactly "echo,orderPizza" in that order
+    And the MCP server "mcpId" tool "orderPizza" should have schema definition:
+      """
+      {"inputSchema":{"type":"object","properties":{"pizzaType":{"type":"string"},"quantity":{"type":"integer","minimum":1},"customerName":{"type":"string"},"deliveryAddress":{"type":"string"},"creditCardNumber":{"type":"string"}},"required":["pizzaType","quantity","customerName","deliveryAddress","creditCardNumber"]}}
+      """
+    And the MCP server "mcpId" tool "orderPizza" should have description "Order a pizza from the menu. This tool allows you to place an order for a pizza."
+    And the MCP server "mcpId" tool "echo" should have description "Returns the input as output"
+    When I deploy the "mcp-servers" resource with id "mcpId"
+    And the "mcp-servers" resource "mcpId" should be live on the gateway, redeploying if propagation is lost
+    And the MCP tools list at gateway context "{{mcpContext}}" version "1.0.0" using access token "generatedAccessToken" should contain exactly tools "echo,orderPizza" within 90 seconds
+    And the MCP tools list at gateway context "{{mcpContext}}" version "1.0.0" using access token "generatedAccessToken" should advertise tool "echo" with exact description "Returns the input as output" and input schema within 90 seconds:
+      """
+      {"type":"object","properties":{"message":{"type":"string","description":"Message to echo"}},"required":["message"]}
+      """
+    And the MCP tools list at gateway context "{{mcpContext}}" version "1.0.0" using access token "generatedAccessToken" should advertise tool "orderPizza" with exact description "Order a pizza from the menu. This tool allows you to place an order for a pizza." and input schema within 90 seconds:
+      """
+      {"type":"object","properties":{"pizzaType":{"type":"string"},"quantity":{"type":"integer","minimum":1},"customerName":{"type":"string"},"deliveryAddress":{"type":"string"},"creditCardNumber":{"type":"string"}},"required":["pizzaType","quantity","customerName","deliveryAddress","creditCardNumber"]}
+      """
+    And the MCP tools list at gateway context "{{mcpContext}}" version "1.0.0" using access token "generatedAccessToken" should match exactly this JSON-RPC response within 90 seconds:
+      """
+      {"jsonrpc":"2.0","id":1,"result":{"tools":[{"name":"echo","description":"Returns the input as output","inputSchema":{"type":"object","properties":{"message":{"type":"string","description":"Message to echo"}},"required":["message"]}},{"name":"orderPizza","description":"Order a pizza from the menu. This tool allows you to place an order for a pizza.","inputSchema":{"type":"object","properties":{"pizzaType":{"type":"string"},"quantity":{"type":"integer","minimum":1},"customerName":{"type":"string"},"deliveryAddress":{"type":"string"},"creditCardNumber":{"type":"string"}},"required":["pizzaType","quantity","customerName","deliveryAddress","creditCardNumber"]}}]}}
+      """
+    When I list MCP tools at gateway context "{{mcpContext}}" version "1.0.0" using access token "generatedAccessToken" expecting tools "echo,orderPizza" and not "add" within 90 seconds
+    When I delete the MCP server "mcpId"
+
+    Examples:
+      | actor             |
+      | admin             |
+      | admin@tenant1.com |
+
   # Enforcement: a scope-gated MCP tool is refused (403) without the scope and allowed (200) with it.
   @cap:gateway @feat:mcp-invocation @rule:proxy @type:regression @dep:publisher @legacy:MCPServerTestCase
   Scenario Outline: A scope-gated MCP tool is enforced (200 with the scope, 403 without) as <actor>
     Given The system is ready
     And I have valid access tokens as "<actor>"
-    When I create an MCP server proxy to "http://nodebackend:3020/mcp" exposing tools "echo" as "mcpId"
+    When I create an MCP server proxy to "http://nodebackend:3020/mcp" exposing tools "echo,add,viewPizzaMenu" as "mcpId"
     Then The response status code should be 201
-    # Gate the echo tool with a scope bound to the tenant admin role.
+    And the MCP server operations should be exactly "add,echo,viewPizzaMenu" in that order
+    When I deploy the "mcp-servers" resource with id "mcpId"
+    And the "mcp-servers" resource "mcpId" should be live on the gateway, redeploying if propagation is lost
+    When I publish the "mcp-servers" resource with id "mcpId"
+    Then The response status code should be 200
+    # Reproduce the legacy predecessor testToolsForProxySubtype state: its update adds orderPizza and keeps echo
+    # with the replacement description. Legacy's following scope test mutates operation index 0; this exact ordered
+    # readback proves index 0 is echo, so V2's name-addressed mutation below targets the same operation.
+    When I update the MCP server "mcpId" replacing its tools with "TOOL orderPizza" then "echo" re-described as "Returns the input as output"
+    Then The response status code should be 200
+    And the MCP server operations should be exactly "echo,orderPizza" in that order
+    # Gate the same echo operation the legacy index-0 mutation resolves to, bound to the tenant admin role.
     When I gate the MCP server "mcpId" tool "echo" with scope "mcpScopeEnf" bound to role "admin"
     Then The response status code should be 200
+    And the MCP server "mcpId" tool "echo" should persist scope "mcpScopeEnf" bound to role "admin"
     When I deploy the "mcp-servers" resource with id "mcpId"
+    And the "mcp-servers" resource "mcpId" should be live on the gateway, redeploying if propagation is lost
     When I publish the "mcp-servers" resource with id "mcpId"
     Then The response status code should be 200
     When I retrieve the "mcp-servers" resource with id "mcpId"
@@ -160,6 +237,7 @@ Feature: MCP tool invocation through the gateway
     When I update the MCP server "mcpId" to offer policies "Unlimited,{{subThrottlePolicyName}}"
     Then The response status code should be 200
     When I deploy the "mcp-servers" resource with id "mcpId"
+    And the "mcp-servers" resource "mcpId" should be live on the gateway, redeploying if propagation is lost
     When I publish the "mcp-servers" resource with id "mcpId"
     Then The response status code should be 200
     When I retrieve the "mcp-servers" resource with id "mcpId"
@@ -250,6 +328,7 @@ Feature: MCP tool invocation through the gateway
     When I create an MCP server from openapi "artifacts/payloads/OAS/mcp_petstore_oas3.json" with backend "http://nodebackend:3001/jaxrs_basic/services/customers/customerservice" as "mcpId"
     Then The response status code should be 201
     When I deploy the "mcp-servers" resource with id "mcpId"
+    And the "mcp-servers" resource "mcpId" should be live on the gateway, redeploying if propagation is lost
     # The revisions LIST endpoint: the created revision is listed against THIS MCP server, with the description sent.
     When I retrieve the revisions of "mcp-servers" resource "mcpId"
     Then The response status code should be 200
@@ -274,6 +353,20 @@ Feature: MCP tool invocation through the gateway
       """
       {"protocolVersion":"2025-06-18","capabilities":{"tools":{"listChanged":false}},
        "serverInfo":{"name":"{{mcpName}}","version":"1.0.0","description":"This is an MCP Server"}}
+      """
+    # Initial tools/list contract, before any mutation: preserve the legacy order and exact operation metadata.
+    Then the MCP server should advertise tools in order "get_pets,get_pets_by_petId" at gateway context "{{mcpContext}}" version "1.0.0" using access token "generatedAccessToken" within 90 seconds
+    And the MCP tools list at gateway context "{{mcpContext}}" version "1.0.0" using access token "generatedAccessToken" should advertise tool "get_pets" with exact description "Get a list of pets" and input schema within 90 seconds:
+      """
+      {"type":"object","properties":{},"required":[]}
+      """
+    And the MCP tools list at gateway context "{{mcpContext}}" version "1.0.0" using access token "generatedAccessToken" should advertise tool "get_pets_by_petId" with exact description "Get a pet by ID" and input schema within 90 seconds:
+      """
+      {"type":"object","properties":{"petId":{"type":"string","description":"The id of the pet to retrieve"}},"required":["petId"]}
+      """
+    And the MCP tools list at gateway context "{{mcpContext}}" version "1.0.0" using access token "generatedAccessToken" should match exactly this JSON-RPC response within 90 seconds:
+      """
+      {"jsonrpc":"2.0","id":1,"result":{"tools":[{"name":"get_pets","description":"Get a list of pets","inputSchema":{"type":"object","properties":{},"required":[]}},{"name":"get_pets_by_petId","description":"Get a pet by ID","inputSchema":{"type":"object","properties":{"petId":{"type":"string","description":"The id of the pet to retrieve"}},"required":["petId"]}}]}}
       """
     # Value-add — real MCP↔HTTP: tools/call get_pets → gateway calls the REST backend → returns real pet data.
     When I invoke the MCP tool "get_pets" with arguments "{}" at gateway context "{{mcpContext}}" version "1.0.0" using access token "generatedAccessToken" expecting exact result text "[{\"id\":1,\"name\":\"max\"}]" within 90 seconds
@@ -314,6 +407,18 @@ Feature: MCP tool invocation through the gateway
     And the MCP server operations should be exactly "delete_oldpets,get_pets" in that order
     When I deploy the "mcp-servers" resource with id "mcpId"
     Then the MCP server should advertise tools in order "delete_oldpets,get_pets" at gateway context "{{mcpContext}}" version "1.0.0" using access token "generatedAccessToken" within 90 seconds
+    And the MCP tools list at gateway context "{{mcpContext}}" version "1.0.0" using access token "generatedAccessToken" should advertise tool "delete_oldpets" with exact description "Delete all old pets" and input schema within 90 seconds:
+      """
+      {"type":"object","properties":{},"required":[]}
+      """
+    And the MCP tools list at gateway context "{{mcpContext}}" version "1.0.0" using access token "generatedAccessToken" should advertise tool "get_pets" with exact description "Return a list of pets" and input schema within 90 seconds:
+      """
+      {"type":"object","properties":{},"required":[]}
+      """
+    And the MCP tools list at gateway context "{{mcpContext}}" version "1.0.0" using access token "generatedAccessToken" should match exactly this JSON-RPC response within 90 seconds:
+      """
+      {"jsonrpc":"2.0","id":1,"result":{"tools":[{"name":"delete_oldpets","description":"Delete all old pets","inputSchema":{"type":"object","properties":{},"required":[]}},{"name":"get_pets","description":"Return a list of pets","inputSchema":{"type":"object","properties":{},"required":[]}}]}}
+      """
     When I delete the MCP server "mcpId"
 
     Examples:
@@ -330,7 +435,9 @@ Feature: MCP tool invocation through the gateway
     Then The response status code should be 201
     When I gate the MCP server "mcpId" tool "get_pets" with scope "mcpOasScopeEnf" bound to role "admin"
     Then The response status code should be 200
+    And the MCP server "mcpId" tool "get_pets" should persist scope "mcpOasScopeEnf" bound to role "admin"
     When I deploy the "mcp-servers" resource with id "mcpId"
+    And the "mcp-servers" resource "mcpId" should be live on the gateway, redeploying if propagation is lost
     When I publish the "mcp-servers" resource with id "mcpId"
     Then The response status code should be 200
     When I retrieve the "mcp-servers" resource with id "mcpId"
@@ -375,6 +482,7 @@ Feature: MCP tool invocation through the gateway
     When I update the MCP server "mcpId" to offer policies "Unlimited,{{subThrottlePolicyName}}"
     Then The response status code should be 200
     When I deploy the "mcp-servers" resource with id "mcpId"
+    And the "mcp-servers" resource "mcpId" should be live on the gateway, redeploying if propagation is lost
     When I publish the "mcp-servers" resource with id "mcpId"
     Then The response status code should be 200
     When I retrieve the "mcp-servers" resource with id "mcpId"
@@ -412,9 +520,11 @@ Feature: MCP tool invocation through the gateway
     When I import openapi definition from "artifacts/payloads/OAS/mcp_petstore_oas3.json" with additional properties "artifacts/payloads/mcp_petstore_api_props.json" as "backingApiId"
     Then The response status code should be 201
     When I deploy the "apis" resource with id "backingApiId"
+    And the "apis" resource "backingApiId" should be live on the gateway, redeploying if propagation is lost
     When I create an MCP server from api "backingApiId" exposing paths "/pets,/pets/{petId}" as "mcpId"
     Then The response status code should be 201
     When I deploy the "mcp-servers" resource with id "mcpId"
+    And the "mcp-servers" resource "mcpId" should be live on the gateway, redeploying if propagation is lost
     # The revisions LIST endpoint: the created revision is listed against THIS MCP server (not the backing API).
     When I retrieve the revisions of "mcp-servers" resource "mcpId"
     Then The response status code should be 200
@@ -423,10 +533,26 @@ Feature: MCP tool invocation through the gateway
     And The value of response field "list[0].description" should be "new Revision"
     When I publish the "mcp-servers" resource with id "mcpId"
     Then The response status code should be 200
+    And The value of response field "lifecycleState.state" should be "Published"
     When I retrieve the "mcp-servers" resource with id "mcpId"
     And I extract response field "context" and store it as "mcpContext"
     When I have set up application with keys, subscribed to API "mcpId" with plan "Unlimited", and obtained access token for "mcpSubId"
     Then The response status code should be 200
+    # The initial list on the ExistingApi subtype is distinct from the later updated-list assertion: it proves both
+    # generated API operations are exposed in their original order before any Publisher mutation.
+    Then the MCP server should advertise tools in order "get_pets,get_pets_by_petId" at gateway context "{{mcpContext}}" version "1.0.0" using access token "generatedAccessToken" within 90 seconds
+    And the MCP tools list at gateway context "{{mcpContext}}" version "1.0.0" using access token "generatedAccessToken" should advertise tool "get_pets" with exact description "Get a list of pets" and input schema within 90 seconds:
+      """
+      {"type":"object","properties":{},"required":[]}
+      """
+    And the MCP tools list at gateway context "{{mcpContext}}" version "1.0.0" using access token "generatedAccessToken" should advertise tool "get_pets_by_petId" with exact description "Get a pet by ID" and input schema within 90 seconds:
+      """
+      {"type":"object","properties":{"petId":{"type":"string","description":"The id of the pet to retrieve"}},"required":["petId"]}
+      """
+    And the MCP tools list at gateway context "{{mcpContext}}" version "1.0.0" using access token "generatedAccessToken" should match exactly this JSON-RPC response within 90 seconds:
+      """
+      {"jsonrpc":"2.0","id":1,"result":{"tools":[{"name":"get_pets","description":"Get a list of pets","inputSchema":{"type":"object","properties":{},"required":[]}},{"name":"get_pets_by_petId","description":"Get a pet by ID","inputSchema":{"type":"object","properties":{"petId":{"type":"string","description":"The id of the pet to retrieve"}},"required":["petId"]}}]}}
+      """
     # Value-add — real routing through the underlying API to its backend → real pet data.
     When I invoke the MCP tool "get_pets" with arguments "{}" at gateway context "{{mcpContext}}" version "1.0.0" using access token "generatedAccessToken" expecting exact result text "[{\"id\":1,\"name\":\"max\"}]" within 90 seconds
     # Value-add — path-param tool routed to GET /pets/123 through the API.
@@ -441,6 +567,18 @@ Feature: MCP tool invocation through the gateway
     And the MCP server operations should be exactly "delete_oldpets,get_pets" in that order
     When I deploy the "mcp-servers" resource with id "mcpId"
     Then the MCP server should advertise tools in order "delete_oldpets,get_pets" at gateway context "{{mcpContext}}" version "1.0.0" using access token "generatedAccessToken" within 90 seconds
+    And the MCP tools list at gateway context "{{mcpContext}}" version "1.0.0" using access token "generatedAccessToken" should advertise tool "delete_oldpets" with exact description "Delete all old pets" and input schema within 90 seconds:
+      """
+      {"type":"object","properties":{},"required":[]}
+      """
+    And the MCP tools list at gateway context "{{mcpContext}}" version "1.0.0" using access token "generatedAccessToken" should advertise tool "get_pets" with exact description "Return a list of pets" and input schema within 90 seconds:
+      """
+      {"type":"object","properties":{},"required":[]}
+      """
+    And the MCP tools list at gateway context "{{mcpContext}}" version "1.0.0" using access token "generatedAccessToken" should match exactly this JSON-RPC response within 90 seconds:
+      """
+      {"jsonrpc":"2.0","id":1,"result":{"tools":[{"name":"delete_oldpets","description":"Delete all old pets","inputSchema":{"type":"object","properties":{},"required":[]}},{"name":"get_pets","description":"Return a list of pets","inputSchema":{"type":"object","properties":{},"required":[]}}]}}
+      """
     When I delete the MCP server "mcpId"
 
     Examples:
@@ -456,11 +594,23 @@ Feature: MCP tool invocation through the gateway
     When I import openapi definition from "artifacts/payloads/OAS/mcp_petstore_oas3.json" with additional properties "artifacts/payloads/mcp_petstore_api_props.json" as "backingApiId"
     Then The response status code should be 201
     When I deploy the "apis" resource with id "backingApiId"
-    When I create an MCP server from api "backingApiId" exposing paths "/pets" as "mcpId"
+    And the "apis" resource "backingApiId" should be live on the gateway, redeploying if propagation is lost
+    When I create an MCP server from api "backingApiId" exposing paths "/pets,/pets/{petId}" as "mcpId"
     Then The response status code should be 201
+    When I deploy the "mcp-servers" resource with id "mcpId"
+    And the "mcp-servers" resource "mcpId" should be live on the gateway, redeploying if propagation is lost
+    When I publish the "mcp-servers" resource with id "mcpId"
+    Then The response status code should be 200
+    # Match the legacy predecessor testToolsForExistingApiSubtype update. Its following scope test changes
+    # operation index 1; the exact ordered readback proves that index 1 is get_pets.
+    When I update the MCP server "mcpId" replacing its tools with "DELETE /oldpets" then "get_pets" re-described as "Return a list of pets"
+    Then The response status code should be 200
+    And the MCP server operations should be exactly "delete_oldpets,get_pets" in that order
     When I gate the MCP server "mcpId" tool "get_pets" with scope "mcpApiScopeEnf" bound to role "admin"
     Then The response status code should be 200
+    And the MCP server "mcpId" tool "get_pets" should persist scope "mcpApiScopeEnf" bound to role "admin"
     When I deploy the "mcp-servers" resource with id "mcpId"
+    And the "mcp-servers" resource "mcpId" should be live on the gateway, redeploying if propagation is lost
     When I publish the "mcp-servers" resource with id "mcpId"
     Then The response status code should be 200
     When I retrieve the "mcp-servers" resource with id "mcpId"
@@ -503,11 +653,13 @@ Feature: MCP tool invocation through the gateway
     When I import openapi definition from "artifacts/payloads/OAS/mcp_petstore_oas3.json" with additional properties "artifacts/payloads/mcp_petstore_api_props.json" as "backingApiId"
     Then The response status code should be 201
     When I deploy the "apis" resource with id "backingApiId"
+    And the "apis" resource "backingApiId" should be live on the gateway, redeploying if propagation is lost
     When I create an MCP server from api "backingApiId" exposing paths "/pets" as "mcpId"
     Then The response status code should be 201
     When I update the MCP server "mcpId" to offer policies "Unlimited,{{subThrottlePolicyName}}"
     Then The response status code should be 200
     When I deploy the "mcp-servers" resource with id "mcpId"
+    And the "mcp-servers" resource "mcpId" should be live on the gateway, redeploying if propagation is lost
     When I publish the "mcp-servers" resource with id "mcpId"
     Then The response status code should be 200
     When I retrieve the "mcp-servers" resource with id "mcpId"

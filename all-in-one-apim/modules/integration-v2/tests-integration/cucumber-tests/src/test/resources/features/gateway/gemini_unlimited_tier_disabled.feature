@@ -49,9 +49,13 @@ Feature: Gateway AI API With Unlimited Tier Disabled
     And I extract response field "context" and store it as "geminiContext"
     When I deploy the API with id "geminiApiId"
     Then The response status code should be 201
+    And the "apis" resource "geminiApiId" should be live on the gateway, redeploying if propagation is lost
     When I publish the "apis" resource with id "geminiApiId"
     Then The response status code should be 200
     And The lifecycle status of API "geminiApiId" should be "Published"
+    # The legacy tier assertion is against this same published API. Keep the stronger exact fallback tier check
+    # here so it cannot pass by inspecting a second API that was never published.
+    And Every operation of API "geminiApiId" should declare throttling policy "10KPerMin"
     # An application on a NON-Unlimited application tier — the shared fixture's "Unlimited" is refused (400/900305)
     # while the flag is off, so the tier legacy used (10PerMin) is named explicitly here.
     When I put the following JSON payload in context as "geminiAppPayload"
@@ -84,30 +88,12 @@ Feature: Gateway AI API With Unlimited Tier Disabled
     When I invoke the API at gateway context "{{geminiContext}}/1.1.0/v1beta/models/gemini-1.5-flash:generateContent" with method "POST" using api key "apiKey" and payload "geminiPayload" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
     And The response body should equal the JSON file "artifacts/payloads/ai/gemini-response.json"
-
-    Examples:
-      | actor             |
-      | admin             |
-      | admin@tenant1.com |
-
-  # The substitution rule itself, on the same fixture: no operation of an API imported from the Gemini 1.1.0
-  # definition (which declares no x-throttling-tier) may carry Unlimited while the flag is off. Legacy asserted
-  # only "not Unlimited", which any value at all satisfies; the exact fall-through tier is pinned here so a change
-  # of substitution rule cannot pass unnoticed. No deploy/publish: the tier is stamped at persist time, so a
-  # published API would add nothing to the assertion.
-  @cap:admin @feat:throttling-policies @rule:unlimited-tier-disabled @type:regression @dep:publisher @legacy:GeminiAPIUnlimitedTierDisabledTestCase
-  Scenario Outline: Every operation of a Gemini AI API falls back to the next available tier when Unlimited is disabled as <actor>
-    Given The system is ready
-    And I have valid access tokens as "<actor>"
-    When I retrieve the AI service providers
+    And The response body should exactly equal the file "artifacts/payloads/ai/gemini-response.json"
+    # Preserve the semantic JSON check above and additionally exercise the legacy non-TLS gateway listener.
+    When I invoke the API at HTTP gateway context "{{geminiContext}}/1.1.0/v1beta/models/gemini-1.5-flash:generateContent" with method "POST" using api key "apiKey" and payload "geminiPayload" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
-    And The AI service provider "Gemini" version "1.1.0" should be listed with deprecated "false" and stored as "tierGeminiProviderId"
-    When I retrieve the api definition of AI service provider "tierGeminiProviderId"
-    Then The response status code should be 200
-    And I put the response payload in context as "tierGeminiApiDefinition"
-    When I import openapi definition captured as "tierGeminiApiDefinition" with additional properties "artifacts/payloads/ai/gemini_add_props.json" as "tierGeminiApiId"
-    Then The response status code should be 201
-    Then Every operation of API "tierGeminiApiId" should declare throttling policy "10KPerMin"
+    And The response body should equal the JSON file "artifacts/payloads/ai/gemini-response.json"
+    And The response body should exactly equal the file "artifacts/payloads/ai/gemini-response.json"
 
     Examples:
       | actor             |

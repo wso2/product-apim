@@ -78,6 +78,11 @@ public class Utils {
         return requiredContextUrl("baseGatewayUrl");
     }
 
+    /** The block's gateway HTTP base URL, used only by parity scenarios whose legacy contract is HTTP-specific. */
+    public static String getBaseGatewayHttpUrl() {
+        return requiredContextUrl("baseGatewayHttpUrl");
+    }
+
     /** The block's gateway {@code ws://} base URL from the shared context; throws if not booted yet. */
     public static String getBaseGatewayWsUrl() {
         return requiredContextUrl("baseGatewayWsUrl");
@@ -1039,6 +1044,12 @@ public class Utils {
     /** DevPortal — an API's OpenAPI definition: {@code /apis/{apiId}/swagger} (GET). Visibility-gated. */
     public static String getDevportalApiSwaggerURL(String baseUrl, String apiId) {
         return baseUrl + Constants.DEFAULT_DEVPORTAL + "apis/" + apiId + "/swagger";
+    }
+
+    /** DevPortal Swagger for a named gateway environment: {@code /apis/{apiId}/swagger?environment=...}. */
+    public static String getDevportalApiSwaggerURL(String baseUrl, String apiId, String environmentName) {
+        return getDevportalApiSwaggerURL(baseUrl, apiId) + "?environment="
+                + java.net.URLEncoder.encode(environmentName, java.nio.charset.StandardCharsets.UTF_8);
     }
 
     public static String getApiDocumentsURL(String baseUrl, String resourceId) {

@@ -21,7 +21,10 @@ import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import org.apache.commons.io.IOUtils;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
+import org.skyscreamer.jsonassert.JSONAssert;
+import org.skyscreamer.jsonassert.JSONCompareMode;
 import org.testng.Assert;
 import org.wso2.am.integration.cucumbertests.utils.Identity;
 import org.wso2.am.integration.cucumbertests.utils.Requests;
@@ -37,6 +40,8 @@ import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -45,6 +50,36 @@ import java.util.Map;
  * subtype API whose backend is a mock LLM (built-in providers require real LLM credentials).
  */
 public class AiApiSteps {
+
+    /**
+     * Confirms a model-selection response matches the complete pinned response document, allowing only its model
+     * field to be one of the explicitly configured choices. This preserves strict response-shape/content checking
+     * without assuming which choice wins when one invocation can legitimately select among several models.
+     */
+    @Then("The response body should equal the JSON file {string} with model set to one of {string}")
+    public void theResponseBodyShouldEqualJsonFileWithModelOneOf(String jsonFilePath, String allowedModels)
+            throws Exception {
+
+        HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
+        Assert.assertTrue(response != null && response.getResponseCode() >= 200 && response.getResponseCode() < 300
+                        && response.getData() != null && !response.getData().isBlank(),
+                "Expected a successful response with a body for model-selection comparison, but got: "
+                        + (response == null ? "null" : response.getResponseCode() + " / " + response.getData()));
+
+        JSONObject actual = new JSONObject(response.getData());
+        JSONObject expected = new JSONObject(readClasspath(jsonFilePath));
+        String actualModel = actual.optString("model", null);
+        List<String> acceptedModels = Arrays.asList(allowedModels.split(","));
+        Assert.assertTrue(acceptedModels.contains(actualModel),
+                "Model-selection response used unexpected model '" + actualModel + "'; expected one of "
+                        + acceptedModels + ". Body: " + response.getData());
+        expected.put("model", actualModel);
+        try {
+            JSONAssert.assertEquals(expected.toString(), actual.toString(), JSONCompareMode.STRICT);
+        } catch (JSONException e) {
+            throw new AssertionError("Model-selection response was not valid JSON: " + response.getData(), e);
+        }
+    }
 
     /** Admin — GET /ai-service-providers (lists predefined + custom providers). Stores the response. */
     @When("I retrieve the AI service providers")
@@ -411,8 +446,9 @@ public class AiApiSteps {
                 .put("fault", new JSONArray());
         api.put("apiPolicies", apiPolicies);
 
-        HttpResponse putResp = Requests.put(Utils.getResourceEndpointURL(Utils.getBaseUrl(), "apis", actualApiId), headers,
-                api.toString(), Constants.CONTENT_TYPES.APPLICATION_JSON);
+        HttpResponse putResp = Requests.put(Utils.getResourceEndpointURL(Utils.getBaseUrl(), "apis", actualApiId),
+                headers, api.toString(), Constants.CONTENT_TYPES.APPLICATION_JSON);
+        TestContext.set("httpResponse", putResp);
     }
 
     /**

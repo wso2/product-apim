@@ -37,6 +37,8 @@
         <parameter name="blockLabel" value="distributed-publisher-versioning"/>
         <parameter name="initTenantUsers" value="true"/>
         <parameter name="initSecondaryUserStore" value="true"/>
+        <!-- The secondary-store API-product lifecycle invokes the product through the gateway. -->
+        <parameter name="initBackend" value="true"/>
         <classes>
         <class name="org.wso2.am.integration.cucumbertests.runners.block.PublisherVersioningRunner"/>
         <class name="org.wso2.am.integration.cucumbertests.runners.block.PublisherApiProductsRunner"/>
@@ -106,6 +108,7 @@
         <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayWebSocketInvocationRunner"/>
         <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewaySseInvocationRunner"/>
         <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayMediationPoliciesRunner"/>
+        <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayMessageTypeRunner"/>
         <class name="org.wso2.am.integration.cucumbertests.runners.block.PublisherMcpServersRunner"/>
         <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayMcpInvocationRunner"/>
         <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayAudienceValidationRunner"/>
@@ -116,6 +119,19 @@
         <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayGraphqlSubQueryLimitsRunner"/>
         <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayGraphqlSubscriptionTenantIsolationRunner"/>
         <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayProviderChangeInvocationRunner"/>
+        </classes>
+    </test>
+    <!-- Keep conditional API-template and runtime SOAP-update parity tests isolated. The Gateway-only TOML overlay
+         removes only ConfigServiceAdmin from its deny-list; all other denied services remain disabled. -->
+    <test name="IntegrationV2-Distributed-Gateway-CustomHandler" parallel="classes" thread-count="1">
+        <parameter name="blockLabel" value="distributed-gateway-custom-handler"/>
+        <parameter name="initTenantUsers" value="true"/>
+        <parameter name="initBackend" value="true"/>
+        <parameter name="tomlExtraOverlayPath.gateway" value="src/test/resources/artifacts/configFiles/customGatewayHandler/deployment.toml"/>
+        <parameter name="serverFilesToCopy.cp" value="src/test/resources/artifacts/custom-handler/velocity_template.xml::repository/resources/api_templates/velocity_template.xml"/>
+        <parameter name="serverFilesToCopy.gateway" value="../../../integration/tests-integration/tests-backend/src/test/resources/artifacts/AM/lifecycletest/CustomAPIAuthenticationHandler-1.0.0.jar::repository/components/lib/CustomAPIAuthenticationHandler-1.0.0.jar"/>
+        <classes>
+        <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayCustomHandlerRunner"/>
         </classes>
     </test>
     <!-- CORS creates and deploys many API subtypes, including WSDL-generated SOAP-to-REST APIs. Keep its
@@ -190,8 +206,9 @@
         <class name="org.wso2.am.integration.cucumbertests.runners.block.AdminThrottlingPolicyRunner"/>
         </classes>
     </test>
-    <!-- Governance features use the distributed control-plane services and the shared backend. -->
-    <test name="IntegrationV2-Distributed-Governance" parallel="classes" thread-count="2">
+    <!-- Governance features use the distributed control-plane services and the shared backend. Run sequentially
+         because policy parity consumes the complete ruleset list while the ruleset runner mutates it. -->
+    <test name="IntegrationV2-Distributed-Governance" parallel="classes" thread-count="1">
         <parameter name="blockLabel" value="distributed-governance"/>
         <parameter name="initTenantUsers" value="true"/>
         <parameter name="initBackend" value="true"/>
@@ -279,6 +296,7 @@
         <parameter name="initBackend" value="true"/>
         <parameter name="tomlExtraOverlayPath.gateway" value="src/test/resources/artifacts/configFiles/mtlsWsCors/deployment.toml"/>
         <classes>
+        <class name="org.wso2.am.integration.cucumbertests.runners.block.PublisherApiCreationRunner"/>
         <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayMutualSslInvocationRunner"/>
         <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayMutualSslSecurityMatrixRunner"/>
         <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayWebSocketCorsRunner"/>
@@ -436,10 +454,15 @@
         <parameter name="initTenantUsers" value="true"/>
         <parameter name="emailUserMode" value="true"/>
         <parameter name="initBackend" value="true"/>
+        <parameter name="tomlExtraOverlayPath.cp" value="src/test/resources/artifacts/configFiles/logging/deployment.toml"/>
+        <parameter name="tomlExtraOverlayPath.gateway" value="src/test/resources/artifacts/configFiles/logging/distributed-gateway-overlay.toml"/>
+        <parameter name="bootstrapThrottleData" value="true"/>
+        <parameter name="throttleDataReadinessSeconds" value="180"/>
         <classes>
         <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayBasicAuthEmailUserNameRunner"/>
         <class name="org.wso2.am.integration.cucumbertests.runners.block.DevPortalApplicationEmailUserNameRunner"/>
         <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayThrottleEmailUserNameRunner"/>
+        <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayThrottleResetEmailUserNameRunner"/>
         <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayDenyEnforcementEmailUserNameRunner"/>
         <class name="org.wso2.am.integration.cucumbertests.runners.block.KeyManagerEmailUserNameLoginRunner"/>
         <class name="org.wso2.am.integration.cucumbertests.runners.block.PublisherApiProductEmailUserNameRunner"/>

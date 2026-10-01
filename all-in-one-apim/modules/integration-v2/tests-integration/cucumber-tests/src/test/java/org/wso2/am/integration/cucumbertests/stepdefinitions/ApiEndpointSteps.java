@@ -18,6 +18,10 @@
 package org.wso2.am.integration.cucumbertests.stepdefinitions;
 
 import io.cucumber.java.en.When;
+import io.cucumber.java.en.Then;
+import org.json.JSONArray;
+import org.json.JSONObject;
+import org.testng.Assert;
 import org.wso2.am.integration.cucumbertests.utils.Identity;
 import org.wso2.am.integration.cucumbertests.utils.Requests;
 import org.wso2.am.integration.cucumbertests.utils.TestContext;
@@ -27,7 +31,9 @@ import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Publisher-plane glue for the API endpoints sub-resource ({@code /apis/{apiId}/endpoints}) — add, list, get,
@@ -57,7 +63,13 @@ public class ApiEndpointSteps {
         HttpResponse response = Requests.post(Utils.getApiEndpointsURL(Utils.getBaseUrl(), actualApiId),
                 publisherJsonHeaders(), jsonPayload, Constants.CONTENT_TYPES.APPLICATION_JSON);
         if (response.getResponseCode() >= 200 && response.getResponseCode() < 300) {
-            TestContext.set(idKey, Utils.extractValueFromPayload(response.getData(), "id"));
+            Assert.assertTrue(response.getData() != null && !response.getData().isBlank(),
+                    "Created endpoint for API '" + actualApiId + "' but received no response body");
+            Object id = Utils.extractValueFromPayload(response.getData(), "id");
+            Assert.assertTrue(id != null && !id.toString().isBlank(),
+                    "Created endpoint for API '" + actualApiId + "' but response contained no non-empty id: "
+                            + response.getData());
+            TestContext.set(idKey, id);
         }
     }
 
@@ -95,5 +107,30 @@ public class ApiEndpointSteps {
         String actualEndpointId = TestContext.resolve(endpointId).toString();
         HttpResponse response = Requests.delete(Utils.getApiEndpointByIdURL(Utils.getBaseUrl(), actualApiId,
                 actualEndpointId), publisherJsonHeaders());
+    }
+
+    /** Checks endpoint-list membership by exact IDs and pins the legacy minimum-list-size contract. */
+    @Then("The endpoint list should include ids {string} with at least {int} entries")
+    public void endpointListShouldIncludeIds(String endpointIdKeys, int minimumEntries) {
+        HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
+        Assert.assertNotNull(response, "No API endpoint-list response was published");
+        Assert.assertEquals(response.getResponseCode(), 200,
+                "Unable to inspect endpoint list: " + response.getResponseCode() + "/" + response.getData());
+        JSONObject body = new JSONObject(response.getData());
+        JSONArray endpoints = body.optJSONArray("list");
+        Assert.assertNotNull(endpoints, "Endpoint-list response has no list array: " + body);
+        Assert.assertTrue(endpoints.length() >= minimumEntries,
+                "Expected at least " + minimumEntries + " endpoints but found " + endpoints.length() + ": " + body);
+
+        Set<String> actualIds = new HashSet<>();
+        for (int i = 0; i < endpoints.length(); i++) {
+            actualIds.add(endpoints.getJSONObject(i).getString("id"));
+        }
+        for (String key : endpointIdKeys.split(",")) {
+            String expectedId = TestContext.resolve(key.trim()).toString();
+            Assert.assertTrue(actualIds.contains(expectedId),
+                    "Endpoint list does not contain endpoint id from context key '" + key.trim() + "'=" + expectedId
+                            + "; ids=" + actualIds);
+        }
     }
 }

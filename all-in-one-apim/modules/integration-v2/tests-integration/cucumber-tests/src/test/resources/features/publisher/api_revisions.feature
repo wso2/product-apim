@@ -1,8 +1,7 @@
 @cleanup
 Feature: Publisher API Revisions
 
-  Ports the API-revision CRUD tail from the legacy APIRevisionServerRestartTestCase (functional concern; the
-  legacy "restart" was incidental). Beyond create + deploy (already covered across the suite), this exercises
+  Ports the API-revision behavior from the legacy APIRevisionTestCase. Beyond create + deploy (already covered across the suite), this exercises
   listing revisions (all and deployed-only), the rule that a deployed revision cannot be deleted (400 until it
   is undeployed), undeploy, delete, and restoring the API's working copy from a revision. Publisher plane, as a
   least-privilege publisher, in BOTH the super tenant and tenant1.com to prove the revision operations are
@@ -14,10 +13,25 @@ Feature: Publisher API Revisions
   status and error body — including the create-answers-500 asymmetry), the optional-description create, and that
   deleting an API removes its governance-registry artifact collection.
 
-  @cap:publisher @feat:api-lifecycle @type:regression @legacy:APIRevisionServerRestartTestCase
+  @cap:publisher @feat:api-lifecycle @type:regression @legacy:APIRevisionTestCase
   Scenario Outline: Revision CRUD — list, deploy, delete-while-deployed guard, undeploy, delete, restore as <actor>
     Given The system is ready and I have valid publisher access tokens as "<actor>"
     And I have created an api from "artifacts/payloads/create_apim_test_api.json" as "revApiId" and deployed it
+    And I copy context value "revisionId" to "initialRevisionId"
+
+    # The legacy test first read the just-created API back before creating revisions. Keep that management-plane
+    # read explicit, then create another revision after an API update (the legacy's second POST response assertion
+    # accidentally checked the first POST; V2 must assert the actual second request).
+    When I retrieve the "apis" resource with id "revApiId"
+    Then The API representation for "revApiId" should be readable
+    And I put the response payload in context as "revApiFull"
+    When I update the "apis" resource "revApiId" and "revApiFull" with configuration type "securityScheme" and value:
+      """
+      ["oauth_basic_auth_api_key_mandatory", "oauth2", "basic_auth"]
+      """
+    Then The response status code should be 200
+    When I retrieve the "apis" resource with id "revApiId"
+    Then The response field "securityScheme" should be exactly the list "oauth_basic_auth_api_key_mandatory,oauth2,basic_auth"
 
     # Create a second revision and confirm it is listed.
     When I put the following JSON payload in context as "rev2Payload"
@@ -28,15 +42,17 @@ Feature: Publisher API Revisions
     Then The response status code should be 201
     And I extract response field "id" and store it as "rev2Id"
     When I retrieve the revisions of "apis" resource "revApiId"
-    Then The response status code should be 200
+    Then The revision response should list exactly revision IDs "initialRevisionId,rev2Id"
     And The response should contain "second revision"
     When I retrieve the deployed revisions of "apis" resource "revApiId"
-    Then The response status code should be 200
+    Then The revision response should list exactly revision IDs "initialRevisionId"
 
     # Deploy the second revision.
     When I deploy revision "rev2Id" of "apis" resource "revApiId"
     Then The response status code should be 201
     And I wait until "apis" "revApiId" revision is deployed in the gateway
+    When I retrieve the deployed revisions of "apis" resource "revApiId"
+    Then The revision response should list exactly revision IDs "rev2Id"
 
     # A deployed revision cannot be deleted (400) — it must be undeployed first.
     When I delete revision "rev2Id" of "apis" resource "revApiId"
@@ -181,6 +197,226 @@ Feature: Publisher API Revisions
     Then The response status code should be 500
     And The response should contain "Internal server error"
     And The response should contain "Error while adding new API Revision for API : {{noSuchApiId}}"
+
+    Examples:
+      | actor                     |
+      | publisherUser             |
+      | publisherUser@tenant1.com |
+
+  # The legacy suite also used malformed UUID-like values, distinct from the well-formed UUIDs above which simply
+  # name no resource. Keep each operation in its own scenario so a regression in one route cannot skip assertions
+  # for the others. Legacy's exact status expectations are retained: malformed API-ID create is 500; the other
+  # malformed API-ID and revision-ID operations are 404.
+  @cap:publisher @feat:revisions @rule:invalid-id-format @type:negative @legacy:APIRevisionTestCase
+  Scenario Outline: Creating a revision with a malformed API UUID answers 500 as <actor>
+    Given The system is ready and I have valid publisher access tokens as "<actor>"
+    And I put literal value "2C0q51h4-621g-3163-7eip-as246v8x681m" in context as "malformedApiId"
+    When I put the following JSON payload in context as "badApiCreateRevisionPayload"
+    """
+    {"description":"revision with malformed API UUID"}
+    """
+    And I attempt to create a revision for "apis" resource "malformedApiId" with payload "badApiCreateRevisionPayload"
+    Then The response status code should be 500
+
+    Examples:
+      | actor                     |
+      | publisherUser             |
+      | publisherUser@tenant1.com |
+
+  @cap:publisher @feat:revisions @rule:invalid-id-format @type:negative @legacy:APIRevisionTestCase
+  Scenario Outline: Deleting a revision with a malformed API UUID answers 404 as <actor>
+    Given The system is ready and I have valid publisher access tokens as "<actor>"
+    And I put JSON payload from file "artifacts/payloads/create_apim_test_api.json" in context as "badApiDeletePayload"
+    And I create an "apis" resource with payload "badApiDeletePayload" as "badApiDeleteId"
+    When I put the following JSON payload in context as "badApiDeleteRevisionPayload"
+    """
+    {"description":"delete route malformed API UUID"}
+    """
+    And I make a request to create a revision for "apis" resource "badApiDeleteId" with payload "badApiDeleteRevisionPayload"
+    Then The response status code should be 201
+    And I extract response field "id" and store it as "badApiDeleteRevisionId"
+    And I put literal value "2C0q51h4-621g-3163-7eip-as246v8x681m" in context as "malformedApiId"
+    When I delete revision "badApiDeleteRevisionId" of "apis" resource "malformedApiId"
+    Then The response status code should be 404
+
+    Examples:
+      | actor                     |
+      | publisherUser             |
+      | publisherUser@tenant1.com |
+
+  @cap:publisher @feat:revisions @rule:invalid-id-format @type:negative @legacy:APIRevisionTestCase
+  Scenario Outline: Deploying a revision with a malformed API UUID answers 404 as <actor>
+    Given The system is ready and I have valid publisher access tokens as "<actor>"
+    And I put JSON payload from file "artifacts/payloads/create_apim_test_api.json" in context as "badApiDeployPayload"
+    And I create an "apis" resource with payload "badApiDeployPayload" as "badApiDeployId"
+    When I put the following JSON payload in context as "badApiDeployRevisionPayload"
+    """
+    {"description":"deploy route malformed API UUID"}
+    """
+    And I make a request to create a revision for "apis" resource "badApiDeployId" with payload "badApiDeployRevisionPayload"
+    Then The response status code should be 201
+    And I extract response field "id" and store it as "badApiDeployRevisionId"
+    And I put literal value "2C0q51h4-621g-3163-7eip-as246v8x681m" in context as "malformedApiId"
+    When I put the following JSON payload in context as "badApiDeployConfig"
+    """
+    [{"name":"{{gatewayEnvironment}}","vhost":"localhost","displayOnDevportal":true}]
+    """
+    And I make a request to deploy revision "badApiDeployRevisionId" of "apis" resource "malformedApiId" with payload "badApiDeployConfig"
+    Then The response status code should be 404
+
+    Examples:
+      | actor                     |
+      | publisherUser             |
+      | publisherUser@tenant1.com |
+
+  @cap:publisher @feat:revisions @rule:invalid-id-format @type:negative @legacy:APIRevisionTestCase
+  Scenario Outline: Restoring a revision with a malformed API UUID answers 404 as <actor>
+    Given The system is ready and I have valid publisher access tokens as "<actor>"
+    And I put JSON payload from file "artifacts/payloads/create_apim_test_api.json" in context as "badApiRestorePayload"
+    And I create an "apis" resource with payload "badApiRestorePayload" as "badApiRestoreId"
+    When I put the following JSON payload in context as "badApiRestoreRevisionPayload"
+    """
+    {"description":"restore route malformed API UUID"}
+    """
+    And I make a request to create a revision for "apis" resource "badApiRestoreId" with payload "badApiRestoreRevisionPayload"
+    Then The response status code should be 201
+    And I extract response field "id" and store it as "badApiRestoreRevisionId"
+    And I put literal value "2C0q51h4-621g-3163-7eip-as246v8x681m" in context as "malformedApiId"
+    When I restore revision "badApiRestoreRevisionId" of "apis" resource "malformedApiId"
+    Then The response status code should be 404
+
+    Examples:
+      | actor                     |
+      | publisherUser             |
+      | publisherUser@tenant1.com |
+
+  @cap:publisher @feat:revisions @rule:invalid-id-format @type:negative @legacy:APIRevisionTestCase
+  Scenario Outline: Undeploying a revision with a malformed API UUID answers 404 as <actor>
+    Given The system is ready and I have valid publisher access tokens as "<actor>"
+    And I put JSON payload from file "artifacts/payloads/create_apim_test_api.json" in context as "badApiUndeployPayload"
+    And I create an "apis" resource with payload "badApiUndeployPayload" as "badApiUndeployId"
+    When I put the following JSON payload in context as "badApiUndeployRevisionPayload"
+    """
+    {"description":"undeploy route malformed API UUID"}
+    """
+    And I make a request to create a revision for "apis" resource "badApiUndeployId" with payload "badApiUndeployRevisionPayload"
+    Then The response status code should be 201
+    And I extract response field "id" and store it as "badApiUndeployRevisionId"
+    And I put literal value "2C0q51h4-621g-3163-7eip-as246v8x681m" in context as "malformedApiId"
+    When I put the following JSON payload in context as "badApiUndeployConfig"
+    """
+    [{"name":"{{gatewayEnvironment}}","vhost":null,"displayOnDevportal":true}]
+    """
+    And I undeploy revision "badApiUndeployRevisionId" of "apis" resource "malformedApiId" with payload "badApiUndeployConfig"
+    Then The response status code should be 404
+
+    Examples:
+      | actor                     |
+      | publisherUser             |
+      | publisherUser@tenant1.com |
+
+  # The legacy invalid-API undeploy request also supplied an invalid deployment descriptor. Keep this combined
+  # input case: validating the resource identifier must still yield 404 rather than being masked by descriptor
+  # validation. The standalone invalid-environment cases below separately verify the descriptor error itself.
+  @cap:publisher @feat:revisions @rule:invalid-deployment-info @type:negative @legacy:APIRevisionTestCase
+  Scenario Outline: Undeploying with both a malformed API UUID and unconfigured environment answers 404 as <actor>
+    Given The system is ready and I have valid publisher access tokens as "<actor>"
+    And I have created an api from "artifacts/payloads/create_apim_test_api.json" as "badApiAndEnvId" and deployed it
+    And I put literal value "2C0q51h4-621g-3163-7eip-as246v8x681m" in context as "malformedApiId"
+    When I put the following JSON payload in context as "badApiAndEnvUndeployConfig"
+    """
+    [{"name":"us-region","vhost":"gw.apim.com","displayOnDevportal":true}]
+    """
+    And I undeploy revision "revisionId" of "apis" resource "malformedApiId" with payload "badApiAndEnvUndeployConfig"
+    Then The response status code should be 404
+
+    Examples:
+      | actor                     |
+      | publisherUser             |
+      | publisherUser@tenant1.com |
+
+  @cap:publisher @feat:revisions @rule:invalid-id-format @type:negative @legacy:APIRevisionTestCase
+  Scenario Outline: Deleting a revision with a malformed revision UUID answers 404 as <actor>
+    Given The system is ready and I have valid publisher access tokens as "<actor>"
+    And I put JSON payload from file "artifacts/payloads/create_apim_test_api.json" in context as "badRevisionDeletePayload"
+    And I create an "apis" resource with payload "badRevisionDeletePayload" as "badRevisionDeleteId"
+    And I put the following JSON payload in context as "badRevisionDeleteCreatePayload"
+    """
+    {"description":"delete route malformed revision UUID"}
+    """
+    When I make a request to create a revision for "apis" resource "badRevisionDeleteId" with payload "badRevisionDeleteCreatePayload"
+    Then The response status code should be 201
+    And I put literal value "4bm28320-l75v-3895-70ks-025294jd85a5" in context as "malformedRevisionId"
+    When I delete revision "malformedRevisionId" of "apis" resource "badRevisionDeleteId"
+    Then The response status code should be 404
+
+    Examples:
+      | actor                     |
+      | publisherUser             |
+      | publisherUser@tenant1.com |
+
+  @cap:publisher @feat:revisions @rule:invalid-id-format @type:negative @legacy:APIRevisionTestCase
+  Scenario Outline: Deploying a revision with a malformed revision UUID answers 404 as <actor>
+    Given The system is ready and I have valid publisher access tokens as "<actor>"
+    And I put JSON payload from file "artifacts/payloads/create_apim_test_api.json" in context as "badRevisionDeployApiPayload"
+    And I create an "apis" resource with payload "badRevisionDeployApiPayload" as "badRevisionDeployApiId"
+    And I put the following JSON payload in context as "badRevisionDeployCreatePayload"
+    """
+    {"description":"deploy route malformed revision UUID"}
+    """
+    When I make a request to create a revision for "apis" resource "badRevisionDeployApiId" with payload "badRevisionDeployCreatePayload"
+    Then The response status code should be 201
+    And I put literal value "4bm28320-l75v-3895-70ks-025294jd85a5" in context as "malformedRevisionId"
+    When I put the following JSON payload in context as "badRevisionDeployConfig"
+    """
+    [{"name":"{{gatewayEnvironment}}","vhost":"localhost","displayOnDevportal":true}]
+    """
+    And I make a request to deploy revision "malformedRevisionId" of "apis" resource "badRevisionDeployApiId" with payload "badRevisionDeployConfig"
+    Then The response status code should be 404
+
+    Examples:
+      | actor                     |
+      | publisherUser             |
+      | publisherUser@tenant1.com |
+
+  @cap:publisher @feat:revisions @rule:invalid-id-format @type:negative @legacy:APIRevisionTestCase
+  Scenario Outline: Restoring a revision with a malformed revision UUID answers 404 as <actor>
+    Given The system is ready and I have valid publisher access tokens as "<actor>"
+    And I put JSON payload from file "artifacts/payloads/create_apim_test_api.json" in context as "badRevisionRestoreApiPayload"
+    And I create an "apis" resource with payload "badRevisionRestoreApiPayload" as "badRevisionRestoreApiId"
+    And I put the following JSON payload in context as "badRevisionRestoreCreatePayload"
+    """
+    {"description":"restore route malformed revision UUID"}
+    """
+    When I make a request to create a revision for "apis" resource "badRevisionRestoreApiId" with payload "badRevisionRestoreCreatePayload"
+    Then The response status code should be 201
+    And I put literal value "4bm28320-l75v-3895-70ks-025294jd85a5" in context as "malformedRevisionId"
+    When I restore revision "malformedRevisionId" of "apis" resource "badRevisionRestoreApiId"
+    Then The response status code should be 404
+
+    Examples:
+      | actor                     |
+      | publisherUser             |
+      | publisherUser@tenant1.com |
+
+  @cap:publisher @feat:revisions @rule:invalid-id-format @type:negative @legacy:APIRevisionTestCase
+  Scenario Outline: Undeploying a revision with a malformed revision UUID answers 404 as <actor>
+    Given The system is ready and I have valid publisher access tokens as "<actor>"
+    And I put JSON payload from file "artifacts/payloads/create_apim_test_api.json" in context as "badRevisionUndeployApiPayload"
+    And I create an "apis" resource with payload "badRevisionUndeployApiPayload" as "badRevisionUndeployApiId"
+    And I put the following JSON payload in context as "badRevisionUndeployCreatePayload"
+    """
+    {"description":"undeploy route malformed revision UUID"}
+    """
+    When I make a request to create a revision for "apis" resource "badRevisionUndeployApiId" with payload "badRevisionUndeployCreatePayload"
+    Then The response status code should be 201
+    And I put literal value "4bm28320-l75v-3895-70ks-025294jd85a5" in context as "malformedRevisionId"
+    When I put the following JSON payload in context as "badRevisionUndeployConfig"
+    """
+    [{"name":"{{gatewayEnvironment}}","vhost":null,"displayOnDevportal":true}]
+    """
+    And I undeploy revision "malformedRevisionId" of "apis" resource "badRevisionUndeployApiId" with payload "badRevisionUndeployConfig"
+    Then The response status code should be 404
 
     Examples:
       | actor                     |

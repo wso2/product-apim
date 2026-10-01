@@ -18,6 +18,18 @@
  const WildcardModel = require('../models/wildcardModel');
 
 exports.handleRequest = (req, res) => {
+    // The API-product lifecycle parity fixture needs the legacy customer's five-route contract without sharing the
+    // stateful customer-service backend (where DELETE would remove the customer before later lifecycle phases).
+    // Scope this deterministic behavior to its dedicated endpoint prefix; every other wildcard caller keeps the
+    // existing response unchanged.
+    if (req.path.startsWith('/api-product-lifecycle/')) {
+        const resourcePath = req.path.substring('/api-product-lifecycle'.length).replace(/\/+$/, '') || '/';
+        if (req.method === 'GET' && /^\/customers\/\d+$/.test(resourcePath)) {
+            return res.json({ id: 123, name: 'John' });
+        }
+        return res.send(WildcardModel.getDefaultMessage());
+    }
+
     const body = req.body && Object.keys(req.body).length > 0
         ? req.body
         : null;
