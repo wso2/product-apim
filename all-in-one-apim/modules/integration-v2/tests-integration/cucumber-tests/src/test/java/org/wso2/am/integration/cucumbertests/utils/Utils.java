@@ -1046,9 +1046,9 @@ public class Utils {
         return baseUrl + Constants.DEFAULT_DEVPORTAL + "apis/" + apiId + "/swagger";
     }
 
-    /** DevPortal Swagger for a named gateway environment: {@code /apis/{apiId}/swagger?environment=...}. */
+    /** DevPortal Swagger for a named gateway environment: {@code /apis/{apiId}/swagger?environmentName=...}. */
     public static String getDevportalApiSwaggerURL(String baseUrl, String apiId, String environmentName) {
-        return getDevportalApiSwaggerURL(baseUrl, apiId) + "?environment="
+        return getDevportalApiSwaggerURL(baseUrl, apiId) + "?environmentName="
                 + java.net.URLEncoder.encode(environmentName, java.nio.charset.StandardCharsets.UTF_8);
     }
 

@@ -556,9 +556,13 @@ public class OasDefinitionSteps {
         }
     }
 
-    /** The legacy Store contract forbids x-mediation-script on every operation, even when Publisher omitted it. */
-    @Then("The definition stored as {string} should not contain x-mediation-script on any operation")
-    public void definitionShouldNotContainMediationScriptOnAnyOperation(String definitionKey) {
+    /**
+     * Asserts that no operation of the stored definition carries the given operation-level extension. The legacy
+     * Store contract forbids x-mediation-script on every operation, even when Publisher omitted it, and the
+     * DevPortal environment view omits x-wso2-application-security.
+     */
+    @Then("The definition stored as {string} should not contain {word} on any operation")
+    public void definitionShouldNotContainExtensionOnAnyOperation(String definitionKey, String extension) {
 
         JSONObject definition = definitionFromContext(definitionKey);
         JSONObject paths = definition.optJSONObject("paths");
@@ -575,13 +579,13 @@ public class OasDefinitionSteps {
                 }
                 operationCount++;
                 JSONObject operation = pathItem.optJSONObject(method);
-                Assert.assertTrue(operation != null && !operation.has("x-mediation-script"),
-                        "Store definition '" + definitionKey + "' exposes x-mediation-script on "
+                Assert.assertTrue(operation != null && !operation.has(extension),
+                        "Definition '" + definitionKey + "' exposes " + extension + " on "
                                 + method.toUpperCase() + " " + path + ": " + operation);
             }
         }
         Assert.assertTrue(operationCount > 0,
-                "UNEXERCISED: definition '" + definitionKey + "' has no HTTP operations for x-mediation-script check");
+                "UNEXERCISED: definition '" + definitionKey + "' has no HTTP operations for " + extension + " check");
     }
 
     /**
@@ -678,6 +682,24 @@ public class OasDefinitionSteps {
     @Then("The OpenAPI operations in {string} and {string} should be identical")
     public void openApiOperationsShouldBeIdentical(String firstKey, String secondKey) {
 
+        assertOperationsIdentical(firstKey, secondKey, null);
+    }
+
+    /**
+     * Full operation-object equality like {@link #openApiOperationsShouldBeIdentical}, except for one
+     * operation-level extension that the second definition's plane legitimately omits (the DevPortal environment
+     * view drops x-wso2-application-security). Pair it with the "should not contain … on any operation" step so
+     * the omission itself stays pinned.
+     */
+    @Then("The OpenAPI operations in {string} and {string} should be identical except the extension {word}")
+    public void openApiOperationsShouldBeIdenticalExceptExtension(String firstKey, String secondKey,
+                                                                   String ignoredExtension) {
+
+        assertOperationsIdentical(firstKey, secondKey, ignoredExtension);
+    }
+
+    private void assertOperationsIdentical(String firstKey, String secondKey, String ignoredExtension) {
+
         JSONObject firstPaths = definitionFromContext(firstKey).optJSONObject("paths");
         JSONObject secondPaths = definitionFromContext(secondKey).optJSONObject("paths");
         Assert.assertNotNull(firstPaths, "Definition '" + firstKey + "' has no paths section");
@@ -693,8 +715,8 @@ public class OasDefinitionSteps {
             Assert.assertEquals(verbsOf(firstPath), verbsOf(secondPath),
                     "Path '" + path + "' declares different HTTP methods");
             for (String verb : verbsOf(firstPath)) {
-                JSONObject firstOperation = firstPath.optJSONObject(verb.toLowerCase());
-                JSONObject secondOperation = secondPath.optJSONObject(verb.toLowerCase());
+                JSONObject firstOperation = withoutKey(firstPath.optJSONObject(verb.toLowerCase()), ignoredExtension);
+                JSONObject secondOperation = withoutKey(secondPath.optJSONObject(verb.toLowerCase()), ignoredExtension);
                 Assert.assertTrue(firstOperation.similar(secondOperation),
                         "Operation " + verb + " " + path + " differs between '" + firstKey + "' and '" + secondKey
                                 + "'. First=" + firstOperation + "; second=" + secondOperation);
@@ -769,6 +791,17 @@ public class OasDefinitionSteps {
     }
 
     /** The HTTP verbs a path item declares, upper-cased; ignores non-operation keys such as {@code parameters}. */
+    /** A copy of {@code operation} without {@code key}; the operation itself when {@code key} is null. */
+    private static JSONObject withoutKey(JSONObject operation, String key) {
+
+        if (key == null || operation == null) {
+            return operation;
+        }
+        JSONObject copy = new JSONObject(operation.toString());
+        copy.remove(key);
+        return copy;
+    }
+
     private Set<String> verbsOf(JSONObject pathItem) {
 
         Set<String> verbs = new TreeSet<>();

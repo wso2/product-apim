@@ -165,10 +165,13 @@ Feature: Publisher API Definition Import
     Then The response status code should be 200
     And I put the response payload in context as "defUpdateDevportalDef"
     And The definition stored as "defUpdateDevportalDef" should declare OpenAPI version "<expectedOpenApiVersion>"
-    And The OpenAPI operations in "defUpdateSubmittedDef" and "defUpdateDevportalDef" should be identical
+    # The DevPortal environment view omits x-wso2-application-security from every operation; everything else in
+    # each operation must equal the submitted OAS, and the omission itself is pinned below.
+    And The OpenAPI operations in "defUpdateSubmittedDef" and "defUpdateDevportalDef" should be identical except the extension x-wso2-application-security
     And The definitions stored as "defUpdateSubmittedDef" and "defUpdateDevportalDef" should declare the same operations
     And The definition stored as "defUpdateDevportalDef" should not expose the publisher-only extensions carried by "defUpdatePublisherDef"
     And The definition stored as "defUpdateDevportalDef" should not contain x-mediation-script on any operation
+    And The definition stored as "defUpdateDevportalDef" should not contain x-wso2-application-security on any operation
     And The definition stored as "defUpdateDevportalDef" should be reported valid by the definition validator
 
     Examples:

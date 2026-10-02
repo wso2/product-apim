@@ -113,7 +113,7 @@ Feature: Publisher Operation Policies
 
     # Importing the same archive again is rejected as a duplicate.
     When I import the common operation policy archive "rtArchive" as "rtDuplicateId"
-    Then The response status code should not be 201
+    Then The response status code should be 409
 
     Examples:
       | format | actor             |
@@ -235,10 +235,12 @@ Feature: Publisher Operation Policies
     Then The response status code should be 201
     And The response should contain "custom_add_api_specific_header"
 
-    # Duplicate creation at the SAME API-specific scope must return conflict (409); common-policy archive import
-    # is a different operation and does not cover this legacy duplicate-create branch.
+    # Duplicate creation at the SAME API-specific scope is rejected with 500 whose description names the duplicate
+    # as the cause; both are pinned exactly so a 500 from any other failure does not pass. Common-policy archive
+    # import is a different operation (409) and does not cover this legacy duplicate-create branch.
     When I create a new API specific policy for api "jsonApiId" with spec "artifacts/payloads/policySpecFiles/custom_add_api_specific_header.j2" and "artifacts/payloads/policySpecFiles/custom_add_api_specific_header.json" as "duplicateJsonPolicyId"
-    Then The response status code should be 409
+    Then The response status code should be 500
+    And The value of error response field "description" should be "Error while adding an API specific operation policy.An API specific operation policy found for the same name."
 
     # It appears on THIS API's (scenario-owned) policy list as an API-specific policy.
     When I retrieve the operation policies of API "jsonApiId"

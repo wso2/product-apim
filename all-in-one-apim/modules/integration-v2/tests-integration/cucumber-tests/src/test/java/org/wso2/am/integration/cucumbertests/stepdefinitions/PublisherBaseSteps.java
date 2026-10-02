@@ -48,6 +48,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -416,6 +417,8 @@ public class PublisherBaseSteps {
 
     /** Synapse's per-artifact hot-swap line; the artifact name is {@code prod--<apiName>:v<version>}. */
     private static final String SYNAPSE_ADDED = "was added to the Synapse configuration successfully";
+    /** The operation-policy spec version the product writes into the envelope of every exported policy. */
+    private static final String EXPORTED_OPERATION_POLICY_SPEC_VERSION = "v4.7.0";
 
     /**
      * Decides whether the artifact now on the gateway is the one THIS scenario's deploy put there.
@@ -3923,6 +3926,7 @@ public class PublisherBaseSteps {
      * formats are each compared against that single source model, pinning their semantic equivalence. The Synapse
      * template is compared byte-for-byte because the product round-trips it verbatim.</p>
      */
+    @SuppressWarnings("unchecked")
     @Then("The exported operation policy archive {string} should contain a {string} spec for policy {string}")
     public void theExportedPolicyArchiveShouldContain(String archivePathKey, String format, String policyName)
             throws IOException {
@@ -3952,10 +3956,15 @@ public class PublisherBaseSteps {
         }
 
         // Content equality against the SOURCE files the policy was created from. The source spec is YAML; the
-        // exported spec may be YAML or JSON but both parse with the same YAML parser (JSON ⊂ YAML).
+        // exported spec may be YAML or JSON but both parse with the same YAML parser (JSON ⊂ YAML). The export
+        // envelope's root "version" is the product's operation-policy spec version, not the uploaded value, so the
+        // expected model carries that exact value (as the legacy expected export files do).
         String sourceSpecResource = "artifacts/payloads/policySpecFiles/" + policyName + ".yaml";
         String sourceSynapseResource = "artifacts/payloads/policySpecFiles/" + policyName + ".j2";
-        Object sourceSpec = new Yaml().load(Utils.readClasspathResource(sourceSpecResource));
+        Object sourceModel = new Yaml().load(Utils.readClasspathResource(sourceSpecResource));
+        Assert.assertTrue(sourceModel instanceof Map, "Source policy spec " + sourceSpecResource + " is not a mapping");
+        Map<String, Object> sourceSpec = new LinkedHashMap<>((Map<String, Object>) sourceModel);
+        sourceSpec.put("version", EXPORTED_OPERATION_POLICY_SPEC_VERSION);
         Object exportedSpec = new Yaml().load(specContent);
         Assert.assertEquals(exportedSpec, sourceSpec,
                 "Exported " + format + " policy spec must exactly match the source model; comparing each format "

@@ -69,7 +69,7 @@ public class AiApiSteps {
         JSONObject actual = new JSONObject(response.getData());
         JSONObject expected = new JSONObject(readClasspath(jsonFilePath));
         String actualModel = actual.optString("model", null);
-        List<String> acceptedModels = Arrays.asList(allowedModels.split(","));
+        List<String> acceptedModels = Arrays.stream(allowedModels.split(",")).map(String::trim).toList();
         Assert.assertTrue(acceptedModels.contains(actualModel),
                 "Model-selection response used unexpected model '" + actualModel + "'; expected one of "
                         + acceptedModels + ". Body: " + response.getData());

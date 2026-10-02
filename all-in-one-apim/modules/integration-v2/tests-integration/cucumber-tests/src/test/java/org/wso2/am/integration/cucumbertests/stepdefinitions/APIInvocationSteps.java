@@ -86,6 +86,8 @@ public class APIInvocationSteps {
      * propagation window, which would read as "not throttled" for a timing reason rather than a product one.
      */
     private static final int THROTTLED_SSE_DELAY_MILLIS = 1000;
+    /** Slack past a throttle window's expiry: covers the one-second, truncating resolution of the Date header. */
+    private static final long THROTTLE_WINDOW_ROLLOVER_MARGIN_MILLIS = 2000L;
     private static final DateTimeFormatter THROTTLE_EXPIRY_FORMAT =
             DateTimeFormatter.ofPattern("uuuu-MMM-dd HH:mm:ssxx 'UTC'", Locale.ENGLISH);
 
@@ -288,11 +290,21 @@ public class APIInvocationSteps {
 
         String resolvedContext = Utils.resolveContextPlaceholders(context);
         HttpResponse last = null;
+        IOException lastTransportError = null;
         while (System.currentTimeMillis() < deadlineMillis) {
-            last = contentType == null
-                    ? invokeApiByContext(resolvedContext, httpMethod, accessToken, payload)
-                    : invokeApiByContextWithContentType(resolvedContext, httpMethod, accessToken, payload,
-                            contentType);
+            // Only a transport-level IOException is retried; every received response is checked below.
+            try {
+                last = contentType == null
+                        ? invokeApiByContext(resolvedContext, httpMethod, accessToken, payload)
+                        : invokeApiByContextWithContentType(resolvedContext, httpMethod, accessToken, payload,
+                                contentType);
+            } catch (IOException transientError) {
+                lastTransportError = transientError;
+                log.warn("Transient I/O error while waiting for the application throttle reset; retrying: "
+                        + transientError.getMessage());
+                Utils.pollPause(startMillis, 500L);
+                continue;
+            }
             int status = last.getResponseCode();
             if (status == 200) {
                 Assert.assertTrue(System.currentTimeMillis() < expiryMillis - 500L,
@@ -310,13 +322,18 @@ public class APIInvocationSteps {
         Assert.fail("Application throttle reset did not take effect before the original quota expiry. "
                 + "nextAccessTime=" + expiryValue + "; last status="
                 + (last == null ? "none" : last.getResponseCode()) + "; last body="
-                + (last == null ? "none" : last.getData()));
+                + (last == null ? "none" : last.getData())
+                + (lastTransportError == null ? "" : "; last transport error=" + lastTransportError));
     }
 
     /**
      * If a bandwidth throttle is first reached near the end of its minute, let that window roll over before
      * starting the reset assertion. The feature then re-triggers the same exact 429 and captures a fresh expiry,
      * leaving enough time to distinguish a reset from natural window expiry.
+     *
+     * <p>The window rolls over on the gateway's clock, which can drift from the test host's, so the time remaining
+     * is measured against the 429 response's own {@code Date} header. That header has one-second resolution and
+     * truncates, hence the rollover margin.</p>
      */
     @When("I wait until the current application throttle window has at least {int} seconds remaining")
     public void waitUntilApplicationThrottleWindowHasTime(int minimumSeconds) throws Exception {
@@ -333,10 +350,14 @@ public class APIInvocationSteps {
         String expiry = error.optString("nextAccessTime");
         Assert.assertFalse(expiry.isBlank(), "The 429 response did not include nextAccessTime");
         long expiryMillis = OffsetDateTime.parse(expiry, THROTTLE_EXPIRY_FORMAT).toInstant().toEpochMilli();
-        long now = System.currentTimeMillis();
-        long millisUntilExpiry = expiryMillis - now;
+        String serverDate = headerValueIgnoringCase(response, "Date");
+        Assert.assertTrue(serverDate != null && !serverDate.isBlank(),
+                "The 429 response carries no Date header; the gateway's clock is needed to align the throttle window");
+        long serverNowMillis = OffsetDateTime.parse(serverDate, DateTimeFormatter.RFC_1123_DATE_TIME).toInstant()
+                .toEpochMilli();
+        long millisUntilExpiry = expiryMillis - serverNowMillis;
         if (millisUntilExpiry < minimumSeconds * 1000L) {
-            Thread.sleep(Math.max(0L, millisUntilExpiry + 500L));
+            Thread.sleep(Math.max(0L, millisUntilExpiry + THROTTLE_WINDOW_ROLLOVER_MARGIN_MILLIS));
         }
     }
 

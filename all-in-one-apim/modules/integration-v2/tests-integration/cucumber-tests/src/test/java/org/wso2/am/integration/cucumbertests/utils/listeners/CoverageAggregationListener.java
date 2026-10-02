@@ -79,15 +79,17 @@ public class CoverageAggregationListener implements ISuiteListener {
 
             File execDir = CoverageSupport.execDir(moduleDir);
             File[] execs = execDir.listFiles((d, name) -> name.endsWith(".exec"));
-            if (execs == null || execs.length == 0) {
-                logger.warn("Coverage enabled but no .exec files found in " + execDir + " — nothing to report");
-                return;
-            }
-            List<File> execFiles = new ArrayList<>(List.of(execs));
+            List<File> execFiles = execs == null ? new ArrayList<>() : new ArrayList<>(List.of(execs));
+            // Written for every coverage run, including one with no dumps at all, so the tally lists each missing
+            // block instead of the run leaving no summary (or a previous run's) behind.
             try {
                 writeDumpSummary(suite, execFiles, CoverageSupport.outputSummary(moduleDir));
             } catch (Exception e) {
-                logger.warn("Could not write the coverage dump summary (report still rendered): " + e.getMessage());
+                logger.warn("Could not write the coverage dump summary: " + e.getMessage());
+            }
+            if (execFiles.isEmpty()) {
+                logger.warn("Coverage enabled but no .exec files found in " + execDir + " — nothing to report");
+                return;
             }
             logger.info("Aggregating coverage from " + execFiles.size() + " exec file(s): " + execDir);
 
