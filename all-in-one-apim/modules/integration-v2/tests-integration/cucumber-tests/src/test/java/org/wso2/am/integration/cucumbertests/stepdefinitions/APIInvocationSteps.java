@@ -37,6 +37,8 @@ import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.time.OffsetDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
@@ -44,6 +46,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -83,6 +86,10 @@ public class APIInvocationSteps {
      * propagation window, which would read as "not throttled" for a timing reason rather than a product one.
      */
     private static final int THROTTLED_SSE_DELAY_MILLIS = 1000;
+    /** Slack past a throttle window's expiry: covers the one-second, truncating resolution of the Date header. */
+    private static final long THROTTLE_WINDOW_ROLLOVER_MARGIN_MILLIS = 2000L;
+    private static final DateTimeFormatter THROTTLE_EXPIRY_FORMAT =
+            DateTimeFormatter.ofPattern("uuuu-MMM-dd HH:mm:ssxx 'UTC'", Locale.ENGLISH);
 
     /**
      * The single low-level invocation primitive every step funnels through. It CLEARS any prior
@@ -231,19 +238,184 @@ public class APIInvocationSteps {
     public void invokeApiByContextNTimesExpecting200(String context, String httpMethod, String accessToken,
                                                      String payload, int times) throws Exception {
 
+        invokeApiByContextNTimes(context, httpMethod, accessToken, payload, times, 0, 200,
+                " (throttle tier change did not raise the limit as expected)");
+    }
+
+    /**
+     * Spaced form of the fixed-count invocation: every call, including the first, is sent {@code spacingMillis}
+     * after the previous request (the previous step's last request for the first call), and each response must
+     * carry {@code expectedStatus}. Spacing is what makes an EXACT burst count measurable: the all-in-one gateway
+     * reconciles a burst counter on two independent 50 ms replication ticks after a request opens a burst window
+     * (synapse-commons ThrottleReplicator / ThrottleWindowReplicator), and requests arriving before both ticks have
+     * run are miscounted — refused early on a rolled-over window, or not counted on a first window. Requests spaced
+     * well beyond one tick are each counted exactly once.
+     */
+    @When("I invoke the API at gateway context {string} with method {string} using access token {string} and payload {string} {int} times {int} ms apart expecting status {int}")
+    public void invokeApiByContextNTimesSpacedExpecting(String context, String httpMethod, String accessToken,
+                                                        String payload, int times, int spacingMillis,
+                                                        int expectedStatus) throws Exception {
+
+        Assert.assertTrue(spacingMillis > 0, "A spaced invocation needs a positive spacing; use the back-to-back "
+                + "form for unspaced calls.");
+        invokeApiByContextNTimes(context, httpMethod, accessToken, payload, times, spacingMillis, expectedStatus, "");
+    }
+
+    private void invokeApiByContextNTimes(String context, String httpMethod, String accessToken, String payload,
+                                          int times, int spacingMillis, int expectedStatus, String failureHint)
+            throws Exception {
+
+        Assert.assertTrue(times > 0, "At least one invocation is required.");
         String resolvedContext = Utils.resolveContextPlaceholders(context);
+        long stepStart = System.currentTimeMillis();
         for (int i = 1; i <= times; i++) {
-            // Each call is retried only until it COMPLETES (any status); the burst's assertion is 200 below.
+            if (spacingMillis > 0) {
+                Utils.pollPause(stepStart, spacingMillis);
+            }
+            // Each call is retried only until it COMPLETES (any status); the assertion on its status is below.
             HttpResponse response = Utils.retryUntil(Constants.RUNTIME_PROPAGATION_TIMEOUT,
                     () -> invokeApiByContext(resolvedContext, httpMethod, accessToken, payload),
                     completed -> true);
             Requests.publishPollResult(response);
             Assert.assertNotNull(response, "Invocation " + i + " of " + times + " never completed (gateway "
                     + "unreachable within the warmup window).");
-            Assert.assertEquals(response.getResponseCode(), 200, "Invocation " + i + " of " + times
-                    + " was not 200 (throttle tier change did not raise the limit as expected); last response: "
-                    + response.getData());
+            Assert.assertEquals(response.getResponseCode(), expectedStatus, "Invocation " + i + " of " + times
+                    + " was not " + expectedStatus + failureHint + "; last response: " + response.getData());
         }
+    }
+
+    /**
+     * Waits for a DevPortal throttle reset to take effect without letting the original quota window expire and
+     * falsely produce a 200. Only the same application-throttle 429/900803 is tolerated while the reset event
+     * propagates; every other response fails immediately.
+     */
+    @When("I invoke the API at gateway context {string} with method {string} using access token {string} and payload {string} until the application throttle reset takes effect before the original expiry within {int} seconds")
+    public void invokeUntilThrottleResetEffective(String context, String httpMethod, String accessToken, String payload,
+                                                  int timeoutSeconds) throws Exception {
+
+        invokeUntilThrottleResetEffective(context, httpMethod, accessToken, payload, null, timeoutSeconds);
+    }
+
+    /** Same reset convergence probe with an explicit request content type, used for byte-accurate bandwidth checks. */
+    @When("I invoke the API at gateway context {string} with method {string} using access token {string} and payload {string} with content type {string} until the application throttle reset takes effect before the original expiry within {int} seconds")
+    public void invokeUntilThrottleResetEffectiveWithContentType(String context, String httpMethod, String accessToken,
+                                                                  String payload, String contentType,
+                                                                  int timeoutSeconds) throws Exception {
+
+        invokeUntilThrottleResetEffective(context, httpMethod, accessToken, payload, contentType, timeoutSeconds);
+    }
+
+    private void invokeUntilThrottleResetEffective(String context, String httpMethod, String accessToken,
+                                                   String payload, String contentType, int timeoutSeconds)
+            throws Exception {
+
+        Object expiryValue = TestContext.get(ApplicationBaseSteps.THROTTLE_RESET_ORIGINAL_EXPIRY);
+        Assert.assertNotNull(expiryValue, "The pre-reset 429/900803 response did not provide nextAccessTime; "
+                + "cannot distinguish a real reset from natural quota-window expiry.");
+        long expiryMillis = OffsetDateTime.parse(expiryValue.toString(), THROTTLE_EXPIRY_FORMAT)
+                .toInstant().toEpochMilli();
+        long startMillis = System.currentTimeMillis();
+        long deadlineMillis = Math.min(expiryMillis - 500L, startMillis + timeoutSeconds * 1000L);
+        Assert.assertTrue(deadlineMillis > startMillis, "The original throttle window expires too soon to verify "
+                + "reset propagation safely; nextAccessTime=" + expiryValue);
+
+        String resolvedContext = Utils.resolveContextPlaceholders(context);
+        HttpResponse last = null;
+        IOException lastTransportError = null;
+        while (System.currentTimeMillis() < deadlineMillis) {
+            // Only a transport-level IOException is retried; every received response is checked below.
+            try {
+                last = contentType == null
+                        ? invokeApiByContext(resolvedContext, httpMethod, accessToken, payload)
+                        : invokeApiByContextWithContentType(resolvedContext, httpMethod, accessToken, payload,
+                                contentType);
+            } catch (IOException transientError) {
+                lastTransportError = transientError;
+                log.warn("Transient I/O error while waiting for the application throttle reset; retrying: "
+                        + transientError.getMessage());
+                Utils.pollPause(startMillis, 500L);
+                continue;
+            }
+            int status = last.getResponseCode();
+            if (status == 200) {
+                Assert.assertTrue(System.currentTimeMillis() < expiryMillis - 500L,
+                        "Throttle reset appeared successful only at the natural quota expiry; nextAccessTime="
+                                + expiryValue);
+                // nextAccessTime is on the gateway's clock, which the test host's clock can lag, so the 200 must
+                // also predate the expiry by the response's own Date header. Date and nextAccessTime both
+                // truncate to the second, and a natural-expiry 200 is served at or after the expiry, so its Date
+                // is never earlier than nextAccessTime.
+                String serverDate = headerValueIgnoringCase(last, "Date");
+                Assert.assertTrue(serverDate != null && !serverDate.isBlank(), "The 200 response carries no Date "
+                        + "header; the gateway's clock is needed to tell a reset from natural quota expiry");
+                long serverNowMillis = OffsetDateTime.parse(serverDate, DateTimeFormatter.RFC_1123_DATE_TIME)
+                        .toInstant().toEpochMilli();
+                Assert.assertTrue(serverNowMillis < expiryMillis - 500L,
+                        "Throttle reset appeared successful only at the natural quota expiry by the gateway's clock; "
+                                + "nextAccessTime=" + expiryValue + "; Date=" + serverDate);
+                return;
+            }
+            Assert.assertEquals(status, 429, "Unexpected response while waiting for the application throttle reset: "
+                    + status + "; body=" + last.getData());
+            Assert.assertEquals(String.valueOf(Utils.extractValueFromPayload(last.getData(), "code")), "900803",
+                    "Only the original application-throttle 900803 may be retried while reset propagates; body="
+                            + last.getData());
+            Utils.pollPause(startMillis, 500L);
+        }
+        Assert.fail("Application throttle reset did not take effect before the original quota expiry. "
+                + "nextAccessTime=" + expiryValue + "; last status="
+                + (last == null ? "none" : last.getResponseCode()) + "; last body="
+                + (last == null ? "none" : last.getData())
+                + (lastTransportError == null ? "" : "; last transport error=" + lastTransportError));
+    }
+
+    /**
+     * If a bandwidth throttle is first reached near the end of its minute, let that window roll over before
+     * starting the reset assertion. The feature then re-triggers the same exact 429 and captures a fresh expiry,
+     * leaving enough time to distinguish a reset from natural window expiry.
+     *
+     * <p>The window rolls over on the gateway's clock, which can drift from the test host's, so the time remaining
+     * is measured against the 429 response's own {@code Date} header. That header has one-second resolution and
+     * truncates, hence the rollover margin.</p>
+     */
+    @When("I wait until the current application throttle window has at least {int} seconds remaining")
+    public void waitUntilApplicationThrottleWindowHasTime(int minimumSeconds) throws Exception {
+
+        Object responseValue = TestContext.get("httpResponse");
+        Assert.assertTrue(responseValue instanceof HttpResponse,
+                "Cannot align the throttle window without the preceding gateway response");
+        HttpResponse response = (HttpResponse) responseValue;
+        Assert.assertEquals(response.getResponseCode(), 429,
+                "Throttle-window alignment requires the original 429 response");
+        JSONObject error = new JSONObject(response.getData());
+        Assert.assertEquals(error.optInt("code", -1), 900803,
+                "Throttle-window alignment is only valid for application throttle error 900803");
+        String expiry = error.optString("nextAccessTime");
+        Assert.assertFalse(expiry.isBlank(), "The 429 response did not include nextAccessTime");
+        long expiryMillis = OffsetDateTime.parse(expiry, THROTTLE_EXPIRY_FORMAT).toInstant().toEpochMilli();
+        String serverDate = headerValueIgnoringCase(response, "Date");
+        Assert.assertTrue(serverDate != null && !serverDate.isBlank(),
+                "The 429 response carries no Date header; the gateway's clock is needed to align the throttle window");
+        long serverNowMillis = OffsetDateTime.parse(serverDate, DateTimeFormatter.RFC_1123_DATE_TIME).toInstant()
+                .toEpochMilli();
+        long millisUntilExpiry = expiryMillis - serverNowMillis;
+        if (millisUntilExpiry < minimumSeconds * 1000L) {
+            Thread.sleep(Math.max(0L, millisUntilExpiry + THROTTLE_WINDOW_ROLLOVER_MARGIN_MILLIS));
+        }
+    }
+
+    private HttpResponse invokeApiByContextWithContentType(String resolvedContext, String httpMethod,
+                                                           String accessToken, String payload, String contentType)
+            throws IOException {
+
+        String actualAccessToken = TestContext.resolve(accessToken).toString();
+        String actualPayload = payload == null || payload.isBlank() ? "" : TestContext.resolve(payload).toString();
+        String endpointUrl = Utils.getBaseGatewayUrl() + (resolvedContext.startsWith("/") ? "" : "/")
+                + resolvedContext;
+        Map<String, String> headers = new HashMap<>();
+        headers.put("Authorization", "Bearer " + actualAccessToken);
+        return execute(CurlOption.HttpMethod.valueOf(httpMethod.toUpperCase()), endpointUrl, headers, actualPayload,
+                contentType);
     }
 
     /**
@@ -333,6 +505,118 @@ public class APIInvocationSteps {
     }
 
     /**
+     * Performs one invocation after the feature has established gateway readiness. Unlike the polling form, this
+     * exposes the first response unchanged so an eventual retry cannot mask a regression in the behavior under test.
+     */
+    @When("I invoke the API at gateway context {string} once with method {string} using access token {string} and payload {string}")
+    public void invokeApiByContextOnce(String context, String httpMethod, String accessToken, String payload)
+            throws IOException {
+
+        String resolvedContext = Utils.resolveContextPlaceholders(context);
+        invokeApiByContext(resolvedContext, httpMethod, accessToken, payload);
+    }
+
+    /** One-shot content-type variant for empty-body mediation assertions after an explicit readiness gate. */
+    @When("I invoke the API at gateway context {string} once with method {string} using access token {string} and payload {string} with content type {string}")
+    public void invokeApiByContextOnceWithContentType(String context, String httpMethod, String accessToken,
+                                                       String payload, String contentType) throws IOException {
+
+        String resolvedContext = Utils.resolveContextPlaceholders(context);
+        invokeApiByContextWithContentType(resolvedContext, httpMethod, accessToken, payload, contentType);
+    }
+
+    /**
+     * Polls a throttled invocation while accepting only the expected terminal status or one explicitly allowed
+     * interim status. This is useful for proving a throttle-window transition (429 → 200, or 200 → 429) without
+     * allowing unrelated gateway errors to be retried away.
+     */
+    @When("I invoke the API at gateway context {string} with method {string} using access token {string} and payload {string} until response status code becomes {int} allowing interim statuses {string} within {int} seconds")
+    public void invokeApiByContextUntilStatusAllowingInterim(String context, String httpMethod, String accessToken,
+                                                             String payload, int expectedStatus,
+                                                             String interimStatusesCsv,
+                                                             int timeoutSeconds) throws Exception {
+
+        String resolvedContext = Utils.resolveContextPlaceholders(context);
+        Set<Integer> interimStatuses = Arrays.stream(interimStatusesCsv.split(","))
+                .map(String::trim).map(Integer::parseInt).collect(Collectors.toSet());
+        Assert.assertFalse(interimStatuses.isEmpty(), "At least one explicit interim HTTP status is required.");
+        Assert.assertFalse(interimStatuses.contains(expectedStatus), "The terminal status cannot also be interim.");
+        HttpResponse last = Utils.retryUntilWithInterval(timeoutSeconds * 1000L, 1000L,
+                () -> invokeApiByContext(resolvedContext, httpMethod, accessToken, payload), response -> {
+                    int status = response.getResponseCode();
+                    Assert.assertTrue(status == expectedStatus || interimStatuses.contains(status),
+                            "Unexpected gateway status while waiting for " + expectedStatus + " (only "
+                                    + interimStatuses + " are allowed interim statuses): " + status + "; body: "
+                                    + response.getData());
+                    return status == expectedStatus;
+                });
+        assertReachedExpectedStatus(last, expectedStatus);
+    }
+
+    /**
+     * Sends a bounded number of distinct gateway requests after a throttle boundary. Every pre-throttle response
+     * must be one of the explicitly allowed statuses; unlike retrying one request, this preserves the product's
+     * eventual-throttle contract without accepting unrelated errors or hiding the number of follow-up attempts.
+     */
+    @When("I invoke the API at gateway context {string} with method {string} using access token {string} and payload {string} up to {int} additional times until status code becomes {int} allowing interim statuses {string} at {int} ms interval")
+    public void invokeApiByContextUntilStatusWithinAdditionalAttempts(String context, String httpMethod,
+                                                                      String accessToken, String payload,
+                                                                      int maxAttempts, int expectedStatus,
+                                                                      String interimStatusesCsv,
+                                                                      int intervalMillis) throws Exception {
+
+        Assert.assertTrue(maxAttempts > 0, "At least one additional gateway attempt is required.");
+        Assert.assertTrue(intervalMillis >= 0, "The gateway attempt interval cannot be negative.");
+        String resolvedContext = Utils.resolveContextPlaceholders(context);
+        Set<Integer> interimStatuses = Arrays.stream(interimStatusesCsv.split(","))
+                .map(String::trim).map(Integer::parseInt).collect(Collectors.toSet());
+        Assert.assertFalse(interimStatuses.isEmpty(), "At least one explicit interim HTTP status is required.");
+        Assert.assertFalse(interimStatuses.contains(expectedStatus), "The terminal status cannot also be interim.");
+
+        long pollStart = System.currentTimeMillis();
+        HttpResponse last = null;
+        for (int attempt = 1; attempt <= maxAttempts; attempt++) {
+            last = invokeApiByContext(resolvedContext, httpMethod, accessToken, payload);
+            Assert.assertNotNull(last, "Throttle follow-up invocation " + attempt + " of " + maxAttempts
+                    + " did not produce an HTTP response.");
+            int status = last.getResponseCode();
+            if (status == expectedStatus) {
+                return;
+            }
+            Assert.assertTrue(interimStatuses.contains(status), "Unexpected gateway status on throttle follow-up "
+                    + attempt + " of " + maxAttempts + ": expected " + expectedStatus + " or one of "
+                    + interimStatuses + ", got " + status + "; body: " + last.getData());
+            if (attempt < maxAttempts && intervalMillis > 0) {
+                Utils.pollPause(pollStart, intervalMillis);
+            }
+        }
+        Assert.fail("Gateway did not return " + expectedStatus + " within " + maxAttempts
+                + " additional invocation(s); last status=" + (last == null ? "null" : last.getResponseCode())
+                + "; body=" + (last == null ? "null" : last.getData()));
+    }
+
+    /** HTTP counterpart for parity contracts that explicitly exercise the gateway's non-TLS listener. */
+    @When("I invoke the API at HTTP gateway context {string} with method {string} using access token {string} and payload {string} with content type {string} and request header {string} set to {string} until response status code becomes {int} within {int} seconds")
+    public void invokeApiByHttpContextUntilStatus(String context, String httpMethod, String accessToken, String payload,
+                                                  String contentType, String headerName, String headerValue,
+                                                  int expectedStatus, int timeoutSeconds) throws Exception {
+
+        String resolvedContext = Utils.resolveContextPlaceholders(context);
+        String token = TestContext.resolve(accessToken).toString();
+        String body = Utils.resolveContextPlaceholders(payload);
+        String endpointUrl = Utils.getBaseGatewayHttpUrl()
+                + (resolvedContext.startsWith("/") ? "" : "/") + resolvedContext;
+        Map<String, String> headers = new HashMap<>();
+        headers.put("Authorization", "Bearer " + token);
+        if (headerName != null && !headerName.isBlank()) {
+            headers.put(headerName, Utils.resolveContextPlaceholders(headerValue));
+        }
+        invokeUntilStatus(endpointUrl, accessToken, expectedStatus, timeoutSeconds,
+                () -> execute(CurlOption.HttpMethod.valueOf(httpMethod.toUpperCase()), endpointUrl, headers,
+                        body, contentType));
+    }
+
+    /**
      * SETTLE-WINDOW counterpart of the until-status invoke: re-invokes throughout the window and asserts EVERY
      * response is {@code expectedStatus}, failing on the first deviation. An until-status poll cannot express this
      * — it stops at the first matching response, so a status that is merely *transiently* right (a backend still
@@ -348,6 +632,24 @@ public class APIInvocationSteps {
     @When("I invoke the API at gateway context {string} with method {string} using access token {string} and the response status code should remain {int} for {int} seconds")
     public void invokeApiByContextStatusShouldRemain(String context, String httpMethod, String accessToken,
                                                      int expectedStatus, int seconds) throws Exception {
+        invokeApiByContextShouldRemain(context, httpMethod, accessToken, expectedStatus, null, seconds);
+    }
+
+    /**
+     * As the status settle window, but EVERY probe must also carry {@code expectedBody} — for claims where two
+     * upstreams answer the same status and only the body tells them apart.
+     */
+    @When("I invoke the API at gateway context {string} with method {string} using access token {string} and the response should remain status {int} containing {string} for {int} seconds")
+    public void invokeApiByContextStatusAndBodyShouldRemain(String context, String httpMethod, String accessToken,
+                                                            int expectedStatus, String expectedBody, int seconds)
+            throws Exception {
+        invokeApiByContextShouldRemain(context, httpMethod, accessToken, expectedStatus,
+                Utils.resolveContextPlaceholders(expectedBody), seconds);
+    }
+
+    private void invokeApiByContextShouldRemain(String context, String httpMethod, String accessToken,
+                                                int expectedStatus, String expectedBody, int seconds)
+            throws Exception {
 
         String resolvedContext = Utils.resolveContextPlaceholders(context);
         long pollStart = System.currentTimeMillis();
@@ -366,6 +668,11 @@ public class APIInvocationSteps {
                     + seconds + "s settle window returned " + response.getResponseCode() + " instead of "
                     + expectedStatus + " — the status is NOT the enforced steady state; body: "
                     + response.getData());
+            if (expectedBody != null) {
+                Assert.assertTrue(response.getData() != null && response.getData().contains(expectedBody),
+                        "Probe " + probe + " of the " + seconds + "s settle window lacks '" + expectedBody
+                                + "'; body: " + response.getData());
+            }
             // Deadline checked BEFORE pausing, so the pause only ever precedes a probe that will actually run.
             // Pausing first (a do/while on the same deadline) both idled out the tail of the window and left the
             // LAST probe one interval short of it — a "remains for 10s" claim verified only to t=8s.
@@ -424,6 +731,27 @@ public class APIInvocationSteps {
         invokeUntilStatus(resolvedContext, null, expectedStatus, timeoutSeconds,
                 () -> execute(CurlOption.HttpMethod.valueOf(httpMethod.toUpperCase()), endpointUrl,
                         new HashMap<>(), ""));
+    }
+
+    /**
+     * Invokes a deployed API with a request body and explicit Content-Type but NO Authorization header, retrying
+     * until the expected status. This is the body-bearing counterpart to
+     * {@link #invokeApiByContextNoAuthUntilStatus(String, String, int, int)}; both use the same invocation funnel
+     * and readiness/error handling. Used when an authType-None operation must prove that an unauthenticated request
+     * reaches a body parser (for example, malformed XML through the jsonToXML message builder).
+     */
+    @When("I invoke the API at gateway context {string} with method {string} without authentication and payload {string} with content type {string} until response status code becomes {int} within {int} seconds")
+    public void invokeApiByContextNoAuthWithPayloadUntilStatus(String context, String httpMethod, String payload,
+                                                               String contentType, int expectedStatus,
+                                                               int timeoutSeconds) throws Exception {
+
+        String resolvedContext = Utils.resolveContextPlaceholders(context);
+        String actualPayload = TestContext.resolve(payload).toString();
+        String endpointUrl = Utils.getBaseGatewayUrl() + (resolvedContext.startsWith("/") ? "" : "/")
+                + resolvedContext;
+        invokeUntilStatus(resolvedContext, null, expectedStatus, timeoutSeconds,
+                () -> execute(CurlOption.HttpMethod.valueOf(httpMethod.toUpperCase()), endpointUrl,
+                        new HashMap<>(), actualPayload, contentType));
     }
 
     /**
@@ -537,6 +865,62 @@ public class APIInvocationSteps {
             return execute(CurlOption.HttpMethod.valueOf(httpMethod.toUpperCase()), endpointUrl, headers,
                     actualPayload);
         });
+    }
+
+    /**
+     * Sends exactly one authenticated request with an additional header and publishes its response for the ordinary
+     * status/body assertions. This is intentionally not a retrying invocation: callers use it when the legacy
+     * contract requires the first completed response to have a particular status (for example, an active token must
+     * work before the test revokes it).
+     */
+    @When("I invoke the API once at gateway context {string} with method {string} using access token {string} and payload {string} with request header {string} set to {string}")
+    public void invokeApiByContextOnceWithHeader(String context, String httpMethod, String accessToken, String payload,
+                                                 String headerName, String headerValue) throws Exception {
+
+        String resolvedContext = Utils.resolveContextPlaceholders(context);
+        String actualAccessToken = TestContext.resolve(accessToken).toString();
+        String resolvedHeaderValue = Utils.resolveContextPlaceholders(headerValue);
+        String actualPayload = payload == null || payload.isEmpty() ? null : TestContext.resolve(payload).toString();
+        String endpointUrl = Utils.getBaseGatewayUrl()
+                + (resolvedContext.startsWith("/") ? "" : "/") + resolvedContext;
+        Map<String, String> headers = new HashMap<>();
+        headers.put("Authorization", "Bearer " + actualAccessToken);
+        headers.put(headerName, resolvedHeaderValue);
+        execute(CurlOption.HttpMethod.valueOf(httpMethod.toUpperCase()), endpointUrl, headers, actualPayload);
+    }
+
+    /**
+     * Polls the legacy JWT-revocation contract: an invocation may remain successful (200) while the revoke event
+     * propagates, and eventually must be rejected (401). Any other completed status is a failure, matching the
+     * legacy test's explicit handling of unexpected responses instead of silently retrying them until a later 401.
+     */
+    @When("I invoke the API at gateway context {string} with method {string} using access token {string} and payload {string} with request header {string} set to {string} until the revoked token is rejected within {int} seconds")
+    public void invokeApiUntilRevokedTokenRejected(String context, String httpMethod, String accessToken,
+                                                   String payload, String headerName, String headerValue,
+                                                   int timeoutSeconds) throws Exception {
+
+        String resolvedContext = Utils.resolveContextPlaceholders(context);
+        String resolvedHeaderValue = Utils.resolveContextPlaceholders(headerValue);
+        // This is a legacy-specific convergence bound, not the framework's general APIM propagation wait. Use the
+        // no-floor poll so a 19-second contract cannot silently become the shared 180-second timeout.
+        HttpResponse last = Utils.retryUntilWithInterval(timeoutSeconds * 1000L, 1000L, () -> {
+            String actualAccessToken = TestContext.resolve(accessToken).toString();
+            String actualPayload = (payload == null || payload.isEmpty())
+                    ? null : TestContext.resolve(payload).toString();
+            String endpointUrl = Utils.getBaseGatewayUrl()
+                    + (resolvedContext.startsWith("/") ? "" : "/") + resolvedContext;
+            Map<String, String> headers = new HashMap<>();
+            headers.put("Authorization", "Bearer " + actualAccessToken);
+            headers.put(headerName, resolvedHeaderValue);
+            HttpResponse response = execute(CurlOption.HttpMethod.valueOf(httpMethod.toUpperCase()), endpointUrl,
+                    headers, actualPayload);
+            int status = response.getResponseCode();
+            Assert.assertTrue(status == 200 || status == 401,
+                    "Unexpected invocation status while waiting for revoked JWT to be rejected: " + status
+                            + "; body=" + response.getData());
+            return response;
+        }, response -> response.getResponseCode() == 401);
+        assertReachedExpectedStatus(last, 401);
     }
 
     /**
@@ -891,6 +1275,26 @@ public class APIInvocationSteps {
             headers.put("ApiKey", actualKey);
             return execute(CurlOption.HttpMethod.valueOf(httpMethod.toUpperCase()), endpointUrl, headers,
                     actualPayload);
+        });
+    }
+
+    /** HTTP-listener counterpart for API-key invocations whose legacy contract explicitly used non-TLS gateway. */
+    @When("I invoke the API at HTTP gateway context {string} with method {string} using api key {string} and payload {string} until response status code becomes {int} within {int} seconds")
+    public void invokeApiByHttpContextUsingKeyAndPayloadUntilStatus(String context, String httpMethod, String apiKey,
+                                                                    String payload, int expectedStatus,
+                                                                    int timeoutSeconds) throws Exception {
+        String resolvedContext = Utils.resolveContextPlaceholders(context);
+        String endpointUrl = Utils.getBaseGatewayHttpUrl()
+                + (resolvedContext.startsWith("/") ? "" : "/") + resolvedContext;
+        invokeUntilStatus(endpointUrl, apiKey, expectedStatus, timeoutSeconds, () -> {
+            String actualKey = TestContext.resolve(apiKey).toString();
+            String actualPayload = (payload == null || payload.isEmpty())
+                    ? "" : TestContext.resolve(payload).toString();
+            Map<String, String> headers = new HashMap<>();
+            headers.put("accept", "application/json");
+            headers.put("ApiKey", actualKey);
+            return execute(CurlOption.HttpMethod.valueOf(httpMethod.toUpperCase()), endpointUrl, headers,
+                    actualPayload, Constants.CONTENT_TYPES.APPLICATION_JSON);
         });
     }
 

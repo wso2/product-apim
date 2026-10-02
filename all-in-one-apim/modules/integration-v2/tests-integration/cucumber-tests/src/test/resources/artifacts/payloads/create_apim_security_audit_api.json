@@ -6,17 +6,17 @@
   "endpointConfig": {
     "endpoint_type": "http",
     "production_endpoints": {
-      "url": "http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/"
+      "url": "http://nodebackend:3002/auditapi"
     },
     "sandbox_endpoints": {
-      "url": "http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/"
+      "url": "http://nodebackend:3002/auditapi"
     }
   },
   "policies": ["Unlimited"],
   "operations": [
     {
       "verb": "GET",
-      "target": "/customers/{id}",
+      "target": "/{auditUuid}/assessmentreport",
       "authType": "Application & Application User",
       "throttlingPolicy": "Unlimited",
       "scopes": []

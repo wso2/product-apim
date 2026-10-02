@@ -28,82 +28,27 @@
     {
       "verb": "GET",
       "target": "/reflect-body",
-      "scopes": [],
-      "operationPolicies": {
-        "request": [
-          {
-            "policyName": "contentAwarePropertyPolicy",
-            "policyVersion": "v1",
-            "parameters": {}
-          }
-        ],
-        "response": [],
-        "fault": []
-      }
+      "scopes": []
     },
     {
       "verb": "POST",
       "target": "/reflect-body",
-      "scopes": [],
-      "operationPolicies": {
-        "request": [
-          {
-            "policyName": "contentAwarePropertyPolicy",
-            "policyVersion": "v1",
-            "parameters": {}
-          }
-        ],
-        "response": [],
-        "fault": []
-      }
+      "scopes": []
     },
     {
       "verb": "PUT",
       "target": "/reflect-body",
-      "scopes": [],
-      "operationPolicies": {
-        "request": [
-          {
-            "policyName": "contentAwarePropertyPolicy",
-            "policyVersion": "v1",
-            "parameters": {}
-          }
-        ],
-        "response": [],
-        "fault": []
-      }
+      "scopes": []
     },
     {
       "verb": "PATCH",
       "target": "/reflect-body",
-      "scopes": [],
-      "operationPolicies": {
-        "request": [
-          {
-            "policyName": "contentAwarePropertyPolicy",
-            "policyVersion": "v1",
-            "parameters": {}
-          }
-        ],
-        "response": [],
-        "fault": []
-      }
+      "scopes": []
     },
     {
       "verb": "DELETE",
       "target": "/reflect-body",
-      "scopes": [],
-      "operationPolicies": {
-        "request": [
-          {
-            "policyName": "contentAwarePropertyPolicy",
-            "policyVersion": "v1",
-            "parameters": {}
-          }
-        ],
-        "response": [],
-        "fault": []
-      }
+      "scopes": []
     }
   ],
   "isDefaultVersion": true,

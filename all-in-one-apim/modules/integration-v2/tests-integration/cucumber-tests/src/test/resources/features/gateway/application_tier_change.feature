@@ -4,17 +4,17 @@ Feature: Gateway Application Tier Change Enforcement
   Ports ChangeApplicationTierAndTestInvokingTestCase. Proves the DISTINCT assertion the throttling suite does not
   cover: changing an APPLICATION's throttling tier mid-life is honoured at the gateway. An application bound to a
   LOW application policy is throttled (429) once it exceeds that low limit; after the application is switched to a
-  HIGHER application policy (and its throttle counter reset so the change is observed immediately rather than after
-  the window), a burst that would have tripped the LOW limit now all succeeds (200) — and the app still trips 429
-  at the higher limit; switching back to the LOW policy re-imposes the low limit (429). The bespoke low/high
-  policies are created via the admin API (built-in tiers are thousands/min, unreachable in a test).
+  HIGHER application policy and waiting for the throttle window to roll over, a burst that would have tripped the
+  LOW limit now all succeeds (200) — and the app still trips 429 at the higher limit; switching back to the LOW
+  policy re-imposes the low limit: 429 within a bounded number of calls that the HIGH limit would all have allowed.
+  The bespoke low/high policies are created via the admin API (built-in tiers are thousands/min, unreachable in a
+  test).
 
-  # Runs x2-tenant (super + tenant1) in its OWN thread-count=1 block: the bespoke low/high policies, the
-  # application and its token all scope to the acting actor's tenant (unique names via ${UNIQUE:}), so the two
-  # rows are isolated. Application-throttle windows are time-sensitive and the tier-change + reset dance is the
-  # part that made the legacy test flaky, so the block never shares a container with other time-sensitive throttle
-  # scenarios (the two rows still run sequentially). The counter RESET (rather than a 60s window sleep) is what
-  # makes the tier change deterministically observable in-window — the same reset the throttling suite relies on.
+  # Runs x2-tenant (super + tenant1) in the sequential (thread-count=1) GatewayIsolatedRuntime block, which it
+  # shares with other gateway runtime runners; no other scenario runs alongside it. The bespoke low/high policies,
+  # the application and its token all scope to the acting actor's tenant (unique names via ${UNIQUE:}), so the
+  # two rows are isolated. No throttle counter reset is used: each tier change is observed by polling until the
+  # current window rolls over.
   @cap:gateway @feat:throttling-enforcement @type:regression @dep:admin @dep:publisher @dep:devportal @legacy:ChangeApplicationTierAndTestInvokingTestCase
   Scenario Outline: An application-tier change raises then lowers the enforced limit at the gateway as <actor>
     Given The system is ready
@@ -66,17 +66,22 @@ Feature: Gateway Application Tier Change Enforcement
     When I request an OAuth access token for the current user using password grant with scope "PRODUCTION"
     Then The response status code should be 200
 
-    # LOW tier active: the app trips 429 quickly (3/min). The 429 carries the THROTTLED-OUT fault payload — legacy
-    # asserts the body (MESSAGE_THROTTLED_OUT), not just the status, and 429 alone cannot say WHICH limit fired.
+    # LOW tier active: a call succeeds with the backend payload, then the app trips 429 quickly (3/min).
+    When I invoke the API at gateway context "{{tierApiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
+    # The 429 carries the THROTTLED-OUT fault payload — legacy asserts the body (MESSAGE_THROTTLED_OUT), not just
+    # the status, and 429 alone cannot say WHICH limit fired.
     When I invoke the API at gateway context "{{tierApiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 429 within 60 seconds
     Then The response status code should be 429
     And The error response should have code "900803" message "Message throttled out" and description containing "You have exceeded your quota"
 
     # Switch the application to the HIGH (20/min) policy. The gateway's per-minute throttle window must roll over
     # before the new limit is observed (a counter reset only clears the persisted count, not the in-flight window),
-    # so poll until the app can invoke again (200) — this waits out the old window AND confirms the change is live.
-    # Then a burst of calls all succeed (200) — impossible under the old 3/min limit — proving the tier change
-    # raised the enforced limit.
+    # so poll until the app can invoke again (200) — this waits out the old window (a 200 there alone does not show
+    # which tier is in effect). Then a burst of calls all succeed (200) — impossible under the old 3/min limit —
+    # proving the tier change raised the enforced limit.
     #
     # PRE-LIMIT BOUNDARY (the legacy's "every call up to the limit returns 200"). The burst size is 15, not 20, on
     # purpose. The poll-until-200 above necessarily lands as the FIRST call of a FRESH window (the previous window
@@ -105,7 +110,9 @@ Feature: Gateway Application Tier Change Enforcement
     And The error response should have code "900803" message "Message throttled out" and description containing "You have exceeded your quota"
 
     # Switch the application BACK to the LOW (3/min) policy — the low limit is re-imposed. Wait out the current
-    # window (poll until 200), then a fresh burn trips 429 again quickly, proving the change back took effect.
+    # window (poll until 200, the first call of a fresh window). Then calls paced 1s apart must hit 429 by call 8:
+    # at most 1 + 8 = 9 calls in the window, which the HIGH (20/min) policy would all allow, so only the LOW policy
+    # can produce that 429. The 1s pacing leaves room for the asynchronous throttle decision to reach the gateway.
     When I put the following JSON payload in context as "tierAppToLowPayload"
     """
     {"name":"{{tierAppName}}","throttlingPolicy":"{{appTierLowPolicy}}","description":"switched back to low tier"}
@@ -116,6 +123,9 @@ Feature: Gateway Application Tier Change Enforcement
     Then The response status code should be 200
     And The value of response field "id" should be "123"
     And The value of response field "name" should be "John"
+    When I invoke the API at gateway context "{{tierApiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" every 1000 milliseconds expecting status 429 by call 8
+    Then The response status code should be 429
+    And The error response should have code "900803" message "Message throttled out" and description containing "You have exceeded your quota"
     When I invoke the API at gateway context "{{tierApiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 429 within 60 seconds
     Then The response status code should be 429
     And The error response should have code "900803" message "Message throttled out" and description containing "You have exceeded your quota"

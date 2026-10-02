@@ -54,6 +54,8 @@
         <parameter name="blockLabel" value="publisher-versioning"/>
         <parameter name="initTenantUsers" value="true"/>
         <parameter name="initSecondaryUserStore" value="true"/>
+        <!-- The secondary-store API-product lifecycle invokes the product through the gateway. -->
+        <parameter name="initBackend" value="true"/>
         <classes>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.PublisherVersioningRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.PublisherApiProductsRunner"/>
@@ -132,6 +134,7 @@
                  this block's initBackend. -->
             <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewaySseInvocationRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayMediationPoliciesRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayMessageTypeRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.PublisherMcpServersRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayMcpInvocationRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayAudienceValidationRunner"/>
@@ -166,6 +169,19 @@
         <parameter name="initBackend" value="true"/>
         <classes>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewaySoapInvocationRunner"/>
+        </classes>
+    </test>
+    <!-- Keep the documented conditional API-template test and the runtime SOAP-update parity test in an isolated
+         block. Only this block removes ConfigServiceAdmin from the service deny-list; all other denied services
+         remain disabled, and no other test block inherits the override. -->
+    <test name="IntegrationV2-Gateway-CustomHandler" parallel="classes" thread-count="1">
+        <parameter name="blockLabel" value="gateway-custom-handler"/>
+        <parameter name="initTenantUsers" value="true"/>
+        <parameter name="initBackend" value="true"/>
+        <parameter name="tomlExtraOverlayPath" value="src/test/resources/artifacts/configFiles/customGatewayHandler/deployment.toml"/>
+        <parameter name="serverFilesToCopy" value="src/test/resources/artifacts/custom-handler/CustomAPIAuthenticationHandler-1.0.0.jar::repository/components/lib/CustomAPIAuthenticationHandler-1.0.0.jar,src/test/resources/artifacts/custom-handler/velocity_template.xml::repository/resources/api_templates/velocity_template.xml"/>
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayCustomHandlerRunner"/>
         </classes>
     </test>
     <!-- Key-manager features (token/key issuance). initBackend for the refresh/sandbox gateway invocations. -->
@@ -255,8 +271,9 @@
     <!-- API Governance plane (rulesets / policies / compliance) — its own product API (/api/am/governance/v1)
          with its own apim:gov_* token scopes. Default config. Compliance evaluates API definitions rather than
          runtime traffic, but the block still needs the node backend: the MCP-proxy scenarios are validated
-         against the live MCP server at create time — see initBackend below. Concurrent block. -->
-    <test name="IntegrationV2-Governance" parallel="classes" thread-count="2">
+         against the live MCP server at create time — see initBackend below. Run sequentially because the
+         policy parity scenario consumes the complete ruleset list while the ruleset runner mutates it. -->
+    <test name="IntegrationV2-Governance" parallel="classes" thread-count="1">
         <parameter name="blockLabel" value="governance"/>
         <parameter name="initTenantUsers" value="true"/>
         <!-- initBackend: the MCP-proxy compliance scenario discovers tools from the node MCP server at create. -->
@@ -404,6 +421,7 @@
         <parameter name="initBackend" value="true"/>
         <parameter name="tomlExtraOverlayPath" value="src/test/resources/artifacts/configFiles/mtlsWsCors/deployment.toml"/>
         <classes>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.PublisherApiCreationRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayMutualSslInvocationRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayMutualSslSecurityMatrixRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayWebSocketCorsRunner"/>
@@ -664,6 +682,9 @@
         <parameter name="blockLabel" value="email-username"/>
         <parameter name="initTenantUsers" value="true"/>
         <parameter name="emailUserMode" value="true"/>
+        <parameter name="tomlExtraOverlayPath" value="src/test/resources/artifacts/configFiles/logging/deployment.toml"/>
+        <parameter name="bootstrapThrottleData" value="true"/>
+        <parameter name="throttleDataReadinessSeconds" value="180"/>
         <!-- Gateway invocation in this block needs the node backend; without it Basic auth reaches a SUSPENDED
              endpoint (500) and a 200 would be unreachable (CLAUDE.md §11). -->
         <parameter name="initBackend" value="true"/>
@@ -677,6 +698,7 @@
             <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayBasicAuthEmailUserNameRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.DevPortalApplicationEmailUserNameRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayThrottleEmailUserNameRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayThrottleResetEmailUserNameRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayDenyEnforcementEmailUserNameRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.KeyManagerEmailUserNameLoginRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.PublisherApiProductEmailUserNameRunner"/>

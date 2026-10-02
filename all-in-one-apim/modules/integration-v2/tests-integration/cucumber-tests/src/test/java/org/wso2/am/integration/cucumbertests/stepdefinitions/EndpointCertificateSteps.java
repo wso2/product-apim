@@ -560,6 +560,43 @@ public class EndpointCertificateSteps {
     }
 
     /**
+     * Asserts that a certificate search returned exactly the requested aliases and that every returned metadata
+     * entry carries the expected endpoint. Exact host isolation in the feature keeps this assertion deterministic
+     * when scenarios run concurrently; count alone would also pass for unrelated certificates.
+     */
+    @Then("The endpoint certificate search should list exactly aliases {string} for endpoint {string}")
+    public void theSearchShouldListExactlyAliasesForEndpoint(String aliasesCsv, String endpoint) {
+        Set<String> expectedAliases = new HashSet<>();
+        for (String alias : Utils.resolveContextPlaceholders(aliasesCsv).split(",")) {
+            if (!alias.isBlank()) {
+                expectedAliases.add(alias.trim());
+            }
+        }
+        String expectedEndpoint = Utils.resolveContextPlaceholders(endpoint);
+        JSONObject body = lastResponseBody();
+        JSONArray certificates = body.optJSONArray("certificates");
+        Assert.assertNotNull(certificates, "Endpoint-certificate search response has no certificates array; body: "
+                + body);
+        Assert.assertEquals(certificates.length(), expectedAliases.size(),
+                "Endpoint-certificate search returned an unexpected number of entries; body: " + body);
+        Assert.assertEquals(body.optInt("count", -1), expectedAliases.size(),
+                "Endpoint-certificate search count does not match its certificates array; body: " + body);
+
+        Set<String> actualAliases = new HashSet<>();
+        for (int i = 0; i < certificates.length(); i++) {
+            JSONObject certificate = certificates.getJSONObject(i);
+            String alias = certificate.optString("alias", null);
+            Assert.assertNotNull(alias, "Search result at index " + i + " has no alias; body: " + body);
+            Assert.assertEquals(certificate.optString("endpoint", null), expectedEndpoint,
+                    "Search result endpoint mismatch for alias " + alias + "; body: " + body);
+            Assert.assertTrue(actualAliases.add(alias),
+                    "Endpoint-certificate search returned duplicate alias " + alias + "; body: " + body);
+        }
+        Assert.assertEquals(actualAliases, expectedAliases,
+                "Endpoint-certificate search returned the wrong aliases; body: " + body);
+    }
+
+    /**
      * Asserts the number of APIs in the last certificate-usage response ({@code count} field of the
      * APIMetadataListDTO).
      */
@@ -568,6 +605,11 @@ public class EndpointCertificateSteps {
         JSONObject body = lastResponseBody();
         Assert.assertEquals(body.optInt("count", -1), expected,
                 "Endpoint-certificate usage API count mismatch; body: " + body);
+        JSONArray list = body.optJSONArray("list");
+        Assert.assertNotNull(list, "Endpoint-certificate usage response has no API list; body: " + body);
+        Assert.assertEquals(list.length(), expected,
+                "Endpoint-certificate usage returned " + list.length() + " API entries but expected "
+                        + expected + "; body: " + body);
     }
 
     /**

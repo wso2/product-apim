@@ -22,7 +22,9 @@ target
 .DS_Store
 node_modules/
 
+# Generated TestNG reports from the Integration V2 Cucumber suite
+all-in-one-apim/modules/integration-v2/tests-integration/cucumber-tests/test-output/
+
 *.war
 *.mar
 *.jar
-

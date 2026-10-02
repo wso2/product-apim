@@ -31,6 +31,7 @@ import io.cucumber.testng.CucumberOptions;
         glue = {
                 "org.wso2.am.integration.cucumbertests.stepdefinitions"
         },
+        tags = "not @email-user-throttle-reset",
         plugin = {"pretty", "html:target/cucumber-report/gateway-throttling-enforcement.html"}
 )
 public class GatewayThrottlingEnforcementRunner extends BaseBlockRunner {

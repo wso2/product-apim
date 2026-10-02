@@ -19,6 +19,8 @@
 const router = express.Router();
 const auditController = require('../controllers/auditController');
 
+router.post('/test-observability/reset', auditController.resetObservability);
+router.get('/test-observability', auditController.getObservability);
 router.get('/:apiId/assessmentreport', auditController.getResults);
 router.post('/', auditController.postResults);
 router.put('/:apiId', auditController.putResults);

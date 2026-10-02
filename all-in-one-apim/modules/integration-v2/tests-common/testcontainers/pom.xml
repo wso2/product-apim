@@ -504,7 +504,9 @@
                                 </configuration>
                             </execution>
                             <!-- Extract runtime defaults from the images, matching the all-in-one image-based fixture
-                                 preparation. ZIPs are build inputs only; test execution consumes this staging directory. -->
+                                 preparation. ZIPs are build inputs only; test execution consumes this staging directory.
+                                 Each component's configuration templates are extracted too: distributed-apim/templates
+                                 overlays are merged onto them (J2TemplateOverlay) before the component boots. -->
                             <execution>
                                 <id>extract-distributed-apim-image-defaults</id>
                                 <phase>pre-integration-test</phase>
@@ -515,7 +517,7 @@
                                     <executable>bash</executable>
                                     <arguments>
                                         <argument>-c</argument>
-                                        <argument>set -euo pipefail; staging="${project.build.directory}/distributed-apim/defaults"; rm -rf "$staging"; mkdir -p "$staging/cp" "$staging/tm" "$staging/gateway"; cids=(); cleanup() { for cid in "${cids[@]:-}"; do docker rm "$cid" &gt; /dev/null 2&gt;&amp;1 || true; done; }; trap cleanup EXIT; cp_cid=$(docker create ${distributed.apim.cp.image.name}); cids+=("$cp_cid"); tm_cid=$(docker create ${distributed.apim.tm.image.name}); cids+=("$tm_cid"); gateway_cid=$(docker create ${distributed.apim.gateway.image.name}); cids+=("$gateway_cid"); docker cp "$cp_cid":/opt/wso2/repository/conf/deployment.toml "$staging/cp/deployment.toml"; docker cp "$tm_cid":/opt/wso2/repository/conf/deployment.toml "$staging/tm/deployment.toml"; docker cp "$gateway_cid":/opt/wso2/repository/conf/deployment.toml "$staging/gateway/deployment.toml"; docker cp "$cp_cid":/opt/wso2/dbscripts/mysql.sql "$staging/cp/mysql.sql"; docker cp "$cp_cid":/opt/wso2/dbscripts/apimgt/mysql.sql "$staging/cp/apimgt-mysql.sql"</argument>
+                                        <argument>set -euo pipefail; staging="${project.build.directory}/distributed-apim/defaults"; rm -rf "$staging"; mkdir -p "$staging/cp" "$staging/tm" "$staging/gateway"; cids=(); cleanup() { for cid in "${cids[@]:-}"; do docker rm "$cid" &gt; /dev/null 2&gt;&amp;1 || true; done; }; trap cleanup EXIT; cp_cid=$(docker create ${distributed.apim.cp.image.name}); cids+=("$cp_cid"); tm_cid=$(docker create ${distributed.apim.tm.image.name}); cids+=("$tm_cid"); gateway_cid=$(docker create ${distributed.apim.gateway.image.name}); cids+=("$gateway_cid"); docker cp "$cp_cid":/opt/wso2/repository/conf/deployment.toml "$staging/cp/deployment.toml"; docker cp "$tm_cid":/opt/wso2/repository/conf/deployment.toml "$staging/tm/deployment.toml"; docker cp "$gateway_cid":/opt/wso2/repository/conf/deployment.toml "$staging/gateway/deployment.toml"; docker cp "$cp_cid":/opt/wso2/dbscripts/mysql.sql "$staging/cp/mysql.sql"; docker cp "$cp_cid":/opt/wso2/dbscripts/apimgt/mysql.sql "$staging/cp/apimgt-mysql.sql"; docker cp "$cp_cid":/opt/wso2/repository/resources/conf/templates "$staging/cp/templates"; docker cp "$tm_cid":/opt/wso2/repository/resources/conf/templates "$staging/tm/templates"; docker cp "$gateway_cid":/opt/wso2/repository/resources/conf/templates "$staging/gateway/templates"</argument>
                                     </arguments>
                                 </configuration>
                             </execution>
