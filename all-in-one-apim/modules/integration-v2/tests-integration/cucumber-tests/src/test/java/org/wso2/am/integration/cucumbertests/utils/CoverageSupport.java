@@ -26,6 +26,8 @@ import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -70,6 +72,11 @@ public final class CoverageSupport {
 
     /** Per-block count of pre-restart dumps, so each restart of a block gets its own {@code .exec}. */
     private static final Map<String, AtomicInteger> RESTART_DUMPS = new ConcurrentHashMap<>();
+    /**
+     * Pre-restart dumps that did not happen, as {@code <block>/restart-<n>} ({@code /restart-?} when no block was
+     * booted); the counters of those restarted JVMs are absent from the report.
+     */
+    private static final Set<String> FAILED_RESTART_DUMPS = ConcurrentHashMap.newKeySet();
 
     /** Warn at most once if the property is present-but-not-truthy (enabled() is polled per block + at suite ends). */
     private static final AtomicBoolean WARNED_NOT_TRUTHY = new AtomicBoolean(false);
@@ -135,6 +142,7 @@ public final class CoverageSupport {
         if (!(runtime instanceof ApimRuntime container) || !(label instanceof String blockLabel)) {
             logger.warn("Coverage dump before restart skipped: no booted block in context (container=" + runtime
                     + ", label=" + label + ") — counters of the JVM being restarted are lost");
+            FAILED_RESTART_DUMPS.add((label instanceof String ? label : "unknown-block") + "/restart-?");
             return;
         }
         int n = RESTART_DUMPS.computeIfAbsent(blockLabel, k -> new AtomicInteger()).incrementAndGet();
@@ -145,7 +153,18 @@ public final class CoverageSupport {
         } catch (Exception e) {
             logger.warn("Coverage dump before restart " + n + " of block '" + blockLabel + "' failed — counters of "
                     + "the JVM being restarted are lost: " + e.getMessage());
+            FAILED_RESTART_DUMPS.add(blockLabel + "/restart-" + n);
         }
+    }
+
+    /** The pre-restart dumps that failed or were skipped this suite, as sorted {@code <block>/restart-<n>} entries. */
+    public static Set<String> failedRestartDumps() {
+        return new TreeSet<>(FAILED_RESTART_DUMPS);
+    }
+
+    /** Clears the failed pre-restart dump tally; called when a suite starts. */
+    public static void resetFailedRestartDumps() {
+        FAILED_RESTART_DUMPS.clear();
     }
 
     /** Where APIM class files extracted from the distribution zip are staged for the report. */

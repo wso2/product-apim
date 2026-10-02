@@ -28,13 +28,19 @@ Feature: MCP Server authoring (publisher plane)
     And The response should contain "viewPizzaMenu"
     And The response should not contain "get_pets"
     And the MCP server operations should be exactly "add,echo,viewPizzaMenu" in that order
+    # Tool FIDELITY for viewPizzaMenu, checked while it is still exposed (the UPDATE below replaces it with get_pets).
+    And the MCP server "mcpId" tool "viewPizzaMenu" should have schema definition:
+      """
+      {"inputSchema":{"type":"object","properties":{},"required":[]}}
+      """
+    And the MCP server "mcpId" tool "viewPizzaMenu" should have description "View the pizza menu. This tool provides a list of available pizzas."
     # UPDATE (ADD) — expand the exposed set to add get_pets; the persisted operations reflect it
     When I update the MCP server "mcpId" to expose tools "echo,add,get_pets"
     Then The response status code should be 200
     And The response field "operations[?(@.target=='get_pets')].target" should be exactly the list "get_pets"
-    # The exposed set is now the backend's FULL advertised tool set — exactly echo, add and get_pets and nothing
-    # else. So exposing only two of them (above, and in the invocation feature's throttle/scope scenarios) is this
-    # suite's deliberate least-privilege choice, NOT a product limit on how many discovered tools can be imported.
+    # The backend advertises more tools than are exposed here (viewPizzaMenu, orderPizza and get_weather as well),
+    # so exposing a subset (here, and in the invocation feature's throttle/scope scenarios) is this suite's
+    # deliberate least-privilege choice, NOT a product limit on how many discovered tools can be imported.
     # Note the ORDER: the proxy subtype returns its operations sorted by tool name, not in the order submitted
     # ("echo,add,get_pets" in → add,echo,get_pets out) — unlike the backend-mapped subtypes, which preserve
     # submission order (see the two ordering scenarios below).
@@ -55,11 +61,6 @@ Feature: MCP Server authoring (publisher plane)
       {"inputSchema":{"type":"object","properties":{"a":{"type":"number"},"b":{"type":"number"}},"required":["a","b"]}}
       """
     And the MCP server "mcpId" tool "add" should have description "Adds two numbers"
-    And the MCP server "mcpId" tool "viewPizzaMenu" should have schema definition:
-      """
-      {"inputSchema":{"type":"object","properties":{},"required":[]}}
-      """
-    And the MCP server "mcpId" tool "viewPizzaMenu" should have description "View the pizza menu. This tool provides a list of available pizzas."
     # UPDATE (REMOVE) — narrow back to echo,add; get_pets is dropped
     When I update the MCP server "mcpId" to expose tools "echo,add"
     Then The response status code should be 200

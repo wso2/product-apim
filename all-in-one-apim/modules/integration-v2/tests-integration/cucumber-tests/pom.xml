@@ -79,18 +79,6 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.wso2.andes.wso2</groupId>
-            <artifactId>andes-client</artifactId>
-            <version>${andes.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>javax.jms</groupId>
-            <artifactId>javax.jms-api</artifactId>
-            <version>${javax.jms.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>io.cucumber</groupId>
             <artifactId>cucumber-picocontainer</artifactId>
             <version>${cucumber.picocontainer.version}</version>

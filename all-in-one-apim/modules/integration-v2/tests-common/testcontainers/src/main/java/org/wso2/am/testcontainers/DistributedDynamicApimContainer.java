@@ -54,6 +54,13 @@ public class DistributedDynamicApimContainer implements ApimRuntime {
     private static final String TM_ALIAS = "apim-tm";
     private static final String GATEWAY_ALIAS = "apim-gw";
     private static final String SERVICES_PATH = "/services/";
+    private static final String TEMPLATES_PATH = SERVER_HOME + "/repository/resources/conf/templates/";
+    /**
+     * Template overlays under {@code distributed-apim/templates/}, each applied to every component's own template
+     * at the same relative path (extracted beside its deployment.toml as {@code templates/}). Listed explicitly
+     * because a classpath directory cannot be listed once this module is packaged as a jar.
+     */
+    private static final List<String> TEMPLATE_OVERLAYS = List.of("repository/conf/registry.xml.j2");
 
     private final String label;
     private final Path cpDefaults;
@@ -411,12 +418,6 @@ public class DistributedDynamicApimContainer implements ApimRuntime {
         return cp.getContainerId();
     }
 
-    @Override
-    public String getKeyManagerJmsBrokerUrl() {
-        return "amqp://admin:admin@clientid/carbon?brokerlist='tcp://" + cp.getHost() + ":"
-                + cp.getMappedPort(5672) + "'";
-    }
-
     public String getControlPlaneContainerId() {
         return cp.getContainerId();
     }
@@ -508,9 +509,37 @@ public class DistributedDynamicApimContainer implements ApimRuntime {
         if (solaceJwksAlias) {
             cp.withNetworkAliases(DynamicSolaceBroker.APIM_JWKS_ALIAS);
         }
+        applyTemplateOverlays(cpDefaults, cp);
+        applyTemplateOverlays(tmDefaults, tm);
+        applyTemplateOverlays(gatewayDefaults, gateway);
         copyComponentFiles(DistributedApimTomlBuilder.Component.CP, cp);
         copyComponentFiles(DistributedApimTomlBuilder.Component.TM, tm);
         copyComponentFiles(DistributedApimTomlBuilder.Component.GATEWAY, gateway);
+    }
+
+    private void applyTemplateOverlays(Path defaultsPath, GenericContainer<?> container) throws IOException {
+        for (String relativePath : TEMPLATE_OVERLAYS) {
+            Path template = requireFile(defaultsPath.getParent().resolve("templates").resolve(relativePath),
+                    "template " + relativePath + " (extracted with the image defaults)");
+            String overlayResource = "distributed-apim/templates/" + relativePath;
+            String merged;
+            try {
+                merged = J2TemplateOverlay.merge(Files.readString(template), classpathResource(overlayResource));
+            } catch (IllegalArgumentException e) {
+                throw new IllegalArgumentException(overlayResource + " cannot be applied to " + template + ": "
+                        + e.getMessage(), e);
+            }
+            container.withCopyToContainer(Transferable.of(merged), TEMPLATES_PATH + relativePath);
+        }
+    }
+
+    private String classpathResource(String resource) throws IOException {
+        try (var input = getClass().getClassLoader().getResourceAsStream(resource)) {
+            if (input == null) {
+                throw new IOException("Missing distributed resource: " + resource);
+            }
+            return new String(input.readAllBytes(), StandardCharsets.UTF_8);
+        }
     }
 
     private void copyComponentFiles(DistributedApimTomlBuilder.Component component,
@@ -532,13 +561,7 @@ public class DistributedDynamicApimContainer implements ApimRuntime {
     private String buildToml(Path defaultsPath, DistributedApimTomlBuilder.Component component, String resource)
             throws IOException {
         String defaults = Files.readString(defaultsPath);
-        String baseOverlay;
-        try (var input = getClass().getClassLoader().getResourceAsStream("distributed-apim/" + resource)) {
-            if (input == null) {
-                throw new IOException("Missing distributed overlay resource: " + resource);
-            }
-            baseOverlay = new String(input.readAllBytes(), StandardCharsets.UTF_8);
-        }
+        String baseOverlay = classpathResource("distributed-apim/" + resource);
         String extraOverlay = extraOverlays.get(component);
         boolean gatewayDeclaresApimDb = component == DistributedApimTomlBuilder.Component.GATEWAY
                 && DistributedApimTomlBuilder.hasMergedPath(defaults, baseOverlay, extraOverlay,

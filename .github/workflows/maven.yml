@@ -399,8 +399,16 @@ jobs:
           dumped=$(sed -n 's/^blocks\.dumped=//p' "$SUMMARY")
           missing=$(sed -n 's/^blocks\.missing=//p' "$SUMMARY")
           restarts=$(sed -n 's/^restart\.dumps=//p' "$SUMMARY")
-          if [ -z "$expected" ] || [ "$expected" != "$dumped" ]; then
+          if [ -z "$expected" ] || [ "$expected" != "$dumped" ] || [ -n "$missing" ]; then
             echo "::error::Coverage dumped ${dumped:-?} of ${expected:-?} blocks; missing: ${missing:-unknown}. Their counters are absent from the report."
+            exit 1
+          fi
+          # A failed pre-restart dump loses the counters of the JVM being restarted, even when the block-end dump of
+          # the same block succeeds. A missing key fails too, so a summary without the tally cannot pass.
+          failedRestarts=$(sed -n 's/^restart\.dumps\.failed=//p' "$SUMMARY")
+          failedRestartList=$(sed -n 's/^restart\.dumps\.failedList=//p' "$SUMMARY")
+          if [ "$failedRestarts" != "0" ]; then
+            echo "::error::Coverage lost ${failedRestarts:-an unknown number of} pre-restart dump(s): ${failedRestartList:-unknown}. The counters of those restarted JVMs are absent from the report."
             exit 1
           fi
           echo "Coverage dumps: $dumped/$expected blocks, $restarts pre-restart dump(s)"

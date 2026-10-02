@@ -36,8 +36,8 @@ Feature: Gateway Throttling Enforcement
 
   # The legacy BurstControlTestCase tier-swap (5/min -> 25/min, re-verifying the RAISED limit) IS covered — see the
   # burst-tier-swap scenario below. Legacy's 60s window-reset sleep is replaced by polling: an until-403 probe proves
-  # the unsubscribe reached the gateway and an until-200 probe returns only once the burst window has rolled over,
-  # so the measured burst starts on a fresh counter under the new tier. Burst is set at MINUTE granularity so it
+  # the unsubscribe reached the gateway and an until-200 probe returns once the new tier is in force; the burst
+  # counter is keyed per tier, so the measured burst starts on a fresh counter. Burst is set at MINUTE granularity so it
   # trips deterministically via the cumulative until-429 retry rather than a sub-second window that would reset
   # between attempts.
 
@@ -200,22 +200,30 @@ Feature: Gateway Throttling Enforcement
     When I request an OAuth access token for the current user using password grant with scope "PRODUCTION"
     Then The response status code should be 200
 
-    # First prove this subscription is actually enforced: exhaust its 5/min burst window while allowing only the
-    # expected 200s before the 429. This avoids mistaking an unpropagated tier for a fresh-window success.
+    # First prove this subscription is actually enforced: exhaust its 5/min burst window while allowing only 200s
+    # before the 429. This gates on the tier being in force, so an unpropagated tier cannot pass as a fresh window.
+    # The FIRST window is not counted exactly: the request that creates the API's burst throttle is never counted
+    # (ThrottleHandler registers the new throttle's context under the role-based key, not the subscription key, so
+    # that request finds no burst context), and requests closer together than one replication tick after the window
+    # opens can be lost from the count.
     And I invoke the API at gateway context "{{burstApiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 429 allowing interim statuses "200" within 60 seconds
     Then The response status code should be 429
     And The value of error response field "code" should be "900807"
 
-    # Wait for the next admitted request after the exhausted minute window. It is request 1 in the fresh window;
-    # only 429 is tolerated while waiting, so unrelated failures cannot be polled away.
+    # Wait for the next admitted request after the exhausted minute window: it is request 1 of the rolled-over window.
+    # Only 429 is tolerated while waiting, so unrelated failures cannot be polled away.
     When I invoke the API at gateway context "{{burstApiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 allowing interim statuses "429" within 90 seconds
     Then The response status code should be 200
     And The value of response field "id" should be "123"
     And The value of response field "name" should be "John"
-    # The successful probe is request 1. Require the remaining four successes, then reach 429 within at most 10
-    # distinct follow-up calls. Only 200 may precede the throttle response; other errors fail immediately.
-    When I invoke the API at gateway context "{{burstApiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" 4 times expecting status 200
-    When I invoke the API at gateway context "{{burstApiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" up to 10 additional times until status code becomes 429 allowing interim statuses "200" at 500 ms interval
+    # EXACT count on the rolled-over window: requests 2-5 are admitted and request 6 is refused. The gateway resets
+    # its local burst counter as soon as the window rolls over, but clears the previous window's shared count only
+    # on its next window-replication tick, and a throttle-replication tick that runs first carries that count into
+    # the new window; both ticks run every 50 ms (synapse-commons CallerContext / ThrottleReplicator /
+    # ThrottleWindowReplicator). Requests sent within a tick of the rollover can therefore be refused below the
+    # limit, so every counted request is spaced 500 ms after the previous one, by which time both ticks have run.
+    When I invoke the API at gateway context "{{burstApiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" 4 times 500 ms apart expecting status 200
+    When I invoke the API at gateway context "{{burstApiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" 1 times 500 ms apart expecting status 429
     And The value of error response field "code" should be "900807"
 
     Examples:
@@ -225,18 +233,17 @@ Feature: Gateway Throttling Enforcement
 
   # BURST TIER SWAP — ports BurstControlTestCase#testBurstLimitChange (disabled in legacy): a subscription on a LOW
   # burst tier throttles at the low limit; after UNSUBSCRIBING and RE-SUBSCRIBING on a HIGH burst tier, the same
-  # application must admit exactly 25 requests and then reach 429 within a bounded follow-up window. The two tiers carry the SAME 1000/min quota and
+  # application must admit exactly 25 requests and refuse the 26th. The two tiers carry the SAME 1000/min quota and
   # differ ONLY in burst (5/min vs 25/min), so the swap changes exactly one variable.
-  # The successful probe below is request 1; 24 explicit calls complete the 25-call high-tier allowance. Then at
-  # most 10 distinct follow-up calls (500 ms apart) must reach 429, matching the product's bounded enforcement lag
-  # without allowing retries to hide an unbounded or unrelated result.
-  # Why NO sleep is needed for the window (the flaky part of legacy): the pre-swap 429 spent this minute's burst
-  # counter, so a burst started immediately could 429 on LEFTOVER count rather than on the new tier. Instead of
-  # sleeping out the window, we poll until a call SUCCEEDS again — a 200 means the burst counter admitted a request,
-  # which is true only on a rolled-over (or freshly keyed) window, so the counter is at 1 when the measured burst starts.
-  # Sound whichever way the gateway keys the burst counter: if the key survives the re-subscribe, the 200 proves the
-  # rollover; if the re-subscribe re-keys it, the counter was fresh anyway. The until-200 envelope's deadline is
-  # floored at the 180s propagation window — three burst windows — so a 60s rollover always fits inside it.
+  # The successful probe below is request 1; 24 explicit calls complete the 25-call high-tier allowance and call 26
+  # must be refused with 900807. The counted calls are spaced 500 ms apart: requests closer together than one 50 ms
+  # replication tick after the window opens can be lost from the count (see the SUBSCRIPTION burst control scenario).
+  # Why the exact 25 count is sound with no window wait: the gateway keys the burst counter by application, API AND
+  # tier (appId:context:version:tier), so the high tier counts on a key the low tier never touched. Its first admitted
+  # request opens that key's FIRST window, which starts from an empty shared counter and so can never refuse a request
+  # early (unlike a rolled-over window — see the SUBSCRIPTION burst control scenario). The until-403 probe proves the
+  # low-tier subscription is gone from the gateway, so the next 200 can only be served under the high tier: it is
+  # request 1 on the high-tier key. The until-200 envelope's deadline is floored at the 180s propagation window.
   @cap:gateway @feat:throttling-enforcement @rule:burst-tier-swap @type:regression @dep:admin @dep:publisher @dep:devportal @legacy:BurstControlTestCase
   Scenario Outline: A subscription's burst limit rises once it is re-subscribed on a higher burst tier as <actor>
     And I have valid access tokens as "<actor>"
@@ -324,9 +331,9 @@ Feature: Gateway Throttling Enforcement
     Then The response status code should be 200
 
     # The successful probe is the first admitted request. Require 24 more 200s (25 total at the high-tier limit),
-    # then require 429 within at most 10 further distinct requests. Only 200 may precede 429.
-    When I invoke the API at gateway context "{{swapBurstApiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" 24 times expecting status 200
-    And I invoke the API at gateway context "{{swapBurstApiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" up to 10 additional times until status code becomes 429 allowing interim statuses "200" at 500 ms interval
+    # then the 26th request must be refused.
+    When I invoke the API at gateway context "{{swapBurstApiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" 24 times 500 ms apart expecting status 200
+    And I invoke the API at gateway context "{{swapBurstApiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" 1 times 500 ms apart expecting status 429
     And The value of error response field "code" should be "900807"
 
     Examples:

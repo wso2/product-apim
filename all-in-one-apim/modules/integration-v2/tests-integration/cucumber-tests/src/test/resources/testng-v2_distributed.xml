@@ -129,7 +129,7 @@
         <parameter name="initBackend" value="true"/>
         <parameter name="tomlExtraOverlayPath.gateway" value="src/test/resources/artifacts/configFiles/customGatewayHandler/deployment.toml"/>
         <parameter name="serverFilesToCopy.cp" value="src/test/resources/artifacts/custom-handler/velocity_template.xml::repository/resources/api_templates/velocity_template.xml"/>
-        <parameter name="serverFilesToCopy.gateway" value="../../../integration/tests-integration/tests-backend/src/test/resources/artifacts/AM/lifecycletest/CustomAPIAuthenticationHandler-1.0.0.jar::repository/components/lib/CustomAPIAuthenticationHandler-1.0.0.jar"/>
+        <parameter name="serverFilesToCopy.gateway" value="src/test/resources/artifacts/custom-handler/CustomAPIAuthenticationHandler-1.0.0.jar::repository/components/lib/CustomAPIAuthenticationHandler-1.0.0.jar"/>
         <classes>
         <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayCustomHandlerRunner"/>
         </classes>

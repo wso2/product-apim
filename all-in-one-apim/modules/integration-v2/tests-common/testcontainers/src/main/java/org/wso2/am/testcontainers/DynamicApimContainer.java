@@ -65,7 +65,7 @@ public class DynamicApimContainer extends GenericContainer<DynamicApimContainer>
         // exposed ports), so only list ports the server always binds — 9021 does, unconditionally, at boot.
         withExposedPorts(Constants.HTTPS_PORT, Constants.HTTP_PORT,
                 Constants.GATEWAY_HTTPS_PORT, Constants.GATEWAY_HTTP_PORT, Constants.GATEWAY_WS_PORT,
-                Constants.GATEWAY_WSS_PORT, Constants.WEBSUB_EVENT_RECEIVER_PORT, 5672);
+                Constants.GATEWAY_WSS_PORT, Constants.WEBSUB_EVENT_RECEIVER_PORT);
 
         // Env vars for APIMGT_DB
         withEnv(Constants.API_MANAGER_DATABASE_TYPE, System.getenv(Constants.API_MANAGER_DATABASE_TYPE));
@@ -267,11 +267,6 @@ public class DynamicApimContainer extends GenericContainer<DynamicApimContainer>
         return getMappedPort(JacocoCoverage.TCP_PORT);
     }
 
-    @Override
-    public String getKeyManagerJmsBrokerUrl() {
-        return "amqp://admin:admin@clientid/carbon?brokerlist='tcp://" + getHost() + ":" + getMappedPort(5672) + "'";
-    }
-
     public String getServletHttpsUrl() {
         return String.format("https://%s:%d/", getHost(), getMappedPort(Constants.HTTPS_PORT));
     }
@@ -367,6 +362,20 @@ public class DynamicApimContainer extends GenericContainer<DynamicApimContainer>
         // data file the server must WRITE (e.g. an embedded H2 .mv.db) silently degrades - H2 opens a
         // non-writable file read-only, so store reads work while writes no-op with no server-side error.
         withCopyToContainer(MountableFile.forHostPath(hostPath, 0666), target);
+        return this;
+    }
+
+    /**
+     * Replaces a product configuration template BEFORE the container starts, at
+     * {@code <server-home>/repository/resources/conf/templates/<templateRelativePath>}. The server renders its
+     * templates with {@code deployment.toml} on every boot, so the replacement applies to the first boot and to
+     * every restart. Used for template overlays (see {@link J2TemplateOverlay}). Must be called before
+     * {@link #start()}.
+     */
+    public DynamicApimContainer withTemplate(String templateRelativePath, String content) {
+        String target = Constants.APIM_CONTAINER_USER_HOME + "/" + requireServerName()
+                + Constants.CONTAINER_TEMPLATES_PATH + "/" + templateRelativePath;
+        withCopyToContainer(Transferable.of(content), target);
         return this;
     }
 

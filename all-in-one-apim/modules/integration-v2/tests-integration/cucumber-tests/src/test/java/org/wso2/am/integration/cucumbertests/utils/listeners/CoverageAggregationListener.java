@@ -63,6 +63,7 @@ public class CoverageAggregationListener implements ISuiteListener {
         try {
             File execDir = CoverageSupport.execDir(ModulePathResolver.getModuleDir(CoverageAggregationListener.class));
             JacocoCoverage.deleteRecursively(execDir);
+            CoverageSupport.resetFailedRestartDumps();
             logger.info("Coverage enabled: cleared stale exec dir before suite: " + execDir);
         } catch (Exception e) {
             logger.warn("Could not clear coverage exec dir at suite start: " + e.getMessage());
@@ -164,12 +165,19 @@ public class CoverageAggregationListener implements ISuiteListener {
             logger.warn("Coverage is missing the block-end dump of " + missing.size() + " block(s) — their "
                     + "counters are absent from the report: " + missing);
         }
+        Set<String> failedRestartDumps = CoverageSupport.failedRestartDumps();
+        if (!failedRestartDumps.isEmpty()) {
+            logger.warn("Coverage is missing " + failedRestartDumps.size() + " pre-restart dump(s) — the counters of "
+                    + "those restarted JVMs are absent from the report: " + failedRestartDumps);
+        }
 
         Properties summary = new Properties();
         summary.setProperty("blocks.expected", String.valueOf(expected.size()));
         summary.setProperty("blocks.dumped", String.valueOf(dumped.size()));
         summary.setProperty("blocks.missing", String.join(",", missing));
         summary.setProperty("restart.dumps", String.valueOf(restartDumps));
+        summary.setProperty("restart.dumps.failed", String.valueOf(failedRestartDumps.size()));
+        summary.setProperty("restart.dumps.failedList", String.join(",", failedRestartDumps));
         summaryFile.getParentFile().mkdirs();
         try (OutputStream os = new FileOutputStream(summaryFile)) {
             summary.store(os, "Integration coverage dump tally");

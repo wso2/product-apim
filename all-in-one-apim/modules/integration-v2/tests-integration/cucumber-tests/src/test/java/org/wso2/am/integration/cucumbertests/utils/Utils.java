@@ -41,6 +41,8 @@ import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.JSONCompareMode;
 import org.testng.Assert;
 import org.wso2.am.integration.test.utils.Constants;
+import org.wso2.am.testcontainers.DynamicApimContainer;
+import org.wso2.am.testcontainers.J2TemplateOverlay;
 import org.wso2.am.testcontainers.NodeAppServer;
 import org.wso2.carbon.automation.engine.context.beans.Tenant;
 import org.wso2.carbon.automation.engine.context.beans.User;
@@ -55,7 +57,10 @@ import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
@@ -2059,6 +2064,82 @@ public class Utils {
         String basePath = java.nio.file.Paths.get(moduleDir, Constants.DISTRIBUTION_TOML_PATH).normalize().toString();
         String overlayPath = java.nio.file.Paths.get(moduleDir, Constants.DEFAULT_TOML_PATH).normalize().toString();
         return mergeToml(basePath, overlayPath);
+    }
+
+    /**
+     * Applies template overlays to a product configuration template, in order: the template counterpart of
+     * {@link #mergeTomls}. Each overlay sets leaf values at element paths; see {@link J2TemplateOverlay} for the
+     * format and its exactly-one-match rule.
+     *
+     * @param baseTemplatePath path to the product template
+     * @param overlayPaths     ordered paths to template overlays
+     * @return the template with every overlay applied
+     */
+    public static String mergeJ2(String baseTemplatePath, List<String> overlayPaths) throws IOException {
+        String merged = Files.readString(java.nio.file.Paths.get(baseTemplatePath));
+        for (String overlayPath : overlayPaths) {
+            try {
+                merged = J2TemplateOverlay.merge(merged, Files.readString(java.nio.file.Paths.get(overlayPath)));
+            } catch (IllegalArgumentException e) {
+                throw new IllegalArgumentException(overlayPath + " cannot be applied to " + baseTemplatePath + ": "
+                        + e.getMessage(), e);
+            }
+        }
+        return merged;
+    }
+
+    /**
+     * Produces the default-lane template overlays, the template counterpart of {@link #resolveDefaultToml}: every
+     * {@code .j2} file under {@code basic/templates} merged onto the product distribution template at the same
+     * relative path. Anything that constructs a {@code DynamicApimContainer} applies these through
+     * {@link #applyDefaultTemplates} so it boots the same configuration as the parallel block lane.
+     *
+     * @param moduleDir the integration-v2 cucumber-tests module directory
+     * @return merged template content keyed by its path relative to {@code repository/resources/conf/templates}
+     */
+    public static Map<String, String> resolveDefaultTemplates(String moduleDir) throws IOException {
+        java.nio.file.Path overlays = java.nio.file.Paths.get(moduleDir, Constants.DEFAULT_TEMPLATE_OVERLAYS_PATH)
+                .normalize();
+        java.nio.file.Path templates = java.nio.file.Paths.get(moduleDir, Constants.DISTRIBUTION_TEMPLATES_PATH)
+                .normalize();
+        if (!Files.isDirectory(overlays)) {
+            throw new IllegalStateException("Template overlay directory not found: " + overlays);
+        }
+        Map<String, String> merged = new TreeMap<>();
+        List<java.nio.file.Path> overlayFiles;
+        try (Stream<java.nio.file.Path> files = Files.walk(overlays)) {
+            overlayFiles = files.filter(Files::isRegularFile)
+                    .filter(path -> path.getFileName().toString().endsWith(".j2"))
+                    .sorted()
+                    .collect(Collectors.toList());
+        }
+        for (java.nio.file.Path overlay : overlayFiles) {
+            String relativePath = overlays.relativize(overlay).toString().replace(File.separatorChar, '/');
+            java.nio.file.Path template = templates.resolve(relativePath);
+            if (!Files.isRegularFile(template)) {
+                throw new IllegalStateException("Template overlay " + overlay + " has no product template at "
+                        + template);
+            }
+            merged.put(relativePath, mergeJ2(template.toString(), List.of(overlay.toString())));
+        }
+        return merged;
+    }
+
+    /**
+     * Applies the default-lane template overlays ({@link #resolveDefaultTemplates}) to an all-in-one container.
+     * Must be called before the container starts.
+     *
+     * @param container the container to configure
+     * @param moduleDir the integration-v2 cucumber-tests module directory
+     * @return the applied template paths, relative to {@code repository/resources/conf/templates}
+     */
+    public static List<String> applyDefaultTemplates(DynamicApimContainer container, String moduleDir)
+            throws IOException {
+        Map<String, String> templates = resolveDefaultTemplates(moduleDir);
+        for (Map.Entry<String, String> template : templates.entrySet()) {
+            container.withTemplate(template.getKey(), template.getValue());
+        }
+        return new ArrayList<>(templates.keySet());
     }
 
     /**

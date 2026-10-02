@@ -179,7 +179,7 @@
         <parameter name="initTenantUsers" value="true"/>
         <parameter name="initBackend" value="true"/>
         <parameter name="tomlExtraOverlayPath" value="src/test/resources/artifacts/configFiles/customGatewayHandler/deployment.toml"/>
-        <parameter name="serverFilesToCopy" value="../../../integration/tests-integration/tests-backend/src/test/resources/artifacts/AM/lifecycletest/CustomAPIAuthenticationHandler-1.0.0.jar::repository/components/lib/CustomAPIAuthenticationHandler-1.0.0.jar,src/test/resources/artifacts/custom-handler/velocity_template.xml::repository/resources/api_templates/velocity_template.xml"/>
+        <parameter name="serverFilesToCopy" value="src/test/resources/artifacts/custom-handler/CustomAPIAuthenticationHandler-1.0.0.jar::repository/components/lib/CustomAPIAuthenticationHandler-1.0.0.jar,src/test/resources/artifacts/custom-handler/velocity_template.xml::repository/resources/api_templates/velocity_template.xml"/>
         <classes>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayCustomHandlerRunner"/>
         </classes>

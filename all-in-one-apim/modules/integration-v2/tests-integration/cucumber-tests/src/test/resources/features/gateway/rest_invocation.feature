@@ -1228,8 +1228,8 @@ Feature: Gateway REST API Invocation
     And The response array field "operations" should have exactly 2 entries
     And The response field "operations[?(@.verb=='GET')].target" should be exactly the list "<getTarget>"
     And The response field "operations[?(@.verb=='POST')].target" should be exactly the list "<postTarget>"
-    And The response field "operations[?(@.verb=='GET')].scopes" should be exactly the list "sve_get_scope"
-    And The response field "operations[?(@.verb=='POST')].scopes" should be exactly the list "sve_post_scope"
+    And The response field "operations[?(@.verb=='GET')].scopes[*]" should be exactly the list "sve_get_scope"
+    And The response field "operations[?(@.verb=='POST')].scopes[*]" should be exactly the list "sve_post_scope"
     And I extract response field "context" and store it as "sveScopeContext"
 
     When I put JSON payload from file "artifacts/payloads/create_apim_test_app.json" in context as "sveScopeAppPayload"

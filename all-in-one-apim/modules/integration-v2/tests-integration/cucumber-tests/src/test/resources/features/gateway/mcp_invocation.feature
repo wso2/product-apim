@@ -183,11 +183,12 @@ Feature: MCP tool invocation through the gateway
     When I gate the MCP server "mcpId" tool "echo" with scope "mcpScopeEnf" bound to role "admin"
     Then The response status code should be 200
     And the MCP server "mcpId" tool "echo" should persist scope "mcpScopeEnf" bound to role "admin"
+    # The server was published above; this deploy carries the updated tools and scope, and it must still be PUBLISHED.
     When I deploy the "mcp-servers" resource with id "mcpId"
     And the "mcp-servers" resource "mcpId" should be live on the gateway, redeploying if propagation is lost
-    When I publish the "mcp-servers" resource with id "mcpId"
-    Then The response status code should be 200
     When I retrieve the "mcp-servers" resource with id "mcpId"
+    Then The response status code should be 200
+    And The value of response field "lifeCycleStatus" should be "PUBLISHED"
     And I extract response field "context" and store it as "mcpContext"
     # Subscribe an app with client_credentials + password grants (password needed to mint a scoped user token).
     When I put JSON payload from file "artifacts/payloads/create_apim_test_app.json" in context as "mcpScopeAppPayload"
@@ -609,11 +610,12 @@ Feature: MCP tool invocation through the gateway
     When I gate the MCP server "mcpId" tool "get_pets" with scope "mcpApiScopeEnf" bound to role "admin"
     Then The response status code should be 200
     And the MCP server "mcpId" tool "get_pets" should persist scope "mcpApiScopeEnf" bound to role "admin"
+    # The server was published above; this deploy carries the updated tools and scope, and it must still be PUBLISHED.
     When I deploy the "mcp-servers" resource with id "mcpId"
     And the "mcp-servers" resource "mcpId" should be live on the gateway, redeploying if propagation is lost
-    When I publish the "mcp-servers" resource with id "mcpId"
-    Then The response status code should be 200
     When I retrieve the "mcp-servers" resource with id "mcpId"
+    Then The response status code should be 200
+    And The value of response field "lifeCycleStatus" should be "PUBLISHED"
     And I extract response field "context" and store it as "mcpContext"
     When I put JSON payload from file "artifacts/payloads/create_apim_test_app.json" in context as "mcpApiAppPayload"
     And I create an application with payload "mcpApiAppPayload"

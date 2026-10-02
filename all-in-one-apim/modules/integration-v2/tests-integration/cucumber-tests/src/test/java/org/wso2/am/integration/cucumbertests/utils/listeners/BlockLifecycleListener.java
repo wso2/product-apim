@@ -862,6 +862,9 @@ public class BlockLifecycleListener implements ITestListener {
     protected ApimRuntime createApimContainer(String label, ITestContext context, Network blockNetwork)
             throws java.io.IOException {
         DynamicApimContainer container = new DynamicApimContainer(label, resolveTomlContent(context));
+        java.util.List<String> templates = Utils.applyDefaultTemplates(container,
+                ModulePathResolver.getModuleDir(BlockLifecycleListener.class));
+        logger.info("Block '" + label + "' applies template overlays to " + templates);
         container.withLabel("block", label);
         container.withNetwork(blockNetwork);
         return container;

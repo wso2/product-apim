@@ -238,18 +238,49 @@ public class APIInvocationSteps {
     public void invokeApiByContextNTimesExpecting200(String context, String httpMethod, String accessToken,
                                                      String payload, int times) throws Exception {
 
+        invokeApiByContextNTimes(context, httpMethod, accessToken, payload, times, 0, 200,
+                " (throttle tier change did not raise the limit as expected)");
+    }
+
+    /**
+     * Spaced form of the fixed-count invocation: every call, including the first, is sent {@code spacingMillis}
+     * after the previous request (the previous step's last request for the first call), and each response must
+     * carry {@code expectedStatus}. Spacing is what makes an EXACT burst count measurable: the all-in-one gateway
+     * reconciles a burst counter on two independent 50 ms replication ticks after a request opens a burst window
+     * (synapse-commons ThrottleReplicator / ThrottleWindowReplicator), and requests arriving before both ticks have
+     * run are miscounted — refused early on a rolled-over window, or not counted on a first window. Requests spaced
+     * well beyond one tick are each counted exactly once.
+     */
+    @When("I invoke the API at gateway context {string} with method {string} using access token {string} and payload {string} {int} times {int} ms apart expecting status {int}")
+    public void invokeApiByContextNTimesSpacedExpecting(String context, String httpMethod, String accessToken,
+                                                        String payload, int times, int spacingMillis,
+                                                        int expectedStatus) throws Exception {
+
+        Assert.assertTrue(spacingMillis > 0, "A spaced invocation needs a positive spacing; use the back-to-back "
+                + "form for unspaced calls.");
+        invokeApiByContextNTimes(context, httpMethod, accessToken, payload, times, spacingMillis, expectedStatus, "");
+    }
+
+    private void invokeApiByContextNTimes(String context, String httpMethod, String accessToken, String payload,
+                                          int times, int spacingMillis, int expectedStatus, String failureHint)
+            throws Exception {
+
+        Assert.assertTrue(times > 0, "At least one invocation is required.");
         String resolvedContext = Utils.resolveContextPlaceholders(context);
+        long stepStart = System.currentTimeMillis();
         for (int i = 1; i <= times; i++) {
-            // Each call is retried only until it COMPLETES (any status); the burst's assertion is 200 below.
+            if (spacingMillis > 0) {
+                Utils.pollPause(stepStart, spacingMillis);
+            }
+            // Each call is retried only until it COMPLETES (any status); the assertion on its status is below.
             HttpResponse response = Utils.retryUntil(Constants.RUNTIME_PROPAGATION_TIMEOUT,
                     () -> invokeApiByContext(resolvedContext, httpMethod, accessToken, payload),
                     completed -> true);
             Requests.publishPollResult(response);
             Assert.assertNotNull(response, "Invocation " + i + " of " + times + " never completed (gateway "
                     + "unreachable within the warmup window).");
-            Assert.assertEquals(response.getResponseCode(), 200, "Invocation " + i + " of " + times
-                    + " was not 200 (throttle tier change did not raise the limit as expected); last response: "
-                    + response.getData());
+            Assert.assertEquals(response.getResponseCode(), expectedStatus, "Invocation " + i + " of " + times
+                    + " was not " + expectedStatus + failureHint + "; last response: " + response.getData());
         }
     }
 

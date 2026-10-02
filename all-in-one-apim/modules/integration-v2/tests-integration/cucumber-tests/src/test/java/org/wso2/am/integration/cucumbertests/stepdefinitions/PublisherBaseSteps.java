@@ -1033,7 +1033,8 @@ public class PublisherBaseSteps {
             HttpResponse created = SimpleHTTPClient.getInstance().doPost(
                     Utils.getRevisionURL(Utils.getBaseUrl(), resourceType, resourceId), publisherHeaders,
                     "{\"description\":\"self-heal revision\"}", Constants.CONTENT_TYPES.APPLICATION_JSON);
-            if (created == null || created.getResponseCode() < 200 || created.getResponseCode() >= 300) {
+            if (created == null || created.getResponseCode() < 200 || created.getResponseCode() >= 300
+                    || created.getData() == null || created.getData().isBlank()) {
                 return new HealGate.Fatal("could not create a fresh revision to re-deploy: got="
                         + (created == null ? "null" : created.getResponseCode() + "/" + created.getData()));
             }
@@ -2921,7 +2922,8 @@ public class PublisherBaseSteps {
         Assert.assertNotNull(apiResponse, "Publisher returned no API while attaching API-level policy " + policyId);
         Assert.assertEquals(apiResponse.getResponseCode(), 200,
                 "Could not read API before attaching policy " + policyId + ": " + apiResponse.getData());
-        Assert.assertNotNull(apiResponse.getData(), "Publisher returned an empty API representation for " + apiId);
+        Assert.assertTrue(apiResponse.getData() != null && !apiResponse.getData().isBlank(),
+                "Publisher returned an empty API representation for " + apiId);
 
         JSONObject api = new JSONObject(apiResponse.getData());
         JSONObject policy = new JSONObject()
@@ -2952,6 +2954,8 @@ public class PublisherBaseSteps {
         Assert.assertNotNull(response, "Publisher returned no API when verifying API-level policy for " + apiId);
         Assert.assertEquals(response.getResponseCode(), 200,
                 "Could not verify API-level policy on API " + apiId + ": " + response.getData());
+        Assert.assertTrue(response.getData() != null && !response.getData().isBlank(),
+                "Publisher returned an empty API representation for " + apiId);
         JSONObject api = new JSONObject(response.getData());
         JSONArray requestPolicies = api.getJSONObject("apiPolicies").getJSONArray("request");
         Assert.assertEquals(requestPolicies.length(), 1, "Expected exactly one API-level request policy on API "
@@ -3792,6 +3796,8 @@ public class PublisherBaseSteps {
         Assert.assertNotNull(getApi, "Publisher returned no API before attaching API-specific policy " + policyId);
         Assert.assertEquals(getApi.getResponseCode(), 200,
                 "Could not read API before attaching API-specific policy " + policyId + ": " + getApi.getData());
+        Assert.assertTrue(getApi.getData() != null && !getApi.getData().isBlank(),
+                "Publisher returned an empty API representation for " + actualApiId);
 
         JSONObject api = new JSONObject(getApi.getData());
         JSONArray operations = api.getJSONArray("operations");
@@ -3835,6 +3841,10 @@ public class PublisherBaseSteps {
         Assert.assertNotNull(copiedResponse, "Publisher returned no copied API " + copiedApiId);
         Assert.assertEquals(copiedResponse.getResponseCode(), 200,
                 "Could not read copied API " + copiedApiId + ": " + copiedResponse.getData());
+        Assert.assertTrue(sourceResponse.getData() != null && !sourceResponse.getData().isBlank(),
+                "Publisher returned an empty source API representation for " + sourceApiId);
+        Assert.assertTrue(copiedResponse.getData() != null && !copiedResponse.getData().isBlank(),
+                "Publisher returned an empty copied API representation for " + copiedApiId);
 
         JSONObject sourceApi = new JSONObject(sourceResponse.getData());
         JSONObject copiedApi = new JSONObject(copiedResponse.getData());

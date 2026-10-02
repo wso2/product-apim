@@ -340,7 +340,11 @@ Feature: Gateway Security Enforcement
   Scenario: A malformed XML request without authentication reaches the gateway message builder
     Given The system is ready
     And I have valid access tokens as "admin"
-    And I have created an api from "artifacts/payloads/create_apim_jsontoxml_api.json" as "mfAnonApiId" and deployed it
+    # Created WITHOUT an initial deployment: the only revision the gateway ever serves is the final authType None one,
+    # so no invocation can land on a previous revision (401) or in a revision-swap gap (404).
+    And I put JSON payload from file "artifacts/payloads/create_apim_jsontoxml_api.json" in context as "mfAnonCreatePayload"
+    And I create an "apis" resource with payload "mfAnonCreatePayload" as "mfAnonApiId"
+    Then The response status code should be 201
     When I retrieve the "apis" resource with id "mfAnonApiId"
     And I put the response payload in context as "mfAnonApiPayload"
     And I update the "apis" resource "mfAnonApiId" and "mfAnonApiPayload" with configuration type "operations" and value:

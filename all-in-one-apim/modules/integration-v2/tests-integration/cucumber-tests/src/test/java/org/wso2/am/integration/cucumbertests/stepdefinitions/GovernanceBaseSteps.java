@@ -72,7 +72,8 @@ public class GovernanceBaseSteps {
 
         HttpResponse response = Requests.get(Utils.getGovernanceRulesetsURL(Utils.getBaseUrl()), governanceAuthHeaders());
         Assert.assertEquals(response.getResponseCode(), 200, response.getData());
-        Assert.assertNotNull(response.getData(), "Governance ruleset list response body is null");
+        Assert.assertTrue(response.getData() != null && !response.getData().isBlank(),
+                "Governance ruleset list response body is null or blank");
         JSONObject body = new JSONObject(response.getData());
         Object listValue = body.opt("list");
         Assert.assertNotNull(listValue, "Governance ruleset list is null or absent: " + response.getData());

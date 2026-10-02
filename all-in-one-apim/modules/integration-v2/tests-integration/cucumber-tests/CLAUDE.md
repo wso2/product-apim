@@ -391,7 +391,7 @@ tenants (`carbon.super` and `tenant1.com`) on boot — pick the one with the lea
   with `The response array field "…" should have exactly N entries`. Derive N from the fixture (or measure it) —
   never guess: a wrong count fails a correct test.
 
-## 13. Container config & TOML overlays
+## 13. Container config, TOML & template overlays
 Each block boots a container whose `deployment.toml` is resolved by `BlockLifecycleListener`. Most blocks need
 nothing here — the **default lane** merges the small shared `basic` overlay
 (`artifacts/configFiles/basic/deployment.toml`) onto the product distribution toml, so the config tracks
@@ -409,6 +409,19 @@ distribution defaults. Only reach for an overlay when a feature genuinely needs 
   `[apim.oauth_config] auth_header` (gateway data-plane) **and** `[apim.devportal] enable_application_sharing`
   in one overlay, saving a whole container. Co-locate only if neither feature's config changes the other's
   behaviour (verify it: a "loud" change like `auth_header` must not break the other feature's flows).
+- **Template overlays (`.j2`) cover config that no `deployment.toml` key reaches** — a value the product template
+  hard-codes rather than renders. Each file under `artifacts/configFiles/basic/templates/` is an XML skeleton that
+  restates only the ancestors of the values it sets (e.g. `<wso2registry><enableCache>false</enableCache>
+  </wso2registry>`); `Utils.mergeJ2` / `J2TemplateOverlay` writes those values into the product distribution
+  template at the same relative path, and the result is copied into `repository/resources/conf/templates/` before
+  boot. Every block gets them (`Utils.applyDefaultTemplates`), as does anything that constructs a
+  `DynamicApimContainer` directly. Only literal leaf values can be set: an overlay path must match exactly one
+  plain-text element, and a value the template renders from `deployment.toml` is rejected — set that with a TOML
+  overlay. The distributed lane applies `distributed-apim/templates/` the same way to each component's own template.
+  - `basic/templates/repository/conf/registry.xml.j2` turns the registry resource cache off for the whole suite:
+    under the suite's concurrent CRUD load a read that lands while an API artifact is being written re-caches the
+    previous version, and the write can then commit that stale copy (a publish that leaves the API `Created`, an
+    edit that is lost). The product default is `true`, so v2 does not exercise registry-cache behaviour.
 - A config-overlay feature lives in its own `<test>` block; it's still subject to the parallel model, so set
   the block's `parallel="classes" thread-count` per its needs (a feature that **restarts** the container needs
   `thread-count=1` so no sibling class shares the container mid-restart — but it can still run as one of the
