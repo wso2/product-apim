@@ -341,6 +341,18 @@ public class APIInvocationSteps {
                 Assert.assertTrue(System.currentTimeMillis() < expiryMillis - 500L,
                         "Throttle reset appeared successful only at the natural quota expiry; nextAccessTime="
                                 + expiryValue);
+                // nextAccessTime is on the gateway's clock, which the test host's clock can lag, so the 200 must
+                // also predate the expiry by the response's own Date header. Date and nextAccessTime both
+                // truncate to the second, and a natural-expiry 200 is served at or after the expiry, so its Date
+                // is never earlier than nextAccessTime.
+                String serverDate = headerValueIgnoringCase(last, "Date");
+                Assert.assertTrue(serverDate != null && !serverDate.isBlank(), "The 200 response carries no Date "
+                        + "header; the gateway's clock is needed to tell a reset from natural quota expiry");
+                long serverNowMillis = OffsetDateTime.parse(serverDate, DateTimeFormatter.RFC_1123_DATE_TIME)
+                        .toInstant().toEpochMilli();
+                Assert.assertTrue(serverNowMillis < expiryMillis - 500L,
+                        "Throttle reset appeared successful only at the natural quota expiry by the gateway's clock; "
+                                + "nextAccessTime=" + expiryValue + "; Date=" + serverDate);
                 return;
             }
             Assert.assertEquals(status, 429, "Unexpected response while waiting for the application throttle reset: "

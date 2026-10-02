@@ -116,6 +116,8 @@ public class ApiEndpointSteps {
         Assert.assertNotNull(response, "No API endpoint-list response was published");
         Assert.assertEquals(response.getResponseCode(), 200,
                 "Unable to inspect endpoint list: " + response.getResponseCode() + "/" + response.getData());
+        Assert.assertTrue(response.getData() != null && !response.getData().isBlank(),
+                "Endpoint-list response body is null or blank");
         JSONObject body = new JSONObject(response.getData());
         JSONArray endpoints = body.optJSONArray("list");
         Assert.assertNotNull(endpoints, "Endpoint-list response has no list array: " + body);

@@ -488,7 +488,7 @@ public final class TenantUserProvisioner {
         String payload = "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" "
                 + "xmlns:xsd=\"http://org.apache.axis2/xsd\"><soapenv:Header/><soapenv:Body>"
                 + "<xsd:addRole><xsd:roleName>" + Utils.escapeXml(roleName) + "</xsd:roleName>"
-                + "<xsd:userList>" + Utils.escapeXml(username) + "</xsd:userList>" + permissionsXml
+                + "<xsd:userList>" + Utils.escapeXml(physicalUserName(username)) + "</xsd:userList>" + permissionsXml
                 + "<xsd:isSharedRole>false</xsd:isSharedRole></xsd:addRole></soapenv:Body></soapenv:Envelope>";
         HttpResponse response = SimpleHTTPClient.getInstance().sendSoapRequest(
                 Utils.getMultipleCredentialsUserAdminServiceURL(Utils.getBaseUrl()), payload, "urn:addRole",

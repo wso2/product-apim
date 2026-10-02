@@ -69,7 +69,7 @@ Feature: Publisher API Lifecycle
       | subscriberUser@tenant1.com  |
 
   @cap:publisher @feat:api-lifecycle @type:negative @legacy:APICreationForTenantsTestCase
-  Scenario Outline: A publisher whose custom role lacks API-create permission cannot create an API as <actor>
+  Scenario Outline: A publisher whose custom role lacks API-create permission cannot create an API, provisioned by <provisioner>
     Given The system is ready and I have valid publisher access tokens as "<provisioner>"
     When I provision a user with the API-creator role fixture and store its actor as "apiCreatorActor"
     And The system is ready and I have valid publisher access tokens as "{{apiCreatorActor}}"

@@ -16,7 +16,7 @@ integration-v2 product tests
 │   │   ├── [api-creation] Create and deploy an mTLS API with a non-empty revision ID as <actor>  (publisher/api_creation.feature:10)
 │   │   ├── Create, update, publish and list a REST API as <actor>  (publisher/api_lifecycle.feature:10)
 │   │   ├── A subscriber-role user cannot create a REST API as <actor>  (publisher/api_lifecycle.feature:57)
-│   │   ├── A publisher whose custom role lacks API-create permission cannot create an API as <actor>  (publisher/api_lifecycle.feature:72)
+│   │   ├── A publisher whose custom role lacks API-create permission cannot create an API, provisioned by <provisioner>  (publisher/api_lifecycle.feature:72)
 │   │   ├── Creating an API with <case> is rejected as <actor>  (publisher/api_lifecycle.feature:92)
 │   │   ├── Creating an API without authentication is rejected in <tenantDomain>  (publisher/api_lifecycle.feature:115)
 │   │   ├── [create-validation] Creating an API with no endpoint configuration as <actor>  (publisher/api_lifecycle.feature:131)
