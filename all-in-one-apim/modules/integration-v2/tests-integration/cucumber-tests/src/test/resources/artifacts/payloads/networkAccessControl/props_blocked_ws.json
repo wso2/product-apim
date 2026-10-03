@@ -1,0 +1,10 @@
+{
+  "name": "${UNIQUE:NacAsyncImport}",
+  "version": "1.0.0",
+  "context": "${UNIQUE:nacasyncimportctx}",
+  "endpointConfig": {
+    "endpoint_type": "ws",
+    "sandbox_endpoints": {"url": "ws://evil.attacker.com/endpoint"},
+    "production_endpoints": {"url": "ws://evil.attacker.com/endpoint"}
+  }
+}

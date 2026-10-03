@@ -22,6 +22,7 @@ import org.testng.Assert;
 import org.wso2.am.integration.test.utils.Constants;
 import org.wso2.am.integration.cucumbertests.utils.Identity;
 import org.wso2.am.integration.cucumbertests.utils.Requests;
+import org.wso2.am.integration.cucumbertests.utils.TestContext;
 import org.wso2.am.integration.cucumbertests.utils.Utils;
 import org.wso2.am.testcontainers.DynamicSolaceBroker;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
@@ -51,6 +52,22 @@ public class SolaceSteps {
 
     /** APIM's own path for listing third-party integrated APIs, keyed by vendor. */
     private static final String INTEGRATED_APIS_SOLACE = "apis/integrated-apis/solace";
+
+    /**
+     * This block's Solace pair, published to shared scope by {@code BlockLifecycleListener} when the block sets
+     * {@code initSolaceBroker}. Resolved per call rather than held statically: the broker is PER-BLOCK (each
+     * block runs its own broker on its own private network, so the {@code apimforsolace} alias the broker
+     * resolves points unambiguously at that block's APIM), so there is no JVM singleton to reach for.
+     */
+    private static DynamicSolaceBroker broker() {
+
+        Object stored = TestContext.get("blockSolaceBroker");
+        if (!(stored instanceof DynamicSolaceBroker solace)) {
+            throw new IllegalStateException("No Solace broker for this block — its <test> block must set "
+                    + "<parameter name=\"initSolaceBroker\" value=\"true\"/> (found: " + stored + ")");
+        }
+        return solace;
+    }
 
     private static Map<String, String> publisherHeaders() {
 
@@ -110,7 +127,7 @@ public class SolaceSteps {
     @When("I retrieve the Solace broker client username for consumer key {string}")
     public void iRetrieveBrokerClientUsername(String consumerKey) throws IOException {
 
-        String url = DynamicSolaceBroker.getInstance().getSempUrl() + "/config/msgVpns/"
+        String url = broker().getSempUrl() + "/config/msgVpns/"
                 + DynamicSolaceBroker.SEMP_VPN + "/clientUsernames/"
                 + Utils.urlEncode(Utils.resolveContextPlaceholders(consumerKey));
         Requests.get(url, Identity.basicAuthHeaders(DynamicSolaceBroker.SEMP_USER, DynamicSolaceBroker.SEMP_PASSWORD));
@@ -142,7 +159,7 @@ public class SolaceSteps {
      */
     private static String brokerTopicUrl(String topic) {
 
-        return DynamicSolaceBroker.getInstance().getRestMessagingUrl() + "/TOPIC/" + topic;
+        return broker().getRestMessagingUrl() + "/TOPIC/" + topic;
     }
 
     /** Sample event body. Content is irrelevant to every assertion here; only the credential's fate is. */
@@ -232,7 +249,7 @@ public class SolaceSteps {
      */
     private static int mqttSubscribe(String topic, String token) throws IOException {
 
-        DynamicSolaceBroker broker = DynamicSolaceBroker.getInstance();
+        DynamicSolaceBroker broker = broker();
         try (Socket socket = new Socket(broker.getBrokerHost(), broker.getMappedMqttPort())) {
             socket.setSoTimeout(MQTT_SOCKET_TIMEOUT_MS);
             OutputStream out = socket.getOutputStream();

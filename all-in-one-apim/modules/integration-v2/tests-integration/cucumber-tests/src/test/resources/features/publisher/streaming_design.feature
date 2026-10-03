@@ -11,6 +11,7 @@ Feature: Publisher Streaming API Design
   Scenario Outline: Create, deploy and publish a WebSocket API as <actor>
     Given The system is ready and I have valid publisher access tokens as "<actor>"
     And I have created an api from "artifacts/payloads/create_apim_test_websocket_api.json" as "websocketApiId" and deployed it
+    And the "apis" resource "websocketApiId" should be live on the gateway, redeploying if propagation is lost
     When I publish the "apis" resource with id "websocketApiId"
     Then The lifecycle status of API "websocketApiId" should be "Published"
     # A WS-TYPED API surfaces in BOTH listings — the publisher API list and the devportal marketplace listing.
@@ -34,6 +35,7 @@ Feature: Publisher Streaming API Design
   Scenario Outline: Create, deploy and publish an SSE API as <actor>
     Given The system is ready and I have valid publisher access tokens as "<actor>"
     And I have created an api from "artifacts/payloads/create_apim_test_sse_api.json" as "sseApiId" and deployed it
+    And the "apis" resource "sseApiId" should be live on the gateway, redeploying if propagation is lost
     When I publish the "apis" resource with id "sseApiId"
     Then The lifecycle status of API "sseApiId" should be "Published"
 
@@ -51,6 +53,7 @@ Feature: Publisher Streaming API Design
   Scenario Outline: Create, deploy and publish a WebSub API as <actor>
     Given The system is ready and I have valid publisher access tokens as "<actor>"
     And I have created an api from "artifacts/payloads/create_apim_test_websub_api.json" as "websubApiId" and deployed it
+    And the "apis" resource "websubApiId" should be live on the gateway, redeploying if propagation is lost
     When I publish the "apis" resource with id "websubApiId"
     Then The lifecycle status of API "websubApiId" should be "Published"
 

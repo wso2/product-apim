@@ -549,3 +549,58 @@ issuer = "org.wso2.is.key.manager.tokenpersistence.issuer.ExtendedJWTTokenIssuer
 context = "(.*)/APIStatusMonitor(.*)"
 secure = false
 http_method = "all"
+
+[[resource.access_control]]
+context = "(.*)/keymanager-operations/user-info/claims(.*)"
+secure = true
+http_method = "GET"
+permissions = ["/permission/admin/manage/identity/usermgt/list"]
+scopes = ["internal_user_mgt_list"]
+
+[[resource.access_control]]
+context = "(.*)/keymanager-operations/user-info/claims/generate(.*)"
+secure = true
+http_method = "POST"
+permissions = ["/permission/admin/manage/identity/usermgt/list"]
+scopes = ["internal_user_mgt_list"]
+
+[[resource.access_control]]
+context = "(.*)/keymanager-operations/dcr/register"
+secure = true
+http_method = "POST"
+permissions = ["/permission/admin/manage/identity/applicationmgt/create"]
+scopes = ["internal_application_mgt_create"]
+
+[[resource.access_control]]
+context = "(.*)/keymanager-operations/dcr/register(.*)"
+secure = true
+http_method = "GET"
+permissions = ["/permission/admin/manage/identity/applicationmgt/view"]
+scopes = ["internal_application_mgt_view"]
+
+[[resource.access_control]]
+context = "(.*)/keymanager-operations/dcr/register(.*)"
+secure = true
+http_method = "PUT"
+permissions = ["/permission/admin/manage/identity/applicationmgt/update"]
+scopes = ["internal_application_mgt_update"]
+
+[[resource.access_control]]
+context = "(.*)/keymanager-operations/dcr/register(.*)"
+secure = true
+http_method = "POST"
+permissions = ["/permission/admin/manage/identity/applicationmgt/update"]
+scopes = ["internal_application_mgt_update"]
+
+[[resource.access_control]]
+context = "(.*)/keymanager-operations/dcr/register(.*)"
+secure = true
+http_method = "DELETE"
+permissions = ["/permission/admin/manage/identity/applicationmgt/delete"]
+scopes = ["internal_application_mgt_delete"]
+
+[[resource.access_control]]
+context = "(.*)/keymanager-operations/revoke-one-time-token(.*)"
+secure = true
+http_method = "POST"
+permissions = ["/permission/admin"]

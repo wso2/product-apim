@@ -570,7 +570,6 @@ Feature: Gateway API Product Invocation
     Then The response status code should be 201
     When I deploy revision "revisionId" of "api-products" resource "respPolicyProductId"
     Then The response status code should be 201
-    And the "api-products" resource "respPolicyProductId" should be live on the gateway, redeploying if propagation is lost
     # A JSON request body is now converted to XML inbound by the newly-added request policy, and the backend's
     # echo of that XML reaches the client untouched — proof the member API's policy change took effect through
     # the already-deployed product.
@@ -578,7 +577,7 @@ Feature: Gateway API Product Invocation
     """
     {"foo":"bar"}
     """
-    And I invoke the API at gateway context "{{respPolicyProductContext}}/1.0.0/reflect-body-typed" with method "POST" using access token "generatedAccessToken" and payload "respPolicyJsonBody" with content type "application/json" until response body contains "<jsonObject>" within 120 seconds
+    And I invoke the API at gateway context "{{respPolicyProductContext}}/1.0.0/reflect-body-typed" with method "POST" using access token "generatedAccessToken" and payload "respPolicyJsonBody" with content type "application/json" until response body contains "<jsonObject>" within 120 seconds, re-deploying the "api-products" resource "respPolicyProductId" if propagation is lost
     Then The response should contain "<jsonObject><foo>bar</foo></jsonObject>"
 
     Examples:

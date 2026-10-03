@@ -66,7 +66,7 @@ Feature: External Key Manager Tenant Sharing Auto-Configuration
   #    It is therefore RE-POSTED until it answers 200 within a bounded window rather than either asserting a flaky
   #    exact value or dropping the assertion. The event is idempotent (it carries the desired activated FLAG, not a
   #    toggle), the assertion target is still the exact 200 the legacy asserted, and a product that never answers
-  #    200 still fails the row - see the step's javadoc for the §15 retryUntil-vs-awaitWithRetry reasoning.
+  #    200 still fails the row - see the step's javadoc for the §15 retryUntil-vs-HealGate reasoning.
   # The lifecycle change itself stays asserted separately through the tenant admin's token issuance flipping, which
   # is what the legacy assertions ultimately checked - the 200 alone would not show the event took effect.
   @legacy:APIMTenantCreationNotificationTestCase

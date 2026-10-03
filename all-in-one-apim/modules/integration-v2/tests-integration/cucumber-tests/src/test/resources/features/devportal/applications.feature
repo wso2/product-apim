@@ -116,6 +116,7 @@ Feature: DevPortal Application Management
 
     # A different owner (subscriber) creates an application with the SAME name — accepted (per-owner uniqueness).
     Given I act as "<otherOwner>"
+    And I have a valid DCR application for the current user
     And I have a valid Devportal access token for the current user
     When I put JSON payload from file "artifacts/payloads/create_apim_test_app.json" in context as "isoAppSub"
     And I set the field "name" to "{{isoSharedName}}" in the payload "isoAppSub"

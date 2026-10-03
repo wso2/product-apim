@@ -1,0 +1,26 @@
+# Identity Server EXTRA overlay for the multi-tenant SSO block (isTomlExtraOverlayPath), appended after the
+# built-in is7 overlay.
+#
+# Enables identity-server -> API Manager tenant synchronization: on tenant create/activate the listener posts a
+# TENANT_MANAGEMENT event to API Manager's notify endpoint, and API Manager creates and then activates the same
+# tenant. That two-phase behaviour is why the setup waits for the tenant to be ACTIVE rather than merely
+# present. Delivery is retried with backoff, so an event is lost only once the retries are exhausted.
+#
+# Array-of-tables entries are additive, so this does not disturb the built-in overlay's own event listener.
+
+[[event_listener]]
+id = "tenant_creation"
+type = "org.wso2.carbon.user.core.listener.UserOperationEventListener"
+name = "org.wso2.carbon.identity.mgt.listener.TenantSyncListener"
+order = 1
+[event_listener.properties]
+notification_endpoint = "https://wso2am:9443/internal/data/v1/notify"
+username = "admin"
+password = "admin"
+'header.X-WSO2-KEY-MANAGER' = "TENANT_MANAGEMENT"
+
+# Mints a new access token per request instead of returning the existing one for a matching
+# client/user/scope. A reused token is re-issued with its user claims stripped, so the broker's
+# token exchange would receive no groups claim and the user would be provisioned with no mapped role.
+[oauth.token_renewal]
+renew_access_token_per_request = true

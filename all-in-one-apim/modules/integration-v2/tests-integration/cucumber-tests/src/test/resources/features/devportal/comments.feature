@@ -25,14 +25,17 @@ Feature: DevPortal API Comments
     When I add a "devportal" comment "This is root comment 1" with category "general" to API "cmApiId" as "root1"
     Then The response status code should be 201
     And The response should contain "\"entryPoint\":\"DEVPORTAL\""
+    And I wait for timestamp precision after the "devportal" comment "root1" of API "cmApiId"
     When I add a "devportal" comment "This is root comment 2" with category "general" to API "cmApiId" as "root2"
     Then The response status code should be 201
 
     # Three replies to the first root.
     When I add a "devportal" reply "This is a reply 1" to comment "root1" of API "cmApiId" as "reply1"
     Then The response status code should be 201
+    And I wait for timestamp precision after the "devportal" comment "reply1" of API "cmApiId"
     When I add a "devportal" reply "This is a reply 2" to comment "root1" of API "cmApiId" as "reply2"
     Then The response status code should be 201
+    And I wait for timestamp precision after the "devportal" comment "reply2" of API "cmApiId"
     When I add a "devportal" reply "This is a reply 3" to comment "root1" of API "cmApiId" as "reply3"
     Then The response status code should be 201
 

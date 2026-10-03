@@ -1,0 +1,6 @@
+# Distributed CP portion of the token-exchange/security-audit overlay.
+[security_audit]
+api_token = "mock-audit-api-token"
+collection_id = "mock-audit-collection-id"
+base_url = "http://nodebackend:3002/auditapi"
+global = true

@@ -1,0 +1,5 @@
+{
+  "Mode": "deny",
+  "Hosts": ["nodebackend"],
+  "BlockPrivateNetworkAccess": true
+}

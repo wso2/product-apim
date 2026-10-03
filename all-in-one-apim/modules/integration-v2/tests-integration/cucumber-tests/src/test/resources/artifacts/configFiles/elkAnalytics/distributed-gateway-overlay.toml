@@ -1,0 +1,4 @@
+# Distributed Gateway overlay for ELK analytics metric logging.
+[apim.analytics]
+enable = true
+type = "elk"

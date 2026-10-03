@@ -13,6 +13,7 @@ Feature: Gateway Sandbox-Only Environment
     Given The system is ready
     And I have valid access tokens as "<actor>"
     And I have created an api from "artifacts/payloads/create_apim_prodsandbox_api.json" as "sgApiId" and deployed it
+    And the "apis" resource "sgApiId" should be live on the gateway, redeploying if propagation is lost
     When I publish the "apis" resource with id "sgApiId"
     Then The lifecycle status of API "sgApiId" should be "Published"
     When I retrieve the "apis" resource with id "sgApiId"

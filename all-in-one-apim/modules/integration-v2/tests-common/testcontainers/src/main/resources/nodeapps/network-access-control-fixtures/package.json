@@ -1,0 +1,10 @@
+{
+  "name": "network-access-control-fixtures",
+  "version": "1.0.0",
+  "description": "Static schema fixtures for the network access-control allow-mode integration tests.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {}
+}

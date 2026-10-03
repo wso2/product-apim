@@ -22,12 +22,13 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.testcontainers.containers.Container.ExecResult;
 import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.Network;
 import org.testcontainers.containers.wait.strategy.Wait;
 
 import java.time.Duration;
 
 /**
- * JVM-wide singleton Squid HTTP proxy container used by WS/HTTP proxy profile integration tests.
+ * Per-block Squid HTTP proxy container used by WS/HTTP proxy profile integration tests.
  *
  * <p>Two Squid instances run inside one container:
  * <ul>
@@ -36,10 +37,9 @@ import java.time.Duration;
  *       {@code Proxy-Authorization: Basic testproxyuser:testproxypass}.</li>
  * </ul>
  *
- * <p>Both instances join {@link ContainerNetwork#SHARED_NETWORK} under the alias {@code squid-proxy},
- * so the APIM container (on the same network) can reach them at {@code squid-proxy:3128} and
- * {@code squid-proxy:3129} without any host networking. The TOML overlay for proxy-profile tests
- * uses {@code proxy_host = "squid-proxy"} with the appropriate port.
+ * <p>The container starts on the owning block's private network under the alias {@code squid-proxy}, so the APIM
+ * container can reach {@code squid-proxy:3128} and {@code squid-proxy:3129} without host networking. The TOML
+ * overlay for proxy-profile tests uses {@code proxy_host = "squid-proxy"} with the appropriate port.
  *
  * <p>CONNECT tunnel counts are asserted by grepping the per-instance Squid access logs via
  * {@link #getAnonConnectCount()} and {@link #getAuthConnectCount()}. Call {@link #clearLogs()}
@@ -62,26 +62,31 @@ public class SquidProxyServer {
     public static final String PROXY_PASSWORD = "testproxypass";
 
     private final GenericContainer<?> container;
+    private final String blockLabel;
 
-    private SquidProxyServer() {
-        logger.info("Initializing SquidProxyServer...");
+    public SquidProxyServer(String blockLabel, Network network) {
+        this.blockLabel = blockLabel;
+        logger.info("Initializing SquidProxyServer for block '" + blockLabel + "'...");
         container = new GenericContainer<>(System.getProperty("squid.docker.image.name", "squid-proxy:latest"))
                 .withExposedPorts(ANON_PORT, AUTH_PORT)
-                .withNetwork(ContainerNetwork.SHARED_NETWORK)
+                .withNetwork(network)
                 .withNetworkAliases("squid-proxy")
                 .waitingFor(Wait.forListeningPort().withStartupTimeout(Duration.ofMinutes(2)));
 
         container.withLogConsumer(new JclLogConsumer(logger));
+    }
+
+    public void start() {
         container.start();
-        logger.info("SquidProxyServer started — anon port " + ANON_PORT + ", auth port " + AUTH_PORT);
+        logger.info("SquidProxyServer for block '" + blockLabel + "' started — anon port " + ANON_PORT
+                + ", auth port " + AUTH_PORT);
     }
 
-    private static class InstanceHolder {
-        private static final SquidProxyServer instance = new SquidProxyServer();
-    }
-
-    public static SquidProxyServer getInstance() {
-        return InstanceHolder.instance;
+    public void stop() {
+        if (container.isRunning()) {
+            container.stop();
+            logger.info("SquidProxyServer for block '" + blockLabel + "' stopped");
+        }
     }
 
     /**

@@ -196,11 +196,27 @@ module.exports = {
     }
   },
   {
+    name: "tenant1-tls-backend",
+    script: "./tenant1-tls-backend/server.js",
+    cwd: "./",
+    env: {
+      PORT: 3027
+    }
+  },
+  {
     name: "custom-status-backend",
     script: "./custom-status-backend/server.js",
     cwd: "./",
     env: {
       PORT: 3024
+    }
+  },
+  {
+    name: "network-access-control-fixtures",
+    script: "./network-access-control-fixtures/server.js",
+    cwd: "./",
+    env: {
+      PORT: 3026
     }
   }
   ]

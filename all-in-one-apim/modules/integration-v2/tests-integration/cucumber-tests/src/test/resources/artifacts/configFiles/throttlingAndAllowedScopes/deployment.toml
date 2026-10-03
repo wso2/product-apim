@@ -5,6 +5,11 @@
 # matching advanced policy on AllowedScopes' APIs — so neither feature's config perturbs the other.
 
 # --- ConditionalThrottling: enable the non-IP conditional condition types (off by default) + backend JWT. ---
+[server]
+# The setup feature repairs the throttle-data registry before restarting the Gateway so its
+# JMS consumer binds against the repaired hierarchy rather than retaining a failed startup state.
+enable_restart_from_api = true
+
 [apim.throttling]
 enable_header_based_throttling = true
 enable_query_param_based_throttling = true

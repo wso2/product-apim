@@ -46,16 +46,17 @@ import java.util.regex.Pattern;
  * from {@code api/am/gateway/v2/{api-artifact|end-points|local-entry|sequence}?apiName=&version=&tenantDomain=}.
  *
  * <p>Pinned live: this gateway REST API authenticates with BASIC admin credentials (a Bearer token is rejected
- * 401), so these steps send the acting actor's tenant-admin Basic auth (not the publisher/admin OAuth token). The
- * response is published as {@code httpResponse} for the generic assertion steps.
+ * 401). The all-in-one and distributed runtimes use the local super-tenant management administrator. The tenant is
+ * selected independently by the {@code tenantDomain} query
+ * parameter. The response is published as {@code httpResponse} for the generic assertion steps.
  */
 public class GatewayRestArtifactsSteps {
 
     private final BaseSteps baseSteps = new BaseSteps();
 
-    /** Basic-auth header for the acting actor's tenant admin (the gateway REST API needs admin Basic auth). */
+    /** Basic-auth header for the Gateway management admin appropriate to the active topology. */
     private Map<String, String> gatewayBasicAuthHeaders() {
-        User admin = Identity.actingTenantAdmin();
+        User admin = Identity.gatewayManagementAdmin();
         String creds = admin.getUserName() + ":" + admin.getPassword();
         String encoded = Base64.getEncoder().encodeToString(creds.getBytes(StandardCharsets.UTF_8));
         Map<String, String> headers = new HashMap<>();
@@ -73,7 +74,7 @@ public class GatewayRestArtifactsSteps {
             throws IOException {
         String resolvedName = Utils.resolveContextPlaceholders(apiName);
         String resolvedVersion = Utils.resolveContextPlaceholders(version);
-        Requests.get(Utils.getGatewayArtifactURL(Utils.getBaseUrl(), kind, resolvedName, resolvedVersion, tenantDomain),
+        Requests.get(Utils.getGatewayArtifactURL(Utils.getBaseGatewayManagementUrl(), kind, resolvedName, resolvedVersion, tenantDomain),
                 gatewayBasicAuthHeaders());
     }
 
@@ -89,7 +90,7 @@ public class GatewayRestArtifactsSteps {
             String tenantDomain, int timeoutSeconds) throws InterruptedException {
         String resolvedName = Utils.resolveContextPlaceholders(apiName);
         String resolvedVersion = Utils.resolveContextPlaceholders(version);
-        String url = Utils.getGatewayArtifactURL(Utils.getBaseUrl(), kind, resolvedName, resolvedVersion, tenantDomain);
+        String url = Utils.getGatewayArtifactURL(Utils.getBaseGatewayManagementUrl(), kind, resolvedName, resolvedVersion, tenantDomain);
         long endTimeStart = System.currentTimeMillis();
         long endTime = endTimeStart + Math.max(timeoutSeconds * 1000L, Constants.RUNTIME_PROPAGATION_TIMEOUT);
         HttpResponse response = null;

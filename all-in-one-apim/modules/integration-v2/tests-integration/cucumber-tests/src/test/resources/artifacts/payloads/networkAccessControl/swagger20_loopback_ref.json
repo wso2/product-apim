@@ -1,0 +1,22 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "Host Validation Loopback Ref OAS2.0",
+    "version": "1.0.0"
+  },
+  "basePath": "/",
+  "paths": {
+    "/items": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "http://127.0.0.1/schema-fragment.yaml"
+            }
+          }
+        }
+      }
+    }
+  }
+}

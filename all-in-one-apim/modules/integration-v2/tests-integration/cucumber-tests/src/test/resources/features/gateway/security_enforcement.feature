@@ -571,7 +571,7 @@ Feature: Gateway Security Enforcement
     Then The lifecycle status of API "epApiId" should be "Published"
     # Deploy-readiness gate: the gateway invokes below can only retry the REQUEST, and a lost runtime
     # propagation event is unrecoverable that way (it produced three 404 "Invalid URL" failures in this
-    # runner). This re-fires the deploy if the artifact never lands (utils/Utils awaitWithRetry).
+    # runner). This re-fires the deploy if the artifact never lands (utils/HealGate awaitOrHeal).
     And the "apis" resource "epApiId" should be live on the gateway, redeploying if propagation is lost
     When I retrieve the "apis" resource with id "epApiId"
     And I extract response field "context" and store it as "epContext"
@@ -607,7 +607,7 @@ Feature: Gateway Security Enforcement
     Then The lifecycle status of API "epsymApiId" should be "Published"
     # Deploy-readiness gate: the gateway invokes below can only retry the REQUEST, and a lost runtime
     # propagation event is unrecoverable that way (it produced three 404 "Invalid URL" failures in this
-    # runner). This re-fires the deploy if the artifact never lands (utils/Utils awaitWithRetry).
+    # runner). This re-fires the deploy if the artifact never lands (utils/HealGate awaitOrHeal).
     And the "apis" resource "epsymApiId" should be live on the gateway, redeploying if propagation is lost
     When I retrieve the "apis" resource with id "epsymApiId"
     And I extract response field "context" and store it as "epsymCtx"
@@ -665,7 +665,7 @@ Feature: Gateway Security Enforcement
     Then The lifecycle status of API "epsApiId" should be "Published"
     # Deploy-readiness gate: the gateway invokes below can only retry the REQUEST, and a lost runtime
     # propagation event is unrecoverable that way (it produced three 404 "Invalid URL" failures in this
-    # runner). This re-fires the deploy if the artifact never lands (utils/Utils awaitWithRetry).
+    # runner). This re-fires the deploy if the artifact never lands (utils/HealGate awaitOrHeal).
     And the "apis" resource "epsApiId" should be live on the gateway, redeploying if propagation is lost
     # Retrieved API redacts the stored backend passwords (never returned in plaintext).
     When I retrieve the "apis" resource with id "epsApiId"
@@ -725,7 +725,7 @@ Feature: Gateway Security Enforcement
     Then The lifecycle status of API "epcApiId" should be "Published"
     # Deploy-readiness gate: the gateway invokes below can only retry the REQUEST, and a lost runtime
     # propagation event is unrecoverable that way (it produced three 404 "Invalid URL" failures in this
-    # runner). This re-fires the deploy if the artifact never lands (utils/Utils awaitWithRetry).
+    # runner). This re-fires the deploy if the artifact never lands (utils/HealGate awaitOrHeal).
     And the "apis" resource "epcApiId" should be live on the gateway, redeploying if propagation is lost
     When I retrieve the "apis" resource with id "epcApiId"
     And I extract response field "context" and store it as "epcCtx"
@@ -778,7 +778,7 @@ Feature: Gateway Security Enforcement
     Then The lifecycle status of API "epcApiId" should be "Published"
     # Deploy-readiness gate: the gateway invokes below can only retry the REQUEST, and a lost runtime
     # propagation event is unrecoverable that way (it produced three 404 "Invalid URL" failures in this
-    # runner). This re-fires the deploy if the artifact never lands (utils/Utils awaitWithRetry).
+    # runner). This re-fires the deploy if the artifact never lands (utils/HealGate awaitOrHeal).
     And the "apis" resource "epcApiId" should be live on the gateway, redeploying if propagation is lost
     When I retrieve the "apis" resource with id "epcApiId"
     And I extract response field "context" and store it as "epcCtx"
@@ -849,7 +849,7 @@ Feature: Gateway Security Enforcement
     Then The lifecycle status of API "epcApiId" should be "Published"
     # Deploy-readiness gate: the gateway invokes below can only retry the REQUEST, and a lost runtime
     # propagation event is unrecoverable that way (it produced three 404 "Invalid URL" failures in this
-    # runner). This re-fires the deploy if the artifact never lands (utils/Utils awaitWithRetry).
+    # runner). This re-fires the deploy if the artifact never lands (utils/HealGate awaitOrHeal).
     And the "apis" resource "epcApiId" should be live on the gateway, redeploying if propagation is lost
     When I retrieve the "apis" resource with id "epcApiId"
     And I extract response field "context" and store it as "epcCtx"
@@ -917,7 +917,7 @@ Feature: Gateway Security Enforcement
     Then The lifecycle status of API "epsApiId" should be "Published"
     # Deploy-readiness gate: the gateway invokes below can only retry the REQUEST, and a lost runtime
     # propagation event is unrecoverable that way (it produced three 404 "Invalid URL" failures in this
-    # runner). This re-fires the deploy if the artifact never lands (utils/Utils awaitWithRetry).
+    # runner). This re-fires the deploy if the artifact never lands (utils/HealGate awaitOrHeal).
     And the "apis" resource "epsApiId" should be live on the gateway, redeploying if propagation is lost
     When I retrieve the "apis" resource with id "epsApiId"
     Then The response should not contain "admin123"
@@ -973,7 +973,7 @@ Feature: Gateway Security Enforcement
     Then The lifecycle status of API "epsApiId" should be "Published"
     # Deploy-readiness gate: the gateway invokes below can only retry the REQUEST, and a lost runtime
     # propagation event is unrecoverable that way (it produced three 404 "Invalid URL" failures in this
-    # runner). This re-fires the deploy if the artifact never lands (utils/Utils awaitWithRetry).
+    # runner). This re-fires the deploy if the artifact never lands (utils/HealGate awaitOrHeal).
     And the "apis" resource "epsApiId" should be live on the gateway, redeploying if propagation is lost
     When I retrieve the "apis" resource with id "epsApiId"
     Then The response should not contain "admin123"
@@ -1042,7 +1042,7 @@ Feature: Gateway Security Enforcement
     Then The lifecycle status of API "epoApiId" should be "Published"
     # Deploy-readiness gate: the gateway invokes below can only retry the REQUEST, and a lost runtime
     # propagation event is unrecoverable that way (it produced three 404 "Invalid URL" failures in this
-    # runner). This re-fires the deploy if the artifact never lands (utils/Utils awaitWithRetry).
+    # runner). This re-fires the deploy if the artifact never lands (utils/HealGate awaitOrHeal).
     And the "apis" resource "epoApiId" should be live on the gateway, redeploying if propagation is lost
     When I retrieve the "apis" resource with id "epoApiId"
     And I extract response field "context" and store it as "epoCtx"
@@ -1059,22 +1059,23 @@ Feature: Gateway Security Enforcement
     And I put the response payload in context as "epoPayload"
     When I put the following JSON payload in context as "epoNewEndpoint"
     """
-    {"endpoint_type":"http","production_endpoints":{"url":"http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/"},"sandbox_endpoints":{"url":"http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/"},"endpoint_security":{"production":{"enabled":true,"type":"OAUTH","grantType":"CLIENT_CREDENTIALS","tokenUrl":"https://localhost:9443/oauth2/token","clientId":"{{epoProdBeClientId}}","clientSecret":"{{epoProdBeClientSecret}}","customParameters":{}},"sandbox":{"enabled":true,"type":"OAUTH","grantType":"CLIENT_CREDENTIALS","tokenUrl":"https://localhost:9443/oauth2/token","clientId":"{{epoSandBeClientId}}","clientSecret":"{{epoSandBeClientSecret}}","customParameters":{}}}}
+    {"endpoint_type":"http","production_endpoints":{"url":"http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/"},"sandbox_endpoints":{"url":"http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/"},"endpoint_security":{"production":{"enabled":true,"type":"OAUTH","grantType":"CLIENT_CREDENTIALS","tokenUrl":"{{backendOAuthTokenUrl}}","clientId":"{{epoProdBeClientId}}","clientSecret":"{{epoProdBeClientSecret}}","customParameters":{}},"sandbox":{"enabled":true,"type":"OAUTH","grantType":"CLIENT_CREDENTIALS","tokenUrl":"{{backendOAuthTokenUrl}}","clientId":"{{epoSandBeClientId}}","clientSecret":"{{epoSandBeClientSecret}}","customParameters":{}}}}
     """
     When I update the "apis" resource "epoApiId" and "epoPayload" with configuration type "endpointConfig" and value:
     """
     epoNewEndpoint
     """
     Then The response status code should be 200
-    # The retrieved API must round-trip the non-secret OAUTH config per key type and BLANK both stored backend
-    # clientSecrets. Probed contract (4.7.0): the field is present and equal to "" — see the password-grant
-    # scenario below. == "" is the legacy assertion and is stronger than a plaintext "should not contain".
+    Then The value of response field "endpointConfig.endpoint_security.production.clientSecret" should be ""
+    And The value of response field "endpointConfig.endpoint_security.sandbox.clientSecret" should be ""
+    # Both the PUT response and the read-back response must expose the backend secrets as blank, matching the
+    # legacy contract. The response must never expose the actual secret values (asserted below).
     When I retrieve the "apis" resource with id "epoApiId"
     Then The value of response field "endpointConfig.endpoint_security.production.clientSecret" should be ""
     And The value of response field "endpointConfig.endpoint_security.sandbox.clientSecret" should be ""
     And The value of response field "endpointConfig.endpoint_security.production.type" should be "OAUTH"
     And The value of response field "endpointConfig.endpoint_security.production.grantType" should be "CLIENT_CREDENTIALS"
-    And The value of response field "endpointConfig.endpoint_security.production.tokenUrl" should be "https://localhost:9443/oauth2/token"
+    And The value of response field "endpointConfig.endpoint_security.production.tokenUrl" should be "{{backendOAuthTokenUrl}}"
     And The value of response field "endpointConfig.endpoint_security.production.clientId" should be "{{epoProdBeClientId}}"
     And The value of response field "endpointConfig.endpoint_security.sandbox.type" should be "OAUTH"
     And The value of response field "endpointConfig.endpoint_security.sandbox.grantType" should be "CLIENT_CREDENTIALS"
@@ -1162,7 +1163,7 @@ Feature: Gateway Security Enforcement
     Then The lifecycle status of API "eppApiId" should be "Published"
     # Deploy-readiness gate: the gateway invokes below can only retry the REQUEST, and a lost runtime
     # propagation event is unrecoverable that way (it produced three 404 "Invalid URL" failures in this
-    # runner). This re-fires the deploy if the artifact never lands (utils/Utils awaitWithRetry).
+    # runner). This re-fires the deploy if the artifact never lands (utils/HealGate awaitOrHeal).
     And the "apis" resource "eppApiId" should be live on the gateway, redeploying if propagation is lost
     When I retrieve the "apis" resource with id "eppApiId"
     And I extract response field "context" and store it as "eppCtx"
@@ -1179,7 +1180,7 @@ Feature: Gateway Security Enforcement
     And I put the response payload in context as "eppPayload"
     When I put the following JSON payload in context as "eppNewEndpoint"
     """
-    {"endpoint_type":"http","production_endpoints":{"url":"http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/"},"sandbox_endpoints":{"url":"http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/"},"endpoint_security":{"production":{"enabled":true,"type":"OAUTH","grantType":"PASSWORD","username":"{{eppRoUser}}","password":"{{eppRoPass}}","tokenUrl":"https://localhost:9443/oauth2/token","clientId":"{{eppProdBeClientId}}","clientSecret":"{{eppProdBeClientSecret}}","customParameters":{}},"sandbox":{"enabled":true,"type":"OAUTH","grantType":"PASSWORD","username":"{{eppRoUser}}","password":"{{eppRoPass}}","tokenUrl":"https://localhost:9443/oauth2/token","clientId":"{{eppSandBeClientId}}","clientSecret":"{{eppSandBeClientSecret}}","customParameters":{}}}}
+    {"endpoint_type":"http","production_endpoints":{"url":"http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/"},"sandbox_endpoints":{"url":"http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/"},"endpoint_security":{"production":{"enabled":true,"type":"OAUTH","grantType":"PASSWORD","username":"{{eppRoUser}}","password":"{{eppRoPass}}","tokenUrl":"{{backendOAuthTokenUrl}}","clientId":"{{eppProdBeClientId}}","clientSecret":"{{eppProdBeClientSecret}}","customParameters":{}},"sandbox":{"enabled":true,"type":"OAUTH","grantType":"PASSWORD","username":"{{eppRoUser}}","password":"{{eppRoPass}}","tokenUrl":"{{backendOAuthTokenUrl}}","clientId":"{{eppSandBeClientId}}","clientSecret":"{{eppSandBeClientSecret}}","customParameters":{}}}}
     """
     When I update the "apis" resource "eppApiId" and "eppPayload" with configuration type "endpointConfig" and value:
     """
@@ -1199,7 +1200,7 @@ Feature: Gateway Security Enforcement
     And The value of response field "endpointConfig.endpoint_security.sandbox.clientSecret" should be ""
     Then The value of response field "endpointConfig.endpoint_security.production.type" should be "OAUTH"
     And The value of response field "endpointConfig.endpoint_security.production.grantType" should be "PASSWORD"
-    And The value of response field "endpointConfig.endpoint_security.production.tokenUrl" should be "https://localhost:9443/oauth2/token"
+    And The value of response field "endpointConfig.endpoint_security.production.tokenUrl" should be "{{backendOAuthTokenUrl}}"
     And The value of response field "endpointConfig.endpoint_security.production.clientId" should be "{{eppProdBeClientId}}"
     And The value of response field "endpointConfig.endpoint_security.production.username" should be "{{eppRoUser}}"
     And The value of response field "endpointConfig.endpoint_security.sandbox.type" should be "OAUTH"

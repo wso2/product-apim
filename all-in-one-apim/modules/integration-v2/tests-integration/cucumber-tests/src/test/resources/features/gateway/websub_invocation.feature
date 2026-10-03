@@ -126,7 +126,7 @@ Feature: Gateway WebSub API Invocation
     And The value of response field "websubSubscriptionConfiguration.signatureHeader" should be "x-hub-signature"
     And I put the response payload in context as "websubCfgPayload"
     # ...then enable it as a post-creation update, the documented order
-    When I update the "apis" resource "websubApiId" and "websubCfgPayload" with configuration type "websubSubscriptionConfiguration" and value:
+    When I update the "apis" resource "websubApiId" and "websubCfgPayload" with WebSub configuration and wait until lifecycle "CREATED" persists:
       """
       {"enable":true,"secret":"{{websubApiSecret}}","signingAlgorithm":"SHA1","signatureHeader":"x-hub-signature"}
       """
@@ -141,6 +141,7 @@ Feature: Gateway WebSub API Invocation
     # Redeploy so the artifact on the gateway carries the configured secret (see the note above), then publish
     When I deploy the API with id "websubApiId"
     Then The response status code should be 201
+    Then the "apis" resource "websubApiId" should be live on the gateway, redeploying if propagation is lost
     When I publish the "apis" resource with id "websubApiId"
     Then The lifecycle status of API "websubApiId" should be "Published"
     When I have set up application with keys, subscribed to API "websubApiId" with plan "AsyncWHUnlimited", and obtained access token for "websubSubId"
@@ -214,7 +215,7 @@ Feature: Gateway WebSub API Invocation
     Then The response status code should be 201
     When I retrieve the "apis" resource with id "websubApiId"
     And I put the response payload in context as "websubCfgPayload"
-    When I update the "apis" resource "websubApiId" and "websubCfgPayload" with configuration type "websubSubscriptionConfiguration" and value:
+    When I update the "apis" resource "websubApiId" and "websubCfgPayload" with WebSub configuration and wait until lifecycle "CREATED" persists:
       """
       {"enable":true,"secret":"{{websubApiSecret}}","signingAlgorithm":"SHA1","signatureHeader":"x-hub-signature"}
       """
@@ -237,8 +238,10 @@ Feature: Gateway WebSub API Invocation
     When I send a WebSub "subscribe" request as form data to gateway context "{{websubContext}}/1.0.0" with callback "{{websubReceiverCallback}}" topic "_default" secret "{{websubSubscriberSecret}}" lease seconds "50000000" using access token "generatedAccessToken" until response status code becomes 202 within 60 seconds
     # The URL the publishes below post to is the one the hub recorded — otherwise a 200 could not mean fan-out ran
     Then The event receiver URL for gateway context "{{websubContext}}/1.0.0" topic "_default" should match the persisted webhook subscription of API "websubApiId"
-    When I publish the WebSub event "websubEventBody" to the event receiver at gateway context "{{websubContext}}/1.0.0" topic "_default" signed with secret "{{websubApiSecret}}" until response status code becomes 200 within 60 seconds
-    And I publish the WebSub event "websubEventBody" to the event receiver at gateway context "{{websubContext}}/1.0.0" topic "_default" signed with secret "{{websubApiSecret}}" 4 times expecting status 200
+    # The persisted row proves control-plane state only. Establish a delivery-side barrier for this known distributed
+    # topology race, then clear the probe before measuring the five scenario events.
+    And I establish WebSub fan-out readiness for receiver "websubReceiver" at gateway context "{{websubContext}}/1.0.0" topic "_default" signed with secret "{{websubApiSecret}}" within 60 seconds
+    When I publish the WebSub event "websubEventBody" to the event receiver at gateway context "{{websubContext}}/1.0.0" topic "_default" signed with secret "{{websubApiSecret}}" 5 times expecting status 200 one second apart and wait for receiver "websubReceiver"
     Then The WebSub receiver "websubReceiver" should have received 5 events within 60 seconds
     And The last WebSub event delivered to receiver "websubReceiver" should carry a "link" header containing "{{websubContext}}"
     When I send a WebSub "unsubscribe" request as form data to gateway context "{{websubContext}}/1.0.0" with callback "{{websubReceiverCallback}}" topic "_default" secret "{{websubSubscriberSecret}}" lease seconds "50000000" using access token "generatedAccessToken" until response status code becomes 202 within 60 seconds
@@ -343,7 +346,8 @@ Feature: Gateway WebSub API Invocation
   # hub delivers every event to EVERY registered callback (legacy MultipleWebSubSubcriptionTestCase, which could
   # only see this through a database count), and after one callback unsubscribes the hub delivers only to the rest.
   # The remaining callback is the BARRIER — waiting for IT to observe the next event proves that event's fan-out
-  # completed, so the unsubscribed callback's unchanged count is a real absence and not a race. No sleep is involved.
+  # completed, so the unsubscribed callback's unchanged count is a real absence and not a race. The measured burst
+  # uses a one-second cadence, matching the legacy test's pacing while retaining a delivery-side barrier per event.
   # This is the scenario that proves unsubscribing actually STOPS deliveries and that the hub fans out to more than
   # one callback — neither of which the unsubscribe status alone can show.
   @cap:gateway @feat:streaming-invocation @rule:unsubscribe @type:regression @dep:publisher @legacy:WebSubAPITestCase @legacy:MultipleWebSubSubcriptionTestCase
@@ -360,8 +364,12 @@ Feature: Gateway WebSub API Invocation
     Then The lifecycle status of API "websubApiId" should be "Published"
     When I retrieve the "apis" resource with id "websubApiId"
     And I extract response field "context" and store it as "websubContext"
-    When I have set up application with keys, subscribed to API "websubApiId" with plan "AsyncWHUnlimited", and obtained access token for "websubSubId"
+    When I have set up application with keys, subscribed to API "websubApiId" with plan "AsyncWHUnlimited", and obtained access token for "websubLeaverSubId"
     Then The response status code should be 200
+    And I copy context value "generatedAccessToken" to "websubLeaverAccessToken"
+    When I have set up application with keys, subscribed to API "websubApiId" with plan "AsyncWHUnlimited", and obtained access token for "websubStayerSubId"
+    Then The response status code should be 200
+    And I copy context value "generatedAccessToken" to "websubStayerAccessToken"
     And I generate a unique alphanumeric value and store it as "websubSubscriberSecret"
     And I have a "silent" WebSub callback receiver stored as "websubLeaver"
     And I have a "silent" WebSub callback receiver stored as "websubStayer"
@@ -369,8 +377,8 @@ Feature: Gateway WebSub API Invocation
     """
     {"Hello" : "World"}
     """
-    When I send a WebSub "subscribe" request as form data to gateway context "{{websubContext}}/1.0.0" with callback "{{websubLeaverCallback}}" topic "_default" secret "{{websubSubscriberSecret}}" lease seconds "50000000" using access token "generatedAccessToken" until response status code becomes 202 within 60 seconds
-    And I send a WebSub "subscribe" request as form data to gateway context "{{websubContext}}/1.0.0" with callback "{{websubStayerCallback}}" topic "_default" secret "{{websubSubscriberSecret}}" lease seconds "50000000" using access token "generatedAccessToken" until response status code becomes 202 within 60 seconds
+    When I send a WebSub "subscribe" request as form data to gateway context "{{websubContext}}/1.0.0" with callback "{{websubLeaverCallback}}" topic "_default" secret "{{websubSubscriberSecret}}" lease seconds "50000000" using access token "websubLeaverAccessToken" until response status code becomes 202 within 60 seconds
+    And I send a WebSub "subscribe" request as form data to gateway context "{{websubContext}}/1.0.0" with callback "{{websubStayerCallback}}" topic "_default" secret "{{websubSubscriberSecret}}" lease seconds "50000000" using access token "websubStayerAccessToken" until response status code becomes 202 within 60 seconds
     # BARRIER (added 2026-08-07): a form-data subscribe answers 202 from FORCE_SC_ACCEPTED BEFORE
     # SubscribersPersistMediator runs, so its status says NOTHING about whether the row was written. Publishing
     # straight after it races the persist and fans out to ZERO subscribers. Measured: without this the row
@@ -378,17 +386,19 @@ Feature: Gateway WebSub API Invocation
     Then The internal webhooks subscription list should hold exactly 2 subscriptions for API "websubApiId" within 60 seconds
     # Both callbacks are registered: every one of the five published events must reach BOTH
     When I publish the WebSub event "websubEventBody" to the event receiver at gateway context "{{websubContext}}/1.0.0" topic "_default" signed with secret "{{websubApiSecret}}" until response status code becomes 200 within 60 seconds
-    And I publish the WebSub event "websubEventBody" to the event receiver at gateway context "{{websubContext}}/1.0.0" topic "_default" signed with secret "{{websubApiSecret}}" 4 times expecting status 200
+    Then The WebSub receiver "websubLeaver" should have received 1 event within 60 seconds
+    And The WebSub receiver "websubStayer" should have received 1 event within 60 seconds
+    And I publish the WebSub event "websubEventBody" to the event receiver at gateway context "{{websubContext}}/1.0.0" topic "_default" signed with secret "{{websubApiSecret}}" 4 times expecting status 200 one second apart and wait for receivers "websubLeaver" and "websubStayer"
     Then The WebSub receiver "websubLeaver" should have received 5 events within 60 seconds
     And The WebSub receiver "websubStayer" should have received 5 events within 60 seconds
-    When I send a WebSub "unsubscribe" request as form data to gateway context "{{websubContext}}/1.0.0" with callback "{{websubLeaverCallback}}" topic "_default" secret "{{websubSubscriberSecret}}" lease seconds "50000000" using access token "generatedAccessToken" until response status code becomes 202 within 60 seconds
+    When I send a WebSub "unsubscribe" request as form data to gateway context "{{websubContext}}/1.0.0" with callback "{{websubLeaverCallback}}" topic "_default" secret "{{websubSubscriberSecret}}" lease seconds "50000000" using access token "websubLeaverAccessToken" until response status code becomes 202 within 60 seconds
     # BARRIER: wait for the unsubscribe to be REMOVED before publishing again, else the leaver may
     # still receive the next event and the "exactly 5" assertion below becomes a race.
     Then The internal webhooks subscription list should hold exactly 1 subscription for API "websubApiId" within 60 seconds
     And I publish the WebSub event "websubEventBody" to the event receiver at gateway context "{{websubContext}}/1.0.0" topic "_default" signed with secret "{{websubApiSecret}}" until response status code becomes 200 within 60 seconds
     Then The WebSub receiver "websubStayer" should have received 6 events within 60 seconds
     And The WebSub receiver "websubLeaver" should have received exactly 5 events
-    When I send a WebSub "unsubscribe" request as form data to gateway context "{{websubContext}}/1.0.0" with callback "{{websubStayerCallback}}" topic "_default" secret "{{websubSubscriberSecret}}" lease seconds "50000000" using access token "generatedAccessToken" until response status code becomes 202 within 60 seconds
+    When I send a WebSub "unsubscribe" request as form data to gateway context "{{websubContext}}/1.0.0" with callback "{{websubStayerCallback}}" topic "_default" secret "{{websubSubscriberSecret}}" lease seconds "50000000" using access token "websubStayerAccessToken" until response status code becomes 202 within 60 seconds
     Examples:
       | actor             |
       | admin             |

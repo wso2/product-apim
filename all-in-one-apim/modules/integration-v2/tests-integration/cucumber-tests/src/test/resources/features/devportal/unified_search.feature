@@ -31,8 +31,15 @@ Feature: DevPortal Unified Search
     Given The system is ready
     And I have valid access tokens as "<actor>"
     And I have created an api from "artifacts/payloads/create_apim_test_api.json" as "usApiId" and deployed it
+    And the "apis" resource "usApiId" should be live on the gateway, redeploying if propagation is lost
     When I publish the "apis" resource with id "usApiId"
     Then The lifecycle status of API "usApiId" should be "Published"
+    When I retrieve the "apis" resource with id "usApiId"
+    And I extract response field "name" and store it as "usApiName"
+    And I wait until the DevPortal API index contains API "usApiId" named "{{usApiName}}" within 120 seconds
+    # Legacy ContentSearchTestCase first warmed the Publisher API index in its preceding search test. Keep that
+    # prerequisite explicit here so document-content indexing is not started while the Publisher index is still cold.
+    And I search Publisher APIs with content query "name:{{usApiName}}" until the result count is 1 within 120 seconds
 
     # Legacy's fixture shape: HOWTO + INLINE, content written through the /content resource. The create payload's
     # inlineContent is METADATA ONLY on this build (an INLINE doc 404s on /content until this POST), so the content
@@ -43,9 +50,10 @@ Feature: DevPortal Unified Search
     When I add inline content "This is a sample API to test unified search feature - <token>" to document "documentID" of API "usApiId"
     Then The response status code should be 201
 
-    # Legacy's two assertions, in legacy's order.
-    When I unified-search the "devportal" plane for "<token>" until the result count is 1 within 120 seconds
-    And I unified-search the "publisher" plane for "<token>" until the result count is 1 within 120 seconds
+    # Legacy's two assertions, in legacy's order. Publisher search is the first exact-count content-index
+    # convergence gate; only after it succeeds do we assert the tenant-aware DevPortal search surface.
+    When I unified-search the "publisher" plane for "<token>" until the result count is 1 within 120 seconds
+    And I unified-search the "devportal" plane for "<token>" until the result count is 1 within 120 seconds
     # CONTROL — the same token on /apis?query= is 0 BY CONTRACT, not by defect.
     And I search DevPortal APIs with query "<token>" and limit 25 until the result count is 0 within 60 seconds
 
@@ -64,6 +72,7 @@ Feature: DevPortal Unified Search
     Given The system is ready
     And I have valid access tokens as "admin"
     And I have created an api from "artifacts/payloads/create_apim_test_api.json" as "usShapeApiId" and deployed it
+    And the "apis" resource "usShapeApiId" should be live on the gateway, redeploying if propagation is lost
     When I retrieve the "apis" resource with id "usShapeApiId"
     And I extract response field "name" and store it as "usShapeApiName"
     When I publish the "apis" resource with id "usShapeApiId"
@@ -74,8 +83,9 @@ Feature: DevPortal Unified Search
     When I add inline content "shape probe body zzdocshapetoken" to document "documentID" of API "usShapeApiId"
     Then The response status code should be 201
 
-    # Wait for the DOC to be indexed before asserting the shape, so the three-type assertion cannot pass or fail on
-    # indexing timing.
+    # Match the legacy ordering: first wait for the document content in the Publisher index, then verify the
+    # tenant-aware DevPortal index. The shape assertions below remain exact and unchanged.
+    When I unified-search the "publisher" plane for "zzdocshapetoken" until the result count is 1 within 120 seconds
     When I unified-search the "devportal" plane for "zzdocshapetoken" until the result count is 1 within 120 seconds
     When I unified-search the "devportal" plane once for "{{usShapeApiName}}"
     Then The response status code should be 200
@@ -95,6 +105,7 @@ Feature: DevPortal Unified Search
     Given The system is ready
     And I have valid access tokens as "admin"
     And I have created an api from "artifacts/payloads/create_apim_test_api.json" as "usDelApiId" and deployed it
+    And the "apis" resource "usDelApiId" should be live on the gateway, redeploying if propagation is lost
     When I publish the "apis" resource with id "usDelApiId"
     Then The lifecycle status of API "usDelApiId" should be "Published"
     When I prepare a new document payload with type "HOWTO", sourceType "INLINE", and inlineContent "placeholder"
