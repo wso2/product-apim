@@ -190,3 +190,65 @@ docker cp "$cid:/home/wso2carbon/$APIM_SERVER_NAME/repository/deployment/server/
 2. **Collector + listener:** generalise into `tests-common`; wire `BlockLifecycleListener` dump; suite-end merge + report; emit `coverage/output/txt/jacoco-it.xml`.
 3. **CI + Codecov:** per-PR workflow (same trigger as legacy) uploads the integration report to the **product-apim** project under flag `integration-v2_tests` (standalone, like legacy); add `codecov.yml`. Unit+integration merge, if ever wanted, is carbon-apimgt's concern (§8).
 4. **Later:** extend the same collector to the distributed lane (per-component dump + `jacoco merge`) — deferred.
+
+---
+
+## 10. Legacy lane coverage through the same report
+
+The legacy integration lane (`modules/integration`, CI job `build`, groups 1-4) is measured by the same report as
+v2, so the two lanes' numbers share one class-file set and one denominator.
+
+**How the legacy lane collects.** The test framework (TAF 4.5.3, `CarbonServerManager`) adds the agent to the
+server start script in **file mode**:
+
+```
+-javaagent:<tests-backend>/target/jacoco/agent/jacocoagent.jar=destfile=<tests-backend>/target/jacoco/jacoco<millis>.exec,append=true,includes=org.wso2.carbon.apimgt*:api#am#*:internal#data*:client-registration*
+```
+
+- There are **no agent excludes** — `filters.txt` is only logged — so legacy instruments every
+  `org.wso2.carbon.apimgt*` class, a superset of the classes v2 instruments (§4.1). The report applies v2's
+  `DEFAULT_EXCLUDES` at analysis time, so both lanes are counted over the same classes.
+- `append=true` writes each server JVM's data into the same file at JVM exit. A graceful restart (`System.exit`
+  then a new JVM) appends a second session, so pre-restart coverage is kept without the v2 lane's
+  dump-before-restart.
+- At server stop the framework also writes `jacoco-data-merge.exec`, but it reads the agent's file right after
+  the stop request, before the last server JVM's shutdown hook has appended that JVM's session. The merge file
+  therefore lacks the final session (after the last restart); the agent's own `jacoco<millis>.exec` holds every
+  session and is the file the report uses.
+
+**CI wiring.**
+- `build` waits until no JVM running the agent is left, then uploads `tests-backend/target/jacoco/jacoco*.exec`
+  (without `jacoco-data-merge.exec`) as `legacy-coverage-exec-<group id>`. Each group starts one server, so this is
+  one file per group.
+- `legacy-coverage-report` (needs `build` and `v2-build-images`) downloads every `legacy-coverage-exec-*`, loads
+  `v2-images`, `docker cp`s the class files out of the APIM image exactly as `integration-v2` does (§8), and runs
+  `CoverageReportCli` — which renders through `JacocoCoverage.reportDetailed`, the method the v2
+  `CoverageAggregationListener` uses. It writes the counters to the job summary and uploads
+  `legacy-coverage-report` (XML, HTML, `coverage-summary.properties`). Nothing is sent to Codecov from this job.
+- The job fails when a group in `LEGACY_GROUP_IDS` (the `build` matrix ids) uploaded no non-empty `.exec`, and when
+  any class has execution data that does not match the class files (`nomatch.count > 0`).
+
+**Why the class files from the v2 image are valid for legacy execution data.** JaCoCo matches execution data to
+a class by a CRC64 of the class bytes; a class whose bytes differ is reported as *no-match* and counted as
+uncovered. The legacy groups and the v2 image are built from the same commit and the same pinned
+`carbon.apimgt.version` release, so the APIM bundles and webapps are the same bytes. The no-match guard turns any
+drift into a failure instead of a silently lower number. Measured with the legacy agent string on local images:
+execution data from one image analyzed against a **separately built** image of the same carbon-apimgt release gives
+0 no-match classes and identical counters; against an image of a different release (9.33.171 vs 9.33.180) it
+gives 50 no-match classes and the CLI exits 1.
+
+**Running it locally.**
+
+```bash
+cd all-in-one-apim/modules/integration-v2
+mvn -q -pl tests-common/testcontainers -am -DskipTests compile
+mvn -q -pl tests-common/testcontainers dependency:build-classpath -Dmdep.outputFile=/tmp/cov-cp.txt
+java -cp "tests-common/testcontainers/target/classes:$(cat /tmp/cov-cp.txt)" \
+  org.wso2.am.testcontainers.CoverageReportCli \
+  --exec <dir or .exec> --classfiles-dir <dir holding plugins/ and webapps/> \
+  --out /tmp/legacy-coverage --title legacy-integration
+```
+
+`--dist-zip <zip>` replaces `--classfiles-dir` to read the class files from a distribution zip. Exit status 0 is
+success, 1 an integrity failure (no execution data, wrong file count, no-match classes, no APIM classes), 2 a usage
+error; `--allow-no-match` reports no-match classes as a warning instead.
