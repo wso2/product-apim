@@ -60,6 +60,8 @@ public final class GracefulServerRestart {
         headers.put("Authorization", "Basic " + basicAuth);
         headers.put("SOAPAction", "urn:restartGracefully");
 
+        // The restart replaces the server JVM, taking its in-memory coverage counters with it.
+        CoverageSupport.dumpBeforeRestart();
         HttpResponse response = SimpleHTTPClient.getInstance().doPost(endpoint, headers, soapBody,
                 "text/xml;charset=UTF-8");
         Assert.assertNotNull(response, "ServerAdmin restartGracefully returned no response");

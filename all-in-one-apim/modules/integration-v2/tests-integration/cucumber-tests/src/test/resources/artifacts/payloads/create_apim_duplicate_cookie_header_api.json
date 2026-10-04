@@ -1,0 +1,30 @@
+{
+  "name": "${UNIQUE:APIMDuplicateCookieHeader}",
+  "context": "${UNIQUE:apiDuplicateCookieHeaderContext}",
+  "version": "1.0.0",
+  "endpointConfig": {
+    "endpoint_type": "http",
+    "production_endpoints": {
+      "template_not_supported": false,
+      "config": null,
+      "url": "http://nodebackend:3005/duplicate/cookie"
+    },
+    "sandbox_endpoints": {
+      "url": "http://nodebackend:3005/duplicate/cookie",
+      "config": null,
+      "template_not_supported": false
+    }
+  },
+  "description": "API whose backend emits the two duplicate Cookie response headers asserted by legacy DuplicateHeaderTestCase",
+  "policies": ["Gold", "Bronze", "Unlimited"],
+  "operations": [
+    {
+      "verb": "GET",
+      "target": "/",
+      "scopes": []
+    }
+  ],
+  "isDefaultVersion": true,
+  "additionalProperties": [],
+  "additionalPropertiesMap": {}
+}

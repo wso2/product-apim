@@ -1,0 +1,9 @@
+<sequence xmlns="http://ws.apache.org/ns/synapse">
+    <property name="messageType" scope="axis2" type="STRING" value="application/json"/>
+    <call>
+        <endpoint>
+            <http uri-template="http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/message-type"/>
+        </endpoint>
+    </call>
+    <respond/>
+</sequence>

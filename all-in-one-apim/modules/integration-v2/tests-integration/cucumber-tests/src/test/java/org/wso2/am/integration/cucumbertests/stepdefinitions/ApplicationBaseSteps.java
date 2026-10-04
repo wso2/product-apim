@@ -70,10 +70,14 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.IntStream;
 
 public class ApplicationBaseSteps {
+
+    /** Captures the exhausted bucket's natural expiry so reset readiness cannot pass on minute-window rollover. */
+    public static final String THROTTLE_RESET_ORIGINAL_EXPIRY = "throttleResetOriginalExpiry";
 
     private static final Log log = LogFactory.getLog(ApplicationBaseSteps.class);
     private static final int FRESH_APPLICATION_KEY_GENERATION_ATTEMPTS = 3;
@@ -147,6 +151,19 @@ public class ApplicationBaseSteps {
     @When("I reset the application throttle policy for {string} owned by {string}")
     public void iResetApplicationThrottlePolicy(String appId, String owner) throws IOException {
         String actualAppId = TestContext.resolve(appId).toString();
+        TestContext.remove(THROTTLE_RESET_ORIGINAL_EXPIRY);
+        Object previousResponse = TestContext.get("httpResponse");
+        if (previousResponse instanceof HttpResponse response && response.getResponseCode() == 429
+                && response.getData() != null) {
+            try {
+                JSONObject error = new JSONObject(response.getData());
+                if (error.optInt("code", -1) == 900803 && !error.optString("nextAccessTime").isBlank()) {
+                    TestContext.set(THROTTLE_RESET_ORIGINAL_EXPIRY, error.getString("nextAccessTime"));
+                }
+            } catch (JSONException ignored) {
+                // A reset outside the expected throttled flow has no original expiry to protect against rollover.
+            }
+        }
         String ownerName = Identity.apiUsername(Identity.resolveActor(owner));
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
@@ -1664,6 +1681,10 @@ public class ApplicationBaseSteps {
                 headers, jsonPayload, Constants.CONTENT_TYPES.APPLICATION_JSON);
         Assert.assertEquals(response.getResponseCode(), 201, response.getData());
         Object createdSubscriptionId = Utils.extractValueFromPayload(response.getData(), "subscriptionId");
+        Assert.assertNotNull(createdSubscriptionId,
+                "Successful subscription response did not contain a subscriptionId: " + response.getData());
+        Assert.assertFalse(String.valueOf(createdSubscriptionId).isBlank(),
+                "Successful subscription response contained a blank subscriptionId: " + response.getData());
         TestContext.set(subscriptionID, createdSubscriptionId);
         ResourceCleanup.registerSubscription(createdSubscriptionId, null);
     }
@@ -3925,6 +3946,63 @@ public class ApplicationBaseSteps {
     }
 
     /**
+     * Creates the locally signed JWT-format APIM API key used by the legacy AI API test. Unlike the opaque key
+     * returned by the DevPortal generate-keys API, this token requires the numeric application row id from APIM's
+     * internal validation API and the application's complete consumer-visible identity claims.
+     */
+    @When("I generate locally signed JWT API key for application id {string} as {string}")
+    public void iGenerateLocallySignedJwtApiKey(String appIdKey, String keyContext) throws IOException {
+        String appUuid = TestContext.resolve(appIdKey).toString();
+        HttpResponse appResponse = SimpleHTTPClient.getInstance().doGet(
+                Utils.getApplicationEndpointURL(Utils.getBaseUrl(), appUuid), Identity.devportalHeaders());
+        Assert.assertNotNull(appResponse, "DevPortal returned no response while reading application " + appUuid);
+        Assert.assertEquals(appResponse.getResponseCode(), 200,
+                "Failed to read application metadata needed for the JWT API key: " + appResponse.getData());
+        JSONObject app = new JSONObject(appResponse.getData());
+        Assert.assertEquals(app.optString("applicationId"), appUuid,
+                "DevPortal returned metadata for a different application");
+        String applicationName = app.optString("name");
+        String applicationTier = app.optString("throttlingPolicy");
+        String applicationOwner = app.optString("owner");
+        Assert.assertFalse(applicationName.isBlank() || applicationTier.isBlank() || applicationOwner.isBlank(),
+                "DevPortal application response omitted claims required by JWT API-key validation: " + app);
+
+        User systemAdmin = Identity.gatewayManagementAdmin();
+        Map<String, String> internalHeaders = Identity.basicAuthHeaders(systemAdmin.getUserName(),
+                systemAdmin.getPassword());
+        internalHeaders.put("xWSO2Tenant", Identity.actingTenantDomain());
+        String internalApplicationsUrl = Utils.getBaseUrl() + "internal/data/v1/applications";
+        HttpResponse internalResponse = SimpleHTTPClient.getInstance().doGet(internalApplicationsUrl, internalHeaders);
+        Assert.assertNotNull(internalResponse,
+                "APIM internal application lookup returned no response for " + appUuid);
+        Assert.assertEquals(internalResponse.getResponseCode(), 200,
+                "APIM internal application lookup failed: " + internalResponse.getData());
+        JSONArray internalApplications = new JSONObject(internalResponse.getData()).optJSONArray("list");
+        Assert.assertNotNull(internalApplications,
+                "APIM internal application lookup omitted its list: " + internalResponse.getData());
+        int matchedId = -1;
+        int matches = 0;
+        for (int i = 0; i < internalApplications.length(); i++) {
+            JSONObject internalApp = internalApplications.getJSONObject(i);
+            if (appUuid.equals(internalApp.optString("uuid"))) {
+                matchedId = internalApp.optInt("id", -1);
+                matches++;
+            }
+        }
+        Assert.assertEquals(matches, 1,
+                "Expected exactly one internal application row for UUID " + appUuid + ", found " + matches);
+        Assert.assertTrue(matchedId > 0, "Internal application row has invalid numeric id " + matchedId);
+
+        String signedKey = JwtTestUtils.buildLegacyJwtApiKey(Identity.actingActor().getUserName(),
+                Utils.getAPIMTokenEndpointURL(Utils.getBaseUrl()), applicationName, applicationTier, matchedId,
+                appUuid, applicationOwner);
+        TestContext.set(keyContext, signedKey);
+        log.info("Generated JWT-format API key for application " + appUuid + " (actor="
+                + Identity.actingActor().getUserName() + ", tenant=" + Identity.actingTenantDomain()
+                + ", numericApplicationId=" + matchedId + ", tokenLength=" + signedKey.length() + ")");
+    }
+
+    /**
      * Lists an application's PRODUCTION API keys and stores the FIRST key's {@code keyUUID} under {@code ctxKey}.
      * A store-generated (opaque) API key is revoked by its keyUUID (not the key value), so this captures it for
      * the revoke step. Each scenario creates a fresh application with a single key, so the first entry is it.
@@ -5283,6 +5361,43 @@ public class ApplicationBaseSteps {
         Requests.get(Utils.getTenantConfigURL(Utils.getBaseUrl()), Identity.adminHeaders());
     }
 
+    /**
+     * Re-reads the acting tenant's configuration until a field reflects the requested value. This is used after
+     * tenant-config PUTs because a successful write response does not guarantee that the GET read model has
+     * converged yet. The final response remains the shared assertion target and the step fails with that response
+     * if the requested state never appears.
+     */
+    @When("I retrieve the tenant configuration until field {string} is {string} within {int} seconds")
+    public void iRetrieveTenantConfigurationUntilFieldIs(String fieldName, String expectedValue, int timeoutSeconds)
+            throws IOException, InterruptedException {
+
+        String resolvedField = Utils.resolveContextPlaceholders(fieldName);
+        String resolvedExpected = Utils.resolveContextPlaceholders(expectedValue);
+        HttpResponse response = Utils.retryUntil(timeoutSeconds * 1000L,
+                () -> Requests.get(Utils.getTenantConfigURL(Utils.getBaseUrl()), Identity.adminHeaders()), candidate -> {
+                    if (candidate == null || candidate.getResponseCode() != 200 || candidate.getData() == null
+                            || candidate.getData().isBlank()) {
+                        return false;
+                    }
+                    try {
+                        Object value = Utils.extractValueFromPayload(candidate.getData(), resolvedField);
+                        return value != null && Objects.equals(String.valueOf(value), resolvedExpected);
+                    } catch (IOException notConverged) {
+                        return false;
+                    }
+                });
+        TestContext.set("httpResponse", response);
+        Assert.assertTrue(response != null && response.getResponseCode() == 200 && response.getData() != null
+                        && !response.getData().isBlank(),
+                "Tenant configuration did not return a readable HTTP 200 while waiting for field '" + resolvedField
+                        + "' to become '" + resolvedExpected + "'; last response: "
+                        + (response == null ? "null" : response.getResponseCode() + " / " + response.getData()));
+        Object actual = Utils.extractValueFromPayload(response.getData(), resolvedField);
+        Assert.assertEquals(String.valueOf(actual), resolvedExpected,
+                "Tenant configuration field '" + resolvedField + "' did not converge; last response: "
+                        + response.getData());
+    }
+
     /** Retrieves the tenant configuration JSON schema. */
     @When("I retrieve the tenant configuration schema")
     public void iRetrieveTenantConfigurationSchema() throws IOException {
@@ -5319,9 +5434,10 @@ public class ApplicationBaseSteps {
     public void iAttemptUpdateTenantConfigInvalidToken(String contextKey) throws IOException {
 
         String payload = TestContext.resolve(contextKey).toString();
-        // A structurally-valid JWT with a bogus signature the server cannot verify.
-        String invalidJwt = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9."
-                + "eyJzdWIiOiJhZG1pbiIsInNjb3BlIjoib3BlbmlkIGFwaW06YWRtaW4ifQ.aW52YWxpZF9zaWduYXR1cmU";
+        // Access tokens may be opaque in one topology. Build the same structurally valid HS256 token as the legacy
+        // negative test, with the active actor and topology's issuer, and an intentionally invalid signature.
+        String tokenEndpoint = Utils.getAPIMTokenEndpointURL(Utils.getBaseUrl());
+        String invalidJwt = JwtTestUtils.buildInvalidSignatureJwt(Identity.actingActor().getUserName(), tokenEndpoint);
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + invalidJwt);
         Requests.put(Utils.getTenantConfigURL(Utils.getBaseUrl()),

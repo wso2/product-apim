@@ -35,10 +35,11 @@ Feature: API Governance Rulesets
     And I have a valid Governance access token as "<actor>"
     When I create a governance ruleset "${UNIQUE:Ruleset}" from content file "artifacts/apim-governance/simple-spectral-ruleset.yaml" as "rulesetId"
     Then The response status code should be 201
-    When I update the governance ruleset "rulesetId" with name "${UNIQUE:UpdatedRuleset}" content file "artifacts/apim-governance/simple-spectral-ruleset.yaml" description "Updated ruleset description" and documentation link "https://wso2.com/updated"
+    When I update the governance ruleset "rulesetId" with name "${UNIQUE:UpdatedRuleset}" content file "artifacts/apim-governance/simple-spectral-ruleset.yaml" description "Updated ruleset description" and documentation link "https://wso2.com/updated" and store the resolved name as "updatedRulesetName"
     Then The response status code should be 200
-    And The response should contain "Updated ruleset description"
-    And The response should contain "https://wso2.com/updated"
+    And The value of response field "name" should be "{{updatedRulesetName}}"
+    And The value of response field "description" should be "Updated ruleset description"
+    And The value of response field "documentationLink" should be "https://wso2.com/updated"
     When I delete the governance ruleset "rulesetId"
     Then The response status code should be 204
 
@@ -68,7 +69,7 @@ Feature: API Governance Rulesets
     And I have a valid Governance access token as "<actor>"
     When I create a governance ruleset "${UNIQUE:Ruleset}" from content file "artifacts/apim-governance/simple-spectral-ruleset.yaml" as "rulesetId"
     Then The response status code should be 201
-    When I update the governance ruleset "rulesetId" with name "${UNIQUE:Ruleset}" content file "artifacts/apim-governance/invalid-spectral-ruleset.yaml" description "Attempted invalid update" and documentation link "https://wso2.com"
+    When I update the governance ruleset "rulesetId" with name "${UNIQUE:Ruleset}" content file "artifacts/apim-governance/invalid-spectral-ruleset.yaml" description "Attempted invalid update" and documentation link "https://wso2.com" and store the resolved name as "invalidUpdatedRulesetName"
     Then The response status code should be 400
     And The error response should have code "990120" and message "Invalid ruleset content"
 

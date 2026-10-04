@@ -14,7 +14,7 @@ Feature: DevPortal Application Ownership Under an Email-Form Username
   Complements publisher/api_product_email_username.feature, which pins the same idea on the PROVIDER of an API
   product; this is the devportal-plane consumer half.
 
-  @cap:devportal @feat:applications @rule:email-username @type:regression @legacy:APIProductLifecycleTest
+  @cap:devportal @feat:applications @rule:email-username @type:regression
   Scenario Outline: An application created by an email-form principal records the full principal as owner as <actor>
     Given The system is ready
     And I have valid access tokens as "<actor>"

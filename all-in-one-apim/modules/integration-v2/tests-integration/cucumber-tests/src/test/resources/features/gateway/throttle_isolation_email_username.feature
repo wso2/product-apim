@@ -170,8 +170,9 @@ Feature: Gateway Throttle Isolation Across Email-Form And Plain Usernames
     """
     And I subscribe to API "emResetApiId" using application "createdAppId" with payload "apiSubscriptionPayload" as "emResetSubId"
     Then The response status code should be 201
-    When I request an OAuth access token for the current user using password grant with scope "PRODUCTION"
+    When I request a client-credentials token using consumer key "consumerKey" and secret "consumerSecret"
     Then The response status code should be 200
+    And I extract response field "access_token" and store it as "generatedAccessToken"
 
     # Drive the email-form owner's token past the 3/min limit -> 429 code 900803 (APPLICATION-level), the limit the reset clears.
     When I invoke the API at gateway context "{{emResetContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 429 within 60 seconds
@@ -182,12 +183,12 @@ Feature: Gateway Throttle Isolation Across Email-Form And Plain Usernames
     # ownership, so this must be the owner and not an admin).
     When I reset the application throttle policy for "createdAppId" owned by "<ownerActor>"
     Then The response status code should be 200
-    # Post-reset invocation uses the same email-form owner's token -> succeeds again, proving the owner cleared
-    # their own bucket even though the throttle key is built from a two-at-sign email username.
-    When I invoke the API at gateway context "{{emResetContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
+    # The reset plus these three successful calls prove the exact 3/min allowed count. Require the subsequent calls
+    # to reach the same 900803 within the legacy enforcement delay, before the original quota expires.
+    When I invoke the API at gateway context "{{emResetContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until the application throttle reset takes effect before the original expiry within 30 seconds
     Then The response status code should be 200
-    # Re-drive -> 429 with the same application code: proves the reset CLEARED the counter (not disabled throttling).
-    When I invoke the API at gateway context "{{emResetContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 429 within 60 seconds
+    And I invoke the API at gateway context "{{emResetContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" 2 times expecting status 200
+    When I invoke the API at gateway context "{{emResetContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 429 within 10 seconds
     Then The response status code should be 429
     And The value of error response field "code" should be "900803"
 
@@ -195,3 +196,66 @@ Feature: Gateway Throttle Isolation Across Email-Form And Plain Usernames
       | adminActor        | ownerActor             | ownerPhysical                     |
       | admin             | emailAdmin             | emailAdmin@email.com@carbon.super |
       | admin@tenant1.com | emailAdmin@tenant1.com | emailAdmin@email.com@tenant1.com  |
+
+  # Tenant email-user BANDWIDTH reset: the tenant email-form owner must be able to exhaust and reset its own byte
+  # quota through DevPortal, with the same exact 429 -> reset -> 200 -> 429 contract as the ordinary tenant owner.
+  @cap:gateway @feat:throttling-enforcement @rule:email-username @type:regression @dep:admin @dep:publisher @dep:devportal @legacy:ApplicationThrottlingResetTestCase
+  Scenario: A tenant email-form owner resets their own application's bandwidth counter
+    Given The system is ready
+    And I have valid access tokens as "admin@tenant1.com"
+
+    When I create an application throttling policy "${UNIQUE:emResetBw1KB}" allowing 1 KB per minute
+    Then The response status code should be 201
+    And I have created an api from "artifacts/payloads/create_apim_postbody_api.json" as "emResetBwApiId" and deployed it
+    And the "apis" resource "emResetBwApiId" should be live on the gateway, redeploying if propagation is lost
+    When I publish the "apis" resource with id "emResetBwApiId"
+    Then The lifecycle status of API "emResetBwApiId" should be "Published"
+    When I retrieve the "apis" resource with id "emResetBwApiId"
+    And I extract response field "context" and store it as "emResetBwContext"
+
+    Given The system is ready and I have valid devportal access token as "admin@tenant1.com"
+    When I store the acting actor credentials as "emBwOwnerName" and "emBwOwnerPassword"
+    Then the actual value of "emBwOwnerName" should match the expected value:
+      """
+      admin@email.com@tenant1.com
+      """
+    When I create an application "${UNIQUE:EmResetBwApp}" with throttling policy from "appThrottlePolicyName"
+    Then The response status code should be 201
+    When I put the following JSON payload in context as "generateApplicationKeysPayload"
+    """
+    {"keyType": "PRODUCTION", "grantTypesToBeSupported": ["client_credentials", "password"]}
+    """
+    And I generate client credentials for application id "createdAppId" with payload "generateApplicationKeysPayload"
+    Then The response status code should be 200
+    When I put the following JSON payload in context as "apiSubscriptionPayload"
+    """
+    {"applicationId": "{{applicationId}}", "apiId": "{{apiId}}", "throttlingPolicy": "Unlimited"}
+    """
+    And I subscribe to API "emResetBwApiId" using application "createdAppId" with payload "apiSubscriptionPayload" as "emResetBwSubId"
+    Then The response status code should be 201
+    When I request a client-credentials token using consumer key "consumerKey" and secret "consumerSecret"
+    Then The response status code should be 200
+    And I extract response field "access_token" and store it as "generatedAccessToken"
+
+    When I put a 4 KB text payload in context as "emResetBwLargePayload"
+    And I invoke the API at gateway context "{{emResetBwContext}}/1.0.0/reflect-body" with method "POST" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    When I invoke the API at gateway context "{{emResetBwContext}}/1.0.0/reflect-body" with method "POST" using access token "generatedAccessToken" and payload "emResetBwLargePayload" with content type "text/plain" until response status code becomes 429 within 60 seconds
+    Then The response status code should be 429
+    And The value of error response field "code" should be "900803"
+
+    # Keep a fresh pre-reset quota expiry if the first oversize request landed near minute-end.
+    When I wait until the current application throttle window has at least 45 seconds remaining
+    And I invoke the API at gateway context "{{emResetBwContext}}/1.0.0/reflect-body" with method "POST" using access token "generatedAccessToken" and payload "emResetBwLargePayload" with content type "text/plain" until response status code becomes 429 within 10 seconds
+    Then The response status code should be 429
+    And The value of error response field "code" should be "900803"
+
+    When I reset the application throttle policy for "createdAppId" owned by "admin@tenant1.com"
+    Then The response status code should be 200
+    # A 4 KB request must be accepted before the original expiry, proving the byte counter was cleared; the next
+    # 4 KB request must be throttled again.
+    When I invoke the API at gateway context "{{emResetBwContext}}/1.0.0/reflect-body" with method "POST" using access token "generatedAccessToken" and payload "emResetBwLargePayload" with content type "text/plain" until the application throttle reset takes effect before the original expiry within 30 seconds
+    Then The response status code should be 200
+    When I invoke the API at gateway context "{{emResetBwContext}}/1.0.0/reflect-body" with method "POST" using access token "generatedAccessToken" and payload "emResetBwLargePayload" with content type "text/plain" until response status code becomes 429 within 60 seconds
+    Then The response status code should be 429
+    And The value of error response field "code" should be "900803"

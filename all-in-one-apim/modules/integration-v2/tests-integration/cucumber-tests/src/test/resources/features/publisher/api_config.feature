@@ -378,10 +378,45 @@ Feature: Publisher API Runtime & Common Configuration
     ["tag18-1","tag18-2","tag18-3","{{editTag}}"]
     """
     Then The response status code should be 200
+    And The value of response field "id" should be "{{editApiId}}"
     When I retrieve the "apis" resource with id "editApiId"
     Then The response status code should be 200
     And The response should contain "This is test API - New Description"
+    And The value of response field "description" should be "This is test API - New Description"
     And The response should contain "{{editTag}}"
+
+    Examples:
+      | actor                     |
+      | publisherUser             |
+      | publisherUser@tenant1.com |
+
+  # The same metadata edit on a PUBLISHED API with a deployed revision: the update keeps the API PUBLISHED, the
+  # updated API is re-revisioned and redeployed (201), and the new values persist on re-fetch.
+  @cap:publisher @feat:api-config @rule:metadata @type:regression @legacy:EditAPIAndCheckUpdatedInformationTestCase
+  Scenario Outline: Update a published, deployed REST API's tags and description persist as <actor>
+    Given The system is ready and I have valid publisher access tokens as "<actor>"
+    And I generate a unique value and store it as "pubEditTag"
+    And I have created an api from "artifacts/payloads/create_apim_test_api.json" as "pubEditApiId" and deployed it
+    When I publish the "apis" resource with id "pubEditApiId"
+    Then The lifecycle status of API "pubEditApiId" should be "Published"
+    When I retrieve the "apis" resource with id "pubEditApiId"
+    And I put the response payload in context as "pubEditApiFull"
+    And I set the field "description" to "This is test API - New Description" in the payload "pubEditApiFull"
+    And I update the "apis" resource "pubEditApiId" and "pubEditApiFull" with configuration type "tags" and value:
+    """
+    ["tag18-1","tag18-2","tag18-3","{{pubEditTag}}"]
+    """
+    Then The response status code should be 200
+    And The value of response field "id" should be "{{pubEditApiId}}"
+    And The value of response field "lifeCycleStatus" should be "PUBLISHED"
+    When I deploy the API with id "pubEditApiId"
+    Then The response status code should be 201
+    When I retrieve the "apis" resource with id "pubEditApiId"
+    Then The response status code should be 200
+    And The value of response field "lifeCycleStatus" should be "PUBLISHED"
+    And The response should contain "This is test API - New Description"
+    And The value of response field "description" should be "This is test API - New Description"
+    And The response should contain "{{pubEditTag}}"
 
     Examples:
       | actor                     |
@@ -403,6 +438,7 @@ Feature: Publisher API Runtime & Common Configuration
     And I set the field "securityScheme" to null in the payload "nullApiFull1"
     And I update "apis" resource of id "nullApiId" with payload "nullApiFull1"
     Then The response status code should be 200
+    And The value of response field "id" should be "{{nullApiId}}"
     # Observable state (pinned live): a null securityScheme is NOT applied — the server retains/re-defaults the
     # scheme set, so the retrieved API still carries the default schemes.
     When I retrieve the "apis" resource with id "nullApiId"
@@ -417,12 +453,74 @@ Feature: Publisher API Runtime & Common Configuration
     And I set the field "endpointConfig" to null in the payload "nullApiFull2"
     And I update "apis" resource of id "nullApiId" with payload "nullApiFull2"
     Then The response status code should be 200
+    And The value of response field "id" should be "{{nullApiId}}"
     # Observable state (pinned live): unlike securityScheme, a null endpointConfig IS applied — the retrieved API
     # carries no endpoint configuration any more (the create payload's production/sandbox endpoints are gone).
     When I retrieve the "apis" resource with id "nullApiId"
     Then The response status code should be 200
     And The response should not contain "production_endpoints"
     And The response should not contain "sandbox_endpoints"
+
+    Examples:
+      | actor                     |
+      | publisherUser             |
+      | publisherUser@tenant1.com |
+
+  # The same null-field updates against a PUBLISHED API with a deployed revision: each update is accepted (200),
+  # returns the API, and the API stays PUBLISHED.
+  @cap:publisher @feat:api-config @rule:null-fields @type:regression @legacy:UpdateAPINullPointerTestCase
+  Scenario Outline: A published API update that nulls optional fields is accepted as <actor>
+    Given The system is ready and I have valid publisher access tokens as "<actor>"
+    And I have created an api from "artifacts/payloads/create_apim_test_api.json" as "pubNullApiId" and deployed it
+    When I publish the "apis" resource with id "pubNullApiId"
+    Then The lifecycle status of API "pubNullApiId" should be "Published"
+    When I retrieve the "apis" resource with id "pubNullApiId"
+    And I put the response payload in context as "pubNullApiFull1"
+    And I set the field "securityScheme" to null in the payload "pubNullApiFull1"
+    And I update "apis" resource of id "pubNullApiId" with payload "pubNullApiFull1"
+    Then The response status code should be 200
+    And The value of response field "id" should be "{{pubNullApiId}}"
+    And The value of response field "lifeCycleStatus" should be "PUBLISHED"
+    When I retrieve the "apis" resource with id "pubNullApiId"
+    And I extract response field "securityScheme" and store it as "pubNullApiPostSS"
+    Then the actual value of "pubNullApiPostSS" should match the expected value:
+    """
+    ["oauth_basic_auth_api_key_mandatory","oauth2"]
+    """
+    When I retrieve the "apis" resource with id "pubNullApiId"
+    And I put the response payload in context as "pubNullApiFull2"
+    And I set the field "endpointConfig" to null in the payload "pubNullApiFull2"
+    And I update "apis" resource of id "pubNullApiId" with payload "pubNullApiFull2"
+    Then The response status code should be 200
+    And The value of response field "id" should be "{{pubNullApiId}}"
+    And The value of response field "lifeCycleStatus" should be "PUBLISHED"
+    When I retrieve the "apis" resource with id "pubNullApiId"
+    Then The response status code should be 200
+    And The value of response field "lifeCycleStatus" should be "PUBLISHED"
+    And The response should not contain "production_endpoints"
+    And The response should not contain "sandbox_endpoints"
+
+    # Combined-null edge case: legacy's endpoint-null update used a fresh API DTO, so endpointConfig and
+    # securityScheme were both null/unspecified in the SAME update request. Keep the two independent null checks
+    # above, and additionally protect the interaction from triggering a server-side null dereference.
+    When I retrieve the "apis" resource with id "pubNullApiId"
+    And I put the response payload in context as "pubNullApiFullCombinedNull"
+    And I set the field "securityScheme" to null in the payload "pubNullApiFullCombinedNull"
+    And I set the field "endpointConfig" to null in the payload "pubNullApiFullCombinedNull"
+    And I update "apis" resource of id "pubNullApiId" with payload "pubNullApiFullCombinedNull"
+    Then The response status code should be 200
+    And The value of response field "id" should be "{{pubNullApiId}}"
+    And The value of response field "lifeCycleStatus" should be "PUBLISHED"
+    When I retrieve the "apis" resource with id "pubNullApiId"
+    Then The response status code should be 200
+    And The value of response field "lifeCycleStatus" should be "PUBLISHED"
+    And The response should not contain "production_endpoints"
+    And The response should not contain "sandbox_endpoints"
+    And I extract response field "securityScheme" and store it as "pubNullApiPostCombinedSS"
+    Then the actual value of "pubNullApiPostCombinedSS" should match the expected value:
+    """
+    ["oauth_basic_auth_api_key_mandatory","oauth2"]
+    """
 
     Examples:
       | actor                     |

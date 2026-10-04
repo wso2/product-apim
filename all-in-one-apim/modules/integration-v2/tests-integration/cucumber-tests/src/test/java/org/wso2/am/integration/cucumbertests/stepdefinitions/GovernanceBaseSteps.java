@@ -66,6 +66,30 @@ public class GovernanceBaseSteps {
         Requests.get(Utils.getGovernanceRulesetsURL(Utils.getBaseUrl()), governanceAuthHeaders());
     }
 
+    /** Lists governance rulesets, verifies the response contains a list, and stores every returned id. */
+    @When("I retrieve all governance ruleset IDs as {string}")
+    public void iRetrieveAllGovernanceRulesetIds(String idsKey) throws IOException {
+
+        HttpResponse response = Requests.get(Utils.getGovernanceRulesetsURL(Utils.getBaseUrl()), governanceAuthHeaders());
+        Assert.assertEquals(response.getResponseCode(), 200, response.getData());
+        Assert.assertTrue(response.getData() != null && !response.getData().isBlank(),
+                "Governance ruleset list response body is null or blank");
+        JSONObject body = new JSONObject(response.getData());
+        Object listValue = body.opt("list");
+        Assert.assertNotNull(listValue, "Governance ruleset list is null or absent: " + response.getData());
+        Assert.assertTrue(listValue instanceof JSONArray,
+                "Governance ruleset list is not a JSON array: " + response.getData());
+
+        JSONArray rulesetIds = new JSONArray();
+        JSONArray rulesets = (JSONArray) listValue;
+        for (int i = 0; i < rulesets.length(); i++) {
+            Object id = rulesets.getJSONObject(i).opt("id");
+            Assert.assertNotNull(id, "Governance ruleset at index " + i + " has no id: " + response.getData());
+            rulesetIds.put(id);
+        }
+        TestContext.set(idsKey, rulesetIds);
+    }
+
     // ---- Ruleset CRUD ----------------------------------------------------------------------------------
 
     /**
@@ -134,12 +158,14 @@ public class GovernanceBaseSteps {
      * link. Non-asserting — the feature asserts the status and (for a valid update) the reflected fields; the
      * invalid-content negative reuses this same step and asserts a 400.
      */
-    @When("I update the governance ruleset {string} with name {string} content file {string} description {string} and documentation link {string}")
+    @When("I update the governance ruleset {string} with name {string} content file {string} description {string} and documentation link {string} and store the resolved name as {string}")
     public void iUpdateGovernanceRuleset(String idKey, String nameBase, String contentResourcePath,
-                                         String description, String documentationLink) throws IOException {
+                                         String description, String documentationLink, String updatedNameKey)
+            throws IOException {
 
         String rulesetId = TestContext.resolve(idKey).toString();
         String name = Utils.resolvePayloadPlaceholders(nameBase);
+        TestContext.set(updatedNameKey, name);
         Map<String, File> files = new HashMap<>();
         files.put("rulesetContent", Utils.classpathToTempFile(contentResourcePath, "ruleset", contentResourcePath.endsWith(".json") ? ".json" : ".yaml"));
         Requests.putMultipart(
@@ -181,12 +207,12 @@ public class GovernanceBaseSteps {
     // ---- Policy CRUD -----------------------------------------------------------------------------------
 
     /** Builds a governance policy JSON attaching a single ruleset, governing the API_UPDATE state, globally. */
-    private String buildPolicyPayload(String name, String description, String rulesetId) {
+    private String buildPolicyPayload(String name, String description, JSONArray rulesetIds) {
 
         JSONObject policy = new JSONObject();
         policy.put("name", name);
         policy.put("description", description);
-        policy.put("rulesets", new JSONArray().put(rulesetId));
+        policy.put("rulesets", rulesetIds);
         policy.put("governableStates", new JSONArray().put("API_UPDATE"));
         policy.put("labels", new JSONArray().put("global"));
         return policy.toString();
@@ -202,7 +228,25 @@ public class GovernanceBaseSteps {
 
         String rulesetId = TestContext.resolve(rulesetIdKey).toString();
         String payload = buildPolicyPayload(Utils.resolvePayloadPlaceholders(nameBase),
-                "Policy created by integration test", rulesetId);
+                "Policy created by integration test", new JSONArray().put(rulesetId));
+        createGovernancePolicy(payload, policyIdKey);
+    }
+
+    /** Creates a policy using the complete ruleset-id list captured by the preceding list request. */
+    @When("I create a governance policy {string} attaching all ruleset IDs from {string} as {string}")
+    public void iCreateGovernancePolicyWithAllRulesets(String nameBase, String rulesetIdsKey, String policyIdKey)
+            throws IOException {
+
+        Object value = TestContext.resolve(rulesetIdsKey);
+        Assert.assertTrue(value instanceof JSONArray, "Expected a captured ruleset ID array in context key '"
+                + rulesetIdsKey + "' but found " + value.getClass().getSimpleName());
+        String payload = buildPolicyPayload(Utils.resolvePayloadPlaceholders(nameBase),
+                "Policy created by integration test", (JSONArray) value);
+        createGovernancePolicy(payload, policyIdKey);
+    }
+
+    private void createGovernancePolicy(String payload, String policyIdKey) throws IOException {
+
         HttpResponse response = Requests.post(
                 Utils.getGovernancePoliciesURL(Utils.getBaseUrl()), governanceAuthHeaders(), payload,
                 Constants.CONTENT_TYPES.APPLICATION_JSON);
@@ -228,12 +272,13 @@ public class GovernanceBaseSteps {
     }
 
     /**
-     * Updates a governance policy's description in place: retrieves the current policy, replaces its
-     * description, and PUTs the whole payload back. Non-asserting — the feature asserts the status and the
+     * Updates a governance policy's description and ruleset membership in place: retrieves the current policy,
+     * replaces those fields, and PUTs the whole payload back. Non-asserting — the feature asserts the status and
      * reflected description.
      */
-    @When("I update the governance policy {string} setting its description to {string}")
-    public void iUpdateGovernancePolicyDescription(String idKey, String newDescription) throws IOException {
+    @When("I update the governance policy {string} setting its description to {string} and attaching all ruleset IDs from {string}")
+    public void iUpdateGovernancePolicyDescription(String idKey, String newDescription, String rulesetIdsKey)
+            throws IOException {
 
         String policyId = TestContext.resolve(idKey).toString();
         HttpResponse current = SimpleHTTPClient.getInstance()
@@ -249,6 +294,10 @@ public class GovernanceBaseSteps {
 
         JSONObject policy = new JSONObject(current.getData());
         policy.put("description", newDescription);
+        Object rulesetIds = TestContext.resolve(rulesetIdsKey);
+        Assert.assertTrue(rulesetIds instanceof JSONArray, "Expected a captured ruleset ID array in context key '"
+                + rulesetIdsKey + "' but found " + rulesetIds.getClass().getSimpleName());
+        policy.put("rulesets", rulesetIds);
         // Drop server-managed read-only fields so the PUT carries only the editable policy shape.
         policy.remove("id");
         policy.remove("createdBy");
@@ -266,7 +315,13 @@ public class GovernanceBaseSteps {
     public void iDeleteGovernancePolicy(String idKey) throws IOException {
 
         String policyId = TestContext.resolve(idKey).toString();
-        Requests.delete(Utils.getGovernancePolicyByIdURL(Utils.getBaseUrl(), policyId), governanceAuthHeaders());
+        HttpResponse response = Requests.delete(
+                Utils.getGovernancePolicyByIdURL(Utils.getBaseUrl(), policyId), governanceAuthHeaders());
+        // A scenario may explicitly verify policy deletion. Drop only a successfully deleted policy from the
+        // failure-safe sweep; on any other response keep it registered so teardown can still retry cleanup.
+        if (response != null && response.getResponseCode() == 204) {
+            ResourceCleanup.deregister(Constants.CREATED_GOVERNANCE_POLICY_IDS, policyId);
+        }
     }
 
     // ---- Compliance ------------------------------------------------------------------------------------
@@ -318,8 +373,25 @@ public class GovernanceBaseSteps {
                 Constants.CONTENT_TYPES.APPLICATION_JSON);
         Assert.assertEquals(response.getResponseCode(), 201, response.getData());
         Object policyId = Utils.extractValueFromPayload(response.getData(), "id");
+        Assert.assertNotNull(policyId, "Created blocking governance policy response did not contain an id: "
+                + response.getData());
         TestContext.set(policyIdKey, policyId);
         ResourceCleanup.register(Constants.CREATED_GOVERNANCE_POLICY_IDS, policyId);
+    }
+
+    /** The API compliance result must identify at least one policy that governed the artifact. */
+    @When("I verify the API compliance response includes governed policies")
+    public void iVerifyApiComplianceResponseIncludesGovernedPolicies() {
+
+        HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
+        Assert.assertTrue(response != null && response.getResponseCode() >= 200
+                        && response.getResponseCode() < 300 && response.getData() != null
+                        && !response.getData().isBlank(),
+                "Expected a successful API compliance response with a body, but got: "
+                        + (response == null ? "null" : response.getResponseCode() + " / " + response.getData()));
+        Object governedPolicies = new JSONObject(response.getData()).opt("governedPolicies");
+        Assert.assertTrue(governedPolicies instanceof JSONArray && ((JSONArray) governedPolicies).length() > 0,
+                "API compliance response did not include any governed policies: " + response.getData());
     }
 
     /** Retrieves the artifact-compliance details of the API held under {@code apiIdKey}. */

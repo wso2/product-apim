@@ -447,8 +447,9 @@ public class BaseSteps {
     public void iHavePublisherTokensAs(String actorRef) throws Exception {
 
         theSystemIsReady();
-        Identity.setActingActor(actorRef);
-        User actor = Identity.resolveActor(actorRef);
+        String resolvedActorRef = Utils.resolveContextPlaceholders(actorRef);
+        Identity.setActingActor(resolvedActorRef);
+        User actor = Identity.resolveActor(resolvedActorRef);
         createDcrApplication(actor);
         mintPublisherToken(actor);
         mintDevportalToken(actor);
@@ -842,6 +843,14 @@ public class BaseSteps {
         Assert.assertEquals(response.getResponseCode(), expectedStatusCode, response.getData());
     }
 
+    @Then("The response status code should not be {int}")
+    public void theResponseStatusCodeShouldNotBe(int unexpectedStatusCode) {
+        HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
+        Assert.assertNotNull(response, "No response captured");
+        Assert.assertNotEquals(response.getResponseCode(), unexpectedStatusCode,
+                "Unexpected response status code");
+    }
+
 
     /**
      * Verifies that the HTTP response body contains the specified string value.
@@ -863,6 +872,26 @@ public class BaseSteps {
                         + " with an empty body"));
         Assert.assertTrue(response.getData().contains(expectedValue),
                 "Expected response to contain '" + expectedValue + "' but it did not: " + response.getData());
+    }
+
+    /**
+     * Asserts that a named field in a non-2xx JSON response contains the expected fragment. This keeps error
+     * diagnostics scoped to the field under test rather than allowing the text to match elsewhere in the payload.
+     */
+    @Then("The error response field {string} should contain {string}")
+    public void theErrorResponseFieldShouldContain(String fieldName, String expectedFragment) throws IOException {
+
+        fieldName = Utils.resolveContextPlaceholders(fieldName);
+        expectedFragment = Utils.resolveContextPlaceholders(expectedFragment);
+        HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
+        Assert.assertTrue(response != null && (response.getResponseCode() < 200 || response.getResponseCode() >= 300)
+                        && response.getData() != null && !response.getData().isBlank(),
+                "Expected a non-2xx response with a body to read error field '" + fieldName + "' from, but got: "
+                        + (response == null ? "null" : response.getResponseCode() + " / " + response.getData()));
+        Object actual = Utils.extractValueFromPayload(response.getData(), fieldName);
+        Assert.assertNotNull(actual, "Error field '" + fieldName + "' not present in response: " + response.getData());
+        Assert.assertTrue(String.valueOf(actual).contains(expectedFragment),
+                "Error field '" + fieldName + "' [" + actual + "] does not contain '" + expectedFragment + "'");
     }
 
     /**
@@ -1259,6 +1288,15 @@ public class BaseSteps {
                 "Expected an empty response body but got: " + response.getData());
     }
 
+    /** Matches legacy API-update contracts that require a response payload, while allowing an empty string body. */
+    @Then("The response body should not be null")
+    public void theResponseBodyShouldNotBeNull() {
+
+        HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
+        Assert.assertNotNull(response, "No HTTP response found in TestContext.");
+        Assert.assertNotNull(response.getData(), "Expected a non-null response body.");
+    }
+
     /**
      * Asserts both substrings are present in the response and that the first occurs BEFORE the second — an
      * order-preserving check (e.g. resource order in a returned swagger) that is robust to server reformatting,
@@ -1469,6 +1507,15 @@ public class BaseSteps {
         Assert.assertNotNull(actual, "Response header '" + headerName + "' is not present");
         Assert.assertTrue(actual.contains(resolved),
                 "Response header '" + headerName + "' (" + actual + ") does not contain '" + resolved + "'");
+    }
+
+    /** Pins a response header's complete value when the wire contract is exact (for example Content-Type). */
+    @Then("The response header {string} should be exactly {string}")
+    public void responseHeaderShouldBeExactly(String headerName, String expected) {
+        String resolved = Utils.resolveContextPlaceholders(expected);
+        String actual = responseHeaderValue(headerName);
+        Assert.assertNotNull(actual, "Response header '" + headerName + "' is not present");
+        Assert.assertEquals(actual, resolved, "Response header '" + headerName + "' value mismatch");
     }
 
     /** Asserts a response header is present and its value does NOT contain the substring (e.g. no doubled slash). */
@@ -2001,6 +2048,20 @@ public class BaseSteps {
             throw new AssertionError("Response body is not valid JSON or could not be compared against '"
                     + jsonFilePath + "': " + response.getData(), e);
         }
+    }
+
+    /** Compares the complete HTTP response body byte-for-character with a fixture when wire serialization is contractual. */
+    @Then("The response body should exactly equal the file {string}")
+    public void theResponseBodyShouldExactlyEqualFile(String filePath) throws IOException {
+
+        HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
+        Assert.assertTrue(response != null && response.getResponseCode() >= 200 && response.getResponseCode() < 300
+                        && response.getData() != null,
+                "Expected a successful response with a body exactly matching '" + filePath + "', but got: "
+                        + (response == null ? "null" : response.getResponseCode() + " / " + response.getData()));
+        String expected = Utils.readClasspathResource(filePath);
+        Assert.assertEquals(response.getData(), expected,
+                "Response body serialization differed from the exact fixture '" + filePath + "'");
     }
 
 

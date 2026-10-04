@@ -1,0 +1,31 @@
+{
+  "paths": {
+    "/pets": {
+      "get": {
+        "parameters": [],
+        "responses": {"200": {"description": "OK"}},
+        "security": [{"default": ["SwaggerPetstore_v2"]}],
+        "x-auth-type": "Application & Application User",
+        "x-throttling-tier": "Unlimited"
+      }
+    },
+    "/pets/{petId}": {
+      "get": {
+        "parameters": [{"name": "petId", "in": "path", "required": true, "type": "string"}],
+        "responses": {"200": {"description": "OK"}},
+        "security": [{"default": []}],
+        "x-auth-type": "Application & Application User",
+        "x-throttling-tier": "Unlimited"
+      }
+    },
+    "/oldpets": {
+      "delete": {
+        "parameters": [],
+        "responses": {"200": {"description": "OK"}},
+        "security": [{"default": ["SwaggerPetstore_v2"]}],
+        "x-auth-type": "Application & Application User",
+        "x-throttling-tier": "Unlimited"
+      }
+    }
+  }
+}
