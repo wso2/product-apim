@@ -63,6 +63,25 @@ jobs:
         path: |
           TEST-TestSuite_${{ matrix.id }}.xml
         if-no-files-found: warn
+    # jacoco<millis>.exec holds every server JVM's session; jacoco-data-merge.exec misses the last one.
+    - name: Wait for the server JVM to write its coverage
+      if: always()
+      run: |
+        for _ in $(seq 1 120); do
+          pgrep -f 'jacocoagent.jar=destfile=' >/dev/null || exit 0
+          sleep 1
+        done
+        echo "::warning::A server JVM with the JaCoCo agent is still running; its coverage session may be missing."
+    - name: Archive legacy coverage execution data
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: legacy-coverage-exec-${{ matrix.id }}
+        path: |
+          all-in-one-apim/modules/integration/tests-integration/tests-backend/target/jacoco/jacoco*.exec
+          !all-in-one-apim/modules/integration/tests-integration/tests-backend/target/jacoco/jacoco-data-merge.exec
+        retention-days: 3
+        if-no-files-found: warn
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v3
       with:
@@ -429,3 +448,118 @@ jobs:
         with:
           report_paths: 'all-in-one-apim/modules/integration-v2/tests-integration/cucumber-tests/target/surefire-reports/TEST-*.xml'
           check_name: 'integration-v2 results'
+  # Legacy integration coverage rendered by the integration-v2 coverage report (same class files and exclusions).
+  legacy-coverage-report:
+    needs: [build, v2-build-images]
+    if: ${{ always() && !cancelled() && needs.v2-build-images.result == 'success' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    env:
+      # build job matrix ids
+      LEGACY_GROUP_IDS: 1 2 3 4
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+      - name: Restore Maven repository
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: m2-v2-${{ github.run_id }}
+          restore-keys: ${{ runner.os }}-m2
+      - name: Download legacy coverage execution data
+        uses: actions/download-artifact@v4
+        with:
+          pattern: legacy-coverage-exec-*
+          path: ${{ runner.temp }}/legacy-exec
+      - name: Verify every legacy group uploaded execution data
+        run: |
+          missing=""
+          for id in $LEGACY_GROUP_IDS; do
+            dir="$RUNNER_TEMP/legacy-exec/legacy-coverage-exec-$id"
+            if ! find "$dir" -name '*.exec' -size +0 2>/dev/null | grep -q .; then
+              missing="$missing $id"
+            fi
+          done
+          if [ -n "$missing" ]; then
+            echo "::error::No legacy coverage execution data for group(s):$missing"
+            exit 1
+          fi
+          find "$RUNNER_TEMP/legacy-exec" -name '*.exec' -exec ls -l {} +
+      - name: Download Docker images
+        uses: actions/download-artifact@v4
+        with:
+          name: v2-images
+          path: /tmp/v2-images
+      - name: Load Docker images
+        run: docker load < /tmp/v2-images/images.tar.gz
+      - name: Extract APIM class files from image
+        working-directory: all-in-one-apim/modules/integration-v2
+        run: |
+          APIM_IMAGE=$(mvn -q -N help:evaluate -Dexpression=apim.docker.image.name -DforceStdout)
+          APIM_SERVER_NAME=$(mvn -q -N help:evaluate -Dexpression=apim.server.name -DforceStdout)
+          SRC="$RUNNER_TEMP/cov-classfiles"
+          mkdir -p "$SRC"
+          cid=$(docker create "$APIM_IMAGE")
+          trap 'docker rm -f "$cid" >/dev/null 2>&1 || true' EXIT
+          BASE="/home/wso2carbon/$APIM_SERVER_NAME/repository"
+          docker cp "$cid:$BASE/components/plugins"        "$SRC/plugins"
+          docker cp "$cid:$BASE/deployment/server/webapps" "$SRC/webapps"
+          echo "APIM_COVERAGE_CLASSFILES=$SRC" >> "$GITHUB_ENV"
+      - name: Build the coverage report tool
+        working-directory: all-in-one-apim/modules/integration-v2
+        run: |
+          mvn -B -q -pl tests-common/testcontainers -am -DskipTests compile
+          mvn -B -q -pl tests-common/testcontainers dependency:build-classpath \
+            -Dmdep.outputFile="$RUNNER_TEMP/coverage-classpath.txt"
+      - name: Render legacy coverage report
+        working-directory: all-in-one-apim/modules/integration-v2
+        run: >
+          java -cp "tests-common/testcontainers/target/classes:$(cat "$RUNNER_TEMP/coverage-classpath.txt")"
+          org.wso2.am.testcontainers.CoverageReportCli
+          --exec "$RUNNER_TEMP/legacy-exec"
+          --classfiles-dir "$APIM_COVERAGE_CLASSFILES"
+          --out "$RUNNER_TEMP/legacy-coverage"
+          --title legacy-integration
+      - name: Summarize legacy coverage
+        if: always()
+        run: |
+          SUMMARY="$RUNNER_TEMP/legacy-coverage/coverage-summary.properties"
+          if [ ! -s "$SUMMARY" ]; then
+            echo "No legacy coverage summary was produced; see the Render legacy coverage report step." >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          python3 - "$SUMMARY" >> "$GITHUB_STEP_SUMMARY" <<'PY'
+          import sys
+          values = {}
+          with open(sys.argv[1], encoding="utf-8") as f:
+              for line in f:
+                  key, _, value = line.rstrip("\n").partition("=")
+                  values[key] = value
+          print("### Legacy integration coverage")
+          print()
+          print(f"Execution data files: {values['exec.files']}, sessions: {values['sessions']}, "
+                f"classes with mismatched execution data: {values['nomatch.count']}")
+          print()
+          print("| Counter | Covered | Total | % |")
+          print("|---|---:|---:|---:|")
+          for name in ("line", "instruction", "branch", "method", "class"):
+              covered, total = int(values[f"{name}.covered"]), int(values[f"{name}.total"])
+              pct = 100.0 * covered / total if total else 0.0
+              print(f"| {name} | {covered} | {total} | {pct:.2f} |")
+          PY
+      - name: Archive legacy coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: legacy-coverage-report
+          path: |
+            ${{ runner.temp }}/legacy-coverage/xml/**
+            ${{ runner.temp }}/legacy-coverage/html/**
+            ${{ runner.temp }}/legacy-coverage/coverage-summary.properties
+          if-no-files-found: warn
