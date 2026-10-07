@@ -9,7 +9,7 @@
   here via thread-count, not via profile env. (Lane boot itself is covered by the framework-verification
   suites — no placeholder block is kept here, since the product runners exercise the same lane.)
 -->
-<suite name="Integration Tests v2" parallel="tests" thread-count="2">
+<suite name="Integration Tests v2" parallel="tests" thread-count="1">
     <listeners>
         <listener class-name="org.wso2.am.integration.cucumbertests.utils.listeners.BlockLifecycleListener"/>
         <listener class-name="org.wso2.am.integration.cucumbertests.utils.listeners.BlockScopeListener"/>
@@ -24,7 +24,7 @@
          purely additive (nothing here reads that store unless a scenario names a SECONDARY.COM actor) and closes
          the legacy SUPER_TENANT_USER_STORE_USER mode for the provider-identity and subscriber-identity facets —
          see the store-actor Examples rows in publisher/versioning and publisher/docs. -->
-    <test name="IntegrationV2-Publisher" parallel="classes" thread-count="2">
+    <test name="IntegrationV2-Publisher" parallel="classes" thread-count="1">
         <parameter name="blockLabel" value="publisher"/>
         <parameter name="initTenantUsers" value="true"/>
         <parameter name="initSecondaryUserStore" value="true"/>
@@ -63,7 +63,7 @@
     </test>
     <!-- The deployment-acknowledgement contract runs in its own Publisher-configured block so its strict
          gateway acknowledgement assertion is isolated from the high-churn Publisher runner classes. -->
-    <test name="IntegrationV2-Publisher-Acknowledgement" parallel="classes" thread-count="2">
+    <test name="IntegrationV2-Publisher-Acknowledgement" parallel="classes" thread-count="1">
         <parameter name="blockLabel" value="publisher-acknowledgement"/>
         <parameter name="initTenantUsers" value="true"/>
         <parameter name="initSecondaryUserStore" value="true"/>
@@ -75,7 +75,7 @@
          initSecondaryUserStore: additive, as on the publisher block above — it backs the SECONDARY.COM
          subscriber row on devportal/subscribe and the store-creator row on devportal/comments_2_thread_mutations
          (comment authorship), closing the legacy SUPER_TENANT_USER_STORE_USER mode for those facets. -->
-    <test name="IntegrationV2-DevPortal" parallel="classes" thread-count="2">
+    <test name="IntegrationV2-DevPortal" parallel="classes" thread-count="1">
         <parameter name="blockLabel" value="devportal"/>
         <parameter name="initTenantUsers" value="true"/>
         <parameter name="initSecondaryUserStore" value="true"/>
@@ -108,7 +108,7 @@
         </classes>
     </test>
     <!-- Gateway features (runtime invocation) share their own container. -->
-    <test name="IntegrationV2-Gateway" parallel="classes" thread-count="2">
+    <test name="IntegrationV2-Gateway" parallel="classes" thread-count="1">
         <parameter name="blockLabel" value="gateway"/>
         <parameter name="initTenantUsers" value="true"/>
         <parameter name="initBackend" value="true"/>
@@ -185,7 +185,7 @@
         </classes>
     </test>
     <!-- Key-manager features (token/key issuance). initBackend for the refresh/sandbox gateway invocations. -->
-    <test name="IntegrationV2-KeyManager" parallel="classes" thread-count="2">
+    <test name="IntegrationV2-KeyManager" parallel="classes" thread-count="1">
         <parameter name="blockLabel" value="keymanager"/>
         <parameter name="initTenantUsers" value="true"/>
         <parameter name="initBackend" value="true"/>
@@ -213,7 +213,7 @@
          of the primary pre-seeded actors, touching no primary user/role/claim or global server config. So the
          secondary-user-store feature (itself @cap:admin) runs here rather than in its own container; the seeder
          provisions once at block boot (BlockLifecycleListener) before any runner, so tc=2 is unaffected. -->
-    <test name="IntegrationV2-Admin" parallel="classes" thread-count="2">
+    <test name="IntegrationV2-Admin" parallel="classes" thread-count="1">
         <parameter name="blockLabel" value="admin"/>
         <parameter name="initTenantUsers" value="true"/>
         <parameter name="initSecondaryUserStore" value="true"/>
@@ -484,7 +484,7 @@
          shared resources — validated with repeated runs. Known residual: both runners create APIs/revisions, so
          concurrent creates add exposure to the product's addAPIRevision registry race under full-suite load; if
          this block starts flaking on create-revision 500s, drop back to tc=1. -->
-    <test name="IntegrationV2-BackendJwtUrlSafe" parallel="classes" thread-count="2">
+    <test name="IntegrationV2-BackendJwtUrlSafe" parallel="classes" thread-count="1">
         <parameter name="blockLabel" value="backend-jwt-urlsafe"/>
         <parameter name="initTenantUsers" value="true"/>
         <parameter name="initBackend" value="true"/>
@@ -506,7 +506,7 @@
          property-less APIs (903015), which the sandbox runner's publish tripped.
          thread-count=2: the two runners share no resource type, KM or issuer (gateway data plane vs the
          token endpoint), so concurrent classes are safe — validated with repeated runs. -->
-    <test name="IntegrationV2-SandboxAndTokenExchangeDisabled" parallel="classes" thread-count="2">
+    <test name="IntegrationV2-SandboxAndTokenExchangeDisabled" parallel="classes" thread-count="1">
         <parameter name="blockLabel" value="sandbox-tx-disabled"/>
         <parameter name="initTenantUsers" value="true"/>
         <parameter name="initBackend" value="true"/>
@@ -572,7 +572,7 @@
            - Neither runner mutates container-global runtime state.
          initBackend is load-bearing twice over: the token-exchange gateway invocations, and the audit mock
          (am-auditApi-sample, pm2 app on port 3002 in the node image) that [security_audit] base_url points at. -->
-    <test name="IntegrationV2-Is7TokenExchangeAndSecurityAudit" parallel="classes" thread-count="2">
+    <test name="IntegrationV2-Is7TokenExchangeAndSecurityAudit" parallel="classes" thread-count="1">
         <parameter name="blockLabel" value="is7-tx-security-audit"/>
         <parameter name="initTenantUsers" value="true"/>
         <parameter name="initBackend" value="true"/>
@@ -678,7 +678,7 @@
          thread-count=2 is measured, not assumed: 13 runners / 100 scenarios pass at both tc=2 and tc=3 with no
          cross-class interference. Not higher — the block is propagation-bound, so tc=3 bought 4% wall-clock
          while pushing gateway deploy waits from 131s to 150s against the 180s RUNTIME_PROPAGATION_TIMEOUT. -->
-    <test name="IntegrationV2-EmailUserName" parallel="classes" thread-count="2">
+    <test name="IntegrationV2-EmailUserName" parallel="classes" thread-count="1">
         <parameter name="blockLabel" value="email-username"/>
         <parameter name="initTenantUsers" value="true"/>
         <parameter name="emailUserMode" value="true"/>
@@ -775,7 +775,7 @@
          enabling it there would silently convert every default-mode assertion into a statement about the opt-in
          mode, leaving the default — what most deployments run — untested.
          initBackend is load-bearing for the chain-validation runner's gateway invocations. -->
-    <test name="IntegrationV2-SolaceAndMtlsChain" parallel="classes" thread-count="2">
+    <test name="IntegrationV2-SolaceAndMtlsChain" parallel="classes" thread-count="1">
         <parameter name="blockLabel" value="solace-mtls-chain"/>
         <parameter name="initTenantUsers" value="true"/>
         <parameter name="initBackend" value="true"/>
@@ -989,7 +989,7 @@
          the [server.network_security.access_control] deny + block-private-network policy is non-orthogonal
          config. No gateway backend: the blocked-host references are rejected before any fetch, so no
          allow-listed backend is needed for these negatives (the allow-mode positives are a later block). -->
-    <test name="IntegrationV2-NetworkAccessControlPrivateBlock" parallel="classes" thread-count="2">
+    <test name="IntegrationV2-NetworkAccessControlPrivateBlock" parallel="classes" thread-count="1">
         <parameter name="blockLabel" value="network-access-control-private-block"/>
         <parameter name="initTenantUsers" value="true"/>
         <parameter name="tomlExtraOverlayPath" value="src/test/resources/artifacts/configFiles/networkAccessControlPrivateBlock/deployment.toml"/>
