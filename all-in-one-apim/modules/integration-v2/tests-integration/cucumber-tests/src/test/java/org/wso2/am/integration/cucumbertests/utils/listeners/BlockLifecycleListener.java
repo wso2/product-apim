@@ -42,7 +42,9 @@ import org.wso2.am.testcontainers.ApimRuntime;
 import org.wso2.am.testcontainers.DynamicISContainer;
 import org.wso2.am.testcontainers.DynamicPlatformGatewayContainer;
 import org.wso2.am.testcontainers.JacocoCoverage;
+import org.wso2.am.testcontainers.DynamicOtlpCollector;
 import org.wso2.am.testcontainers.DynamicSolaceBroker;
+import org.wso2.am.testcontainers.DynamicZipkin;
 import org.wso2.am.testcontainers.NodeAppServer;
 import org.wso2.am.testcontainers.SquidProxyServer;
 
@@ -203,6 +205,44 @@ public class BlockLifecycleListener implements ITestListener {
      */
     static final String PARAM_INIT_SOLACE_BROKER = "initSolaceBroker";
     /**
+     * When {@code true}, boot a per-block REAL Jaeger all-in-one collector (network alias {@code jaeger}) BEFORE
+     * APIM, because the block's toml points the OTLP exporter at it by alias —
+     * {@code apim.open_telemetry.remote_tracer.hostname = "jaeger"}. Ordering follows {@link #PARAM_INIT_BACKEND}
+     * (before APIM) for the same reason Solace does: an exporter endpoint naming an absent host is a needless race,
+     * and a misconfigured endpoint is silent — spans are simply dropped, which reads as a product defect rather
+     * than a missing container.
+     *
+     * <p>This is the OTLP/gRPC leg. {@code JaegerTelemetry} hardcodes {@code OtlpGrpcSpanExporter} and ignores
+     * {@code RemoteTracer.Protocol}, so the collector is addressed on {@code remote_tracer.port} 4317.
+     *
+     * <p>Per-block because the traces stored here are scenario-visible assertion state: a shared collector would
+     * let a sibling class's spans satisfy this block's queries, and its store would grow unbounded across the
+     * suite. Per-block networks keep it private, so any number of blocks may set this and run concurrently.
+     *
+     * <p>Infrastructure ONLY (CLAUDE.md 14). Enabling tracing is toml, invoking an API is a step, and reading spans
+     * back is a step run as an {@code Identity} actor.
+     */
+    static final String PARAM_INIT_OTLP_COLLECTOR = "initOtlpCollector";
+    /**
+     * When {@code true}, boot a per-block REAL Zipkin server (network alias {@code zipkin}) BEFORE APIM, because
+     * the block's toml points the Zipkin exporter at it by alias —
+     * {@code apim.open_telemetry.remote_tracer.hostname = "zipkin"}. Ordering follows
+     * {@link #PARAM_INIT_BACKEND} (before APIM) for the same reason Solace does: an exporter endpoint naming an
+     * absent host is a needless race, and a misconfigured endpoint is silent — spans are simply dropped, which
+     * reads as a product defect rather than a missing container.
+     *
+     * <p>This is the Zipkin v2 JSON leg. {@code ZipkinTelemetry} composes the exporter's endpoint from hostname +
+     * port ({@code http://<hostname>:<port>/api/v2/spans}) and IGNORES {@code RemoteTracer.Protocol}, so the
+     * collector is addressed on {@code remote_tracer.port} 9411.
+     *
+     * <p>Per-block for the same reason as {@link #PARAM_INIT_OTLP_COLLECTOR}: the traces stored here are
+     * scenario-visible assertion state, so a shared collector could hand this block another block's spans.
+     *
+     * <p>Infrastructure ONLY (CLAUDE.md 14). Enabling tracing is toml, invoking an API is a step, and reading
+     * spans back is a step run as an {@code Identity} actor.
+     */
+    static final String PARAM_INIT_ZIPKIN_COLLECTOR = "initZipkinCollector";
+    /**
      * When {@code true}, boot a per-block Squid proxy on this block's private network. The proxy access logs are
      * assertion state (CONNECT counts and clearing), so they must be container-scoped and cannot be shared across
      * concurrently running blocks.
@@ -280,6 +320,16 @@ public class BlockLifecycleListener implements ITestListener {
     /** Shared-scope key holding this block's {@link DynamicSolaceBroker} (stopped at block teardown), when booted. */
     static final String SOLACE_KEY = "blockSolaceBroker";
     /**
+     * Shared-scope key holding this block's {@link DynamicOtlpCollector} (stopped at block teardown), when booted.
+     * Steps read it through {@code TestContext.get(...)} and assert span facts against its query API.
+     */
+    static final String OTLP_COLLECTOR_KEY = "blockOtlpCollector";
+    /**
+     * Shared-scope key holding this block's {@link DynamicZipkin} (stopped at block teardown), when booted. Steps
+     * read it through {@code TestContext.get(...)} and assert span facts against its query API.
+     */
+    static final String ZIPKIN_COLLECTOR_KEY = "blockZipkinCollector";
+    /**
      * Shared-scope flag: the shared backend singleton was multi-homed onto this block's network and must be
      * detached at teardown BEFORE the network is closed — Docker refuses to remove a network that still has a
      * container connected, so skipping the detach leaks the network.
@@ -356,6 +406,31 @@ public class BlockLifecycleListener implements ITestListener {
                 solace.start();
                 logger.info("Block '" + label + "' booted its Solace pair; connector="
                         + solace.getConnectorBaseUrl() + " SEMP=" + solace.getSempUrl());
+            }
+
+            // OTLP/gRPC collector: REAL Jaeger on THIS block's network, up BEFORE APIM so the toml-declared
+            // remote_tracer.hostname ("jaeger", by network alias) resolves the moment the exporter starts.
+            // Published before start() so a start failure is still torn down by the catch below.
+            if (Boolean.parseBoolean(param(context, PARAM_INIT_OTLP_COLLECTOR))) {
+                DynamicOtlpCollector collector = new DynamicOtlpCollector(label, blockNetwork);
+                TestContext.setShared(OTLP_COLLECTOR_KEY, collector);
+                collector.start();
+                logger.info("Block '" + label + "' booted its OTLP collector; grpc endpoint=http://"
+                        + collector.getHostAlias() + ":" + collector.getOtlpGrpcPort()
+                        + " query API=" + collector.getQueryBaseUrl());
+            }
+
+            // Zipkin collector: REAL openzipkin/zipkin on THIS block's network, up BEFORE APIM so the
+            // toml-declared remote_tracer.hostname ("zipkin", by network alias) resolves the moment the exporter
+            // starts. ZipkinTelemetry composes the exporter endpoint from hostname + port, so there is no URL to
+            // publish; the query API is what the span steps read through.
+            if (Boolean.parseBoolean(param(context, PARAM_INIT_ZIPKIN_COLLECTOR))) {
+                DynamicZipkin zipkin = new DynamicZipkin(label, blockNetwork);
+                TestContext.setShared(ZIPKIN_COLLECTOR_KEY, zipkin);
+                zipkin.start();
+                logger.info("Block '" + label + "' booted its Zipkin collector; api=http://"
+                        + zipkin.getHostAlias() + ":" + zipkin.getPort()
+                        + " query API=" + zipkin.getQueryBaseUrl());
             }
 
             // IS infrastructure only. Registering IS as a key manager is admin product behaviour and lives in
@@ -473,10 +548,10 @@ public class BlockLifecycleListener implements ITestListener {
                     logger.warn("Block '" + label + "' failed-container stop() also failed", stopErr);
                 }
             }
-            // A boot failure must leave no live IS/Solace container and no dangling private network. Shared with
-            // onFinish, and idempotent: teardownBlockInfra clears each scope entry as it releases it, so whichever
-            // path runs second finds nothing left to do rather than double-closing (a double close would log a
-            // spurious docker "network not found" and mask a genuine leak).
+            // A boot failure must leave no live IS/Solace/tracing container and no dangling private network.
+            // Shared with onFinish, and idempotent: teardownBlockInfra clears each scope entry as it releases it,
+            // so whichever path runs second finds nothing left to do rather than double-closing (a double close
+            // would log a spurious docker "network not found" and mask a genuine leak).
             teardownBlockInfra(label);
             releaseLifecycleLock(label);
         } finally {
@@ -600,13 +675,13 @@ public class BlockLifecycleListener implements ITestListener {
     }
 
     /**
-     * Releases this block's private-network infrastructure: its IS and Solace containers, the shared backend's
-     * attachment to the network, and finally the network itself.
+     * Releases this block's private-network infrastructure: its IS, Solace and tracing containers, the shared
+     * backend's attachment to the network, and finally the network itself.
      *
      * <p>ORDER IS LOAD-BEARING. Docker refuses to remove a network that still has any container connected, so
-     * every member must be gone first: the APIM container is stopped by the caller, then IS and Solace here, then
-     * the multi-homed backend is detached (it is NOT stopped — it is shared with other blocks and lives for the
-     * JVM). Only then can the network be closed.
+     * every member must be gone first: the APIM container is stopped by the caller, then IS, Solace and the
+     * tracing collectors here, then the multi-homed backend is detached (it is NOT stopped — it is shared with
+     * other blocks and lives for the JVM). Only then can the network be closed.
      *
      * <p>IDEMPOTENT. Each scope entry is removed as it is released, so the two callers (the onStart boot-failure
      * catch and {@link #onFinish}) can both run without double-closing — a second close would log a misleading
@@ -651,6 +726,31 @@ public class BlockLifecycleListener implements ITestListener {
                 logger.info("Block '" + label + "' Solace broker + shim stopped");
             } catch (Throwable e) {
                 logger.warn("Block '" + label + "' Solace stop() failed (continuing teardown): " + e.getMessage());
+            }
+        }
+        // Tracing collectors: stopped here, after APIM (which the caller stops first) and before the network
+        // close below — the same load-bearing order as IS and Solace. The APIM container is what dials them, so
+        // leaving them up would keep a container running for a block that no longer exists.
+        Object collector = TestContext.get(OTLP_COLLECTOR_KEY);
+        if (collector instanceof DynamicOtlpCollector otlpCollector) {
+            TestContext.removeShared(OTLP_COLLECTOR_KEY);
+            try {
+                otlpCollector.stop();
+                logger.info("Block '" + label + "' OTLP collector stopped");
+            } catch (Throwable e) {
+                logger.warn("Block '" + label + "' OTLP collector stop() failed (container may leak): "
+                        + e.getMessage());
+            }
+        }
+        Object zipkinCollector = TestContext.get(ZIPKIN_COLLECTOR_KEY);
+        if (zipkinCollector instanceof DynamicZipkin zipkin) {
+            TestContext.removeShared(ZIPKIN_COLLECTOR_KEY);
+            try {
+                zipkin.stop();
+                logger.info("Block '" + label + "' Zipkin collector stopped");
+            } catch (Throwable e) {
+                logger.warn("Block '" + label + "' Zipkin collector stop() failed (container may leak): "
+                        + e.getMessage());
             }
         }
         Object net = TestContext.get(BLOCK_NETWORK_KEY);

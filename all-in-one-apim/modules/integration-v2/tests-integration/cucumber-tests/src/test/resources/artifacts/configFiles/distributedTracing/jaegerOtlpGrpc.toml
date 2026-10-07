@@ -1,0 +1,29 @@
+# Feature-specific TOML overlay for the IntegrationV2-AnalyticsTracingOtlpGrpc block.
+#
+# Merged ON TOP of the shared `basic` overlay (which is itself merged onto the product distribution
+# deployment.toml) via the block's `tomlExtraOverlayPath` parameter — so only the tracing keys live here.
+#
+# Why `name = "jaeger"` and not `name = "otlp"`:
+#   Only the `otlp` tracer honours `OpenTelemetry.RemoteTracer.Protocol`; `JaegerTelemetry` hardcodes
+#   `OtlpGrpcSpanExporter`. So the OTLP/gRPC path is configured through the jaeger tracer, and the
+#   `otlp`/`protocol = "http"` path is what the Moesif block exercises.
+#
+# Why `hostname` is the container ALIAS and not `localhost`:
+#   `JaegerTelemetry` composes the endpoint as "http://" + hostname + ":" + port. `localhost` inside the
+#   APIM container is APIM itself, which would silently export nowhere. The alias is the collector on the
+#   block's private network.
+#
+# `port = 4317` is the OTLP gRPC receiver (not Jaeger's legacy collector gRPC port 14250, which is only the
+# fallback default when no port is configured).
+
+[apim.open_telemetry]
+remote_tracer.enable = true
+remote_tracer.name = "jaeger"
+remote_tracer.hostname = "jaeger"
+remote_tracer.port = 4317
+
+# [apim.open_telemetry]
+# remote_tracer.enable = true
+# remote_tracer.name = "jaeger"
+# remote_tracer.hostname = "localhost"
+# remote_tracer.port = 4317
