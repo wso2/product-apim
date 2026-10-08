@@ -119,3 +119,4 @@ capabilities:
       per-api-logging:  { name: Per-API / per-resource log level (devops API) }
       analytics-events: { name: Analytics events }
       alerts:           { name: Alerts }
+      tracing:          { name: Distributed tracing (OTLP span export) }

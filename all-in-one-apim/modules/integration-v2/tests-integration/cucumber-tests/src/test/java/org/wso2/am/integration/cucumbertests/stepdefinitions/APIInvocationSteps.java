@@ -487,6 +487,28 @@ public class APIInvocationSteps {
     }
 
     /**
+     * Body-less sibling of {@link #invokeApiByContextUntilStatus}, for invocations that legitimately carry no
+     * request body — a GET or DELETE against a path with no body. Every other until-status variant in this class
+     * takes a payload context key, so a body-less call previously had only two options: fabricate a body to
+     * satisfy the step signature, or reach for the RAW-context variant, which exists for a different reason
+     * (it suppresses HTTP-client path normalization to test percent-encoded segments) and would silently change
+     * what the test exercises.
+     *
+     * <p>Passing a null payload is honest here rather than a shortcut: {@code invokeApiByContext} resolves a
+     * null/blank payload to the empty string, so the request is sent with no body and the gateway sees exactly
+     * the body-less request a real client would send. A fabricated {@code {}} would instead be a body the
+     * product never sees in production, and on some methods changes the request the gateway routes.
+     */
+    @When("I invoke the API at gateway context {string} with method {string} using access token {string} until response status code becomes {int} within {int} seconds")
+    public void invokeApiByContextUntilStatusNoPayload(String context, String httpMethod, String accessToken,
+                                                       int expectedStatus, int timeoutSeconds) throws Exception {
+
+        String resolvedContext = Utils.resolveContextPlaceholders(context);
+        invokeUntilStatus(resolvedContext, accessToken, expectedStatus, timeoutSeconds,
+                () -> invokeApiByContext(resolvedContext, httpMethod, accessToken, null));
+    }
+
+    /**
      * Invokes a deployed API using an access token, addressing it by its full gateway context path (the
      * {@code context} field returned by the Publisher API, which already carries the {@code /t/<tenant>}
      * prefix for tenant APIs) — so no tenant prefix is added here. Use this when the path was captured from
