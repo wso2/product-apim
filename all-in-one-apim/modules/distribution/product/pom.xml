@@ -590,34 +590,6 @@
                 </executions>
             </plugin>
             <plugin>
-                <groupId>com.google.code.maven-replacer-plugin</groupId>
-                <artifactId>replacer</artifactId>
-                <version>1.5.2</version>
-                <executions>
-                    <execution>
-                        <id>append-osgi-extra-packages-dist</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>replace</goal>
-                        </goals>
-                        <configuration>
-                            <basedir>${basedir}/../../distribution/product/target/wso2carbon-core-${carbon.kernel.version}/repository/components</basedir>
-                            
-                            <includes>
-                                <include>**/configuration/config.ini</include>
-                            </includes>
-
-                            <replacements>
-                                <replacement>
-                                    <token>$</token>
-                                    <value>${line.separator}org.osgi.framework.system.packages.extra=javax.activation;version="1.1.1"</value>
-                                </replacement>
-                            </replacements>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-site-plugin</artifactId>
                 <version>3.4</version>
@@ -722,6 +694,27 @@
                 <artifactId>replacer</artifactId>
                 <version>1.5.2</version>
                 <executions>
+                    <execution>
+                        <id>append-osgi-extra-packages-dist</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>replace</goal>
+                        </goals>
+                        <configuration>
+                            <basedir>${basedir}/../../distribution/product/target/wso2carbon-core-${carbon.kernel.version}/repository/components</basedir>
+                            
+                            <includes>
+                                <include>**/configuration/config.ini</include>
+                            </includes>
+
+                            <replacements>
+                                <replacement>
+                                    <token>$</token>
+                                    <value>${line.separator}org.osgi.framework.system.packages.extra=javax.activation;version="1.1.1"</value>
+                                </replacement>
+                            </replacements>
+                        </configuration>
+                    </execution>
             	    <!-- Replace Datasource, Scope mpl classes and OAuth callback class in identity.xml -->
                     <execution>
                         <id>replace-for-identity</id>
