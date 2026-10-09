@@ -428,6 +428,10 @@ public class RestAPIAdminImpl {
         return keyManagerCollectionApi.keyManagersPostWithHttpInfo(keyManagerDTO);
     }
 
+    public KeyManagerWellKnownResponseDTO discoverKeyManager(String url, String type) throws ApiException {
+        return keyManagerCollectionApi.keyManagersDiscoverPost(url, type);
+    }
+
     public KeyManagerListDTO getKeyManagers() throws ApiException {
 
         return keyManagerCollectionApi.keyManagersGet();
