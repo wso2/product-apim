@@ -45,6 +45,8 @@ public class DynamicApimContainer extends GenericContainer<DynamicApimContainer>
     private static final String APIM_IMAGE_PROPERTY = "apim.docker.image.name";
     /** Fixed shared-network alias for the IS→APIM reverse channel; see {@link #withExternalIsNotificationAlias}. */
     private static final String APIM_NETWORK_ALIAS = "wso2am";
+    /** Docker label carrying the block label of the container. */
+    public static final String BLOCK_LABEL = "org.wso2.am.integration.block";
     /** Optional CPU limit for the APIM container, in CPUs (docker {@code --cpus}); unset or blank means no limit. */
     static final String CPUS_PROPERTY = "apim.container.cpus";
 
@@ -148,6 +150,9 @@ public class DynamicApimContainer extends GenericContainer<DynamicApimContainer>
                 .withMdc("testName", testName);
 
         withLogConsumer(logConsumer);
+        // Names the block in the container's Docker metadata, so resource samples (docker ps / docker stats) can be
+        // attributed to it.
+        withLabel(BLOCK_LABEL, containerLabel);
         waitingFor(Wait.forListeningPort().withStartupTimeout(Duration.ofMinutes(20)));
     }
 

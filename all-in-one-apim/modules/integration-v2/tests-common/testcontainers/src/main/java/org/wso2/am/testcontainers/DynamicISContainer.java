@@ -122,6 +122,7 @@ public class DynamicISContainer extends GenericContainer<DynamicISContainer> {
         // so verification passes without the -Dhttpclient.hostnameVerifier=AllowAll workaround.
         withCopyToContainer(MountableFile.forHostPath(augmentedTruststorePath()), CONTAINER_TRUSTSTORE_PATH);
         withLogConsumer(new JclLogConsumer(logger));
+        withLabel(DynamicApimContainer.BLOCK_LABEL, blockLabel);
         // IS 7.3.0 is multi-arch and boots natively (well under a minute); allow margin for CI/load.
         waitingFor(Wait.forListeningPort().withStartupTimeout(Duration.ofMinutes(4)));
     }
