@@ -45,6 +45,15 @@ jobs:
       with:
         java-version: 21
         distribution: 'temurin'
+    - name: Set up Maven 3.9.16
+      # Maven 3.10 cannot load the carbon-p2-plugin build extension, so the build pins the last 3.9 release.
+      run: |
+        V=3.9.16
+        URL="https://archive.apache.org/dist/maven/maven-3/$V/binaries/apache-maven-$V-bin.tar.gz"
+        curl -sSfL -o "$RUNNER_TEMP/maven.tar.gz" "$URL"
+        echo "$(curl -sSfL "$URL.sha512" | cut -d" " -f1)  $RUNNER_TEMP/maven.tar.gz" | sha512sum -c -
+        tar -xzf "$RUNNER_TEMP/maven.tar.gz" -C "$RUNNER_TEMP"
+        echo "$RUNNER_TEMP/apache-maven-$V/bin" >> "$GITHUB_PATH"
     - uses: actions/setup-node@v1
       with:
         node-version: '10.x'
@@ -89,6 +98,15 @@ jobs:
         with:
           java-version: 21
           distribution: 'temurin'
+      - name: Set up Maven 3.9.16
+        # Maven 3.10 cannot load the carbon-p2-plugin build extension, so the build pins the last 3.9 release.
+        run: |
+          V=3.9.16
+          URL="https://archive.apache.org/dist/maven/maven-3/$V/binaries/apache-maven-$V-bin.tar.gz"
+          curl -sSfL -o "$RUNNER_TEMP/maven.tar.gz" "$URL"
+          echo "$(curl -sSfL "$URL.sha512" | cut -d" " -f1)  $RUNNER_TEMP/maven.tar.gz" | sha512sum -c -
+          tar -xzf "$RUNNER_TEMP/maven.tar.gz" -C "$RUNNER_TEMP"
+          echo "$RUNNER_TEMP/apache-maven-$V/bin" >> "$GITHUB_PATH"
       - uses: actions/setup-node@v3
         with:
           node-version: '10.x'
@@ -186,6 +204,15 @@ jobs:
         with:
           java-version: '21'
           distribution: 'temurin'
+      - name: Set up Maven 3.9.16
+        # Maven 3.10 cannot load the carbon-p2-plugin build extension, so the build pins the last 3.9 release.
+        run: |
+          V=3.9.16
+          URL="https://archive.apache.org/dist/maven/maven-3/$V/binaries/apache-maven-$V-bin.tar.gz"
+          curl -sSfL -o "$RUNNER_TEMP/maven.tar.gz" "$URL"
+          echo "$(curl -sSfL "$URL.sha512" | cut -d" " -f1)  $RUNNER_TEMP/maven.tar.gz" | sha512sum -c -
+          tar -xzf "$RUNNER_TEMP/maven.tar.gz" -C "$RUNNER_TEMP"
+          echo "$RUNNER_TEMP/apache-maven-$V/bin" >> "$GITHUB_PATH"
       # Run-scoped key so the matrix restores exactly this run's repo (incl. the 4.7.0-SNAPSHOT artifacts the
       # dist build installs); restore-keys warm-starts from the shared cache.
       - name: Cache Maven repository
@@ -287,6 +314,15 @@ jobs:
         with:
           java-version: '21'
           distribution: 'temurin'
+      - name: Set up Maven 3.9.16
+        # Maven 3.10 cannot load the carbon-p2-plugin build extension, so the build pins the last 3.9 release.
+        run: |
+          V=3.9.16
+          URL="https://archive.apache.org/dist/maven/maven-3/$V/binaries/apache-maven-$V-bin.tar.gz"
+          curl -sSfL -o "$RUNNER_TEMP/maven.tar.gz" "$URL"
+          echo "$(curl -sSfL "$URL.sha512" | cut -d" " -f1)  $RUNNER_TEMP/maven.tar.gz" | sha512sum -c -
+          tar -xzf "$RUNNER_TEMP/maven.tar.gz" -C "$RUNNER_TEMP"
+          echo "$RUNNER_TEMP/apache-maven-$V/bin" >> "$GITHUB_PATH"
       - name: Restore Maven repository
         uses: actions/cache@v4
         with:
