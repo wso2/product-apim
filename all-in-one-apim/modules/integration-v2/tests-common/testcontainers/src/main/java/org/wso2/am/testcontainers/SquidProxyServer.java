@@ -74,6 +74,7 @@ public class SquidProxyServer {
                 .waitingFor(Wait.forListeningPort().withStartupTimeout(Duration.ofMinutes(2)));
 
         container.withLogConsumer(new JclLogConsumer(logger));
+        container.withLabel(DynamicApimContainer.BLOCK_LABEL, blockLabel);
     }
 
     public void start() {

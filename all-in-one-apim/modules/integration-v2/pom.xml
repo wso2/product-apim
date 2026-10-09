@@ -107,6 +107,10 @@
         <apim.coverage>false</apim.coverage>
         <apim.coverage.sources></apim.coverage.sources>
 
+        <!-- Optional CPU limit for each APIM container, in CPUs (docker cpus), e.g. -Dapim.container.cpus=1.
+             Empty by default: containers are unlimited. -->
+        <apim.container.cpus></apim.container.cpus>
+
         <!-- Dependency versions (defined here so the integration-v2 reactor is self-contained) -->
         <testcontainers.version>2.0.2</testcontainers.version>
         <jackson.version>2.21.2</jackson.version>
@@ -222,6 +226,7 @@
                                 <apim.debug.port>${apim.debug.port}</apim.debug.port>
                                 <apim.coverage>${apim.coverage}</apim.coverage>
                                 <apim.coverage.sources>${apim.coverage.sources}</apim.coverage.sources>
+                                <apim.container.cpus>${apim.container.cpus}</apim.container.cpus>
                                 <distributed.apim.cp.image.name>${distributed.apim.cp.image.name}</distributed.apim.cp.image.name>
                                 <distributed.apim.tm.image.name>${distributed.apim.tm.image.name}</distributed.apim.tm.image.name>
                                 <distributed.apim.gateway.image.name>${distributed.apim.gateway.image.name}</distributed.apim.gateway.image.name>
@@ -295,6 +300,7 @@
                                 <apim.debug.port>${apim.debug.port}</apim.debug.port>
                                 <apim.coverage>${apim.coverage}</apim.coverage>
                                 <apim.coverage.sources>${apim.coverage.sources}</apim.coverage.sources>
+                                <apim.container.cpus>${apim.container.cpus}</apim.container.cpus>
                                 <distributed.apim.cp.image.name>${distributed.apim.cp.image.name}</distributed.apim.cp.image.name>
                                 <distributed.apim.tm.image.name>${distributed.apim.tm.image.name}</distributed.apim.tm.image.name>
                                 <distributed.apim.gateway.image.name>${distributed.apim.gateway.image.name}</distributed.apim.gateway.image.name>

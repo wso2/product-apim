@@ -45,6 +45,32 @@ public class DynamicApimContainer extends GenericContainer<DynamicApimContainer>
     private static final String APIM_IMAGE_PROPERTY = "apim.docker.image.name";
     /** Fixed shared-network alias for the IS→APIM reverse channel; see {@link #withExternalIsNotificationAlias}. */
     private static final String APIM_NETWORK_ALIAS = "wso2am";
+    /** Docker label carrying the block label of the container. */
+    public static final String BLOCK_LABEL = "org.wso2.am.integration.block";
+    /** Optional CPU limit for the APIM container, in CPUs (docker {@code --cpus}); unset or blank means no limit. */
+    static final String CPUS_PROPERTY = "apim.container.cpus";
+
+    /**
+     * Applies docker's {@code --cpus} limit to the container when {@code cpus} is set: a hard ceiling on the CPU time
+     * the server may use, enforced from container creation. A blank value leaves the container unlimited.
+     */
+    private void limitCpus(String cpus) {
+        if (cpus == null || cpus.isBlank()) {
+            return;
+        }
+        double limit;
+        try {
+            limit = Double.parseDouble(cpus.trim());
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException(CPUS_PROPERTY + " must be a number of CPUs, got: " + cpus, e);
+        }
+        if (!(limit > 0)) {
+            throw new IllegalArgumentException(CPUS_PROPERTY + " must be greater than 0, got: " + cpus);
+        }
+        long nanoCpus = Math.round(limit * 1_000_000_000L);
+        withCreateContainerCmdModifier(cmd -> cmd.getHostConfig().withNanoCPUs(nanoCpus));
+        logger.info("APIM container limited to {} CPU(s)", limit);
+    }
 
     public DynamicApimContainer(String containerLabel, String deploymentTomlContent) {
 
@@ -88,6 +114,8 @@ public class DynamicApimContainer extends GenericContainer<DynamicApimContainer>
         // Add host.docker.internal mapping for Linux compatibility (needed for accessing host services)
         withExtraHost("host.docker.internal", "host-gateway");
 
+        limitCpus(System.getProperty(CPUS_PROPERTY));
+
         // The docker network is assigned by the CALLER: BlockLifecycleListener creates one private network per
         // block and joins APIM plus that block's IS/Solace to it, so the wso2am / wso2is / apimforsolace aliases
         // are network-scoped and cannot collide across concurrent blocks. Direct constructions (the
@@ -122,6 +150,9 @@ public class DynamicApimContainer extends GenericContainer<DynamicApimContainer>
                 .withMdc("testName", testName);
 
         withLogConsumer(logConsumer);
+        // Names the block in the container's Docker metadata, so resource samples (docker ps / docker stats) can be
+        // attributed to it.
+        withLabel(BLOCK_LABEL, containerLabel);
         waitingFor(Wait.forListeningPort().withStartupTimeout(Duration.ofMinutes(20)));
     }
 

@@ -185,6 +185,7 @@ public class DynamicSolaceBroker {
                         .forStatusCode(200)
                         .withStartupTimeout(Duration.ofMinutes(6)));
         broker.withLogConsumer(new JclLogConsumer(logger));
+        broker.withLabel(DynamicApimContainer.BLOCK_LABEL, blockLabel);
 
         // ---- CONTROL plane: the shim ----------------------------------------------------------------
         shim = new GenericContainer<>(
@@ -224,6 +225,7 @@ public class DynamicSolaceBroker {
                 .withEnv("APIM_TOKEN_ISSUER", "https://localhost:9443/oauth2/token")
                 .waitingFor(Wait.forListeningPort().withStartupTimeout(Duration.ofMinutes(2)));
         shim.withLogConsumer(new JclLogConsumer(logger));
+        shim.withLabel(DynamicApimContainer.BLOCK_LABEL, blockLabel);
     }
 
     /**
