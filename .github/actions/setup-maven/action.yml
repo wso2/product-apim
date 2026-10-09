@@ -1,0 +1,27 @@
+name: Set up Maven
+description: >-
+  Installs a pinned Apache Maven release and puts it ahead of the runner image's Maven on PATH.
+  The runner image's newer Maven rejects the product POMs (e.g. the duplicate replacer plugin in
+  all-in-one-apim/modules/distribution/product/pom.xml) and cannot load the carbon-p2-plugin build
+  extension, so the build pins the last 3.9 release.
+inputs:
+  version:
+    description: Apache Maven version to install.
+    required: false
+    default: '3.9.16'
+runs:
+  using: composite
+  steps:
+    - name: Install Apache Maven ${{ inputs.version }}
+      shell: bash
+      env:
+        MAVEN_VERSION: ${{ inputs.version }}
+      run: |
+        URL="https://archive.apache.org/dist/maven/maven-3/$MAVEN_VERSION/binaries/apache-maven-$MAVEN_VERSION-bin.tar.gz"
+        curl -sSfL -o "$RUNNER_TEMP/maven.tar.gz" "$URL"
+        echo "$(curl -sSfL "$URL.sha512" | cut -d" " -f1)  $RUNNER_TEMP/maven.tar.gz" | sha512sum -c -
+        tar -xzf "$RUNNER_TEMP/maven.tar.gz" -C "$RUNNER_TEMP"
+        echo "$RUNNER_TEMP/apache-maven-$MAVEN_VERSION/bin" >> "$GITHUB_PATH"
+    - name: Show Maven version
+      shell: bash
+      run: mvn -v
