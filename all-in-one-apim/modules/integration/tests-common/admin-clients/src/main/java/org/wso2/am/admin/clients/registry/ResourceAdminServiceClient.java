@@ -221,7 +221,7 @@ public class ResourceAdminServiceClient {
 		try {
 			return resourceAdminServiceStub.getMimeTypeFromHuman(mediaType);
 		} catch (Exception e) {
-			String msg = "get human readable media type error ";
+			String msg = "get mime type from human error ";
 			throw new Exception(msg, e);
 
 		}
