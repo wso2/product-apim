@@ -336,6 +336,22 @@ jobs:
           docker cp "$cid:$BASE/components/plugins"        "$SRC/plugins"
           docker cp "$cid:$BASE/deployment/server/webapps" "$SRC/webapps"
           echo "APIM_COVERAGE_CLASSFILES=$SRC" >> "$GITHUB_ENV"
+      # Records container CPU/memory (docker stats) and host load/memory every 10 s while the suite runs; the
+      # files are archived with the test reports.
+      - name: Start resource sampler
+        if: matrix.topology == 'all-in-one'
+        run: |
+          OUT="$RUNNER_TEMP/resources"; mkdir -p "$OUT"
+          echo "ts,name,cpu_pct,mem_usage" > "$OUT/containers.csv"
+          echo "ts,load1,mem_used_mib,mem_total_mib" > "$OUT/host.csv"
+          nohup bash -c 'while true; do
+              ts=$(date +%s)
+              docker stats --no-stream --format "$ts,{{.Name}},{{.CPUPerc}},{{.MemUsage}}" >> "$0/containers.csv" 2>/dev/null
+              load=$(cut -d" " -f1 /proc/loadavg)
+              mem=$(free -m | awk "/^Mem:/{print \$3 \",\" \$2}")
+              echo "$ts,$load,$mem" >> "$0/host.csv"
+              sleep 10
+            done' "$OUT" > /dev/null 2>&1 &
       # `mvn test` (not install) keeps the testcontainers pre-integration-test execs from firing, so the
       # loaded images and the restored target/is7 staging are reused. `-am` builds only the integration-v2
       # reactor deps up to the test phase; product 4.7.0-SNAPSHOT artifacts resolve from the restored repo.
@@ -352,6 +368,7 @@ jobs:
           -Dplaywright.sso=true
           -Dapim.coverage=true
           -Dapim.coverage.classfiles="$APIM_COVERAGE_CLASSFILES"
+          -Dapim.container.cpus=1
           -Ddocker.extra.hosts="--add-host=host.docker.internal:host-gateway"
       - name: Run distributed integration-v2 suite (coverage intentionally disabled)
         if: matrix.topology == 'distributed'
@@ -375,6 +392,7 @@ jobs:
             all-in-one-apim/modules/integration-v2/tests-integration/cucumber-tests/target/cucumber-report/**
             all-in-one-apim/modules/integration-v2/tests-integration/cucumber-tests/target/logs/**
             all-in-one-apim/modules/integration-v2/tests-integration/cucumber-tests/target/coverage/output/**
+            ${{ runner.temp }}/resources/**
           if-no-files-found: warn
       # Guard against a silent all-in-one coverage regression. Distributed coverage is intentionally excluded.
       - name: Verify coverage report was generated
