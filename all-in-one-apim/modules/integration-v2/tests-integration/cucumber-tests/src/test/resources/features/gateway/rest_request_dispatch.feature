@@ -203,8 +203,9 @@ Feature: Gateway REST Request Dispatch
 
   # An operation-specific scope is the authorization discriminator for the overlapping path: GET and POST address
   # /comp/cartes/op/123, but each method must resolve to its own operation and accept only that operation's scope.
-  # The URL-mapping and URI-template dispatch forms are both exercised, as are super-tenant and tenant admins. Each
-  # denial is a one-shot exact 403 after the gateway-live gate; polling could hide an initial cross-scope success.
+  # The URL-mapping and URI-template dispatch forms are both exercised, as are super-tenant and tenant admins. The
+  # first permitted call is polled until 200, which also proves the new subscription has reached the gateway. Each
+  # denial is then a one-shot exact 403; polling could hide an initial cross-scope success.
   @cap:gateway @feat:security-enforcement @rule:verb-routing @type:regression @dep:publisher @legacy:APIInvocationWithSimilarResourcesAndDifferentVerbsTestCase
   Scenario Outline: Overlapping <dispatch> operations authorize only their matching method scope as <actor>
     Given The system is ready
@@ -243,7 +244,7 @@ Feature: Gateway REST Request Dispatch
     Then The response status code should be 200
     And The issued token scope list should include "sve_get_scope" and exclude "sve_post_scope"
     And I copy context value "generatedAccessToken" to "sveGetScopeToken"
-    When I invoke the API at gateway context "{{sveScopeContext}}/1.0.0/comp/cartes/op/123" once with method "GET" using access token "sveGetScopeToken" and payload ""
+    When I invoke the API at gateway context "{{sveScopeContext}}/1.0.0/comp/cartes/op/123" with method "GET" using access token "sveGetScopeToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
     And The value of response field "method" should be "GET"
     And The value of response field "path" should be "/jaxrs_basic/services/customers/customerservice/verb-echo/comp/cartes/op/123"
