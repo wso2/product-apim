@@ -1,0 +1,37 @@
+{
+  "name": "${UNIQUE:APIProductLifecycleMember}",
+  "context": "${UNIQUE:apiProductLifecycleMemberContext}",
+  "version": "1.0.0",
+  "endpointConfig": {
+    "endpoint_type": "http",
+    "production_endpoints": {
+      "template_not_supported": false,
+      "config": null,
+      "url": "http://nodebackend:3017/api-product-lifecycle/"
+    },
+    "sandbox_endpoints": {
+      "url": "http://nodebackend:3017/api-product-lifecycle/",
+      "config": null,
+      "template_not_supported": false
+    }
+  },
+  "description": "Customer API fixture matching the legacy API product lifecycle route matrix",
+  "tags": ["api-product-lifecycle"],
+  "policies": ["Gold", "Bronze", "Unlimited"],
+  "businessInformation": {
+    "businessOwner": "lifecycleOwner",
+    "businessOwnerEmail": "lifecycle.owner@example.com",
+    "technicalOwner": "lifecycleTech",
+    "technicalOwnerEmail": "lifecycle.tech@example.com"
+  },
+  "operations": [
+    {"verb": "GET", "target": "/customers", "scopes": []},
+    {"verb": "POST", "target": "/customers", "scopes": []},
+    {"verb": "GET", "target": "/customers/{id}", "scopes": []},
+    {"verb": "PUT", "target": "/customers/{id}", "scopes": []},
+    {"verb": "DELETE", "target": "/customers/{id}", "scopes": []}
+  ],
+  "isDefaultVersion": true,
+  "additionalProperties": [],
+  "additionalPropertiesMap": {}
+}

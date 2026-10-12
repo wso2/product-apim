@@ -7,10 +7,10 @@
     "production_endpoints": {
       "template_not_supported": false,
       "config": null,
-      "url": "http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/"
+      "url": "http://nodebackend:3007/services/customers/customerservice/"
     },
     "sandbox_endpoints": {
-      "url": "http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/",
+      "url": "http://nodebackend:3007/services/customers/customerservice/",
       "config": null,
       "template_not_supported": false
     }

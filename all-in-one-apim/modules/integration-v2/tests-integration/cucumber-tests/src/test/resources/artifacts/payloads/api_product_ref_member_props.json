@@ -1,0 +1,11 @@
+{
+  "name": "${UNIQUE:ProductRefMember}",
+  "context": "${UNIQUE:productRefMemberCtx}",
+  "version": "1.0.0",
+  "endpointConfig": {
+    "endpoint_type": "http",
+    "production_endpoints": {"url": "https://test.com"},
+    "sandbox_endpoints": {"url": "https://test.com"}
+  },
+  "policies": ["Gold", "Bronze", "Unlimited"]
+}

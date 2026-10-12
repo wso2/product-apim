@@ -48,6 +48,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -89,6 +90,30 @@ public class PublisherBaseSteps {
         TestContext.set(resourceID, createdId);
         // Register for scenario teardown so a shared-server suite does not accumulate APIs across scenarios.
         ResourceCleanup.register(cleanupListFor(resourceType), createdId);
+    }
+
+    /**
+     * Creates an API while explicitly selecting the OpenAPI version used for DTO-to-definition generation. This
+     * is kept separate from the generic create step so ordinary API creation continues to exercise the product's
+     * default version. The response and resource cleanup semantics intentionally match that shared step.
+     */
+    @When("I create an API with payload {string} as {string} using OpenAPI version {string}")
+    public void iCreateApiWithOpenApiVersion(String payload, String resourceID, String openApiVersion)
+            throws IOException {
+
+        Assert.assertTrue("v2".equals(openApiVersion) || "v3".equals(openApiVersion),
+                "OpenAPI version must be v2 or v3, got: " + openApiVersion);
+        String jsonPayload = TestContext.resolve(payload).toString();
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
+
+        HttpResponse response = Requests.post(Utils.getAPICreateEndpointURL(Utils.getBaseUrl(), "apis")
+                        + "?openAPIVersion=" + openApiVersion, headers, jsonPayload,
+                Constants.CONTENT_TYPES.APPLICATION_JSON);
+        Assert.assertEquals(response.getResponseCode(), 201, response.getData());
+        Object createdId = Utils.extractValueFromPayload(response.getData(), "id");
+        TestContext.set(resourceID, createdId);
+        ResourceCleanup.register(cleanupListFor("apis"), createdId);
     }
 
     /**
@@ -392,6 +417,8 @@ public class PublisherBaseSteps {
 
     /** Synapse's per-artifact hot-swap line; the artifact name is {@code prod--<apiName>:v<version>}. */
     private static final String SYNAPSE_ADDED = "was added to the Synapse configuration successfully";
+    /** The operation-policy spec version the product writes into the envelope of every exported policy. */
+    private static final String EXPORTED_OPERATION_POLICY_SPEC_VERSION = "v4.7.0";
 
     /**
      * Decides whether the artifact now on the gateway is the one THIS scenario's deploy put there.
@@ -1006,7 +1033,8 @@ public class PublisherBaseSteps {
             HttpResponse created = SimpleHTTPClient.getInstance().doPost(
                     Utils.getRevisionURL(Utils.getBaseUrl(), resourceType, resourceId), publisherHeaders,
                     "{\"description\":\"self-heal revision\"}", Constants.CONTENT_TYPES.APPLICATION_JSON);
-            if (created == null || created.getResponseCode() < 200 || created.getResponseCode() >= 300) {
+            if (created == null || created.getResponseCode() < 200 || created.getResponseCode() >= 300
+                    || created.getData() == null || created.getData().isBlank()) {
                 return new HealGate.Fatal("could not create a fresh revision to re-deploy: got="
                         + (created == null ? "null" : created.getResponseCode() + "/" + created.getData()));
             }
@@ -2878,6 +2906,70 @@ public class PublisherBaseSteps {
     }
 
     /**
+     * Attaches an API-specific mediation policy through the API-level {@code apiPolicies} field. This is distinct
+     * from placing a policy on each operation's {@code operationPolicies}; the legacy content-aware regression
+     * specifically exercises the API-level request flow.
+     */
+    @When("I attach API-specific operation policy {string} named {string} version {string} to API {string} at API level")
+    public void attachApiSpecificOperationPolicyAtApiLevel(String policyIdKey, String policyName, String policyVersion,
+                                                           String apiIdKey) throws IOException {
+
+        String apiId = TestContext.resolve(apiIdKey).toString();
+        String policyId = TestContext.resolve(policyIdKey).toString();
+        String apiUrl = Utils.getResourceEndpointURL(Utils.getBaseUrl(), "apis", apiId);
+        Map<String, String> headers = Identity.publisherHeaders();
+        HttpResponse apiResponse = Requests.get(apiUrl, headers);
+        Assert.assertNotNull(apiResponse, "Publisher returned no API while attaching API-level policy " + policyId);
+        Assert.assertEquals(apiResponse.getResponseCode(), 200,
+                "Could not read API before attaching policy " + policyId + ": " + apiResponse.getData());
+        Assert.assertTrue(apiResponse.getData() != null && !apiResponse.getData().isBlank(),
+                "Publisher returned an empty API representation for " + apiId);
+
+        JSONObject api = new JSONObject(apiResponse.getData());
+        JSONObject policy = new JSONObject()
+                .put("policyName", policyName)
+                .put("policyType", "common")
+                .put("policyId", policyId)
+                .put("policyVersion", policyVersion)
+                .put("parameters", new JSONObject());
+        JSONObject apiPolicies = new JSONObject()
+                .put("request", new JSONArray().put(policy))
+                .put("response", new JSONArray())
+                .put("fault", new JSONArray());
+        api.put("apiPolicies", apiPolicies);
+
+        Requests.put(apiUrl, headers, api.toString(), Constants.CONTENT_TYPES.APPLICATION_JSON);
+    }
+
+    /** Re-reads the API and pins the exact API-level policy reference after the update. */
+    @Then("API {string} should have API-level request policy {string} version {string} with id {string}")
+    public void apiShouldHaveApiLevelRequestPolicy(String apiIdKey, String expectedPolicyName,
+                                                   String expectedVersion, String expectedPolicyIdKey)
+            throws IOException {
+
+        String apiId = TestContext.resolve(apiIdKey).toString();
+        String expectedPolicyId = TestContext.resolve(expectedPolicyIdKey).toString();
+        HttpResponse response = Requests.get(
+                Utils.getResourceEndpointURL(Utils.getBaseUrl(), "apis", apiId), Identity.publisherHeaders());
+        Assert.assertNotNull(response, "Publisher returned no API when verifying API-level policy for " + apiId);
+        Assert.assertEquals(response.getResponseCode(), 200,
+                "Could not verify API-level policy on API " + apiId + ": " + response.getData());
+        Assert.assertTrue(response.getData() != null && !response.getData().isBlank(),
+                "Publisher returned an empty API representation for " + apiId);
+        JSONObject api = new JSONObject(response.getData());
+        JSONArray requestPolicies = api.getJSONObject("apiPolicies").getJSONArray("request");
+        Assert.assertEquals(requestPolicies.length(), 1, "Expected exactly one API-level request policy on API "
+                + apiId + ": " + requestPolicies);
+        JSONObject actual = requestPolicies.getJSONObject(0);
+        Assert.assertEquals(actual.optString("policyName"), expectedPolicyName,
+                "Unexpected API-level policy name: " + actual);
+        Assert.assertEquals(actual.optString("policyId"), expectedPolicyId,
+                "Unexpected API-level policy ID: " + actual);
+        Assert.assertEquals(actual.optString("policyVersion"), expectedVersion,
+                "Unexpected API-level policy version: " + actual);
+    }
+
+    /**
      * Internal method to create either a common policy or API-specific policy
      *
      * @param apiId If null, creates a common policy. If provided, creates an API-specific policy.
@@ -3688,6 +3780,103 @@ public class PublisherBaseSteps {
     }
 
     /**
+     * Attaches a policy created in API-specific scope to an operation. The legacy OperationPolicyTestCase uses
+     * {@code policyType=common} in the operation reference even when the policy was created through the
+     * API-specific endpoint; keep that wire representation while allowing a scenario to prove the API-specific
+     * policy itself survives an API version copy.
+     */
+    @When("I attach API-specific operation policy {string} with id {string} version {string} to operation {int} of API {string} in flows {string} with parameters {string}")
+    public void iAttachApiSpecificPolicyToOperation(String policyName, String policyIdKey, String policyVersion,
+            int opIndex, String apiIdKey, String flowsCsv, String paramsJson) throws IOException {
+        String actualApiId = TestContext.resolve(apiIdKey).toString();
+        String policyId = TestContext.resolve(policyIdKey).toString();
+        Map<String, String> headers = Identity.publisherHeaders();
+        String apiUrl = Utils.getResourceEndpointURL(Utils.getBaseUrl(), "apis", actualApiId);
+        HttpResponse getApi = Requests.get(apiUrl, headers);
+        Assert.assertNotNull(getApi, "Publisher returned no API before attaching API-specific policy " + policyId);
+        Assert.assertEquals(getApi.getResponseCode(), 200,
+                "Could not read API before attaching API-specific policy " + policyId + ": " + getApi.getData());
+        Assert.assertTrue(getApi.getData() != null && !getApi.getData().isBlank(),
+                "Publisher returned an empty API representation for " + actualApiId);
+
+        JSONObject api = new JSONObject(getApi.getData());
+        JSONArray operations = api.getJSONArray("operations");
+        Assert.assertTrue(opIndex >= 0 && opIndex < operations.length(),
+                "Operation index " + opIndex + " is outside API " + actualApiId + " operation list");
+        JSONObject operation = operations.getJSONObject(opIndex);
+        JSONObject operationPolicies = operation.optJSONObject("operationPolicies");
+        if (operationPolicies == null) {
+            operationPolicies = new JSONObject();
+        }
+        for (String flow : flowsCsv.split(",")) {
+            String flowName = flow.trim();
+            Assert.assertTrue("request".equals(flowName) || "response".equals(flowName) || "fault".equals(flowName),
+                    "Unsupported operation-policy flow: " + flowName);
+            JSONObject policyReference = new JSONObject()
+                    .put("policyName", policyName)
+                    .put("policyVersion", policyVersion)
+                    .put("policyType", "common")
+                    .put("policyId", policyId)
+                    .put("parameters", new JSONObject(paramsJson));
+            operationPolicies.put(flowName, new JSONArray().put(policyReference));
+        }
+        operation.put("operationPolicies", operationPolicies);
+        Requests.put(apiUrl, headers, api.toString(), Constants.CONTENT_TYPES.APPLICATION_JSON);
+    }
+
+    /** Confirms a version copy carries the API-specific operation policy and preserves its flow parameters. */
+    @Then("API {string} should carry the API-specific operation policy from API {string} on operation {int} in flows {string}")
+    public void apiShouldCarryApiSpecificPolicy(String copiedApiIdKey, String sourceApiIdKey, int opIndex,
+            String flowsCsv) throws IOException {
+        String copiedApiId = TestContext.resolve(copiedApiIdKey).toString();
+        String sourceApiId = TestContext.resolve(sourceApiIdKey).toString();
+        Map<String, String> headers = Identity.publisherHeaders();
+        HttpResponse sourceResponse = Requests.get(
+                Utils.getResourceEndpointURL(Utils.getBaseUrl(), "apis", sourceApiId), headers);
+        HttpResponse copiedResponse = Requests.get(
+                Utils.getResourceEndpointURL(Utils.getBaseUrl(), "apis", copiedApiId), headers);
+        Assert.assertNotNull(sourceResponse, "Publisher returned no source API " + sourceApiId);
+        Assert.assertEquals(sourceResponse.getResponseCode(), 200,
+                "Could not read source API " + sourceApiId + ": " + sourceResponse.getData());
+        Assert.assertNotNull(copiedResponse, "Publisher returned no copied API " + copiedApiId);
+        Assert.assertEquals(copiedResponse.getResponseCode(), 200,
+                "Could not read copied API " + copiedApiId + ": " + copiedResponse.getData());
+        Assert.assertTrue(sourceResponse.getData() != null && !sourceResponse.getData().isBlank(),
+                "Publisher returned an empty source API representation for " + sourceApiId);
+        Assert.assertTrue(copiedResponse.getData() != null && !copiedResponse.getData().isBlank(),
+                "Publisher returned an empty copied API representation for " + copiedApiId);
+
+        JSONObject sourceApi = new JSONObject(sourceResponse.getData());
+        JSONObject copiedApi = new JSONObject(copiedResponse.getData());
+        JSONObject sourceOperationPolicies = sourceApi.getJSONArray("operations").getJSONObject(opIndex)
+                .getJSONObject("operationPolicies");
+        JSONObject copiedOperationPolicies = copiedApi.getJSONArray("operations").getJSONObject(opIndex)
+                .getJSONObject("operationPolicies");
+        for (String flow : flowsCsv.split(",")) {
+            String flowName = flow.trim();
+            JSONArray sourceFlow = sourceOperationPolicies.getJSONArray(flowName);
+            JSONArray copiedFlow = copiedOperationPolicies.getJSONArray(flowName);
+            Assert.assertEquals(sourceFlow.length(), 1,
+                    "Expected one source API-specific policy in " + flowName + " flow: " + sourceFlow);
+            Assert.assertEquals(copiedFlow.length(), 1,
+                    "Expected one copied API-specific policy in " + flowName + " flow: " + copiedFlow);
+            JSONObject sourcePolicy = sourceFlow.getJSONObject(0);
+            JSONObject copiedPolicy = copiedFlow.getJSONObject(0);
+            Assert.assertEquals(copiedPolicy.getString("policyName"), sourcePolicy.getString("policyName"),
+                    "Copied policy name differs in " + flowName + " flow");
+            Assert.assertEquals(copiedPolicy.getString("policyVersion"), sourcePolicy.getString("policyVersion"),
+                    "Copied policy version differs in " + flowName + " flow");
+            Assert.assertEquals(copiedPolicy.getJSONObject("parameters").toMap(),
+                    sourcePolicy.getJSONObject("parameters").toMap(),
+                    "Copied policy parameters differ in " + flowName + " flow");
+            Assert.assertTrue(sourcePolicy.has("policyId") && !sourcePolicy.getString("policyId").isBlank(),
+                    "Source API-specific policy reference has no ID in " + flowName + " flow");
+            Assert.assertTrue(copiedPolicy.has("policyId") && !copiedPolicy.getString("policyId").isBlank(),
+                    "Copied API-specific policy reference has no ID in " + flowName + " flow");
+        }
+    }
+
+    /**
      * Asserts that attaching a common operation policy cloned it to the API level: the policy id now recorded on
      * operation {@code opIndex}'s {@code request} flow differs from the original common policy's id, but the two
      * policies have an identical md5 (same content). Ports
@@ -3742,12 +3931,12 @@ public class PublisherBaseSteps {
      * archive-content assertions of OperationPolicyTestCase#testCommonOperationPolicyExport (YAML) and
      * testCommonOperationPolicyExportWithJSONContent (JSON), which likewise compared parsed spec content (not text).
      *
-     * <p>The source spec is always YAML (v2 supplies YAML specs); it is parsed structurally and the exported spec
-     * (yaml OR json, both parsed with the same YAML parser since JSON is a YAML subset) must carry every
-     * {@code data} field/value the source declares (deep containment; list-valued fields compared as sets so a
-     * server re-ordering of e.g. {@code supportedApiTypes} is not a spurious failure). The synapse template is
-     * stored verbatim, so it is compared as normalized text (line-trimmed, blank lines dropped).</p>
+     * <p>The source spec is always YAML (v2 supplies YAML specs); the exported YAML or JSON is parsed into the same
+     * model and compared exactly, including root metadata, every data field, and list ordering. The two export
+     * formats are each compared against that single source model, pinning their semantic equivalence. The Synapse
+     * template is compared byte-for-byte because the product round-trips it verbatim.</p>
      */
+    @SuppressWarnings("unchecked")
     @Then("The exported operation policy archive {string} should contain a {string} spec for policy {string}")
     public void theExportedPolicyArchiveShouldContain(String archivePathKey, String format, String policyName)
             throws IOException {
@@ -3777,16 +3966,19 @@ public class PublisherBaseSteps {
         }
 
         // Content equality against the SOURCE files the policy was created from. The source spec is YAML; the
-        // exported spec may be YAML or JSON but both parse with the same YAML parser (JSON ⊂ YAML).
+        // exported spec may be YAML or JSON but both parse with the same YAML parser (JSON ⊂ YAML). The export
+        // envelope's root "version" is the product's operation-policy spec version, not the uploaded value, so the
+        // expected model carries that exact value (as the legacy expected export files do).
         String sourceSpecResource = "artifacts/payloads/policySpecFiles/" + policyName + ".yaml";
         String sourceSynapseResource = "artifacts/payloads/policySpecFiles/" + policyName + ".j2";
-        Object sourceSpec = new Yaml().load(Utils.readClasspathResource(sourceSpecResource));
+        Object sourceModel = new Yaml().load(Utils.readClasspathResource(sourceSpecResource));
+        Assert.assertTrue(sourceModel instanceof Map, "Source policy spec " + sourceSpecResource + " is not a mapping");
+        Map<String, Object> sourceSpec = new LinkedHashMap<>((Map<String, Object>) sourceModel);
+        sourceSpec.put("version", EXPORTED_OPERATION_POLICY_SPEC_VERSION);
         Object exportedSpec = new Yaml().load(specContent);
-        Object sourceData = ((Map<?, ?>) sourceSpec).get("data");
-        Assert.assertTrue(exportedSpec instanceof Map && ((Map<?, ?>) exportedSpec).get("data") instanceof Map,
-                "Exported spec has no 'data' object: " + specContent);
-        Object exportedData = ((Map<?, ?>) exportedSpec).get("data");
-        assertSpecContentContainsSource(sourceData, exportedData, "data");
+        Assert.assertEquals(exportedSpec, sourceSpec,
+                "Exported " + format + " policy spec must exactly match the source model; comparing each format "
+                        + "against the same source also pins JSON/YAML semantic equivalence");
 
         // RAW comparison, no normalization. The previous form trimmed every line and dropped blank lines, which
         // silently accepted a reformatted template: custom_add_common_header.j2 indents its <header> by 3 spaces,
@@ -3797,62 +3989,6 @@ public class PublisherBaseSteps {
         String exportedSynapse = new String(Files.readAllBytes(synapseFile.toPath()), StandardCharsets.UTF_8);
         Assert.assertEquals(exportedSynapse, sourceSynapse,
                 "Exported synapse template content does not match the source " + sourceSynapseResource);
-    }
-
-    /**
-     * Asserts the exported spec content ({@code actual}) faithfully carries the SOURCE content ({@code expected}):
-     * every scalar value is equal, every source list element is present in the exported list (set containment), and
-     * every source map key resolves recursively. Tolerant of any extra field the server may add on export, but
-     * catches a dropped field, a changed value, or an empty/wrong spec — the hole this strengthening closes.
-     */
-    private void assertSpecContentContainsSource(Object expected, Object actual, String path) {
-        if (expected instanceof Map<?, ?> expectedMap) {
-            Assert.assertTrue(actual instanceof Map,
-                    "Exported spec content at '" + path + "' is not an object: " + actual);
-            Map<?, ?> actualMap = (Map<?, ?>) actual;
-            for (Map.Entry<?, ?> entry : expectedMap.entrySet()) {
-                String childPath = path + "." + entry.getKey();
-                // An empty/null source value carries no content to verify — the server may legitimately omit an
-                // empty collection (e.g. policyAttributes: []) on export, so don't require the key in that case.
-                if (isEmptyValue(entry.getValue())) {
-                    continue;
-                }
-                Assert.assertTrue(actualMap.containsKey(entry.getKey()),
-                        "Exported spec is missing field '" + childPath + "'");
-                assertSpecContentContainsSource(entry.getValue(), actualMap.get(entry.getKey()), childPath);
-            }
-        } else if (expected instanceof List<?> expectedList) {
-            Assert.assertTrue(actual instanceof List,
-                    "Exported spec content at '" + path + "' is not a list: " + actual);
-            List<String> actualCanonical = new ArrayList<>();
-            Set<String> actualSet = new HashSet<>();
-            for (Object o : (List<?>) actual) {
-                String canonical = String.valueOf(o);
-                actualCanonical.add(canonical);
-                actualSet.add(canonical);
-            }
-            Set<String> expectedSet = new HashSet<>();
-            for (Object o : expectedList) {
-                expectedSet.add(String.valueOf(o));
-            }
-            Assert.assertEquals(actualCanonical.size(), expectedList.size(),
-                    "Exported spec list '" + path + "' has unexpected cardinality; expected "
-                            + expectedList.size() + " but got " + actualCanonical.size());
-            Assert.assertEquals(actualSet.size(), actualCanonical.size(),
-                    "Exported spec list '" + path + "' contains duplicate elements: " + actualCanonical);
-            Assert.assertEquals(actualSet, expectedSet,
-                    "Exported spec list '" + path + "' does not exactly match the source set");
-        } else {
-            Assert.assertEquals(String.valueOf(actual), String.valueOf(expected),
-                    "Exported spec value at '" + path + "' does not match source");
-        }
-    }
-
-    /** True when a parsed spec value carries no content to verify (null, empty list, or empty map). */
-    private boolean isEmptyValue(Object value) {
-        return value == null
-                || (value instanceof List<?> list && list.isEmpty())
-                || (value instanceof Map<?, ?> map && map.isEmpty());
     }
 
     /**
@@ -4649,6 +4785,11 @@ public class PublisherBaseSteps {
      * therefore carry DISJOINT resource paths, since a product cannot hold the same target/verb twice.
      */
     private String buildApiProductPayload(String name, String context, List<String> apiIds) throws IOException {
+        return buildApiProductPayload(name, context, null, apiIds);
+    }
+
+    private String buildApiProductPayload(String name, String context, String provider, List<String> apiIds)
+            throws IOException {
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
         JSONArray productApis = new JSONArray();
@@ -4669,15 +4810,18 @@ public class PublisherBaseSteps {
                     .put("name", api.optString("name"))
                     .put("operations", operations == null ? new JSONArray() : operations));
         }
-        return new JSONObject()
+        JSONObject payload = new JSONObject()
                 .put("name", name)
                 .put("context", context)
                 .put("version", "1.0.0")
                 // Offer the standard business plans so the shared "set up application …" composite (which
                 // subscribes with Bronze) can subscribe to the product.
                 .put("policies", new JSONArray().put("Gold").put("Bronze").put("Unlimited"))
-                .put("apis", productApis)
-                .toString();
+                .put("apis", productApis);
+        if (provider != null) {
+            payload.put("provider", provider);
+        }
+        return payload.toString();
     }
 
     /** Resolves a comma-separated list of API-id context keys to the ids they hold, in order. */
@@ -4711,8 +4855,45 @@ public class PublisherBaseSteps {
     public void iCreateApiProductFromApis(String nameBase, String contextBase, String apiIdKeysCsv,
                                           String productIdKey) throws IOException {
 
-        String payload = buildApiProductPayload(Utils.resolvePayloadPlaceholders(nameBase),
-                Utils.resolvePayloadPlaceholders(contextBase), resolveApiIds(apiIdKeysCsv));
+        createApiProduct(nameBase, contextBase, null, apiIdKeysCsv, productIdKey);
+    }
+
+    /**
+     * As {@link #iCreateApiProductFromApis}, but the payload names an explicit {@code provider} — the actor's
+     * username. Only a caller holding APIM_ADMIN keeps a provider other than itself; anyone else is overridden.
+     */
+    @When("I create an API product {string} with context {string} and provider of actor {string} from APIs {string} as {string}")
+    public void iCreateApiProductWithProvider(String nameBase, String contextBase, String providerActorRef,
+                                              String apiIdKeysCsv, String productIdKey) throws IOException {
+        createApiProduct(nameBase, contextBase, providerOf(providerActorRef), apiIdKeysCsv, productIdKey);
+    }
+
+    /** Creates a multi-API product with a caller-supplied provider for the legacy arbitrary-provider case. */
+    @When("I create an API product {string} with context {string} and provider {string} from APIs {string} as {string}")
+    public void iCreateApiProductWithExplicitProvider(String nameBase, String contextBase, String providerValue,
+                                                      String apiIdKeysCsv, String productIdKey) throws IOException {
+        String provider = Utils.resolvePayloadPlaceholders(providerValue);
+        createApiProduct(nameBase, contextBase, provider, apiIdKeysCsv, productIdKey);
+        TestContext.set(productIdKey + PRODUCT_REQUESTED_PROVIDER_SUFFIX, provider);
+    }
+
+    /**
+     * The provider string the publisher API reports for an actor: the full username, minus the carbon.super
+     * suffix for a super-tenant user.
+     */
+    static String providerOf(String actorRef) {
+        String provider = Identity.resolveActor(Utils.resolveContextPlaceholders(actorRef)).getUserName();
+        String superSuffix = "@" + Constants.SUPER_TENANT_DOMAIN;
+        return provider.endsWith(superSuffix)
+                ? provider.substring(0, provider.length() - superSuffix.length()) : provider;
+    }
+
+    private void createApiProduct(String nameBase, String contextBase, String provider, String apiIdKeysCsv,
+                                  String productIdKey) throws IOException {
+        // ${UNIQUE:...} is not memoized, so the resolved values are kept for the echo assertions.
+        String name = Utils.resolvePayloadPlaceholders(nameBase);
+        String context = Utils.resolvePayloadPlaceholders(contextBase);
+        String payload = buildApiProductPayload(name, context, provider, resolveApiIds(apiIdKeysCsv));
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
 
@@ -4721,8 +4902,16 @@ public class PublisherBaseSteps {
         Assert.assertEquals(response.getResponseCode(), 201, response.getData());
         Object productId = Utils.extractValueFromPayload(response.getData(), "id");
         TestContext.set(productIdKey, productId);
+        TestContext.set(productIdKey + PRODUCT_REQUESTED_NAME_SUFFIX, name);
+        TestContext.set(productIdKey + PRODUCT_REQUESTED_CONTEXT_SUFFIX, context);
+        TestContext.set(productIdKey + PRODUCT_CREATE_RESPONSE_SUFFIX, response.getData());
         ResourceCleanup.register(Constants.CREATED_API_PRODUCT_IDS, productId);
     }
+
+    static final String PRODUCT_REQUESTED_NAME_SUFFIX = "RequestedName";
+    static final String PRODUCT_REQUESTED_CONTEXT_SUFFIX = "RequestedContext";
+    static final String PRODUCT_CREATE_RESPONSE_SUFFIX = "CreateResponse";
+    static final String PRODUCT_REQUESTED_PROVIDER_SUFFIX = "RequestedProvider";
 
     /**
      * Non-asserting API-Product create (for negatives such as a malformed context → 400): stores the raw
@@ -4780,6 +4969,23 @@ public class PublisherBaseSteps {
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
 
         Requests.get(Utils.getRevisionURL(Utils.getBaseUrl(), resourceType, actualResourceId), headers);
+    }
+
+    /** Asserts that a newly created revision is the sole list entry and that its exact ID is returned. */
+    @Then("The revision list should contain exactly revision {string}")
+    public void theRevisionListShouldContainExactlyRevision(String revisionIdKey) {
+        HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
+        Assert.assertTrue(response != null && response.getResponseCode() == 200 && response.getData() != null
+                        && !response.getData().isBlank(),
+                "Expected a 200 revision-list response with a body, got "
+                        + (response == null ? "null" : response.getResponseCode() + " / " + response.getData()));
+        JSONArray revisions = new JSONObject(response.getData()).optJSONArray("list");
+        Assert.assertNotNull(revisions, "Revision-list response has no list: " + response.getData());
+        Assert.assertEquals(revisions.length(), 1,
+                "A newly created product should expose exactly one revision: " + response.getData());
+        String expectedRevisionId = TestContext.resolve(revisionIdKey).toString();
+        Assert.assertEquals(revisions.getJSONObject(0).optString("id"), expectedRevisionId,
+                "Revision list did not return the exact created revision ID: " + response.getData());
     }
 
     /** Lists an API's currently-deployed revisions ({@code query=deployed:true}). Non-asserting. */

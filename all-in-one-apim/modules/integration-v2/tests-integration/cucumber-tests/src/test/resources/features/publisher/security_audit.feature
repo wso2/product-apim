@@ -8,7 +8,9 @@ Feature: Publisher API Security Audit
   getSecurityAuditAttributesFromConfig() returns null and the resource NPEs into a raw 500, so the feature is
   untestable on default config. The table points at the `am-auditApi-sample` Express mock already baked into
   the node-app-server image (pm2 app on port 3002, network alias `nodebackend`) — legacy used a .war deployed
-  into a second APIM instance on https://localhost:9943.
+  into a second APIM instance on https://localhost:9943. The API fixture itself also targets the equivalent
+  audit-service endpoint, using the Node mock's container-reachable URL and matching assessment-report route;
+  it no longer substitutes an unrelated customer-service API as the resource under audit.
 
   One request drives a THREE-leg exchange with the audit service, and which legs run depends on the
   AM_SECURITY_AUDIT_UUID_MAPPING table:
@@ -35,6 +37,7 @@ Feature: Publisher API Security Audit
   @cap:publisher @feat:security-audit @rule:audit-report @type:smoke @legacy:APISecurityAuditTestCase
   Scenario Outline: The security audit report for a newly published API is retrieved from the audit service as <actor>
     Given The system is ready and I have valid publisher access tokens as "<actor>"
+    When I reset the security-audit mock request log
     When I put JSON payload from file "artifacts/payloads/create_apim_security_audit_api.json" in context as "auditPayload"
     And I create an "apis" resource with payload "auditPayload" as "auditApiId"
     Then The response status code should be 201
@@ -61,6 +64,8 @@ Feature: Publisher API Security Audit
     And The response should contain "API accepts HTTP requests in the clear"
     And The response should contain "Access tokens transported as cleartext"
     And The response should contain "Numeric schema has no maximum defined"
+    Then the security-audit mock should have received methods "POST,GET"
+    When I undeploy and delete revisions of API "auditApiId" and verify gateway removal
 
     Examples:
       | actor             |
@@ -70,6 +75,7 @@ Feature: Publisher API Security Audit
   @cap:publisher @feat:security-audit @rule:audit-report @type:regression @legacy:APISecurityAuditTestCase
   Scenario Outline: Re-auditing an API reuses its stored audit id and takes the update leg as <actor>
     Given The system is ready and I have valid publisher access tokens as "<actor>"
+    When I reset the security-audit mock request log
     When I put JSON payload from file "artifacts/payloads/create_apim_security_audit_api.json" in context as "reAuditPayload"
     And I create an "apis" resource with payload "reAuditPayload" as "reAuditApiId"
     Then The response status code should be 201
@@ -83,6 +89,7 @@ Feature: Publisher API Security Audit
     When I retrieve the security audit report for API "reAuditApiId"
     Then The response status code should be 200
     And The value of response field "externalApiId" should be "03530124-cfc3-470d-8640-65cc6a05ec6f"
+    Then the security-audit mock should have received methods "POST,GET"
 
     # Second audit of the SAME API. The row now exists, so the server must take the UPDATE leg
     # (PUT {base_url}/{auditUuid}) instead of creating a second audit api. A failure here means either the
@@ -93,6 +100,8 @@ Feature: Publisher API Security Audit
     Then The response status code should be 200
     And The value of response field "externalApiId" should be "03530124-cfc3-470d-8640-65cc6a05ec6f"
     And The value of response field "numErrors" should be "28"
+    Then the security-audit mock should have received methods "POST,GET,PUT,GET"
+    When I undeploy and delete revisions of API "reAuditApiId" and verify gateway removal
 
     Examples:
       | actor             |

@@ -5,7 +5,7 @@ Feature: Key Manager API Key
   key for a subscribed application, and invoke the API through the gateway using that key. Runs as admin in
   both the super tenant and tenant1.com. Teardown via the per-scenario cleanup hook.
 
-  @cap:key-manager @feat:api-key @type:smoke @dep:gateway @legacy:APIKeyInvocationTestCase
+  @cap:key-manager @feat:api-key @type:smoke @dep:gateway @legacy:APIKeyInvocationTestCase @legacy:CustomHeaderTestCase
   Scenario Outline: Generate an API key and invoke a published API with it as <actor>
     Given The system is ready
     And I have valid access tokens as "<actor>"
@@ -64,6 +64,16 @@ Feature: Key Manager API Key
     # UNCONFIGURED custom header ("Unconfigured-ApiKey-Header") must be REJECTED (401) — the gateway must honour
     # the key only in the configured header. Ports CustomHeaderTestCase#testInvokeAPIWIthDefaultApiKeyHeaderWithOpaqueKey.
     When I invoke the API at gateway context "{{apiContext}}/1.0.0/customers/123/" with method "GET" using api key "apiKey" in header "Unconfigured-ApiKey-Header" until response status code becomes 401 within 60 seconds
+    Then The response status code should be 401
+
+    # JWT-formatted API keys must follow the same default-header contract as opaque keys: accept ApiKey and
+    # reject an unconfigured header. This specifically exercises the legacy CustomHeaderTestCase JWT path.
+    When I generate locally signed JWT API key for application id "createdAppId" as "jwtApiKey"
+    When I invoke the API at gateway context "{{apiContext}}/1.0.0/customers/123/" with method "GET" using api key "jwtApiKey" in header "ApiKey" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
+    When I invoke the API at gateway context "{{apiContext}}/1.0.0/customers/123/" with method "GET" using api key "jwtApiKey" in header "Unconfigured-ApiKey-Header" until response status code becomes 401 within 60 seconds
     Then The response status code should be 401
 
     Examples:
@@ -189,6 +199,22 @@ Feature: Key Manager API Key
     When I invoke the API at gateway context "{{apiContext}}/1.0.0/customers/123/" with method "GET" using api key "apiKey" and forwarded-for "2061:c00:0:0:0:0:0:0" until response status code becomes 403 within 60 seconds
     Then The response status code should be 403
 
+    # The same permittedIP list carried as the permittedIP claim of a locally signed JWT-format API key
+    # (the JWT half of testInvocationWithApiKeysWithIPCondition): the same five addresses, the same verdicts.
+    When I generate locally signed JWT API key of type "PRODUCTION" for application id "createdAppId" with permitted IP "152.23.5.6, 192.168.1.2/24, 2001:c00::/23" and permitted referer "" as "ipJwtApiKey"
+    When I invoke the API at gateway context "{{apiContext}}/1.0.0/customers/123/" with method "GET" using api key "ipJwtApiKey" and forwarded-for "152.23.5.6" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
+    When I invoke the API at gateway context "{{apiContext}}/1.0.0/customers/123/" with method "GET" using api key "ipJwtApiKey" and forwarded-for "192.168.1.6" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    When I invoke the API at gateway context "{{apiContext}}/1.0.0/customers/123/" with method "GET" using api key "ipJwtApiKey" and forwarded-for "192.168.5.6" until response status code becomes 403 within 60 seconds
+    Then The response status code should be 403
+    When I invoke the API at gateway context "{{apiContext}}/1.0.0/customers/123/" with method "GET" using api key "ipJwtApiKey" and forwarded-for "2001:c00:0:0:0:0:c:4" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    When I invoke the API at gateway context "{{apiContext}}/1.0.0/customers/123/" with method "GET" using api key "ipJwtApiKey" and forwarded-for "2061:c00:0:0:0:0:0:0" until response status code becomes 403 within 60 seconds
+    Then The response status code should be 403
+
     Examples:
       | actor             |
       | admin             |
@@ -267,6 +293,20 @@ Feature: Key Manager API Key
     And The value of response field "id" should be "123"
     And The value of response field "name" should be "John"
 
+    # The same permittedReferer list carried as the permittedReferer claim of a locally signed JWT-format API key
+    # (the JWT half of testInvocationWithApiKeysWithRefererCondition).
+    When I generate locally signed JWT API key of type "PRODUCTION" for application id "createdAppId" with permitted IP "" and permitted referer "www.abc.com/path, sub.cds.com/*, *.gef.com/*" as "refJwtApiKey"
+    When I invoke the API at gateway context "{{apiContext}}/1.0.0/customers/123/" with method "GET" using api key "refJwtApiKey" and referer "www.abc.com/path" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
+    When I invoke the API at gateway context "{{apiContext}}/1.0.0/customers/123/" with method "GET" using api key "refJwtApiKey" and referer "www.abc.com/path2" until response status code becomes 403 within 60 seconds
+    Then The response status code should be 403
+    When I invoke the API at gateway context "{{apiContext}}/1.0.0/customers/123/" with method "GET" using api key "refJwtApiKey" and referer "sub.cds.com/path1/path2" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    When I invoke the API at gateway context "{{apiContext}}/1.0.0/customers/123/" with method "GET" using api key "refJwtApiKey" and referer "example.gef.com/path1" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+
     Examples:
       | actor             |
       | admin             |
@@ -317,11 +357,27 @@ Feature: Key Manager API Key
     # Revoke the (opaque) key by its keyUUID
     When I retrieve the api key UUID for application id "createdAppId" as "revokeKeyUuid"
     Then The response status code should be 200
+    When I retrieve the api keys of application "createdAppId"
+    Then The response status code should be 200
+    And The api key list should contain a key named "RevokeTestKey"
     When I revoke the api key with UUID "revokeKeyUuid" for application id "createdAppId"
     Then The response status code should be 200
     # The same key is now rejected at the gateway (401)
     When I invoke the API at gateway context "{{apiContext}}/1.0.0/customers/123/" with method "GET" using api key "apiKey" until response status code becomes 401 within 60 seconds
     Then The response status code should be 401
+
+    # A locally signed JWT-format API key is revoked BY VALUE (the JWT half of testInvocationWithRevokedApiKeys):
+    # it works first, the revoke endpoint accepts the key itself as the body, then the gateway refuses it (401).
+    When I generate locally signed JWT API key of type "PRODUCTION" for application id "createdAppId" with permitted IP "" and permitted referer "" as "revJwtApiKey"
+    When I invoke the API at gateway context "{{apiContext}}/1.0.0/customers/123/" with method "GET" using api key "revJwtApiKey" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
+    When I revoke the api key value "revJwtApiKey" of type "PRODUCTION" for application id "createdAppId"
+    Then The response status code should be 200
+    When I invoke the API at gateway context "{{apiContext}}/1.0.0/customers/123/" with method "GET" using api key "revJwtApiKey" until response status code becomes 401 within 60 seconds
+    Then The response status code should be 401
+    And The error response should have code "900901" message "Invalid Credentials" and description containing "Make sure you have provided the correct security credentials"
 
     Examples:
       | actor             |
@@ -385,6 +441,15 @@ Feature: Key Manager API Key
     And The value of response field "name" should be "John"
     # The same key in the default ApiKey header -> rejected (401).
     When I invoke the API at gateway context "{{apiContext}}/1.0.0/customers/123/" with method "GET" using api key "apiKey" in header "ApiKey" until response status code becomes 401 within 60 seconds
+    Then The response status code should be 401
+
+    # JWT-formatted keys must be accepted by the configured header and rejected by the default ApiKey header too.
+    When I generate locally signed JWT API key for application id "createdAppId" as "customHeaderJwtApiKey"
+    When I invoke the API at gateway context "{{apiContext}}/1.0.0/customers/123/" with method "GET" using api key "customHeaderJwtApiKey" in header "Custom-ApiKey-Header" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
+    When I invoke the API at gateway context "{{apiContext}}/1.0.0/customers/123/" with method "GET" using api key "customHeaderJwtApiKey" in header "ApiKey" until response status code becomes 401 within 60 seconds
     Then The response status code should be 401
 
     Examples:
@@ -585,6 +650,17 @@ Feature: Key Manager API Key
     And I request an api key of type "SANDBOX" for application id "createdAppId" using payload "koSandboxKeyGenPayload"
     Then The response status code should be 200
     When I invoke the API at gateway context "{{koContext}}/1.0.0/customers/123/" with method "GET" using api key "apiKey" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    And The response should contain "\"name\":\"John\""
+
+    # Locally signed JWT-format API keys of BOTH key types on the same application (the JWT half of
+    # testInvocationWithApiKeysOnly), each answered with the backend's customer payload.
+    When I generate locally signed JWT API key of type "PRODUCTION" for application id "createdAppId" with permitted IP "" and permitted referer "" as "koProdJwtKey"
+    When I invoke the API at gateway context "{{koContext}}/1.0.0/customers/123/" with method "GET" using api key "koProdJwtKey" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    And The response should contain "\"name\":\"John\""
+    When I generate locally signed JWT API key of type "SANDBOX" for application id "createdAppId" with permitted IP "" and permitted referer "" as "koSandJwtKey"
+    When I invoke the API at gateway context "{{koContext}}/1.0.0/customers/123/" with method "GET" using api key "koSandJwtKey" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
     And The response should contain "\"name\":\"John\""
 

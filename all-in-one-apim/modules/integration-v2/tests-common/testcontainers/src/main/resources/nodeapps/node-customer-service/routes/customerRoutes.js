@@ -37,10 +37,25 @@ router.get('/customers/:id', (req, res) => {
   console.log(`----invoking getCustomer, Customer id is: ${id}`);
   const customer = customers[id];
   if (customer) {
+    const accept = req.get('Accept') || '';
+    if (accept.split(',').some((mediaType) => mediaType.trim().toLowerCase() === 'application/xml')) {
+      return res.set('Content-Type', 'application/xml; charset=UTF-8')
+        .send(`<Customer><id>${customer.id}</id><name>${customer.name}</name></Customer>`);
+    }
+    if (accept.split(',').some((mediaType) => mediaType.trim().toLowerCase() === 'text/xml')) {
+      return res.type('text/xml').send(`<Customer><id>${customer.id}</id><name>${customer.name}</name></Customer>`);
+    }
     res.json(customer);
   } else {
     res.status(404).send('Customer not found');
   }
+});
+
+// /resource/ — XML response for the operation-policy parity API's second operation. Keeping the fixture's
+// content type explicit reproduces the legacy JAX-RS backend contract used by OperationPolicyTestCase.
+router.get('/resource/', (req, res) => {
+  return res.set('Content-Type', 'application/xml; charset=UTF-8')
+    .send('<resource><status>ok</status></resource>');
 });
 
 // GET /sec/
@@ -66,6 +81,17 @@ router.get('/check-header', (req, res) => {
   } else {
     res.status(400).json({ error: 'Missing or invalid x-request-header' });
   }
+});
+
+// GET /message-type is a message-formatter probe for the legacy messageType sequence parity scenario. The gateway
+// must send the configured JSON message type to this backend; return the legacy 202 Accepted contract only when
+// that header arrives, so a missing/wrong Axis2 messageType cannot pass as a successful invocation.
+router.get('/message-type', (req, res) => {
+  const receivedType = (req.header('content-type') || '').split(';', 1)[0].trim().toLowerCase();
+  if (receivedType === 'application/json') {
+    return res.status(202).type('text/plain').send('Accepted');
+  }
+  return res.status(415).type('text/plain').send(`Expected application/json, received ${receivedType || '<none>'}`);
 });
 
 // GET /handler/
@@ -130,6 +156,13 @@ router.get('/echo/*', (req, res) => {
   res.status(200).json({ received: req.originalUrl });
 });
 
+// /verb-echo/... — any verb: returns the HTTP method and the raw path (req.originalUrl) the backend received, so a
+// test can assert the gateway forwarded both unchanged. Scoped to /verb-echo so it does not mask other routes.
+router.all('/verb-echo/*', (req, res) => {
+  console.log(`----invoking verb-echo, received: ${req.method} ${req.originalUrl}`);
+  res.status(200).json({ method: req.method, path: req.originalUrl });
+});
+
 // /reflect-headers — reflects the request headers the backend received back in the response body, so a
 // test can assert on headers the gateway injects towards the backend (e.g. the X-JWT-Assertion backend JWT
 // carrying application-attribute claims). The legacy ApplicationAttributesTestCase used a header-echoing
@@ -163,6 +196,14 @@ router.all('/reflect-headers', express.text({ type: () => true }), (req, res) =>
 router.all('/reflect-body', express.text({ type: () => true }), (req, res) => {
   const body = typeof req.body === 'string' ? req.body : JSON.stringify(req.body);
   res.status(200).send(body);
+});
+
+// /reflect-body-text — echoes the raw request body as text/plain whatever it was sent as. A gateway xmlToJson
+// RESPONSE policy wraps a text payload as {"text": "..."}, so a request policy's output survives the response
+// policy verbatim inside that wrapper; with an XML- or JSON-typed echo the two conversions cancel out.
+router.all('/reflect-body-text', express.text({ type: () => true }), (req, res) => {
+  const body = typeof req.body === 'string' ? req.body : JSON.stringify(req.body);
+  res.status(200).type('text/plain').send(body);
 });
 
 // POST /reflect-body-typed — like /reflect-body, but echoes the body back with the SAME Content-Type it
@@ -231,6 +272,7 @@ router.get('/pet/findByStatus', (req, res) => {
 function chatCompletion(req, res) {
   console.log('----invoking mock LLM chat/completions');
   const model = (req.body && req.body.model) ? req.body.model : 'mistral-small-latest';
+  const content = `Determining the "most renowned" French painter can be subjective and depends on personal preferences, as France has produced many influential and famous artists. However, some of the most celebrated French painters include:\n\n1. **Claude Monet**: Often considered one of the most famous French painters, Monet is a founder of French Impressionist painting. His works, such as "Impression, Sunrise" and the "Water Lilies" series, are iconic.\n\n2. **Pierre-Auguste Renoir**: Another leading figure of the Impressionist movement, Renoir is known for his vibrant and sensual paintings, like "Luncheon of the Boating Party."\n\n3. **Paul Cézanne**: Often referred to as the "father of modern art," Cézanne's work bridged the gap between Impressionism and the modern art movements of the 20th century. His paintings, such as "The Card Players," are highly influential.\n\n4. **Henri Matisse**: A leading figure of the Fauvist movement, Matisse is celebrated for his use of color and innovative style. Works like "The Dance" and "The Green Stripe" are among his most famous.\n\n5. **Edgar Degas**: Known for his works in painting, sculpture, printmaking, and drawing, Degas is particularly renowned for his depictions of dancers, such as "The Dance Class."\n\nEach of these artists has made significant contributions to the world of art, and their renown can vary based on different criteria and personal tastes.`;
   res.status(200).json({
     id: 'f821a1dd4df2492382ec9676b59ddcd3',
     object: 'chat.completion',
@@ -239,7 +281,7 @@ function chatCompletion(req, res) {
     choices: [
       {
         index: 0,
-        message: { role: 'assistant', content: 'Claude Monet is among the most renowned French painters.', tool_calls: null },
+        message: { role: 'assistant', content: content, tool_calls: null },
         finish_reason: 'stop',
         logprobs: null
       }
@@ -287,22 +329,30 @@ router.post('/failover-target/v1/chat/completions', (req, res) => {
 // against the same fixture, exactly as the legacy WireMock stub + gemini-response.json comparison did.
 router.post('/gemini/v1beta/models/:model', (req, res) => {
   console.log('----invoking mock Gemini generateContent for model ' + req.params.model);
-  res.status(200).json({
+  const geminiResponse = {
     candidates: [
       {
         content: {
           parts: [
-            { text: 'Claude Monet is generally considered the most renowned French painter.' }
+            { text: 'The most renowned French painter is generally considered to be Claude Monet (1840-1926). He was a founder of French Impressionist painting and one of the most prolific and influential artists of the movement. His famous works include \'Water Lilies,\' \'Impression, Sunrise,\' and \'Woman with a Parasol.\' His innovative approach to capturing light and atmosphere revolutionized the art world and influenced countless artists who followed.' }
           ],
           role: 'model'
         },
         finishReason: 'STOP',
-        index: 0
+        index: 0,
+        safetyRatings: [
+          { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', probability: 'NEGLIGIBLE' },
+          { category: 'HARM_CATEGORY_HATE_SPEECH', probability: 'NEGLIGIBLE' },
+          { category: 'HARM_CATEGORY_HARASSMENT', probability: 'NEGLIGIBLE' },
+          { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', probability: 'NEGLIGIBLE' }
+        ]
       }
     ],
-    usageMetadata: { promptTokenCount: 10, candidatesTokenCount: 89, totalTokenCount: 99 },
-    modelVersion: 'gemini-1.5-flash'
-  });
+    usageMetadata: { promptTokenCount: 10, candidatesTokenCount: 89, totalTokenCount: 99 }
+  };
+  // Serialize deterministically to the exact fixture format (two-space indentation and terminal newline),
+  // retaining both semantic JSON checks and legacy's raw response-string comparison.
+  res.status(200).type('application/json').send(JSON.stringify(geminiResponse, null, 2) + '\n');
 });
 
 // GET /location-abs — responds with an ABSOLUTE Location header (host + /abc/domain). Verifies the gateway

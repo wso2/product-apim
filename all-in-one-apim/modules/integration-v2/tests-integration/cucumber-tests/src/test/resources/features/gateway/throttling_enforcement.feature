@@ -36,8 +36,8 @@ Feature: Gateway Throttling Enforcement
 
   # The legacy BurstControlTestCase tier-swap (5/min -> 25/min, re-verifying the RAISED limit) IS covered — see the
   # burst-tier-swap scenario below. Legacy's 60s window-reset sleep is replaced by polling: an until-403 probe proves
-  # the unsubscribe reached the gateway and an until-200 probe returns only once the burst window has rolled over,
-  # so the measured burst starts on a fresh counter under the new tier. Burst is set at MINUTE granularity so it
+  # the unsubscribe reached the gateway and an until-200 probe returns once the new tier is in force; the burst
+  # counter is keyed per tier, so the measured burst starts on a fresh counter. Burst is set at MINUTE granularity so it
   # trips deterministically via the cumulative until-429 retry rather than a sub-second window that would reset
   # between attempts.
 
@@ -161,6 +161,7 @@ Feature: Gateway Throttling Enforcement
     Then The response status code should be 201
 
     And I have created an api from "artifacts/payloads/create_apim_test_api.json" as "burstApiId" and deployed it
+    And the "apis" resource "burstApiId" should be live on the gateway, redeploying if propagation is lost
     # A subscription can only use a tier the API OFFERS, so add the custom tier to the API's business plans.
     When I retrieve the "apis" resource with id "burstApiId"
     And I put the response payload in context as "burstApiPayload"
@@ -195,17 +196,34 @@ Feature: Gateway Throttling Enforcement
     """
     And I subscribe to API "burstApiId" using application "createdAppId" with payload "apiSubscriptionPayload" as "burstSubscriptionId"
     Then The response status code should be 201
+    And The value of response field "throttlingPolicy" should be "{{subThrottlePolicyName}}"
     When I request an OAuth access token for the current user using password grant with scope "PRODUCTION"
     Then The response status code should be 200
 
-    # Drive past the 5/min burst limit (well under the 1000/min quota) — the gateway must refuse with 429 code
-    # 900807 (BURST control), which is what proves the burst limit fired rather than the subscription quota (900804).
-    And I invoke the API at gateway context "{{burstApiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
+    # First prove this subscription is actually enforced: exhaust its 5/min burst window while allowing only 200s
+    # before the 429. This gates on the tier being in force, so an unpropagated tier cannot pass as a fresh window.
+    # The FIRST window is not counted exactly: the request that creates the API's burst throttle is never counted
+    # (ThrottleHandler registers the new throttle's context under the role-based key, not the subscription key, so
+    # that request finds no burst context), and requests closer together than one replication tick after the window
+    # opens can be lost from the count.
+    And I invoke the API at gateway context "{{burstApiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 429 allowing interim statuses "200" within 60 seconds
+    Then The response status code should be 429
+    And The value of error response field "code" should be "900807"
+
+    # Wait for the next admitted request after the exhausted minute window: it is request 1 of the rolled-over window.
+    # Only 429 is tolerated while waiting, so unrelated failures cannot be polled away.
+    When I invoke the API at gateway context "{{burstApiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 allowing interim statuses "429" within 90 seconds
     Then The response status code should be 200
     And The value of response field "id" should be "123"
     And The value of response field "name" should be "John"
-    When I invoke the API at gateway context "{{burstApiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 429 within 60 seconds
-    Then The response status code should be 429
+    # EXACT count on the rolled-over window: requests 2-5 are admitted and request 6 is refused. The gateway resets
+    # its local burst counter as soon as the window rolls over, but clears the previous window's shared count only
+    # on its next window-replication tick, and a throttle-replication tick that runs first carries that count into
+    # the new window; both ticks run every 50 ms (synapse-commons CallerContext / ThrottleReplicator /
+    # ThrottleWindowReplicator). Requests sent within a tick of the rollover can therefore be refused below the
+    # limit, so every counted request is spaced 500 ms after the previous one, by which time both ticks have run.
+    When I invoke the API at gateway context "{{burstApiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" 4 times 500 ms apart expecting status 200
+    When I invoke the API at gateway context "{{burstApiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" 1 times 500 ms apart expecting status 429
     And The value of error response field "code" should be "900807"
 
     Examples:
@@ -215,20 +233,17 @@ Feature: Gateway Throttling Enforcement
 
   # BURST TIER SWAP — ports BurstControlTestCase#testBurstLimitChange (disabled in legacy): a subscription on a LOW
   # burst tier throttles at the low limit; after UNSUBSCRIBING and RE-SUBSCRIBING on a HIGH burst tier, the same
-  # application sustains a burst the low tier would have refused. The two tiers carry the SAME 1000/min quota and
+  # application must admit exactly 25 requests and refuse the 26th. The two tiers carry the SAME 1000/min quota and
   # differ ONLY in burst (5/min vs 25/min), so the swap changes exactly one variable.
-  # Why the post-swap burst DISCRIMINATES: the measured burst is 12 back-to-back calls, plus the one call that the
-  # until-200 probe below already spent in the same window = 13 requests. 13 is ABOVE the low tier's 5/min burst
-  # (which would refuse the 6th) and BELOW the high tier's 25/min, so an all-200 outcome is possible only while the
-  # HIGH tier is in force. A window rollover mid-burst only LOWERS the in-window count, so the burst can never
-  # exceed 25 in any window — the assertion has no false-failure mode from timing, only the intended teeth.
-  # Why NO sleep is needed for the window (the flaky part of legacy): the pre-swap 429 spent this minute's burst
-  # counter, so a burst started immediately could 429 on LEFTOVER count rather than on the new tier. Instead of
-  # sleeping out the window, we poll until a call SUCCEEDS again — a 200 means the burst counter admitted a request,
-  # which is true only on a rolled-over (or freshly keyed) window, so the counter is at 1 when the burst starts.
-  # Sound whichever way the gateway keys the burst counter: if the key survives the re-subscribe, the 200 proves the
-  # rollover; if the re-subscribe re-keys it, the counter was fresh anyway. The until-200 envelope's deadline is
-  # floored at the 180s propagation window — three burst windows — so a 60s rollover always fits inside it.
+  # The successful probe below is request 1; 24 explicit calls complete the 25-call high-tier allowance and call 26
+  # must be refused with 900807. The counted calls are spaced 500 ms apart: requests closer together than one 50 ms
+  # replication tick after the window opens can be lost from the count (see the SUBSCRIPTION burst control scenario).
+  # Why the exact 25 count is sound with no window wait: the gateway keys the burst counter by application, API AND
+  # tier (appId:context:version:tier), so the high tier counts on a key the low tier never touched. Its first admitted
+  # request opens that key's FIRST window, which starts from an empty shared counter and so can never refuse a request
+  # early (unlike a rolled-over window — see the SUBSCRIPTION burst control scenario). The until-403 probe proves the
+  # low-tier subscription is gone from the gateway, so the next 200 can only be served under the high tier: it is
+  # request 1 on the high-tier key. The until-200 envelope's deadline is floored at the 180s propagation window.
   @cap:gateway @feat:throttling-enforcement @rule:burst-tier-swap @type:regression @dep:admin @dep:publisher @dep:devportal @legacy:BurstControlTestCase
   Scenario Outline: A subscription's burst limit rises once it is re-subscribed on a higher burst tier as <actor>
     And I have valid access tokens as "<actor>"
@@ -312,13 +327,14 @@ Feature: Gateway Throttling Enforcement
 
     # SWAP, step 3 — the window/propagation gate (see the header comment): poll until a call succeeds again. The 200
     # proves BOTH that the new subscription is live at the gateway and that the burst counter admits requests again.
-    When I invoke the API at gateway context "{{swapBurstApiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 90 seconds
+    When I invoke the API at gateway context "{{swapBurstApiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 allowing interim statuses "403,429" within 90 seconds
     Then The response status code should be 200
 
-    # THE DISCRIMINATING BURST: 12 more calls, every one of which must be 200 (the N-times step asserts each
-    # internally). With the probe above that is 13 in the window — 2.6x the low tier's 5/min burst, so this burst
-    # would have been refused under the tier we swapped away from.
-    When I invoke the API at gateway context "{{swapBurstApiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" 12 times expecting status 200
+    # The successful probe is the first admitted request. Require 24 more 200s (25 total at the high-tier limit),
+    # then the 26th request must be refused.
+    When I invoke the API at gateway context "{{swapBurstApiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" 24 times 500 ms apart expecting status 200
+    And I invoke the API at gateway context "{{swapBurstApiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" 1 times 500 ms apart expecting status 429
+    And The value of error response field "code" should be "900807"
 
     Examples:
       | actor             |
@@ -390,10 +406,12 @@ Feature: Gateway Throttling Enforcement
     # A bespoke application BANDWIDTH policy: 1 KB/min (the BANDWIDTHLIMIT type) — a BYTE quota, not a request count.
     When I create an application throttling policy "${UNIQUE:bw1KBperMin}" allowing 1 KB per minute
     Then The response status code should be 201
+    And I extract response field "policyId" and store it as "bwAppPolicyId"
 
     # An API exposing POST /reflect-body, whose backend echoes the request body: a single oversized POST spends the
     # whole byte quota, which a ~24-byte GET can never do without accumulating across the quota's minute window.
     And I have created an api from "artifacts/payloads/create_apim_postbody_api.json" as "bwApiId" and deployed it
+    And the "apis" resource "bwApiId" should be live on the gateway, redeploying if propagation is lost
     When I publish the "apis" resource with id "bwApiId"
     Then The lifecycle status of API "bwApiId" should be "Published"
     When I retrieve the "apis" resource with id "bwApiId"
@@ -402,20 +420,25 @@ Feature: Gateway Throttling Enforcement
     # An application bound to the bandwidth policy, subscribed and keyed.
     When I create an application "${UNIQUE:BwApp}" with throttling policy from "appThrottlePolicyName"
     Then The response status code should be 201
+    And The value of response field "throttlingPolicy" should be "{{appThrottlePolicyName}}"
     When I put the following JSON payload in context as "generateApplicationKeysPayload"
     """
-    {"keyType": "PRODUCTION", "grantTypesToBeSupported": ["client_credentials", "password"]}
+    {"keyType": "PRODUCTION", "grantTypesToBeSupported": ["client_credentials"]}
     """
     And I generate client credentials for application id "createdAppId" with payload "generateApplicationKeysPayload"
     Then The response status code should be 200
+    And I extract response field "consumerKey" and store it as "bwConsumerKey"
+    And I extract response field "consumerSecret" and store it as "bwConsumerSecret"
     When I put the following JSON payload in context as "apiSubscriptionPayload"
     """
     {"applicationId": "{{applicationId}}", "apiId": "{{apiId}}", "throttlingPolicy": "Unlimited"}
     """
     And I subscribe to API "bwApiId" using application "createdAppId" with payload "apiSubscriptionPayload" as "bwSubscriptionId"
     Then The response status code should be 201
-    When I request an OAuth access token for the current user using password grant with scope "PRODUCTION"
+    And The value of response field "throttlingPolicy" should be "Unlimited"
+    When I request a client-credentials token using consumer key "bwConsumerKey" and secret "bwConsumerSecret"
     Then The response status code should be 200
+    And I extract response field "access_token" and store it as "generatedAccessToken"
 
     # Warm up the POST resource with an empty body, then spend 4x the 1 KB/min quota in ONE request — the gateway
     # refuses with 429 code 900803 (the application-level code, shared with application request-count; here the
@@ -445,6 +468,7 @@ Feature: Gateway Throttling Enforcement
     # A bespoke subscription BANDWIDTH policy: 1 KB/min (the BANDWIDTHLIMIT type) — a BYTE quota, not a request count.
     When I create a subscription throttling policy "${UNIQUE:subBw1KB}" allowing 1 KB per minute
     Then The response status code should be 201
+    And I extract response field "policyId" and store it as "subBwPolicyId"
 
     # An API exposing POST /reflect-body, whose backend echoes the request body: a single oversized POST spends the
     # whole byte quota in one call.
@@ -458,6 +482,10 @@ Feature: Gateway Throttling Enforcement
     ["Unlimited","{{subThrottlePolicyName}}"]
     """
     Then The response status code should be 200
+    And I retrieve the "apis" resource with id "subBwApiId" until its subscription policies equal the following within 180 seconds:
+    """
+    ["Unlimited","{{subThrottlePolicyName}}"]
+    """
     When I publish the "apis" resource with id "subBwApiId"
     Then The lifecycle status of API "subBwApiId" should be "Published"
     When I retrieve the "apis" resource with id "subBwApiId"
@@ -467,20 +495,25 @@ Feature: Gateway Throttling Enforcement
     When I put JSON payload from file "artifacts/payloads/create_apim_test_app.json" in context as "createAppPayload"
     And I create an application with payload "createAppPayload"
     Then The response status code should be 201
+    And The value of response field "throttlingPolicy" should be "Unlimited"
     When I put the following JSON payload in context as "generateApplicationKeysPayload"
     """
-    {"keyType": "PRODUCTION", "grantTypesToBeSupported": ["client_credentials", "password"]}
+    {"keyType": "PRODUCTION", "grantTypesToBeSupported": ["client_credentials"]}
     """
     And I generate client credentials for application id "createdAppId" with payload "generateApplicationKeysPayload"
     Then The response status code should be 200
+    And I extract response field "consumerKey" and store it as "subBwConsumerKey"
+    And I extract response field "consumerSecret" and store it as "subBwConsumerSecret"
     When I put the following JSON payload in context as "apiSubscriptionPayload"
     """
     {"applicationId": "{{applicationId}}", "apiId": "{{apiId}}", "throttlingPolicy": "{{subThrottlePolicyName}}"}
     """
     And I subscribe to API "subBwApiId" using application "createdAppId" with payload "apiSubscriptionPayload" as "subBwSubscriptionId"
     Then The response status code should be 201
-    When I request an OAuth access token for the current user using password grant with scope "PRODUCTION"
+    And The value of response field "throttlingPolicy" should be "{{subThrottlePolicyName}}"
+    When I request a client-credentials token using consumer key "subBwConsumerKey" and secret "subBwConsumerSecret"
     Then The response status code should be 200
+    And I extract response field "access_token" and store it as "generatedAccessToken"
 
     # Warm up the POST resource with an empty body, then spend 4x the 1 KB/min quota in ONE request — the gateway
     # refuses with 429 code 900804 (SUBSCRIPTION-level throttling), distinguishing it from the application code 900803.
@@ -508,6 +541,7 @@ Feature: Gateway Throttling Enforcement
     # A bespoke advanced (API-level) BANDWIDTH policy: 1 KB/min (the BANDWIDTHLIMIT type) across the whole API.
     When I create an advanced throttling policy "${UNIQUE:advBw1KB}" allowing 1 KB per minute
     Then The response status code should be 201
+    And I extract response field "policyId" and store it as "advBwPolicyId"
 
     # An API exposing POST /reflect-body, whose backend echoes the request body: a single oversized POST spends the
     # whole byte quota in one call.
@@ -520,6 +554,8 @@ Feature: Gateway Throttling Enforcement
     {{advThrottlePolicyName}}
     """
     Then The response status code should be 200
+    When I retrieve the "apis" resource with id "advBwApiId"
+    Then The value of response field "apiThrottlingPolicy" should be "{{advThrottlePolicyName}}"
     When I deploy the API with id "advBwApiId"
     Then The response status code should be 201
     And the "apis" resource "advBwApiId" should be live on the gateway, redeploying if propagation is lost
@@ -532,20 +568,25 @@ Feature: Gateway Throttling Enforcement
     When I put JSON payload from file "artifacts/payloads/create_apim_test_app.json" in context as "createAppPayload"
     And I create an application with payload "createAppPayload"
     Then The response status code should be 201
+    And The value of response field "throttlingPolicy" should be "Unlimited"
     When I put the following JSON payload in context as "generateApplicationKeysPayload"
     """
-    {"keyType": "PRODUCTION", "grantTypesToBeSupported": ["client_credentials", "password"]}
+    {"keyType": "PRODUCTION", "grantTypesToBeSupported": ["client_credentials"]}
     """
     And I generate client credentials for application id "createdAppId" with payload "generateApplicationKeysPayload"
     Then The response status code should be 200
+    And I extract response field "consumerKey" and store it as "advBwConsumerKey"
+    And I extract response field "consumerSecret" and store it as "advBwConsumerSecret"
     When I put the following JSON payload in context as "apiSubscriptionPayload"
     """
     {"applicationId": "{{applicationId}}", "apiId": "{{apiId}}", "throttlingPolicy": "Unlimited"}
     """
     And I subscribe to API "advBwApiId" using application "createdAppId" with payload "apiSubscriptionPayload" as "advBwSubscriptionId"
     Then The response status code should be 201
-    When I request an OAuth access token for the current user using password grant with scope "PRODUCTION"
+    And The value of response field "throttlingPolicy" should be "Unlimited"
+    When I request a client-credentials token using consumer key "advBwConsumerKey" and secret "advBwConsumerSecret"
     Then The response status code should be 200
+    And I extract response field "access_token" and store it as "generatedAccessToken"
 
     # Warm up the POST resource with an empty body, then spend 4x the 1 KB/min API-level quota in ONE request — the
     # gateway refuses with 429 code 900800 (API-level throttling, applied across the whole API), not an app/sub code.
@@ -685,8 +726,9 @@ Feature: Gateway Throttling Enforcement
     """
     And I subscribe to API "resetApiId" using application "createdAppId" with payload "apiSubscriptionPayload" as "resetSubId"
     Then The response status code should be 201
-    When I request an OAuth access token for the current user using password grant with scope "PRODUCTION"
+    When I request a client-credentials token using consumer key "consumerKey" and secret "consumerSecret"
     Then The response status code should be 200
+    And I extract response field "access_token" and store it as "generatedAccessToken"
 
     # Drive past the 3/min limit -> 429 code 900803 (APPLICATION-level), the limit this reset then clears.
     When I invoke the API at gateway context "{{resetContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 429 within 60 seconds
@@ -696,11 +738,13 @@ Feature: Gateway Throttling Enforcement
     # Reset the application's throttle counter -> invocation succeeds again.
     When I reset the application throttle policy for "createdAppId" owned by "<actor>"
     Then The response status code should be 200
-    When I invoke the API at gateway context "{{resetContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
+    When I invoke the API at gateway context "{{resetContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until the application throttle reset takes effect before the original expiry within 30 seconds
     Then The response status code should be 200
-    # Re-drive past the limit again -> 429 with the same application code: proves the reset CLEARED the counter (not
-    # disabled throttling) — it re-accumulates and trips the 3/min limit once more.
-    When I invoke the API at gateway context "{{resetContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 429 within 60 seconds
+    # The reset plus these three successful calls prove the exact 3/min allowed count. Legacy allows a bounded
+    # enforcement delay after that boundary, so require the next calls to reach the same 900803 without waiting
+    # for natural window expiry.
+    And I invoke the API at gateway context "{{resetContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" 2 times expecting status 200
+    When I invoke the API at gateway context "{{resetContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 429 within 10 seconds
     Then The response status code should be 429
     And The value of error response field "code" should be "900803"
 
@@ -743,8 +787,9 @@ Feature: Gateway Throttling Enforcement
     """
     And I subscribe to API "resetBwApiId" using application "createdAppId" with payload "apiSubscriptionPayload" as "resetBwSubId"
     Then The response status code should be 201
-    When I request an OAuth access token for the current user using password grant with scope "PRODUCTION"
+    When I request a client-credentials token using consumer key "consumerKey" and secret "consumerSecret"
     Then The response status code should be 200
+    And I extract response field "access_token" and store it as "generatedAccessToken"
 
     # Warm up the POST resource, then spend 4x the 1 KB/min quota in ONE request -> 429 code 900803.
     When I put a 4 KB text payload in context as "resetBwLargePayload"
@@ -754,11 +799,18 @@ Feature: Gateway Throttling Enforcement
     Then The response status code should be 429
     And The value of error response field "code" should be "900803"
 
-    # Reset the application's throttle counter -> an empty-body invocation succeeds again (0 bytes, so this call
-    # does not itself re-spend the quota).
+    # Keep a fresh pre-reset quota expiry: if the first oversize request landed near minute-end, let that window roll
+    # over and re-establish the same 429 so reset propagation is tested before a full new expiry.
+    When I wait until the current application throttle window has at least 45 seconds remaining
+    And I invoke the API at gateway context "{{resetBwContext}}/1.0.0/reflect-body" with method "POST" using access token "generatedAccessToken" and payload "resetBwLargePayload" with content type "text/plain" until response status code becomes 429 within 10 seconds
+    Then The response status code should be 429
+    And The value of error response field "code" should be "900803"
+
+    # Reset the application's bandwidth counter. The first 4 KB request must be accepted before the original expiry,
+    # proving the counter was cleared; the following 4 KB request must be throttled again.
     When I reset the application throttle policy for "createdAppId" owned by "<actor>"
     Then The response status code should be 200
-    When I invoke the API at gateway context "{{resetBwContext}}/1.0.0/reflect-body" with method "POST" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
+    When I invoke the API at gateway context "{{resetBwContext}}/1.0.0/reflect-body" with method "POST" using access token "generatedAccessToken" and payload "resetBwLargePayload" with content type "text/plain" until the application throttle reset takes effect before the original expiry within 30 seconds
     Then The response status code should be 200
     # Re-spend the 1 KB/min quota again -> 429: proves the reset cleared the bandwidth accumulator (throttling still
     # enforced afterwards).
@@ -809,8 +861,9 @@ Feature: Gateway Throttling Enforcement
     """
     And I subscribe to API "xoResetApiId" using application "createdAppId" with payload "apiSubscriptionPayload" as "xoResetSubId"
     Then The response status code should be 201
-    When I request an OAuth access token for the current user using password grant with scope "PRODUCTION"
+    When I request a client-credentials token using consumer key "consumerKey" and secret "consumerSecret"
     Then The response status code should be 200
+    And I extract response field "access_token" and store it as "generatedAccessToken"
 
     # Drive the SUBSCRIBER's token past the 3/min limit -> 429 code 900803 (APPLICATION-level), the limit the reset clears.
     When I invoke the API at gateway context "{{xoResetContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 429 within 60 seconds
@@ -820,16 +873,22 @@ Feature: Gateway Throttling Enforcement
     # Reset the SUBSCRIBER's own application counter AS the subscriber (the reset authorizes on the caller's ownership).
     When I reset the application throttle policy for "createdAppId" owned by "<ownerActor>"
     Then The response status code should be 200
-    # The post-reset invocation uses the same subscriber token -> succeeds again, proving the owner cleared their own bucket.
-    When I invoke the API at gateway context "{{xoResetContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
+    # The reset plus these three successful calls prove the exact 3/min allowed count. Require the subsequent calls
+    # to reach the same application-level code within the legacy enforcement delay.
+    When I invoke the API at gateway context "{{xoResetContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until the application throttle reset takes effect before the original expiry within 30 seconds
     Then The response status code should be 200
-    # Re-drive past the limit again -> 429 with the same application code: proves the reset CLEARED the counter (not
-    # disabled throttling) — it re-accumulates and trips the 3/min limit once more.
-    When I invoke the API at gateway context "{{xoResetContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 429 within 60 seconds
+    And I invoke the API at gateway context "{{xoResetContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" 2 times expecting status 200
+    When I invoke the API at gateway context "{{xoResetContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 429 within 10 seconds
     Then The response status code should be 429
     And The value of error response field "code" should be "900803"
 
     Examples:
+      | adminActor        | ownerActor                 |
+      | admin             | subscriberUser             |
+      | admin@tenant1.com | subscriberUser@tenant1.com |
+
+    @email-user-throttle-reset
+    Examples: Email-form subscriber usernames
       | adminActor        | ownerActor                 |
       | admin             | subscriberUser             |
       | admin@tenant1.com | subscriberUser@tenant1.com |
@@ -869,8 +928,9 @@ Feature: Gateway Throttling Enforcement
     """
     And I subscribe to API "xoResetBwApiId" using application "createdAppId" with payload "apiSubscriptionPayload" as "xoResetBwSubId"
     Then The response status code should be 201
-    When I request an OAuth access token for the current user using password grant with scope "PRODUCTION"
+    When I request a client-credentials token using consumer key "consumerKey" and secret "consumerSecret"
     Then The response status code should be 200
+    And I extract response field "access_token" and store it as "generatedAccessToken"
 
     # Warm up the POST resource, then spend 4x the 1 KB/min quota in ONE request (subscriber's token) -> 429 code 900803.
     When I put a 4 KB text payload in context as "xoResetBwLargePayload"
@@ -880,11 +940,17 @@ Feature: Gateway Throttling Enforcement
     Then The response status code should be 429
     And The value of error response field "code" should be "900803"
 
-    # Reset the SUBSCRIBER's own bandwidth counter AS the subscriber -> an empty-body invocation (0 bytes, so it
-    # does not itself re-spend the quota) succeeds again with the same subscriber token.
+    # Preserve a full pre-reset verification window if the initial oversize request hit near minute-end.
+    When I wait until the current application throttle window has at least 45 seconds remaining
+    And I invoke the API at gateway context "{{xoResetBwContext}}/1.0.0/reflect-body" with method "POST" using access token "generatedAccessToken" and payload "xoResetBwLargePayload" with content type "text/plain" until response status code becomes 429 within 10 seconds
+    Then The response status code should be 429
+    And The value of error response field "code" should be "900803"
+
+    # Reset the SUBSCRIBER's own bandwidth counter AS the subscriber. A 4 KB request must succeed before the original
+    # expiry, proving the byte counter was cleared; the next 4 KB request must be throttled again.
     When I reset the application throttle policy for "createdAppId" owned by "<ownerActor>"
     Then The response status code should be 200
-    When I invoke the API at gateway context "{{xoResetBwContext}}/1.0.0/reflect-body" with method "POST" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
+    When I invoke the API at gateway context "{{xoResetBwContext}}/1.0.0/reflect-body" with method "POST" using access token "generatedAccessToken" and payload "xoResetBwLargePayload" with content type "text/plain" until the application throttle reset takes effect before the original expiry within 30 seconds
     Then The response status code should be 200
     # Re-spend the 1 KB/min quota again -> 429: proves the reset cleared the SUBSCRIBER's own bandwidth accumulator.
     When I invoke the API at gateway context "{{xoResetBwContext}}/1.0.0/reflect-body" with method "POST" using access token "generatedAccessToken" and payload "xoResetBwLargePayload" with content type "text/plain" until response status code becomes 429 within 60 seconds
@@ -892,6 +958,12 @@ Feature: Gateway Throttling Enforcement
     And The value of error response field "code" should be "900803"
 
     Examples:
+      | adminActor        | ownerActor                 |
+      | admin             | subscriberUser             |
+      | admin@tenant1.com | subscriberUser@tenant1.com |
+
+    @email-user-throttle-reset
+    Examples: Email-form subscriber usernames
       | adminActor        | ownerActor                 |
       | admin             | subscriberUser             |
       | admin@tenant1.com | subscriberUser@tenant1.com |

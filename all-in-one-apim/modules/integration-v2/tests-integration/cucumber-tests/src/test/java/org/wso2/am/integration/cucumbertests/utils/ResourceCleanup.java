@@ -117,6 +117,9 @@ public final class ResourceCleanup {
      */
     public static final String CREATED_USER_NAMES = "createdUserNames";
 
+    /** Scenario-owned roles created by access-control cases, swept after their member users are removed. */
+    public static final String CREATED_ROLE_NAMES = "createdRoleNames";
+
     /**
      * Teardown list for users the PRODUCT created at runtime on a scenario's behalf — today the DevPortal
      * self-sign-up user ({@code AM_USER_SIGNUP} workflow), holding each user's tenant-aware username. A signed-up
@@ -293,6 +296,7 @@ public final class ResourceCleanup {
                 && TestContext.getList(CREATED_DCR_CLIENT_IDS).isEmpty()
                 && TestContext.getList(CREATED_ENDPOINT_CERTIFICATE_ALIASES).isEmpty()
                 && TestContext.getList(CREATED_USER_NAMES).isEmpty()
+                && TestContext.getList(CREATED_ROLE_NAMES).isEmpty()
                 && TestContext.getList(CREATED_SERVICE_CATALOG_IDS).isEmpty()
                 && TestContext.getList(CREATED_PLATFORM_GATEWAY_IDS).isEmpty()
                 && TestContext.getList(CREATED_SIGNUP_USERNAMES).isEmpty()
@@ -401,8 +405,10 @@ public final class ResourceCleanup {
             deleteDcrClients(baseUrl);
             // Scenario-provisioned carbon users LAST — the applications/APIs above are deleted as their creating
             // actor (a block-boot admin, never one of these users), so removing the users first could not help,
-            // and doing it last keeps them available for any owner-token lookup above. Swept via SOAP.
+            // and doing it last keeps them available for any owner-token lookup above. Swept via SOAP. Their
+            // scenario-owned roles are removed immediately afterwards, once role memberships are gone.
             deleteUsers();
+            deleteRoles();
             // Runtime-created users LAST: every resource a signed-up user owns (its applications, and the DCR
             // client above) is swept as that user with its own credentials first — deleting the principal before
             // its resources would strand them with no owner to delete them as.
@@ -430,6 +436,7 @@ public final class ResourceCleanup {
             TestContext.remove(CREATED_ENDPOINT_CERTIFICATE_ALIASES);
             TestContext.remove(CREATED_PLATFORM_GATEWAY_IDS);
             TestContext.remove(CREATED_USER_NAMES);
+            TestContext.remove(CREATED_ROLE_NAMES);
             TestContext.remove(CREATED_SERVICE_CATALOG_IDS);
             TestContext.remove(CREATED_SIGNUP_USERNAMES);
             TestContext.remove(CREATED_APPLICATION_KEY_MAPPINGS);
@@ -573,6 +580,23 @@ public final class ResourceCleanup {
     private static void deleteUsers() {
 
         sweepUsers(CREATED_USER_NAMES, "scenario-provisioned user");
+    }
+
+    /** Removes scenario-created roles after their provisioned users have been deleted. */
+    private static void deleteRoles() {
+
+        for (Object value : TestContext.getList(CREATED_ROLE_NAMES)) {
+            if (!(value instanceof OwnedResource resource) || resource.id() == null) {
+                continue;
+            }
+            try {
+                String tenantDomain = Identity.resolveActor(resource.actorRef()).getUserDomain();
+                TenantUserProvisioner.deleteRole(tenantDomain, resource.id());
+            } catch (IOException | RuntimeException | AssertionError e) {
+                logger.warn("Cleanup failed to delete scenario-provisioned role '" + resource.id()
+                        + "' for actor '" + resource.actorRef() + "': " + e);
+            }
+        }
     }
 
     /**

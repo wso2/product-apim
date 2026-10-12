@@ -9,26 +9,38 @@ Feature: MCP Server authoring (publisher plane)
   @cap:publisher @feat:mcp-servers @rule:proxy @type:regression @legacy:MCPServerTestCase
   Scenario Outline: Full CRUD lifecycle of a proxied MCP server as <actor>
     Given The system is ready and I have valid publisher access tokens as "<actor>"
-    # CREATE — expose only echo + add (of the backend's echo/add/get_pets); assert the discovered tools persist
-    When I create an MCP server proxy to "http://nodebackend:3020/mcp" exposing tools "echo,add" as "mcpId"
+    # CREATE — retain the legacy proxy fixture's echo/add/viewPizzaMenu selection. V2 also exposes get_pets and
+    # orderPizza from its real backend, but those are not selected at this point.
+    When I create an MCP server proxy to "http://nodebackend:3020/mcp" exposing tools "echo,add,viewPizzaMenu" as "mcpId"
     Then The response status code should be 201
     And The response should contain "echo"
     And The response should contain "add"
-    # Least-privilege: the backend also offers get_pets, but it was NOT selected — so it must not be exposed.
+    And The response should contain "viewPizzaMenu"
+    And the MCP server operations should be exactly "add,echo,viewPizzaMenu" in that order
+    # Least-privilege: the backend also offers get_pets and orderPizza, but they were NOT selected.
     And The response should not contain "get_pets"
+    And The response should not contain "orderPizza"
     # READ — retrieve returns the server with its operations (still the selected subset only)
     When I retrieve the "mcp-servers" resource with id "mcpId"
     Then The response status code should be 200
     And The response should contain "echo"
     And The response should contain "add"
+    And The response should contain "viewPizzaMenu"
     And The response should not contain "get_pets"
+    And the MCP server operations should be exactly "add,echo,viewPizzaMenu" in that order
+    # Tool FIDELITY for viewPizzaMenu, checked while it is still exposed (the UPDATE below replaces it with get_pets).
+    And the MCP server "mcpId" tool "viewPizzaMenu" should have schema definition:
+      """
+      {"inputSchema":{"type":"object","properties":{},"required":[]}}
+      """
+    And the MCP server "mcpId" tool "viewPizzaMenu" should have description "View the pizza menu. This tool provides a list of available pizzas."
     # UPDATE (ADD) — expand the exposed set to add get_pets; the persisted operations reflect it
     When I update the MCP server "mcpId" to expose tools "echo,add,get_pets"
     Then The response status code should be 200
     And The response field "operations[?(@.target=='get_pets')].target" should be exactly the list "get_pets"
-    # The exposed set is now the backend's FULL advertised tool set — exactly echo, add and get_pets and nothing
-    # else. So exposing only two of them (above, and in the invocation feature's throttle/scope scenarios) is this
-    # suite's deliberate least-privilege choice, NOT a product limit on how many discovered tools can be imported.
+    # The backend advertises more tools than are exposed here (viewPizzaMenu, orderPizza and get_weather as well),
+    # so exposing a subset (here, and in the invocation feature's throttle/scope scenarios) is this suite's
+    # deliberate least-privilege choice, NOT a product limit on how many discovered tools can be imported.
     # Note the ORDER: the proxy subtype returns its operations sorted by tool name, not in the order submitted
     # ("echo,add,get_pets" in → add,echo,get_pets out) — unlike the backend-mapped subtypes, which preserve
     # submission order (see the two ordering scenarios below).
@@ -41,7 +53,7 @@ Feature: MCP Server authoring (publisher plane)
     # schema would advertise a contract its own backend rejects, and the presence checks above would not notice.
     Then the MCP server "mcpId" tool "echo" should have schema definition:
       """
-      {"inputSchema":{"type":"object","properties":{"message":{"type":"string"}},"required":["message"]}}
+      {"inputSchema":{"$schema":"http://json-schema.org/draft-07/schema#","additionalProperties":false,"type":"object","properties":{"message":{"type":"string","description":"Message to echo"}},"required":["message"]}}
       """
     And the MCP server "mcpId" tool "echo" should have description "Echoes the provided message"
     And the MCP server "mcpId" tool "add" should have schema definition:
@@ -180,6 +192,7 @@ Feature: MCP Server authoring (publisher plane)
     When I import openapi definition from "artifacts/payloads/OAS/mcp_petstore_oas3.json" with additional properties "artifacts/payloads/mcp_petstore_api_props.json" as "backingApiId"
     Then The response status code should be 201
     When I deploy the "apis" resource with id "backingApiId"
+    And the "apis" resource "backingApiId" should be live on the gateway, redeploying if propagation is lost
     When I create an MCP server from api "backingApiId" exposing paths "/pets,/pets/{petId}" as "mcpId"
     Then The response status code should be 201
     And The response field "operations[?(@.target=='get_pets')].target" should be exactly the list "get_pets"
@@ -268,6 +281,7 @@ Feature: MCP Server authoring (publisher plane)
     When I import openapi definition from "artifacts/payloads/OAS/mcp_petstore_oas3.json" with additional properties "artifacts/payloads/mcp_petstore_api_props.json" as "backingApiId"
     Then The response status code should be 201
     When I deploy the "apis" resource with id "backingApiId"
+    And the "apis" resource "backingApiId" should be live on the gateway, redeploying if propagation is lost
     When I create an MCP server from api "backingApiId" exposing paths "/pets,/pets/{petId}" as "mcpId"
     Then The response status code should be 201
     And the MCP server operations should be exactly "get_pets,get_pets_by_petId" in that order
@@ -276,6 +290,12 @@ Feature: MCP Server authoring (publisher plane)
     And the MCP server operations should be exactly "delete_oldpets,get_pets" in that order
     And The response should contain "Delete all old pets"
     And The response should contain "Return a list of pets"
+    And the MCP server "mcpId" tool "delete_oldpets" should have schema definition:
+      """
+      {"type":"object","properties":{}}
+      """
+    And the MCP server "mcpId" tool "delete_oldpets" should have description "Delete all old pets"
+    And the MCP server "mcpId" tool "get_pets" should have description "Return a list of pets"
     When I retrieve the "mcp-servers" resource with id "mcpId"
     Then The response status code should be 200
     And the MCP server operations should be exactly "delete_oldpets,get_pets" in that order

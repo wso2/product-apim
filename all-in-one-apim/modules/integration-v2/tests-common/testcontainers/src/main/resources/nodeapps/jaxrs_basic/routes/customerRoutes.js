@@ -22,6 +22,13 @@ const customerController = require('../controllers/customerController');
 router.post('/', customerController.addCustomer);
 
 router.get('/name', customerController.getCustomerName);
+
+// The legacy AddEditRemoveRESTResourceTestCase posts a text/plain customer id to /customers/name/ and
+// expects the backend's fixed customer-name response. Keep that verb/path contract alongside the GET route.
+router.post('/name', (req, res) => {
+    res.type('text/plain').send('Tom');
+});
+
 router.get('/:id', customerController.getCustomer);
 
 router.put('/', customerController.updateCustomer);

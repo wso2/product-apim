@@ -4,7 +4,7 @@ Feature: API Governance Policies
   Ports the legacy PolicyMgtTestCase: governance policy CRUD over /api/am/governance/v1/policies. A policy is a
   JSON entity that attaches one or more rulesets, targets governable lifecycle states (e.g. API_UPDATE) and is
   scoped by labels (global). Covers: the built-in default policy is present; the create -> update -> delete
-  lifecycle of a policy attaching a ruleset; and the ruleset<->policy integrity rule that a ruleset attached to
+  lifecycle of a policy attaching every ruleset returned by the organization list; and the ruleset<->policy integrity rule that a ruleset attached to
   a policy cannot be deleted (409 / 990101) — placed here (rather than in rulesets.feature) because it needs a
   policy to attach the ruleset. ×2 tenant, since policy management is tenant-scoped and tenant-agnostic.
   Teardown via @cleanup deletes governance policies before their rulesets (a policy references its rulesets).
@@ -16,7 +16,8 @@ Feature: API Governance Policies
     And I have a valid Governance access token as "<actor>"
     When I retrieve all governance policies
     Then The response status code should be 200
-    And The response should contain "WSO2 API Management Best Practices"
+    And The response array field "list[?(@.name=='WSO2 API Management Best Practices')].name" should have exactly 1 entries
+    And The response field "list[?(@.name=='WSO2 API Management Best Practices')].name" should be exactly the list "WSO2 API Management Best Practices"
 
     Examples:
       | actor            |
@@ -28,11 +29,13 @@ Feature: API Governance Policies
     Given The system is ready
     And I have valid access tokens as "<actor>"
     And I have a valid Governance access token as "<actor>"
-    When I create a governance ruleset "${UNIQUE:PolicyRuleset}" from content file "artifacts/apim-governance/simple-spectral-ruleset.yaml" as "rulesetId"
+    When I retrieve all governance ruleset IDs as "policyRulesetIds"
+    Then The response status code should be 200
+    When I create a governance policy "${UNIQUE:Policy}" attaching all ruleset IDs from "policyRulesetIds" as "policyId"
     Then The response status code should be 201
-    When I create a governance policy "${UNIQUE:Policy}" attaching ruleset "rulesetId" as "policyId"
-    Then The response status code should be 201
-    When I update the governance policy "policyId" setting its description to "Updated policy description"
+    When I retrieve all governance ruleset IDs as "updatedPolicyRulesetIds"
+    Then The response status code should be 200
+    When I update the governance policy "policyId" setting its description to "Updated policy description" and attaching all ruleset IDs from "updatedPolicyRulesetIds"
     Then The response status code should be 200
     And The response should contain "Updated policy description"
     When I delete the governance policy "policyId"

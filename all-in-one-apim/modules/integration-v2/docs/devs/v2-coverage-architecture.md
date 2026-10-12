@@ -153,6 +153,8 @@ Add a `make coverage-it` (or script) that runs Level 1 end-to-end and opens the 
 - **Under-count** — black-box tests + many disabled scenarios ⇒ the % is a floor. Keep Codecov status `informational: true` initially.
 - **`JAVA_TOOL_OPTIONS` leakage** — it applies to every JVM in the container and logs a "Picked up JAVA_TOOL_OPTIONS" line; verify no init/bootstrap JVM double-counts or breaks on it.
 - **tcpserver reachability** — must use `address=*` and expose the port, or you hit the classic "connection refused." Dump strictly before `stop()`.
+- **Graceful restarts replace the JVM** — the tcpserver agent keeps counters in the server JVM's memory only and never writes them to a file, and a Carbon `restartGracefully` exits the JVM (`CarbonServerManager Halting JVM`, then `System.exit(121)`) so `api-manager.sh` launches a new one. Every restart therefore goes through `GracefulServerRestart`, which calls `CoverageSupport.dumpBeforeRestart()` first: the outgoing JVM's counters land in `coverage/exec/<block>.restart-<n>.exec`, and the suite-end merge unions them with the block-end `<block>.exec` (each JVM is its own JaCoCo session). A restart issued any other way loses its JVM's counters.
+- **A lost block looks like lower coverage** — a failed block-end dump is a WARN, and the merged report stays valid without it. The aggregator writes `coverage/output/txt/coverage-summary.properties` (`blocks.expected`, `blocks.dumped`, `blocks.missing`, `restart.dumps`) and the CI "Verify coverage report" step fails when `blocks.dumped != blocks.expected`.
 
 ---
 

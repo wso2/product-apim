@@ -405,7 +405,12 @@ Feature: DevPortal Search & Discovery
 
     # Remove the drop-tag (keep only the keep-tag), then poll the drop-tag search until the API disappears.
     When I set the tags of API "catApiId" to "{{catKeepTag}}"
-    And I search DevPortal APIs with query "tags:{{catDropTag}}" until it does not contain "{{catApiName}}" within 60 seconds
+    Then The response status code should be 200
+    And The value of response field "id" should be "{{catApiId}}"
+    And The value of response field "name" should be "{{catApiName}}"
+    And The response field "tags" should be exactly the list "{{catKeepTag}}"
+    And The response array field "tags" should have exactly 1 entries
+    When I search DevPortal APIs with query "tags:{{catDropTag}}" until it does not contain "{{catApiName}}" within 60 seconds
     Then The response status code should be 200
     And The response should not contain "{{catApiName}}"
     # Sanity: the kept tag still finds it.

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+<!-- Focused listener-switch smoke test. Component ZIPs are supplied as Maven system properties. -->
+<suite name="Framework Verification Distributed Smoke" parallel="tests" thread-count="1">
+    <listeners>
+        <listener class-name="org.wso2.am.integration.cucumbertests.utils.listeners.DistributedLifecycleListener"/>
+        <listener class-name="org.wso2.am.integration.cucumbertests.utils.listeners.BlockScopeListener"/>
+    </listeners>
+    <test name="IntegrationV2-DistributedSmoke" parallel="classes" thread-count="1">
+        <parameter name="blockLabel" value="distributed-smoke"/>
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.BlockProbeDefaultsRunner"/>
+        </classes>
+    </test>
+</suite>

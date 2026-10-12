@@ -285,7 +285,8 @@ public class VisibilityAccessSteps {
     /**
      * Updates a published API's tags in place (GET the publisher API → replace {@code tags} → PUT) as the acting
      * actor's publisher token. Used by ChangeAPITags to remove a tag and prove the store tag filter no longer
-     * matches it. Non-asserting — the feature asserts the PUT status.
+     * matches it. Non-asserting: the PUT response is published as {@code httpResponse} for the calling scenario to
+     * assert.
      */
     @When("I set the tags of API {string} to {string}")
     public void iSetApiTags(String apiIdKey, String tagsCsv) throws IOException {

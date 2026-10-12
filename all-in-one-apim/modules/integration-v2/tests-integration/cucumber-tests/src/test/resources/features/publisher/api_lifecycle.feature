@@ -68,6 +68,20 @@ Feature: Publisher API Lifecycle
       | subscriberUser              |
       | subscriberUser@tenant1.com  |
 
+  @cap:publisher @feat:api-lifecycle @type:negative @legacy:APICreationForTenantsTestCase
+  Scenario Outline: A publisher whose custom role lacks API-create permission cannot create an API, provisioned by <provisioner>
+    Given The system is ready and I have valid publisher access tokens as "<provisioner>"
+    When I provision a user with the API-creator role fixture and store its actor as "apiCreatorActor"
+    And The system is ready and I have valid publisher access tokens as "{{apiCreatorActor}}"
+    When I put JSON payload from file "artifacts/payloads/create_apim_test_api.json" in context as "restrictedApiPayload"
+    And I attempt to create an "apis" resource with payload "restrictedApiPayload"
+    Then The response status code should be 401
+
+    Examples:
+      | provisioner        |
+      | admin               |
+      | admin@tenant1.com   |
+
   # Create-validation matrix — ports APIM514 (missing mandatory fields), APIMANAGER5834 (invalid context) and
   # APIM519 (no auth). Built from the valid base payload with one field blanked/invalidated per row, so no
   # per-case fixture is needed. This outline carries the clean, deterministic rejections: blank name/context/version
@@ -267,6 +281,7 @@ Feature: Publisher API Lifecycle
     Then The lifecycle status of API "storeVisApiId" should be "Published"
     When I retrieve the devportal API "storeVisApiId" until the response status code becomes 200 within 60 seconds
     Then The response status code should be 200
+    And The value of response field "id" should be "{{storeVisApiId}}"
 
     Examples:
       | actor             |
@@ -289,9 +304,13 @@ Feature: Publisher API Lifecycle
     Then The response status code should be 200
 
     When I change the lifecycle of API "retireApiId" with action "Deprecate"
+    Then The response status code should be 200
+    And The value of response field "lifecycleState.state" should be "Deprecated"
     Then The lifecycle status of API "retireApiId" should be "Deprecated"
 
     When I change the lifecycle of API "retireApiId" with action "Retire"
+    Then The response status code should be 200
+    And The value of response field "lifecycleState.state" should be "Retired"
     Then The lifecycle status of API "retireApiId" should be "Retired"
     # Removed from the devportal once retired -> 403.
     When I retrieve the devportal API "retireApiId" until the response status code becomes 403 within 60 seconds
@@ -398,6 +417,76 @@ Feature: Publisher API Lifecycle
       | publisherUser             |
       | publisherUser@tenant1.com |
 
+  # Ports the independent second-version create of AccessibilityOfDeprecatedOldAPIAndPublishedCopyAPITestCase — a
+  # plain POST /apis with the SAME name and the SAME context as an existing API and a new version is accepted and
+  # yields a second version of the same API. The payload's own context is reused (not the publisher read-back,
+  # which carries the /t/<tenant> prefix on the tenant row).
+  @cap:publisher @feat:api-lifecycle @rule:versioning @type:regression @legacy:AccessibilityOfDeprecatedOldAPIAndPublishedCopyAPITestCase
+  Scenario Outline: A same-named API with the same context and a new version can be created as <actor>
+    Given The system is ready and I have valid publisher access tokens as "<actor>"
+    When I put JSON payload from file "artifacts/payloads/create_apim_test_api.json" in context as "sameCtxPayload"
+    And I create an "apis" resource with payload "sameCtxPayload" as "sameCtxV1Id"
+    Then The response status code should be 201
+    And I extract response field "name" and store it as "sameCtxName"
+    And I extract response field "context" and store it as "sameCtxContext"
+    When I set the field "version" to "2.0.0" in the payload "sameCtxPayload"
+    And I attempt to create an "apis" resource with payload "sameCtxPayload" as "sameCtxV2Id"
+    Then The response status code should be 201
+    When I retrieve the "apis" resource with id "sameCtxV2Id"
+    Then The response status code should be 200
+    And The value of response field "name" should be "{{sameCtxName}}"
+    And The value of response field "context" should be "{{sameCtxContext}}"
+    And The value of response field "version" should be "2.0.0"
+    When I retrieve the "apis" resource with id "sameCtxV1Id"
+    Then The response status code should be 200
+    And The value of response field "version" should be "1.0.0"
+
+    Examples:
+      | actor                     |
+      | publisherUser             |
+      | publisherUser@tenant1.com |
+
+  # Ports the mixed-sibling publish of AccessibilityOfDeprecatedOldAPIAndPublishedCopyAPITestCase — v3 is created
+  # from the DEPRECATED v1 while v2 is still PUBLISHED, then published with "Deprecate old versions after publishing
+  # the API". The checklist deprecates only the PUBLISHED sibling (v2); the already-DEPRECATED v1 stays Deprecated,
+  # and the publish itself succeeds.
+  @cap:publisher @feat:api-lifecycle @rule:versioning @type:regression @legacy:AccessibilityOfDeprecatedOldAPIAndPublishedCopyAPITestCase
+  Scenario Outline: Publishing with deprecate-old-versions over a deprecated and a published sibling as <actor>
+    Given The system is ready and I have valid publisher access tokens as "<actor>"
+    And I have created an api from "artifacts/payloads/create_apim_test_api.json" as "mixV1Id" and deployed it
+    When I publish the "apis" resource with id "mixV1Id"
+    Then The lifecycle status of API "mixV1Id" should be "Published"
+
+    When I create a new version "2.0.0" of "apis" resource "mixV1Id" with default version "false" as "mixV2Id"
+    Then The response status code should be 201
+    When I deploy the API with id "mixV2Id"
+    Then The response status code should be 201
+    When I publish the "apis" resource with id "mixV2Id"
+    Then The lifecycle status of API "mixV2Id" should be "Published"
+    And The lifecycle status of API "mixV1Id" should be "Published"
+
+    When I change the lifecycle of API "mixV1Id" with action "Deprecate"
+    Then The response status code should be 200
+    And The lifecycle status of API "mixV1Id" should be "Deprecated"
+
+    # v3 is copied from the deprecated v1 and starts CREATED.
+    When I create a new version "3.0.0" of "apis" resource "mixV1Id" with default version "false" as "mixV3Id"
+    Then The response status code should be 201
+    And The lifecycle status of API "mixV3Id" should be "Created"
+    When I deploy the API with id "mixV3Id"
+    Then The response status code should be 201
+
+    When I change the lifecycle of API "mixV3Id" with action "Publish" and checklist "Deprecate old versions after publishing the API:true"
+    Then The response status code should be 200
+    And The lifecycle status of API "mixV3Id" should be "Published"
+    And The lifecycle status of API "mixV2Id" should be "Deprecated"
+    And The lifecycle status of API "mixV1Id" should be "Deprecated"
+
+    Examples:
+      | actor                     |
+      | publisherUser             |
+      | publisherUser@tenant1.com |
+
   # API-name uniqueness is case-insensitive: a second API whose name differs from an existing one only by letter
   # case (with its own independent unique context) is rejected. Distinct from the same-name/different-context case
   # above — here the names are only case-folded-equal, not byte-identical. Ports APIMANAGER3226. Verified live on
@@ -455,15 +544,13 @@ Feature: Publisher API Lifecycle
       | publisherUser             |
       | publisherUser@tenant1.com |
 
-  # Copy-version-in-CREATED checklist (ports RegistryLifeCycleInclusionTest#testChecklistItemsVisibility):
-  # copying a PUBLISHED API to a new version yields a NEW version whose lifecycle state is CREATED (not
-  # inherited-Published) and whose available transitions offer Publish and Deploy as a Prototype — the "checklist
-  # items" a freshly-copied version exposes. Distinct from the Published->Blocked->Deprecated scenario above:
-  # here the subject is the copied version's own fresh CREATED state and its offered transitions. The CREATED
-  # transition set is pinned exactly (verified live on 4.7.0): a CREATED API offers exactly Publish +
-  # Deploy as a Prototype.
+  # Copy-version lifecycle (ports RegistryLifeCycleInclusionTest#testChecklistItemsVisibility and
+  # #testLCStateChangeVisibility): a copy starts in CREATED with Publish + Deploy as a Prototype, then the copied
+  # resource itself must support Published -> Blocked -> Deprecated and expose the matching transitions/history.
+  # The separate lifecycle scenario above checks those transitions on an original API, not a copied version.
+  # The CREATED and Published transition sets are pinned exactly (verified live on 4.7.0).
   @cap:publisher @feat:api-lifecycle @type:regression @legacy:RegistryLifeCycleInclusionTest
-  Scenario Outline: Copying a published API to a new version yields a CREATED version offering Publish as <actor>
+  Scenario Outline: A copied API version follows its own lifecycle transitions as <actor>
     Given The system is ready and I have valid publisher access tokens as "<actor>"
     And I have created an api from "artifacts/payloads/create_apim_test_api.json" as "copyBaseApiId" and deployed it
     When I publish the "apis" resource with id "copyBaseApiId"
@@ -477,6 +564,26 @@ Feature: Publisher API Lifecycle
     And The lifecycle status of API "copyNewVersionId" should be "Created"
     # Its available transitions are exactly Publish + Deploy as a Prototype (the CREATED checklist items).
     And The available lifecycle transitions of API "copyNewVersionId" should be exactly "Publish,Deploy as a Prototype"
+
+    When I publish the "apis" resource with id "copyNewVersionId"
+    Then The response status code should be 200
+    And The lifecycle status of API "copyNewVersionId" should be "Published"
+    And The available lifecycle transitions of API "copyNewVersionId" should be exactly "Deploy as a Prototype,Block,Demote to Created,Deprecate"
+    # The legacy method intended to check Created -> Published history here, but queried the source API ID.
+    # Check the copied API's own history rather than repeating that wrong-resource assertion.
+    And The lifecycle history of API "copyNewVersionId" should record a transition from "Created" to "Published"
+
+    When I change the lifecycle of API "copyNewVersionId" with action "Block"
+    Then The response status code should be 200
+    And The lifecycle status of API "copyNewVersionId" should be "Blocked"
+    And The available lifecycle transitions of API "copyNewVersionId" should be exactly "Re-Publish,Deprecate"
+    And The lifecycle history of API "copyNewVersionId" should record a transition from "Published" to "Blocked"
+
+    When I change the lifecycle of API "copyNewVersionId" with action "Deprecate"
+    Then The response status code should be 200
+    And The lifecycle status of API "copyNewVersionId" should be "Deprecated"
+    And The available lifecycle transitions of API "copyNewVersionId" should be exactly "Retire"
+    And The lifecycle history of API "copyNewVersionId" should record a transition from "Blocked" to "Deprecated"
 
     Examples:
       | actor                     |
@@ -529,8 +636,10 @@ Feature: Publisher API Lifecycle
     When I publish the "apis" resource with id "clcApiId"
     Then The lifecycle status of API "clcApiId" should be "Published"
     When I change the lifecycle of API "clcApiId" with action "Promote"
+    Then The response status code should be 200
     Then The lifecycle status of API "clcApiId" should be "Promoted"
     When I change the lifecycle of API "clcApiId" with action "Re-Publish"
+    Then The response status code should be 200
     Then The lifecycle status of API "clcApiId" should be "Published"
     When I update the tenant configuration from "origTenantConf"
     Then The response status code should be 200

@@ -1,0 +1,32 @@
+{
+  "name": "${UNIQUE:APIMLeasing}",
+  "context": "${UNIQUE:apiLeasingContext}",
+  "version": "1.0.0",
+  "endpointConfig": {
+    "endpoint_type": "http",
+    "production_endpoints": {
+      "url": "http://nodebackend:3017/"
+    },
+    "sandbox_endpoints": {
+      "url": "http://nodebackend:3017/"
+    }
+  },
+  "description": "Leasing API with the full legacy leasing-api resource set, aggregated into an API product",
+  "tags": ["leasing"],
+  "policies": ["Gold", "Bronze", "Unlimited"],
+  "businessInformation": {
+    "businessOwner": "leasingOwner",
+    "businessOwnerEmail": "leasing.owner@example.com",
+    "technicalOwner": "leasingTech",
+    "technicalOwnerEmail": "leasing.tech@example.com"
+  },
+  "operations": [
+    {"verb": "GET", "target": "/assets", "scopes": []},
+    {"verb": "POST", "target": "/assets", "scopes": []},
+    {"verb": "GET", "target": "/assets/{assetId}", "scopes": []},
+    {"verb": "PUT", "target": "/assets/{assetId}", "scopes": []},
+    {"verb": "DELETE", "target": "/assets/{assetId}", "scopes": []}
+  ],
+  "additionalProperties": [],
+  "additionalPropertiesMap": {}
+}

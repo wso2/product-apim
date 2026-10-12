@@ -17,13 +17,13 @@
     "endpoint_security": {
       "production": {
         "enabled": true,
-        "type": "BASIC",
+        "type": "basic",
         "username": "admin1",
         "password": "admin123"
       },
       "sandbox": {
         "enabled": true,
-        "type": "BASIC",
+        "type": "basic",
         "username": "admin1",
         "password": "admin123"
       }

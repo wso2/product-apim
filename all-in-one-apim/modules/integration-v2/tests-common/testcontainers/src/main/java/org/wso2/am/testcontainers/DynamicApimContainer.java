@@ -366,6 +366,20 @@ public class DynamicApimContainer extends GenericContainer<DynamicApimContainer>
     }
 
     /**
+     * Replaces a product configuration template BEFORE the container starts, at
+     * {@code <server-home>/repository/resources/conf/templates/<templateRelativePath>}. The server renders its
+     * templates with {@code deployment.toml} on every boot, so the replacement applies to the first boot and to
+     * every restart. Used for template overlays (see {@link J2TemplateOverlay}). Must be called before
+     * {@link #start()}.
+     */
+    public DynamicApimContainer withTemplate(String templateRelativePath, String content) {
+        String target = Constants.APIM_CONTAINER_USER_HOME + "/" + requireServerName()
+                + Constants.CONTAINER_TEMPLATES_PATH + "/" + templateRelativePath;
+        withCopyToContainer(Transferable.of(content), target);
+        return this;
+    }
+
+    /**
      * Creates the usermgt (UM_*) schema for a secondary JDBC user store in a fresh embedded H2 DB, at runtime,
      * using the PRODUCT'S OWN shipped DDL ({@code dbscripts/h2.sql}) and the bundled H2 engine — the framework
      * owns zero DDL. This replaces the copied pre-seeded {@code .mv.db} (and its 0666 hack): the DB is created

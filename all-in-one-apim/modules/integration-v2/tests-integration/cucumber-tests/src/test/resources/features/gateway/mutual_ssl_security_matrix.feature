@@ -74,12 +74,12 @@ Feature: Gateway Mutual-SSL and Application-Security Matrix
     Given The system is ready and I have valid publisher access tokens as "<actor>"
     When I invoke the API at gateway context "{{mtlsOptionalContext<suffix>}}/1.0.0/customers/123" presenting client certificate "artifacts/certs/mutualssl/cert_chain_root.p12" and access token "mtlsAccessToken<suffix>" until response status code becomes 200 within 150 seconds
     Then The response status code should be 200
-    And The value of response field "id" should be "123"
-    And The value of response field "name" should be "John"
+    And The response should contain "<Customer><id>123</id><name>John</name></Customer>"
+    And The response header "Content-Type" should be exactly "text/xml; charset=utf-8"
     When I invoke the API at gateway context "{{mtlsOptionalContext<suffix>}}/customers/123" presenting client certificate "artifacts/certs/mutualssl/cert_chain_root.p12" and access token "mtlsAccessToken<suffix>" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
-    And The value of response field "id" should be "123"
-    And The value of response field "name" should be "John"
+    And The response should contain "<Customer><id>123</id><name>John</name></Customer>"
+    And The response header "Content-Type" should be exactly "text/xml; charset=utf-8"
 
     Examples:
       | actor                     | suffix       |
@@ -111,12 +111,12 @@ Feature: Gateway Mutual-SSL and Application-Security Matrix
     Given The system is ready and I have valid publisher access tokens as "<actor>"
     When I invoke the API at gateway context "{{mtlsOptionalContext<suffix>}}/1.0.0/customers/123" presenting client certificate "artifacts/certs/mutualssl/test.p12" and access token "mtlsAccessToken<suffix>" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
-    And The value of response field "id" should be "123"
-    And The value of response field "name" should be "John"
+    And The response should contain "<Customer><id>123</id><name>John</name></Customer>"
+    And The response header "Content-Type" should be exactly "text/xml; charset=utf-8"
     When I invoke the API at gateway context "{{mtlsOptionalContext<suffix>}}/customers/123" presenting client certificate "artifacts/certs/mutualssl/test.p12" and access token "mtlsAccessToken<suffix>" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
-    And The value of response field "id" should be "123"
-    And The value of response field "name" should be "John"
+    And The response should contain "<Customer><id>123</id><name>John</name></Customer>"
+    And The response header "Content-Type" should be exactly "text/xml; charset=utf-8"
 
     Examples:
       | actor                     | suffix       |
@@ -149,12 +149,12 @@ Feature: Gateway Mutual-SSL and Application-Security Matrix
     Given The system is ready and I have valid publisher access tokens as "<actor>"
     When I invoke the API at gateway context "{{mtlsBothContext<suffix>}}/1.0.0/customers/123" presenting client certificate "artifacts/certs/mutualssl/cert_chain_root.p12" and access token "mtlsAccessToken<suffix>" until response status code becomes 200 within 150 seconds
     Then The response status code should be 200
-    And The value of response field "id" should be "123"
-    And The value of response field "name" should be "John"
+    And The response should contain "<Customer><id>123</id><name>John</name></Customer>"
+    And The response header "Content-Type" should be exactly "text/xml; charset=utf-8"
     When I invoke the API at gateway context "{{mtlsBothContext<suffix>}}/customers/123" presenting client certificate "artifacts/certs/mutualssl/cert_chain_root.p12" and access token "mtlsAccessToken<suffix>" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
-    And The value of response field "id" should be "123"
-    And The value of response field "name" should be "John"
+    And The response should contain "<Customer><id>123</id><name>John</name></Customer>"
+    And The response header "Content-Type" should be exactly "text/xml; charset=utf-8"
 
     Examples:
       | actor                     | suffix       |
@@ -253,6 +253,46 @@ Feature: Gateway Mutual-SSL and Application-Security Matrix
     Then The response status code should be 200
     And The value of response field "id" should be "123"
     And The value of response field "name" should be "John"
+
+    Examples:
+      | actor                     | suffix       |
+      | admin                     |              |
+      | admin@tenant1.com         | @tenant1.com |
+
+  # The remaining httpResponse1/httpResponse10 legs of testCreateAndDeployRevisionWithInternalKeyTesting: the
+  # publisher internal key authenticates the mutual-SSL-ONLY API (no application security declared at all) with no
+  # client certificate on the handshake, at both the versioned and the default-version context.
+  @cap:gateway @feat:security-enforcement @rule:internal-key @type:regression @dep:publisher @legacy:APISecurityTestCase
+  Scenario Outline: A publisher internal API key authenticates a mutual-SSL-only API without a client certificate as <actor>
+    Given The system is ready and I have valid publisher access tokens as "<actor>"
+    When I generate an internal API key for API "mtlsOnlyApiId<suffix>" and store it as "mtlsOnlyInternalKey<suffix>"
+    Then The response status code should be 200
+    When I invoke the API at gateway context "{{mtlsOnlyContext<suffix>}}/1.0.0/customers/123" with method "GET" using internal key "mtlsOnlyInternalKey<suffix>" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
+    When I invoke the API at gateway context "{{mtlsOnlyContext<suffix>}}/customers/123" with method "GET" using internal key "mtlsOnlyInternalKey<suffix>" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
+
+    Examples:
+      | actor                     | suffix       |
+      | admin                     |              |
+      | admin@tenant1.com         | @tenant1.com |
+
+  # Ports testWWWAuthorizationHeaderForApiWithApiKeys on its own fixture, the API with mutual SSL AND application
+  # security mandatory: a call with no client certificate and no credential, and one whose Authorization header is
+  # present but empty, are both refused with the API Key realm challenge.
+  @cap:gateway @feat:security-enforcement @rule:auth-challenge @type:negative @dep:publisher @legacy:APISecurityTestCase
+  Scenario Outline: An API with mutual SSL and application security mandatory answers an unauthenticated call with a WWW-Authenticate challenge as <actor>
+    Given The system is ready and I have valid publisher access tokens as "<actor>"
+    When I invoke the API at gateway context "{{mtlsBothContext<suffix>}}/1.0.0/customers/123" with method "GET" without authentication until response status code becomes 401 within 60 seconds
+    Then The response status code should be 401
+    And The response header "WWW-Authenticate" should contain "API Key realm=\"WSO2 API Manager\""
+    When I invoke the API at gateway context "{{mtlsBothContext<suffix>}}/1.0.0/customers/123" with method GET and an empty Authorization header until response status code becomes 401 within 60 seconds
+    Then The response status code should be 401
+    And The response header "WWW-Authenticate" should contain "API Key realm=\"WSO2 API Manager\""
 
     Examples:
       | actor                     | suffix       |

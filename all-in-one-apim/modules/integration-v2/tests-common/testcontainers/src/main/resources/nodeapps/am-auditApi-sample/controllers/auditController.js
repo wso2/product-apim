@@ -15,10 +15,25 @@
  *
  */
 
- const fs = require('fs');
+const fs = require('fs');
 const path = require('path');
 
+// Read back by the V2 security-audit scenario to prove APIM takes POST for the first audit and PUT for re-audit.
+// This records actual HTTP requests received by the mock; the fixed report fixtures alone cannot distinguish
+// those product paths because both fixtures intentionally return the same audit UUID.
+const receivedMethods = [];
+
+resetObservability = (req, res) => {
+    receivedMethods.length = 0;
+    res.status(200).json({ reset: true });
+};
+
+getObservability = (req, res) => {
+    res.status(200).json({ methods: receivedMethods.slice() });
+};
+
 getResults = (req, res) => {
+    receivedMethods.push('GET');
     const filePath = path.join(__dirname, '../data/test-audit-report.json');
     fs.readFile(filePath, 'utf-8', (err, data) => {
         if (err || !data) {
@@ -29,6 +44,7 @@ getResults = (req, res) => {
 };
 
 postResults = (req, res) => {
+    receivedMethods.push('POST');
     const filePath = path.join(__dirname, '../data/test-new-audit-api.json');
     fs.readFile(filePath, 'utf-8', (err, data) => {
         if (err || !data) {
@@ -39,6 +55,7 @@ postResults = (req, res) => {
 };
 
 putResults = (req, res) => {
+    receivedMethods.push('PUT');
     const filePath = path.join(__dirname, '../data/test-update-audit-api.json');
     fs.readFile(filePath, 'utf-8', (err, data) => {
         if (err || !data) {
@@ -51,5 +68,7 @@ putResults = (req, res) => {
 module.exports = {
   getResults,
   postResults,
-  putResults
+  putResults,
+  resetObservability,
+  getObservability
 };

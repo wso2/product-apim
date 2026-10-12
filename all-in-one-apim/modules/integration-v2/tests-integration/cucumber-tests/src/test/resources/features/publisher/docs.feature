@@ -280,6 +280,8 @@ Feature: Publisher API Documentation
     And The value of response field "count" should be "2"
     And The response should contain "\"subscriber\":\"{{ovSubscriber1Name}}\""
     And The response should contain "\"subscriber\":\"{{ovSubscriber2Name}}\""
+    And The response field "list[?(@.applicationInfo.applicationId=='{{ovApp1Id}}')].applicationInfo.subscriber" should be exactly the list "{{ovSubscriber1Name}}"
+    And The response field "list[?(@.applicationInfo.applicationId=='{{ovApp2Id}}')].applicationInfo.subscriber" should be exactly the list "{{ovSubscriber2Name}}"
 
     # Add two documents; the documents list carries both (count 2).
     When I prepare a document named "${UNIQUE:OverviewDoc1}" of type "HOWTO" with sourceType "INLINE" and content "test doc 1"

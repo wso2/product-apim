@@ -36,12 +36,12 @@ Feature: Gateway Mediation Policies
       | admin@tenant1.com |
 
   # Root-path operation edge: a FRESH API whose ONLY operation is the root path "/" GET carrying the
-  # custom_add_common_header request-flow policy. The root-path resource is the known path-matching edge case —
-  # deploy/publish/subscribe/invoke the root "/" and the injected header must still reach the backend (observed
-  # via /reflect-headers). The API's endpoint routes the root operation straight to the reflecting backend route.
+  # custom_add_common_header policy in BOTH request and response flows. The root-path resource is the known
+  # path-matching edge case — deploy/publish/subscribe/invoke "/", verify request-flow injection at /reflect-headers,
+  # and independently verify the response-flow header on the gateway response.
   # Ports OperationPolicyTestCase#testFreshAPIWithRootPathOperationAndOperationPolicy.
- @cap:gateway @feat:mediation-policies @rule:add-header @type:regression @dep:publisher @legacy:OperationPolicyTestCase
-  Scenario Outline: A root-path operation with an operation policy injects the header towards the backend as <actor>
+ @cap:gateway @feat:mediation-policies @rule:add-header @type:regression @op-policy-root-response @dep:publisher @legacy:OperationPolicyTestCase
+  Scenario Outline: Root-path request and response operation policies apply as <actor>
     Given The system is ready
     And I have valid access tokens as "<actor>"
     # Register the common operation policy first so the API can reference it by name.
@@ -58,20 +58,79 @@ Feature: Gateway Mediation Policies
     When I have set up application with keys, subscribed to API "rootApiId", and obtained access token for "rootSubId"
     Then The response status code should be 200
 
-    # Invoke the ROOT path "/" — the root-path operation's policy must have injected our header on the backend
-    # request that /reflect-headers (the routed endpoint) echoes.
+    # Invoke the ROOT path "/" — request flow injects the header reflected by /reflect-headers, while response flow
+    # independently adds the exact same header to the Gateway's HTTP response.
     When I invoke the API at gateway context "{{rootContext}}/1.0.0/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
     And The response should contain "x-common-value"
+    And The response header "x-common-header" should be exactly "x-common-value"
 
     Examples:
       | actor             |
       | admin             |
       | admin@tenant1.com |
 
-  # jwtClaimBasedAccessValidator (a shipped common policy) permits the call when the token carries the configured
-  # claim=value and blocks it (403) otherwise. A client-credentials token carries aut=APPLICATION, so a matching
-  # policy lets the invocation through. Ports JWTClaimBasedAccessValidatorPolicyTestCase (allow case).
+  # Preserve the legacy no-policy baseline, both operation routes, and four-policy request/response composition.
+  # Before attachment neither route may expose TestHeader and the base route retains the exact XML Content-Type;
+  # after attachment the same header/value must be present on both responses. The ordered chain matches the legacy
+  # disableChunking -> jsonToXML -> xmlToJson -> addHeader configuration in both flows.
+  @cap:gateway @feat:mediation-policies @rule:add-header @type:regression @dep:publisher @legacy:OperationPolicyTestCase
+  Scenario Outline: The operation-policy chain preserves the no-policy baseline and both response routes as <actor>
+    Given The system is ready
+    And I have valid access tokens as "<actor>"
+    And I have created an api from "artifacts/payloads/create_apim_test_api.json" as "opParityApiId" and deployed it
+    When I retrieve the "apis" resource with id "opParityApiId"
+    And I put the response payload in context as "opParityApiPayload"
+    And I update the "apis" resource "opParityApiId" and "opParityApiPayload" with configuration type "operations" and value:
+      """
+      [{"target":"/customers/{id}","verb":"GET","authType":"Application & Application User","throttlingPolicy":"Unlimited","scopes":[],"operationPolicies":{"request":[],"response":[],"fault":[]}},{"target":"/resource/","verb":"GET","authType":"Application & Application User","throttlingPolicy":"Unlimited","scopes":[],"operationPolicies":{"request":[],"response":[],"fault":[]}}]
+      """
+    Then The response status code should be 200
+    When I deploy the API with id "opParityApiId"
+    Then The response status code should be 201
+    And the "apis" resource "opParityApiId" should be live on the gateway, redeploying if propagation is lost
+    When I publish the "apis" resource with id "opParityApiId"
+    Then The lifecycle status of API "opParityApiId" should be "Published"
+    When I retrieve the "apis" resource with id "opParityApiId"
+    And I extract response field "context" and store it as "opParityContext"
+    When I have set up application with keys, subscribed to API "opParityApiId", and obtained access token for "opParitySubId"
+    Then The response status code should be 200
+
+    When I invoke the API at gateway context "{{opParityContext}}/1.0.0/customers/123" with method "GET" using access token "generatedAccessToken" and payload "" with request header "Accept" set to "application/xml" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    And The response should not contain the header "TestHeader"
+    And The response header "Content-Type" should be exactly "application/xml; charset=utf-8"
+    When I invoke the API at gateway context "{{opParityContext}}/1.0.0/resource/" with method "GET" using access token "generatedAccessToken" and payload "" with request header "Accept" set to "application/xml" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    And The response should not contain the header "TestHeader"
+
+    When I retrieve the "apis" resource with id "opParityApiId"
+    And I put the response payload in context as "opParityApiPayload"
+    And I update the "apis" resource "opParityApiId" and "opParityApiPayload" with configuration type "operations" and value:
+      """
+      [{"target":"/customers/{id}","verb":"GET","authType":"Application & Application User","throttlingPolicy":"Unlimited","scopes":[],"operationPolicies":{"request":[{"policyName":"disableChunking","policyVersion":"v1","parameters":{}},{"policyName":"jsonToXML","policyVersion":"v1","parameters":{}},{"policyName":"xmlToJson","policyVersion":"v1","parameters":{}},{"policyName":"addHeader","policyVersion":"v3","parameters":{"headerName":"TestHeader","headerValue":"TestValue"}}],"response":[{"policyName":"disableChunking","policyVersion":"v1","parameters":{}},{"policyName":"jsonToXML","policyVersion":"v1","parameters":{}},{"policyName":"xmlToJson","policyVersion":"v1","parameters":{}},{"policyName":"addHeader","policyVersion":"v3","parameters":{"headerName":"TestHeader","headerValue":"TestValue"}}],"fault":[]}},{"target":"/resource/","verb":"GET","authType":"Application & Application User","throttlingPolicy":"Unlimited","scopes":[],"operationPolicies":{"request":[{"policyName":"disableChunking","policyVersion":"v1","parameters":{}},{"policyName":"jsonToXML","policyVersion":"v1","parameters":{}},{"policyName":"xmlToJson","policyVersion":"v1","parameters":{}},{"policyName":"addHeader","policyVersion":"v3","parameters":{"headerName":"TestHeader","headerValue":"TestValue"}}],"response":[{"policyName":"disableChunking","policyVersion":"v1","parameters":{}},{"policyName":"jsonToXML","policyVersion":"v1","parameters":{}},{"policyName":"xmlToJson","policyVersion":"v1","parameters":{}},{"policyName":"addHeader","policyVersion":"v3","parameters":{"headerName":"TestHeader","headerValue":"TestValue"}}],"fault":[]}}]
+      """
+    Then The response status code should be 200
+    When I deploy the API with id "opParityApiId"
+    Then The response status code should be 201
+    And the "apis" resource "opParityApiId" should be live on the gateway, redeploying if propagation is lost
+
+    When I invoke the API at gateway context "{{opParityContext}}/1.0.0/customers/123" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    And The response header "TestHeader" should be exactly "TestValue"
+    When I invoke the API at gateway context "{{opParityContext}}/1.0.0/resource/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    And The response header "TestHeader" should be exactly "TestValue"
+
+    Examples:
+      | actor             |
+      | admin             |
+      | admin@tenant1.com |
+
+  # Preserve the legacy no-policy control on the same API route before attaching jwtClaimBasedAccessValidator.
+  # The follow-up update/deploy then proves a token carrying aut=APPLICATION remains permitted by the policy.
+  # The negative cases below pin the policy's deny behavior. Ports the ordered baseline/allow behavior of
+  # JWTClaimBasedAccessValidatorPolicyTestCase without duplicating generic backend-header assertions.
   @cap:gateway @feat:mediation-policies @rule:claim-access-validator @type:regression @dep:publisher @legacy:JWTClaimBasedAccessValidatorPolicyTestCase
   Scenario Outline: A matching JWT-claim access-validator policy permits the invocation as <actor>
     Given The system is ready
@@ -87,7 +146,31 @@ Feature: Gateway Mediation Policies
     And I extract response field "context" and store it as "cvMatchContext"
     When I have set up application with keys, subscribed to API "cvMatchApiId", and obtained access token for "cvMatchSubId"
     Then The response status code should be 200
-    When I invoke the API at gateway context "{{cvMatchContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
+
+    # Exact one-shot no-policy control: the same route succeeds and returns its normal resource before a validator
+    # is attached. This is deliberately not an until-200 poll; a broken baseline response must fail immediately.
+    When I invoke the API at gateway context "{{cvMatchContext}}/1.0.0/customers/123/" once with method "GET" using access token "generatedAccessToken" and payload ""
+    Then The response status code should be 200
+    And The response should not contain the header "TestHeader"
+    And The response header "Content-Type" should be exactly "application/json; charset=utf-8"
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
+
+    # Attach the validator only after the control request, matching the legacy ordered test. Then create/deploy
+    # a new revision before checking the policy-bearing runtime behavior.
+    When I retrieve the "apis" resource with id "cvMatchApiId"
+    Then The response status code should be 200
+    And I put the response payload in context as "cvMatchApiPayload"
+    When I update the "apis" resource "cvMatchApiId" and "cvMatchApiPayload" with configuration type "operations" and value:
+      """
+      [{"target":"/customers/{id}","verb":"GET","authType":"Application & Application User","throttlingPolicy":"Unlimited","scopes":[],"operationPolicies":{"request":[{"policyName":"jwtClaimBasedAccessValidator","policyVersion":"v1","parameters":{"accessVerificationClaim":"aut","accessVerificationClaimValue":"APPLICATION"}}],"response":[],"fault":[]}}]
+      """
+    Then The response status code should be 200
+    When I deploy the API with id "cvMatchApiId"
+    Then The response status code should be 201
+    And the "apis" resource "cvMatchApiId" should be live on the gateway, redeploying if propagation is lost
+
+    When I invoke the API at gateway context "{{cvMatchContext}}/1.0.0/customers/123/" once with method "GET" using access token "generatedAccessToken" and payload ""
     Then The response status code should be 200
     And The value of response field "id" should be "123"
     And The value of response field "name" should be "John"
@@ -114,7 +197,7 @@ Feature: Gateway Mediation Policies
     And I extract response field "context" and store it as "cvMissContext"
     When I have set up application with keys, subscribed to API "cvMissApiId", and obtained access token for "cvMissSubId"
     Then The response status code should be 200
-    When I invoke the API at gateway context "{{cvMissContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 403 within 60 seconds
+    When I invoke the API at gateway context "{{cvMissContext}}/1.0.0/customers/123/" once with method "GET" using access token "generatedAccessToken" and payload ""
     Then The response status code should be 403
 
     Examples:
@@ -140,7 +223,7 @@ Feature: Gateway Mediation Policies
     And I extract response field "context" and store it as "cvValMissContext"
     When I have set up application with keys, subscribed to API "cvValMissApiId", and obtained access token for "cvValMissSubId"
     Then The response status code should be 200
-    When I invoke the API at gateway context "{{cvValMissContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 403 within 60 seconds
+    When I invoke the API at gateway context "{{cvValMissContext}}/1.0.0/customers/123/" once with method "GET" using access token "generatedAccessToken" and payload ""
     Then The response status code should be 403
     # The value-mismatch deny carries error code 900912 "Claim Mismatch" — a DIFFERENT code from the missing-claim
     # deny above (which the validator reports when the claim is absent). Pinning it proves the validator distinguished
@@ -171,7 +254,7 @@ Feature: Gateway Mediation Policies
     And I extract response field "context" and store it as "cvRxMatchContext"
     When I have set up application with keys, subscribed to API "cvRxMatchApiId", and obtained access token for "cvRxMatchSubId"
     Then The response status code should be 200
-    When I invoke the API at gateway context "{{cvRxMatchContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
+    When I invoke the API at gateway context "{{cvRxMatchContext}}/1.0.0/customers/123/" once with method "GET" using access token "generatedAccessToken" and payload ""
     Then The response status code should be 200
     And The value of response field "id" should be "123"
     And The value of response field "name" should be "John"
@@ -199,7 +282,7 @@ Feature: Gateway Mediation Policies
     And I extract response field "context" and store it as "cvRxMissContext"
     When I have set up application with keys, subscribed to API "cvRxMissApiId", and obtained access token for "cvRxMissSubId"
     Then The response status code should be 200
-    When I invoke the API at gateway context "{{cvRxMissContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 403 within 60 seconds
+    When I invoke the API at gateway context "{{cvRxMissContext}}/1.0.0/customers/123/" once with method "GET" using access token "generatedAccessToken" and payload ""
     Then The response status code should be 403
 
     Examples:
@@ -225,7 +308,7 @@ Feature: Gateway Mediation Policies
     And I extract response field "context" and store it as "cvInvContext"
     When I have set up application with keys, subscribed to API "cvInvApiId", and obtained access token for "cvInvSubId"
     Then The response status code should be 200
-    When I invoke the API at gateway context "{{cvInvContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
+    When I invoke the API at gateway context "{{cvInvContext}}/1.0.0/customers/123/" once with method "GET" using access token "generatedAccessToken" and payload ""
     Then The response status code should be 200
     And The value of response field "id" should be "123"
     And The value of response field "name" should be "John"
@@ -465,6 +548,41 @@ Feature: Gateway Mediation Policies
       | admin             |
       | admin@tenant1.com |
 
+  # Preserve ScriptMediatorTestCase's separate unauthenticated response contract. This response-flow policy
+  # replaces the backend payload with JSON produced by mc.setPayloadJSON; the invocation must remain tokenless.
+  # The tenant row additionally exercises the tenant-qualified gateway route, not just a second user identity.
+  @cap:gateway @feat:mediation-policies @rule:script-mediator @type:regression @dep:publisher @legacy:ScriptMediatorTestCase
+  Scenario Outline: An anonymous request receives the exact JSON produced by a JS script mediator as <actor>
+    Given The system is ready
+    And I have valid access tokens as "<actor>"
+    And I create a new common policy with spec "artifacts/payloads/policySpecFiles/script_mediator_json_response.j2" and "artifacts/payloads/policySpecFiles/script_mediator_json_response.yaml" as "scriptJsonPolicyId"
+    And I have created an api from "artifacts/payloads/create_apim_test_api.json" as "scriptJsonApiId" and deployed it
+    And the "apis" resource "scriptJsonApiId" should be live on the gateway, redeploying if propagation is lost
+    When I retrieve the "apis" resource with id "scriptJsonApiId"
+    And I put the response payload in context as "scriptJsonApiPayload"
+    And I update the "apis" resource "scriptJsonApiId" and "scriptJsonApiPayload" with configuration type "operations" and value:
+      """
+      [{"target":"/customers/{id}","verb":"GET","authType":"None","throttlingPolicy":"Unlimited","scopes":[],"operationPolicies":{"request":[],"response":[{"policyName":"script_mediator_json_response","policyVersion":"v1","parameters":{}}],"fault":[]}}]
+      """
+    Then The response status code should be 200
+    When I deploy the API with id "scriptJsonApiId"
+    Then The response status code should be 201
+    And I wait until "apis" "scriptJsonApiId" revision is deployed in the gateway
+    And the "apis" resource "scriptJsonApiId" should be live on the gateway, redeploying if propagation is lost
+    When I publish the "apis" resource with id "scriptJsonApiId"
+    Then The lifecycle status of API "scriptJsonApiId" should be "Published"
+    When I retrieve the "apis" resource with id "scriptJsonApiId"
+    And I extract response field "context" and store it as "scriptJsonContext"
+    When I invoke the API at gateway context "{{scriptJsonContext}}/1.0.0/customers/123/" with method "GET" without authentication until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    And The value of response field "name" should be "testName"
+    And The response field "checkNull" should be null
+
+    Examples:
+      | actor             |
+      | admin             |
+      | admin@tenant1.com |
+
   # Version copy carries operation policies: attach the custom_add_common_header request-flow policy to an API,
   # deploy, then COPY the API to a new version (2.0.0). The clone MUST carry the operation policies, so the NEW
   # VERSION — deployed, published, subscribed and invoked in its own right — still injects the header towards the
@@ -482,6 +600,7 @@ Feature: Gateway Mediation Policies
     # Copy the API to a NEW VERSION — the clone must carry the operation policies attached to v1.0.0.
     When I create a new version "2.0.0" of "apis" resource "verApiId" with default version "false" as "verV2Id"
     Then The response status code should be 201
+    And The operation 0 of API "verV2Id" should have a clone of common policy "custom_add_common_header" with a new id and matching md5
     # Deploy + publish the NEW VERSION in its own right.
     When I deploy the API with id "verV2Id"
     Then The response status code should be 201
@@ -525,6 +644,7 @@ Feature: Gateway Mediation Policies
     # Copy the API to a NEW VERSION — the clone must carry the SECRET operation policy attached to v1.0.0.
     When I create a new version "3.0.0" of "apis" resource "secVerApiId" with default version "false" as "secVerV3Id"
     Then The response status code should be 201
+    And The operation 0 of API "secVerV3Id" should have a clone of common policy "add_secret_headers" with a new id and matching md5
     # Deploy + publish the NEW VERSION in its own right.
     When I deploy the API with id "secVerV3Id"
     Then The response status code should be 201
@@ -543,6 +663,79 @@ Feature: Gateway Mediation Policies
     When I invoke the API at gateway context "{{secVerV3Context}}/3.0.0/reflect-headers" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
     And The response should contain "test-api-key-123"
+
+    Examples:
+      | actor             |
+      | admin             |
+      | admin@tenant1.com |
+
+  # This is intentionally distinct from the common-policy version-copy above: the secret policy is created in
+  # API-specific scope, attached to both request and response flows, empty-updated in both flows, then copied to a
+  # new API version. The backend body proves request-flow injection; exact response headers prove response-flow
+  # injection and that the empty update preserved both secret values; the copied version must keep its own cloned
+  # API-specific policy and still apply both flows.
+  @cap:gateway @feat:mediation-policies @rule:secret-attributes @type:regression @op-policy-api-specific-secret-copy @dep:publisher @legacy:OperationPolicyTestCase
+  Scenario Outline: An API-specific secret policy preserves response flow through an empty update and version copy as <actor>
+    Given The system is ready
+    And I have valid access tokens as "<actor>"
+    And I have created an api from "artifacts/payloads/create_apim_reflect_api.json" as "apiSecretCopySourceId" and deployed it
+    When I create a new API specific policy for api "apiSecretCopySourceId" with spec "artifacts/payloads/policySpecFiles/add_secret_headers.j2" and "artifacts/payloads/policySpecFiles/add_secret_headers.yaml" as "apiSecretCopyPolicyId"
+    Then The response status code should be 201
+    And The response should contain "add_secret_headers"
+    When I attach API-specific operation policy "add_secret_headers" with id "apiSecretCopyPolicyId" version "v1" to operation 0 of API "apiSecretCopySourceId" in flows "request,response" with parameters "{\"apiKey\":\"test-api-key-123\",\"token\":\"\"}"
+    Then The response status code should be 200
+    When I deploy the API with id "apiSecretCopySourceId"
+    Then The response status code should be 201
+    And the "apis" resource "apiSecretCopySourceId" should be live on the gateway, redeploying if propagation is lost
+    When I publish the "apis" resource with id "apiSecretCopySourceId"
+    Then The lifecycle status of API "apiSecretCopySourceId" should be "Published"
+    When I retrieve the "apis" resource with id "apiSecretCopySourceId"
+    And I extract response field "context" and store it as "apiSecretCopySourceContext"
+    When I have set up application with keys, subscribed to API "apiSecretCopySourceId", and obtained access token for "apiSecretCopySourceSubId"
+    Then The response status code should be 200
+
+    # Before the update, both operation flows apply: the backend sees the request secret and the client sees the
+    # response secret. The optional empty token is also part of the legacy response-header contract.
+    When I invoke the API at gateway context "{{apiSecretCopySourceContext}}/1.0.0/reflect-headers" with method "GET" using access token "generatedAccessToken" and payload "" until response body contains "test-api-key-123" within 60 seconds
+    Then The response status code should be 200
+    And The response should contain "test-api-key-123"
+    And The response header "apiKey" should be exactly "test-api-key-123"
+    And The response header "token" should be exactly ""
+
+    # Updating both flows with empty values must preserve, not clear, their previously configured secrets.
+    When I update the parameters of the operation policy in flow "request" of operation 0 of API "apiSecretCopySourceId" to "{\"apiKey\":\"\",\"token\":\"\"}"
+    Then The response status code should be 200
+    When I update the parameters of the operation policy in flow "response" of operation 0 of API "apiSecretCopySourceId" to "{\"apiKey\":\"\",\"token\":\"\"}"
+    Then The response status code should be 200
+    When I deploy the API with id "apiSecretCopySourceId"
+    Then The response status code should be 201
+    And the "apis" resource "apiSecretCopySourceId" should be live on the gateway, redeploying if propagation is lost
+    And I wait until "apis" "apiSecretCopySourceId" revision is deployed in the gateway
+    When I invoke the API at gateway context "{{apiSecretCopySourceContext}}/1.0.0/reflect-headers" with method "GET" using access token "generatedAccessToken" and payload "" until response body contains "test-api-key-123" within 60 seconds
+    Then The response status code should be 200
+    And The response should contain "test-api-key-123"
+    And The response header "apiKey" should be exactly "test-api-key-123"
+    And The response header "token" should be exactly ""
+
+    # The copied version must own cloned API-specific policies in both flows, preserve the masked parameters,
+    # and still execute request/response mediation after its own deploy and publish.
+    When I create a new version "2.0.0" of "apis" resource "apiSecretCopySourceId" with default version "false" as "apiSecretCopyV2Id"
+    Then The response status code should be 201
+    And API "apiSecretCopyV2Id" should carry the API-specific operation policy from API "apiSecretCopySourceId" on operation 0 in flows "request,response"
+    When I deploy the API with id "apiSecretCopyV2Id"
+    Then The response status code should be 201
+    And the "apis" resource "apiSecretCopyV2Id" should be live on the gateway, redeploying if propagation is lost
+    When I publish the "apis" resource with id "apiSecretCopyV2Id"
+    Then The lifecycle status of API "apiSecretCopyV2Id" should be "Published"
+    When I retrieve the "apis" resource with id "apiSecretCopyV2Id"
+    And I extract response field "context" and store it as "apiSecretCopyV2Context"
+    When I have set up application with keys, subscribed to API "apiSecretCopyV2Id", and obtained access token for "apiSecretCopyV2SubId"
+    Then The response status code should be 200
+    When I invoke the API at gateway context "{{apiSecretCopyV2Context}}/2.0.0/reflect-headers" with method "GET" using access token "generatedAccessToken" and payload "" until response body contains "test-api-key-123" within 60 seconds
+    Then The response status code should be 200
+    And The response should contain "test-api-key-123"
+    And The response header "apiKey" should be exactly "test-api-key-123"
+    And The response header "token" should be exactly ""
 
     Examples:
       | actor             |
@@ -583,7 +776,7 @@ Feature: Gateway Mediation Policies
       | admin             |
       | admin@tenant1.com |
 
-  # Content-aware json-eval mediation: a request-flow operation policy that reads the JSON body must not produce a
+  # Content-aware json-eval mediation: an API-specific policy attached to API-level request flow that reads the JSON body must not produce a
   # "Could not write JSON stream" gateway error when invoked with Content-Type: application/json and an empty
   # request body (no entity) on GET, POST, PUT, PATCH, and DELETE. The /reflect-body backend echoes the request
   # body so a gateway-side failure is observable in the response. Ports ContentAwareMediationPolicyEmptyBodyTestCase.
@@ -591,11 +784,18 @@ Feature: Gateway Mediation Policies
   Scenario Outline: A content-aware json-eval policy does not error on empty-body <method> as <actor>
     Given The system is ready
     And I have valid access tokens as "<actor>"
-    And I create a new common policy with spec "artifacts/payloads/policySpecFiles/content_aware_property_policy.j2" and "artifacts/payloads/policySpecFiles/content_aware_property_policy.yaml" as "caPolicyId"
-    And I have created an api from "artifacts/payloads/create_content_aware_empty_body_api.json" as "caApiId" and deployed it
-    # Deploy-readiness gate (self-healing): the JMS deploy event is at-most-once, so if the gateway dropped
-    # it, waiting alone can NEVER succeed — this re-emits the deploy after an exhausted window. Without it a
-    # lost event surfaces as a 404 polled to the deadline, which is what made this runner intermittently red.
+    And I put JSON payload from file "artifacts/payloads/create_content_aware_empty_body_api.json" in context as "caApiPayload"
+    And I create an "apis" resource with payload "caApiPayload" as "caApiId"
+    # Legacy creates this policy as API-specific, verifies its registration, and attaches it at API level. Do not
+    # substitute an operation-level reference: that exercises a different policy path.
+    When I create a new API specific policy for api "caApiId" with spec "artifacts/payloads/policySpecFiles/content_aware_property_policy.j2" and "artifacts/payloads/policySpecFiles/content_aware_property_policy.yaml" as "caPolicyId"
+    Then The response status code should be 201
+    And The response should contain "contentAwarePropertyPolicy"
+    When I attach API-specific operation policy "caPolicyId" named "contentAwarePropertyPolicy" version "v1" to API "caApiId" at API level
+    Then The response status code should be 200
+    And API "caApiId" should have API-level request policy "contentAwarePropertyPolicy" version "v1" with id "caPolicyId"
+    When I deploy the API with id "caApiId"
+    Then The response status code should be 201
     And the "apis" resource "caApiId" should be live on the gateway, redeploying if propagation is lost
     When I publish the "apis" resource with id "caApiId"
     Then The lifecycle status of API "caApiId" should be "Published"
@@ -604,8 +804,9 @@ Feature: Gateway Mediation Policies
     When I have set up application with keys, subscribed to API "caApiId", and obtained access token for "caSubId"
     Then The response status code should be 200
 
-    # Content-Type: application/json + empty body (no entity) — matches ContentAwareMediationPolicyEmptyBodyTestCase
-    When I invoke the API at gateway context "{{caContext}}/1.0.0/reflect-body" with method "<method>" using access token "generatedAccessToken" and payload "" with request header "Content-Type" set to "application/json" until response status code becomes 200 within 60 seconds
+    # Content-Type: application/json + empty body (no entity) — the API-level policy's deployment was confirmed
+    # above, so assert the first invocation rather than polling away an initial policy/runtime regression.
+    When I invoke the API at gateway context "{{caContext}}/1.0.0/reflect-body" once with method "<method>" using access token "generatedAccessToken" and payload "" with content type "application/json"
     Then The response status code should be 200
     And The response should not contain "Could not write JSON stream"
     And The response should not contain "Runtime Error"

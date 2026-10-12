@@ -23,6 +23,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.testng.Assert;
 import org.wso2.am.integration.cucumbertests.utils.Identity;
+import org.wso2.am.integration.cucumbertests.utils.Names;
 import org.wso2.am.integration.cucumbertests.utils.Requests;
 import org.wso2.am.integration.cucumbertests.utils.ResourceCleanup;
 import org.wso2.am.integration.cucumbertests.utils.TenantUserProvisioner;
@@ -34,10 +35,12 @@ import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 /**
  * Step definitions for B2B organizations (org visibility): registering the {@code organizationId} local claim
@@ -227,6 +230,38 @@ public class OrganizationSteps {
 
         TenantUserProvisioner.addUser(tenantDomain, userKey, userKey, userKey,
                 Utils.resolveContextPlaceholders(roles));
+    }
+
+    /**
+     * Creates a fresh publisher actor in the currently acting tenant with the legacy API-creator role fixture.
+     * The custom role carries only the UI login permission; the user also has the standard publisher/everyone
+     * roles, matching APICreationForTenantsTestCase. The created principal and role are registered for tenant-aware
+     * cleanup under the provisioning administrator before callers switch to the new actor.
+     */
+    @When("I provision a user with the API-creator role fixture and store its actor as {string}")
+    public void provisionApiCreatorRoleFixture(String actorContextKey) throws Exception {
+
+        String tenantDomain = Identity.actingTenantDomain();
+        String provisioningActor = Identity.actingActorRef();
+        String unique = Names.unique("apiCreator").replaceAll("[^A-Za-z0-9]", "");
+        String actorKey = unique;
+        String username = actorKey;
+        // Carbon internal role names are limited to 30 characters. Keep this fixture role short while
+        // retaining a per-scenario suffix so parallel suite blocks cannot collide.
+        String roleName = "ApiCreator" + UUID.randomUUID().toString().replace("-", "").substring(0, 8);
+        String password = "ApiCreatorPass123!";
+
+        TenantUserProvisioner.addUser(tenantDomain, actorKey, username, password,
+                "Internal/publisher,Internal/everyone");
+        ResourceCleanup.registerFor(ResourceCleanup.CREATED_USER_NAMES, username, provisioningActor);
+        ResourceCleanup.registerFor(ResourceCleanup.CREATED_ROLE_NAMES, roleName, provisioningActor);
+        TenantUserProvisioner.createRoleAndAssign(tenantDomain, roleName, username,
+                Arrays.asList("/permission/admin/login", "/permission/admin/manage/api/create"));
+        TenantUserProvisioner.setRoleUIPermissions(tenantDomain, roleName,
+                Collections.singletonList("/permission/admin/login"));
+        String actorRef = Constants.SUPER_TENANT_DOMAIN.equals(tenantDomain)
+                ? actorKey : actorKey + Constants.CHAR_AT + tenantDomain;
+        TestContext.set(actorContextKey, actorRef);
     }
 
     /**

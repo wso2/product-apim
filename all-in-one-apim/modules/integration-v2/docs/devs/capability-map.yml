@@ -63,6 +63,7 @@ capabilities:
       throttling-enforcement: { name: Runtime throttling enforcement }
       security-enforcement:   { name: Token / scope / mutual-SSL enforcement }
       custom-auth-header:     { name: Custom authorization header }
+      custom-api-handler:     { name: Per-API custom gateway handler }
       cors:                   { name: CORS handling }
       schema-validation:      { name: Request / response schema validation }
       mcp-invocation:         { name: MCP tool invocation (proxy / from-OpenAPI / from-API) }

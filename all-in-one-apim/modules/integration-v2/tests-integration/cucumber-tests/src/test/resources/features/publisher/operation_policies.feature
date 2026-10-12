@@ -85,7 +85,7 @@ Feature: Publisher Operation Policies
   # same archive is rejected as a duplicate (409). Also asserts a non-existing export is a 404. Ports the
   # export/import + JSON-content slices of OperationPolicyTestCase (testCommonOperationPolicyExport +
   # testCommonOperationPolicyExportWithJSONContent). Runs as admin (op-policy management is admin-scoped).
-  @cap:publisher @feat:operation-policies @rule:import-export @type:regression @legacy:OperationPolicyTestCase
+  @cap:publisher @feat:operation-policies @rule:import-export @type:regression @op-policy-export-exact @legacy:OperationPolicyTestCase
   Scenario Outline: A common operation policy survives an export/delete/import round-trip in <format> format as <actor>
     Given The system is ready and I have valid publisher access tokens as "<actor>"
     When I create a new common policy with spec "artifacts/payloads/policySpecFiles/custom_add_common_header.j2" and "artifacts/payloads/policySpecFiles/custom_add_common_header.yaml" as "rtPolicyId"
@@ -227,13 +227,20 @@ Feature: Publisher Operation Policies
   # list, then delete it and confirm ABSENCE (a 200 that did not actually delete is caught by the re-retrieve).
   # Ports OperationPolicyTestCase#testAddAPISpecificOperationPolicy (JSON create) and
   # testDeleteAPISpecificOperationPolicy (the non-YAML delete path).
-  @cap:publisher @feat:operation-policies @type:regression @legacy:OperationPolicyTestCase
+  @cap:publisher @feat:operation-policies @type:regression @op-policy-api-specific-duplicate @legacy:OperationPolicyTestCase
   Scenario Outline: A JSON-spec API-specific operation policy can be created, listed and deleted as <actor>
     Given The system is ready and I have valid publisher access tokens as "<actor>"
     And I have created an api from "artifacts/payloads/create_apim_test_api.json" as "jsonApiId" and deployed it
     When I create a new API specific policy for api "jsonApiId" with spec "artifacts/payloads/policySpecFiles/custom_add_api_specific_header.j2" and "artifacts/payloads/policySpecFiles/custom_add_api_specific_header.json" as "jsonPolicyId"
     Then The response status code should be 201
     And The response should contain "custom_add_api_specific_header"
+
+    # Duplicate creation at the SAME API-specific scope is rejected with 500 whose description names the duplicate
+    # as the cause; both are pinned exactly so a 500 from any other failure does not pass. Common-policy archive
+    # import is a different operation (409) and does not cover this legacy duplicate-create branch.
+    When I create a new API specific policy for api "jsonApiId" with spec "artifacts/payloads/policySpecFiles/custom_add_api_specific_header.j2" and "artifacts/payloads/policySpecFiles/custom_add_api_specific_header.json" as "duplicateJsonPolicyId"
+    Then The response status code should be 500
+    And The value of error response field "description" should be "Error while adding an API specific operation policy.An API specific operation policy found for the same name."
 
     # It appears on THIS API's (scenario-owned) policy list as an API-specific policy.
     When I retrieve the operation policies of API "jsonApiId"

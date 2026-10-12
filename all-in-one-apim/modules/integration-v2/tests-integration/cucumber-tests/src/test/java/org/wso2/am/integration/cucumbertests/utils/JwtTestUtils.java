@@ -19,16 +19,20 @@ package org.wso2.am.integration.cucumbertests.utils;
 
 import org.json.JSONObject;
 
+import java.io.InputStream;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.security.KeyFactory;
+import java.security.KeyStore;
+import java.security.MessageDigest;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.Signature;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.RSAPublicKeySpec;
 import java.util.Base64;
+import java.util.UUID;
 
 /**
  * Test-side JWT plumbing shared by the grant/token-exchange/key-manager glue: base64url segment handling,
@@ -104,6 +108,77 @@ public final class JwtTestUtils {
     public static String buildRs256Jwt(String headerJson, String claimsJson, PrivateKey privateKey) {
         String signingInput = base64Url(headerJson) + "." + base64Url(claimsJson);
         return signingInput + "." + signRs256(signingInput, privateKey);
+    }
+
+    /**
+     * Builds the JWT-format APIM API key used by the legacy AI API invocation test. This is intentionally
+     * different from a DevPortal-generated opaque API key: it is signed by the standard APIM test keystore and
+     * carries the application claims consumed by the gateway's API-key validator.
+     */
+    public static String buildLegacyJwtApiKey(String username, String issuer, String applicationName,
+                                               String applicationTier, int applicationId, String applicationUuid,
+                                               String applicationOwner) {
+        return buildLegacyJwtApiKey(username, issuer, applicationName, applicationTier, applicationId,
+                applicationUuid, applicationOwner, "PRODUCTION", null, null);
+    }
+
+    /**
+     * Builds the JWT-format APIM API key with an explicit key type and the optional {@code permittedIP} /
+     * {@code permittedReferer} restriction claims the gateway's API-key validator enforces. A blank restriction
+     * value omits the claim, which is how an unrestricted key is represented.
+     */
+    public static String buildLegacyJwtApiKey(String username, String issuer, String applicationName,
+                                               String applicationTier, int applicationId, String applicationUuid,
+                                               String applicationOwner, String keyType, String permittedIp,
+                                               String permittedReferer) {
+        String resource = "/artifacts/keystores/wso2carbon.jks";
+        try (InputStream input = JwtTestUtils.class.getResourceAsStream(resource)) {
+            if (input == null) {
+                throw new IllegalStateException("Missing APIM test signing keystore resource " + resource);
+            }
+            KeyStore keyStore = KeyStore.getInstance("JKS");
+            keyStore.load(input, "wso2carbon".toCharArray());
+            String alias = "wso2carbon";
+            java.security.cert.Certificate certificate = keyStore.getCertificate(alias);
+            if (certificate == null) {
+                throw new IllegalStateException("APIM test signing keystore has no certificate alias '" + alias + "'");
+            }
+            PrivateKey privateKey = (PrivateKey) keyStore.getKey(alias, "wso2carbon".toCharArray());
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            String thumbprint = base64Url(digest.digest(certificate.getEncoded()));
+            JSONObject header = new JSONObject()
+                    .put("alg", "RS256")
+                    .put("typ", "JWT")
+                    .put("x5t#S256", thumbprint)
+                    .put("kid", alias);
+
+            long issuedAt = System.currentTimeMillis() / 1000L;
+            JSONObject application = new JSONObject()
+                    .put("name", applicationName)
+                    .put("tier", applicationTier)
+                    .put("id", applicationId)
+                    .put("uuid", applicationUuid)
+                    .put("owner", applicationOwner);
+            JSONObject claims = new JSONObject()
+                    .put("jti", UUID.randomUUID().toString())
+                    .put("iss", issuer)
+                    .put("sub", username)
+                    .put("iat", issuedAt)
+                    .put("exp", issuedAt + 3600L)
+                    .put("end_username", username)
+                    .put("keytype", keyType)
+                    .put("tokentype", "apiKey")
+                    .put("application", application);
+            if (permittedIp != null && !permittedIp.isBlank()) {
+                claims.put("permittedIP", permittedIp);
+            }
+            if (permittedReferer != null && !permittedReferer.isBlank()) {
+                claims.put("permittedReferer", permittedReferer);
+            }
+            return buildRs256Jwt(header.toString(), claims.toString(), privateKey);
+        } catch (Exception e) {
+            throw new IllegalStateException("Failed to build the legacy JWT-format APIM API key", e);
+        }
     }
 
     /**
@@ -193,5 +268,37 @@ public final class JwtTestUtils {
         }
         String payload = decodePayload(jwt).replace(target, replacement);
         return parts[0] + "." + base64Url(payload) + "." + parts[2];
+    }
+
+    /**
+     * Replaces only the JWS signature segment while retaining the issued header and all claims. This produces the
+     * same invalid-signature condition as the legacy negative test without accidentally testing missing/expired
+     * claims instead.
+     */
+    public static String invalidateSignature(String jwt) {
+        String[] parts = jwt.split("\\.", -1);
+        if (parts.length != 3 || parts[0].isEmpty() || parts[1].isEmpty() || parts[2].isEmpty()) {
+            throw new IllegalArgumentException("Not a complete signed JWT: " + jwt);
+        }
+        return parts[0] + "." + parts[1] + "." + base64Url("invalid-signature");
+    }
+
+    /**
+     * Builds the legacy AdvancedConfigurationsTestCase's HS256 invalid-signature token without assuming that the
+     * current topology issues JWT-formatted access tokens (distributed deployments may issue opaque tokens).
+     */
+    public static String buildInvalidSignatureJwt(String subject, String issuer) {
+        long now = System.currentTimeMillis() / 1000;
+        JSONObject header = new JSONObject().put("alg", "HS256").put("typ", "JWT");
+        JSONObject claims = new JSONObject()
+                .put("sub", subject)
+                .put("iss", issuer)
+                .put("exp", now + 3600)
+                .put("iat", now)
+                .put("scope", "openid apim:admin")
+                .put("azp", "x")
+                .put("aud", issuer);
+        String signingInput = base64Url(header.toString()) + "." + base64Url(claims.toString());
+        return signingInput + "." + base64Url("invalid_signature");
     }
 }

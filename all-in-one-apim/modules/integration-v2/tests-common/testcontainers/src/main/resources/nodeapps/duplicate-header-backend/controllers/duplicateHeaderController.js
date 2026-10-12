@@ -15,7 +15,7 @@
  *
  */
 
- const handleGetRequest = (req, res) => {
+const handleGetRequest = (req, res) => {
     res.status(200);
     res.setHeader('Content-Type', 'application/json');
 
@@ -24,6 +24,29 @@
 
     res.write(JSON.stringify({ RestResponse: "true" }));
     res.end();
+};
+
+// Preserve the exact legacy DuplicateHeaderTestCase contract: two response headers named `Cookie`.
+// Node/Express normalizes most array-valued headers, so write the response header block directly.
+const handleDuplicateCookieRequest = (req, res) => {
+    const body = JSON.stringify({ RestResponse: "true" });
+    const raw = 'HTTP/1.1 200 OK\r\n'
+        + 'Server: testServer\r\n'
+        + 'Content-Type: application/json\r\n'
+        + 'Cookie: 12wesdsfdffdsfff\r\n'
+        + 'Cookie: 3456wesfdsfdsfdf\r\n'
+        + 'Connection: close\r\n'
+        + '\r\n' + body;
+
+    const socket = res.socket;
+    if (!socket || socket.destroyed) {
+        return;
+    }
+    if (typeof res.detachSocket === 'function') {
+        res.detachSocket(socket);
+    }
+    socket.write(raw);
+    socket.end();
 };
 
 // Emits TWO `Transfer-Encoding: chunked` response headers. Express/Node normalise hop-by-hop headers, so the
@@ -56,4 +79,4 @@ const handleTransferEncodingRequest = (req, res) => {
     socket.end();
 };
 
-module.exports = { handleGetRequest, handleTransferEncodingRequest };
+module.exports = { handleGetRequest, handleDuplicateCookieRequest, handleTransferEncodingRequest };

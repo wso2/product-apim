@@ -30,7 +30,13 @@
             "parameters": {}
           }
         ],
-        "response": [],
+        "response": [
+          {
+            "policyName": "custom_add_common_header",
+            "policyVersion": "v1",
+            "parameters": {}
+          }
+        ],
         "fault": []
       }
     }

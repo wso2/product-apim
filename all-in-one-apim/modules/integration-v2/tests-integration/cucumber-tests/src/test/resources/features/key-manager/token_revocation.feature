@@ -44,6 +44,55 @@ Feature: Key Manager Token Revocation
     And I invoke the API at gateway context "{{apiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 401 within 60 seconds
     Then The response status code should be 401
 
+  Examples:
+      | actor             |
+      | admin             |
+      | admin@tenant1.com |
+
+  # Ports JWTRevocationTestCase and keeps the legacy contract: the application is explicitly JWT token type,
+  # the token is minted with client_credentials, the token itself (not its jti) is revoked, and the same token
+  # changes from an exact successful XML invocation to an exact 401. This is intentionally separate from the
+  # password-grant/jti revocation flow above.
+  @cap:key-manager @feat:token-revocation @rule:jwt-client-credentials @type:regression @dep:gateway @legacy:JWTRevocationTestCase
+  Scenario Outline: Revoking a JWT client-credentials token blocks its API invocation as <actor>
+    Given The system is ready
+    And I have valid access tokens as "<actor>"
+    And I have created an api from "artifacts/payloads/create_apim_jaxrs_xml_api.json" as "jwtRevApiId" and deployed it
+    And the "apis" resource "jwtRevApiId" should be live on the gateway, redeploying if propagation is lost
+    When I publish the "apis" resource with id "jwtRevApiId"
+    Then The lifecycle status of API "jwtRevApiId" should be "Published"
+    When I retrieve the "apis" resource with id "jwtRevApiId"
+    And I extract response field "context" and store it as "jwtRevApiContext"
+
+    When I put JSON payload from file "artifacts/payloads/create_apim_test_app.json" in context as "jwtRevAppPayload"
+    And I set the field "tokenType" to "JWT" in the payload "jwtRevAppPayload"
+    And I create an application with payload "jwtRevAppPayload"
+    Then The response status code should be 201
+    When I put the following JSON payload in context as "jwtRevKeysPayload"
+    """
+    {"keyType":"PRODUCTION","grantTypesToBeSupported":["client_credentials"]}
+    """
+    And I generate client credentials for application id "createdAppId" with payload "jwtRevKeysPayload"
+    Then The response status code should be 200
+    When I put the following JSON payload in context as "jwtRevSubPayload"
+    """
+    {"applicationId":"{{applicationId}}","apiId":"{{apiId}}","throttlingPolicy":"Unlimited"}
+    """
+    And I subscribe to API "jwtRevApiId" using application "createdAppId" with payload "jwtRevSubPayload" as "jwtRevSubId"
+    Then The response status code should be 201
+    When I request a client-credentials token using consumer key "consumerKey" and secret "consumerSecret"
+    Then The response status code should be 200
+    And I extract response field "access_token" and store it as "jwtRevToken"
+
+    # Legacy makes one active-token request and immediately requires 200; a completed non-200 must not be hidden by retry.
+    When I invoke the API once at gateway context "{{jwtRevApiContext}}/1.0.0/customers/123/" with method "GET" using access token "jwtRevToken" and payload "" with request header "Accept" set to "text/xml"
+    Then The response status code should be 200
+    And The response should contain "<id>123</id><name>John</name></Customer>"
+    When I revoke the OAuth access token "jwtRevToken"
+    Then The response status code should be 200
+    When I invoke the API at gateway context "{{jwtRevApiContext}}/1.0.0/customers/123/" with method "GET" using access token "jwtRevToken" and payload "" with request header "Accept" set to "text/xml" until the revoked token is rejected within 19 seconds
+    Then The response status code should be 401
+
     Examples:
       | actor             |
       | admin             |

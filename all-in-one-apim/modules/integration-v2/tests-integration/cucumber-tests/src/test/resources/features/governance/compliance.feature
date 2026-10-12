@@ -30,6 +30,8 @@ Feature: API Governance Artifact Compliance
     And I attempt to create a revision for "apis" resource "govApiId" with payload "govRevPayload"
     Then The response status code should be 400
     And The error response should have code "903300" and message "Request does not adhere to governance standards"
+    When I delete the governance policy "blockPolicyId"
+    Then The response status code should be 204
 
     Examples:
       | actor            |
@@ -48,6 +50,7 @@ Feature: API Governance Artifact Compliance
     Then The response status code should be 200
     And The response should contain "NON_COMPLIANT"
     And The response should contain "VIOLATED"
+    And I verify the API compliance response includes governed policies
 
     Examples:
       | actor            |
@@ -62,7 +65,7 @@ Feature: API Governance Artifact Compliance
     Given The system is ready
     And I have valid access tokens as "<actor>"
     And I have a valid Governance access token as "<actor>"
-    When I create an MCP server from openapi "artifacts/payloads/OAS/mcp_petstore_oas3.json" with backend "http://nodebackend:3001/jaxrs_basic/services/customers/customerservice" as "govMcpId"
+    When I create an MCP server from openapi "artifacts/payloads/OAS/mcp_petstore_legacy_compliance_oas3.json" with backend "http://nodebackend:3001/jaxrs_basic/services/customers/customerservice" as "govMcpId"
     Then The response status code should be 201
     And I extract response field "name" and store it as "govMcpName"
     When I retrieve the compliance of API "govMcpId" until the status is "NON_COMPLIANT" within 240 seconds
