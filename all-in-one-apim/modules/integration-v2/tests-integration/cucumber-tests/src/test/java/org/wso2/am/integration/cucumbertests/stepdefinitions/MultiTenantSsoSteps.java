@@ -203,6 +203,9 @@ public class MultiTenantSsoSteps {
 
     @When("I open the {string} console expecting multi-tenant SSO")
     public void iOpenTheConsoleExpectingSso(String console) {
+        if ("devportal".equals(console) && TestContext.get("mtTenantDomain") != null) {
+            browser.setDevportalTenant(TestContext.resolve("mtTenantDomain").toString());
+        }
         browser.openConsoleExpectingSso(console);
     }
 

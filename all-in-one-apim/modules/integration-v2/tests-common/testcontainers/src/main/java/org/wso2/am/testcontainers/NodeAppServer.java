@@ -58,6 +58,12 @@ public class NodeAppServer {
     /** Attempts to draw a fresh set of host ports when docker reports one of them already bound. */
     private static final int START_ATTEMPTS = 4;
 
+    /**
+     * One CPU for the whole backend. It is a JVM-wide singleton shared by every concurrently running block, so the
+     * cap bounds its total share of the runner rather than a per-block budget.
+     */
+    public static final CpuLimit CPU_LIMIT = CpuLimit.of(1);
+
     /** {@code containerPort -> explicitly chosen host port}, redrawn per boot attempt. See {@link #freeHostPort()}. */
     private final Map<Integer, Integer> stableHostPorts = new LinkedHashMap<>();
 
@@ -66,7 +72,7 @@ public class NodeAppServer {
     public NodeAppServer() {
         logger.info("Initializing NodeAppServer...");
         container = startWithPortRetry();
-        logger.info("NodeAppServer successfully initialized");
+        logger.info("NodeAppServer successfully initialized (" + CPU_LIMIT + ")");
     }
 
     /**
@@ -112,7 +118,10 @@ public class NodeAppServer {
                 .withExposedPorts(exposedPorts)
                 .withNetwork(ContainerNetwork.BACKEND_HOME_NETWORK)
                 .withNetworkAliases(NETWORK_ALIAS, TENANT_NETWORK_ALIAS)
-                .withCreateContainerCmdModifier(this::declareStableHostPorts)
+                .withCreateContainerCmdModifier(cmd -> {
+                    declareStableHostPorts(cmd);
+                    CPU_LIMIT.applyTo(cmd);
+                })
                 .waitingFor(Wait.forListeningPort().withStartupTimeout(Duration.ofMinutes(5)));
         candidate.withLogConsumer(new JclLogConsumer(logger));
         return candidate;

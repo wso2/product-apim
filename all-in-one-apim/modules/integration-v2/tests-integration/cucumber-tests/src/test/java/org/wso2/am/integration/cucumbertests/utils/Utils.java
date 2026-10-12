@@ -70,6 +70,7 @@ import java.util.zip.ZipOutputStream;
 public class Utils {
     
     private static final Log log = LogFactory.getLog(Utils.class);
+    private static final ThreadLocal<Boolean> IN_RETRY_ATTEMPT = ThreadLocal.withInitial(() -> false);
     private static final ObjectMapper mapper = new ObjectMapper();
     private static final Pattern UNIQUE_PLACEHOLDER = Pattern.compile("\\$\\{UNIQUE:([^}]+)\\}");
 
@@ -257,25 +258,55 @@ public class Utils {
         return retryUntil(timeoutMillis, pollIntervalMillis, false, attempt, accept);
     }
 
+    /**
+     * True while the current thread is running one {@link #retryUntil} attempt. Lets a request funnel bound a
+     * stalled call so it fails as a retriable {@link IOException} instead of consuming the whole window.
+     */
+    public static boolean inRetryAttempt() {
+        return IN_RETRY_ATTEMPT.get();
+    }
+
     private static <T> T retryUntil(long timeoutMillis, long pollIntervalMillis, boolean applyPropagationFloor,
                                     RetryAttempt<T> attempt, RetryAccept<T> accept) throws InterruptedException {
         long pollStart = System.currentTimeMillis();
         long deadline = pollStart + (applyPropagationFloor
                 ? Math.max(timeoutMillis, Constants.RUNTIME_PROPAGATION_TIMEOUT) : timeoutMillis);
         AtomicReference<T> lastResult = new AtomicReference<>();
+        AtomicReference<String> lastTransportError = new AtomicReference<>();
         T accepted = pollWithin(pollStart, deadline, () -> {
+            boolean enclosing = IN_RETRY_ATTEMPT.get();
+            IN_RETRY_ATTEMPT.set(true);
             try {
                 T result = attempt.attempt();
                 lastResult.set(result);
+                lastTransportError.set(null);
                 return accept.isAcceptable(result) ? result : null;
             } catch (IOException transientDuringWarmup) {
                 // Only transient connectivity is retried: a gateway still warming up refuses/severs the
                 // connection. Anything else (e.g. IllegalArgumentException from TestContext.resolve on a
                 // typo'd key) escapes to fail fast instead of being reported as a timeout.
+                String description = describeCauseChain(transientDuringWarmup);
+                if (!description.equals(lastTransportError.getAndSet(description))) {
+                    log.info("Retried attempt threw after " + (System.currentTimeMillis() - pollStart)
+                            + "ms of a " + (deadline - pollStart) + "ms window: " + description);
+                }
                 return null;
+            } finally {
+                IN_RETRY_ATTEMPT.set(enclosing);
             }
         }, pollIntervalMillis);
         return accepted != null ? accepted : lastResult.get();
+    }
+
+    private static String describeCauseChain(Throwable throwable) {
+        StringBuilder description = new StringBuilder();
+        for (Throwable cause = throwable; cause != null; cause = cause.getCause()) {
+            if (description.length() > 0) {
+                description.append(" <- ");
+            }
+            description.append(cause.getClass().getSimpleName()).append(": ").append(cause.getMessage());
+        }
+        return description.toString();
     }
 
     /** One sample for {@link #awaitSettledCount}: reads the counter under test. Only {@link IOException} is retried. */

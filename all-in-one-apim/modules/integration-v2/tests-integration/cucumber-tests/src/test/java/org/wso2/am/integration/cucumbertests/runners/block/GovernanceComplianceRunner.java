@@ -20,10 +20,10 @@ package org.wso2.am.integration.cucumbertests.runners.block;
 import io.cucumber.testng.CucumberOptions;
 
 /**
- * Runner for API Governance artifact-compliance (the port of the legacy APIComplianceTestCase): a BLOCK-on-
- * deploy policy rejecting deployment, and the asynchronous compliance evaluation of a created API. Runs in the
- * concurrent IntegrationV2-Governance block; each scenario uses uniquely-named artifacts, so it is
- * parallel-safe.
+ * Runner for API Governance artifact compliance (the asynchronous half of the legacy APIComplianceTestCase): a
+ * freshly-created API or MCP server is evaluated against the default policy. It only reads governance
+ * configuration and each scenario uses uniquely-named artifacts, so it runs beside other runners in an
+ * IntegrationV2-Gateway-* block.
  */
 @CucumberOptions(
         features = {

@@ -1,0 +1,109 @@
+# Overlay for the IntegrationV2-BackendJwtUrlSafeAndMtlsChain block: KeyManagerBackendJwtUrlSafeRunner,
+# PublisherStreamingDesignRunner, GatewayMutualSslChainValidationRunner and GatewayWebSocketProxySpecificBypassRunner.
+# Merged on top of the shared `basic` overlay. The distributed suite keeps these keys in backendJwtUrlSafe/,
+# solaceMtlsChain/ and wsProxySpecificBypass/.
+#
+# The tables are mutually inert for these runners:
+#   - [apimgt.mutual_ssl] only switches the gateway's MutualSSLAuthenticator onto the chain-walking code path, and
+#     [transport.http.listener.ssl_profile] read_interval only shortens the listener trust-store reload. Neither
+#     other runner creates a mutual-SSL API, presents a client certificate or uploads one.
+#   - The backend-JWT, application-attribute and async-parser keys do not touch the chain runner: it creates no
+#     applications, defines no AsyncAPI, and asserts only the gateway status codes of mutual-SSL invocations.
+#
+# ---------------------------------------------------------------------------------------------
+# KeyManagerBackendJwtUrlSafeRunner (URLSafeJWTTestCase) and PublisherStreamingDesignRunner
+# ---------------------------------------------------------------------------------------------
+# Backend JWT generation with URL-SAFE base64 encoding, so the gateway emits the X-JWT-Assertion header
+# base64url-encoded.
+[apim.jwt]
+enable = true
+encoding = "base64url"
+claim_dialect = "http://wso2.org/claims"
+header = "X-JWT-Assertion"
+signing_algorithm = "SHA256withRSA"
+
+[apim.devportal]
+enable_empty_values_in_application_attributes = false
+
+[[apim.devportal.application_attributes]]
+required = true
+hidden = false
+default = "Yes"
+name = "Sandbox access required"
+description = "Does this Application require access to APIs in the Sandbox environment ? (Yes or No)"
+
+[[apim.devportal.application_attributes]]
+required = true
+hidden = false
+default = "Yes"
+name = "Production access required"
+description = "Does this Application require access to APIs in the Production environment ? (Yes or No)"
+
+[[apim.devportal.application_attributes]]
+required = false
+hidden = false
+name = "Optional attribute"
+description = "Description of Optional attribute"
+
+# Streaming design co-locates in this block (see testng-v2.xml). It needs the NEW AsyncAPI parser instead of the
+# v2-default legacy parser, which does NOT enforce strict AsyncAPI-v2 validation (e.g. an implicit OAuth flow
+# missing its authorization URL is silently accepted); matches AsyncAPITestWithValidationCase. Orthogonal to the
+# [apim.jwt] keys above, and streaming design is design-only (no invocation) so the backend-JWT config is inert to it.
+[apim.publisher]
+use_legacy_async_parser = false
+
+# ---------------------------------------------------------------------------------------------
+# GatewayMutualSslChainValidationRunner (APISecurityMutualSSLCertificateChainValidationTestCase)
+# ---------------------------------------------------------------------------------------------
+# Certificate-chain validation is an OPT-IN mutual-SSL mode. With it OFF (the product default) the
+# gateway's MutualSSLAuthenticator matches the single presented certificate by "<serial>_<subjectDN>"
+# against the certificates uploaded to the API. With it ON the authenticator walks the presented ISSUER
+# PATH (completing it from the listener trust store) and authorises if any certificate along that path is
+# one the API holds.
+#
+# The two modes are mutually exclusive at runtime (a single boolean picks the code path), so this still
+# cannot be folded into the mtlsWsCors block: turning it on there would silently convert every existing
+# mutual-SSL assertion into a statement about the opt-in mode and leave the DEFAULT mode untested.
+# gateway/mutual_ssl_invocation.feature keeps asserting the default; this runner asserts the opt-in.
+[apimgt.mutual_ssl]
+enable_certificate_chain_validation = true
+
+# An uploaded client certificate reaches the gateway trust store only on the passthrough HTTPS listener's
+# next dynamic SSL-profile read (default 600000 ms = 10 min). The listener never checks more often than once a
+# minute (Synapse's FileUpdateNotificationHandler raises any read interval below 60000 ms to 60000 ms), so this
+# value gives a 60 s read and an uploaded certificate is honoured within about a minute. SSLVerifyClient already
+# defaults to "optional" on 8243.
+[transport.http.listener.ssl_profile]
+read_interval = "10000"
+
+# The chain walk that completes a head-only leaf (MutualSSLAuthenticator -> Utils.getCertificateFromListenerTrustStore)
+# reads the IN-MEMORY listener trust store, which CertificateReLoader refreshes from the file 60 s after boot and then
+# every certificate_reloader.period (default 600 s). The listener read_interval above does not refresh it. Shorten it so
+# an uploaded intermediate reaches the chain walk within seconds wherever the runner sits in the block.
+[apim.certificate_reloader]
+period = "10s"
+
+# Allows the block's listenerSslReloadReadinessSeconds gate to restart the Gateway once when the HTTPS listener's
+# SSL-profile reload is disabled on a start (see ListenerSslReloadReadiness). Inert unless that restart is called.
+[server]
+enable_restart_from_api = true
+
+# ---------------------------------------------------------------------------------------------
+# GatewayWebSocketProxySpecificBypassRunner (WebSocketProxyProfileTestCase), from wsProxySpecificBypass/deployment.toml. [[transport.ws.proxy_profile]] only
+# routes the gateway's OUTBOUND WebSocket connections; no other runner in this block invokes a WebSocket API,
+# so the proxy sees only this runner's traffic and its exact Squid CONNECT counts stay valid.
+# ---------------------------------------------------------------------------------------------
+# Tests bypass_hosts within a specific (non-catch-all) profile. A single profile is loaded:
+#
+#   Profile — target_hosts = ["nodebackend"], bypass_hosts = ["nodebackend"].
+#             The gateway matches nodebackend specifically but bypass_hosts takes precedence —
+#             the gateway connects directly to nodebackend without going through Squid.
+#             A passing echo proves the bypass path was taken; zero CONNECT entries in the Squid
+#             access log are the decisive proof (a passing echo alone cannot prove bypass because
+#             Squid can also reach nodebackend on the Docker network).
+
+[[transport.ws.proxy_profile]]
+target_hosts = ["nodebackend"]
+proxy_host = "squid-proxy"
+proxy_port = 3128
+bypass_hosts = ["nodebackend"]

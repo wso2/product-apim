@@ -1,0 +1,48 @@
+# Overlay for the IntegrationV2-Solace block (SolaceApiLifecycleRunner and GatewayWebSocketProxyNoMatchRunner, which
+# runs as the super-tenant admin and so is unaffected by the tenant key-generation failure below). Merged on top of
+# the shared `basic` overlay.
+# The distributed suite's Solace block uses solaceMtlsChain/deployment.toml, which also carries the mutual-SSL
+# chain-validation keys for the runner it co-hosts.
+#
+# [apim.solace_config] is NOT confined to Solace-typed APIs: it activates SolaceKeyGenNotifier, which runs on EVERY
+# application key generation in the container and, in a tenant, dereferences a null application lookup
+# (SolaceKeyGenNotifier.java:67, NPE -> HTTP 500 from POST /applications/{id}/generate-keys). Any runner that
+# generates keys as a tenant user therefore cannot share this container (measured with AnalyticsElkMetricsRunner).
+#
+# Solace is integrated through NOTIFIERS on the v2 Event-Portal API (SolaceSubscriptionsNotifier,
+# SolaceKeyGenNotifier, SolaceApplicationNotifier), registered by SolaceManagerComponent as OSGi
+# `Notifier` services. There is deliberately NO [[apim.gateway.environment]] provider = "solace" block:
+# SolaceBrokerDeployer implements only the retired ExternalGatewayDeployer SPI, which nothing binds, so
+# deploying a revision to a Solace environment fails 207 / 902060. The notifiers read only the config
+# below.
+#
+# apim_api_endpoint is the shim's NETWORK ALIAS, not localhost: APIM calls it from inside the container,
+# so a host-mapped port would be unreachable. DynamicSolaceBroker publishes the alias `solaceshim` and
+# the block starts it BEFORE APIM.
+[apim.solace_config]
+apim_api_endpoint = "http://solaceshim:8081"
+# Any non-empty value. The shim LOGS the bearer token but never rejects it -- a 401 from the double
+# would masquerade as an APIM misconfiguration.
+token = "integration-v2-solace-token"
+
+# ---------------------------------------------------------------------------------------------
+# GatewayWebSocketProxyNoMatchRunner (WebSocketProxyProfileTestCase), from wsProxyNoMatch/deployment.toml. [[transport.ws.proxy_profile]] only
+# routes the gateway's OUTBOUND WebSocket connections; no other runner in this block invokes a WebSocket API,
+# so the proxy sees only this runner's traffic and its exact Squid CONNECT counts stay valid.
+# ---------------------------------------------------------------------------------------------
+# Tests that a backend hostname not matched by any profile's target_hosts is connected to directly,
+# without going through any proxy.
+#
+#   Profile — target_hosts = ["proxied\\.backend\\.test"]: only this specific hostname is affected.
+#             proxy_port 19099 is intentionally unreachable. Any backend whose hostname does NOT match
+#             this pattern falls outside all profiles and the gateway connects directly.
+#
+# The test API uses ws://nodebackend:3001. "nodebackend" does not match "proxied\.backend\.test",
+# so no profile is selected and the gateway connects to nodebackend directly. A passing echo proves
+# that unmatched hostnames are not inadvertently routed through a proxy. The Squid access log should
+# record zero CONNECT entries (asserted via SquidProxyServer.getAnonConnectCount()).
+
+[[transport.ws.proxy_profile]]
+target_hosts = ["proxied\\.backend\\.test"]
+proxy_host = "squid-proxy"
+proxy_port = 3128

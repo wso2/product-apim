@@ -31,6 +31,7 @@ import org.apache.http.client.methods.HttpOptions;
 import org.apache.http.client.methods.HttpPatch;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
+import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.client.methods.RequestBuilder;
 import org.apache.http.config.Registry;
@@ -68,6 +69,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.regex.Pattern;
 import java.util.zip.GZIPOutputStream;
 
 public class SimpleHTTPClient {
@@ -85,6 +91,13 @@ public class SimpleHTTPClient {
     private static final int GENERAL_ERROR_CODE = 900967;
     private static final int GENERAL_ERROR_RETRIES = 3;
     private static final long GENERAL_ERROR_RETRY_WAIT_MS = 2000L;
+
+    private static final RequestConfig DEFAULT_REQUEST_CONFIG = RequestConfig.custom()
+            .setRedirectsEnabled(false) // Disable redirects
+            .build();
+
+    /** Read-stall bound applied to every request this thread sends inside {@link #withSocketTimeout}. */
+    private static final ThreadLocal<Integer> SCOPED_SOCKET_TIMEOUT = new ThreadLocal<>();
 
     private SimpleHTTPClient()  {
 
@@ -114,13 +127,9 @@ public class SimpleHTTPClient {
             connManager.setMaxTotal(1000);        // total max connections
             connManager.setDefaultMaxPerRoute(100);   // max connections per route
 
-            RequestConfig requestConfig = RequestConfig.custom()
-                    .setRedirectsEnabled(false) // Disable redirects
-                    .build();
-
             this.client = HttpClients.custom()
                     .setConnectionManager(connManager)
-                    .setDefaultRequestConfig(requestConfig)
+                    .setDefaultRequestConfig(DEFAULT_REQUEST_CONFIG)
                     .evictExpiredConnections()
                     .disableCookieManagement() // Disable sending or storing cookies
                     .build();
@@ -137,6 +146,121 @@ public class SimpleHTTPClient {
 
     public static SimpleHTTPClient getInstance() {
         return InstanceHolder.INSTANCE;
+    }
+
+    /** A call made inside a {@link #withSocketTimeout} scope. */
+    @FunctionalInterface
+    public interface ScopedCall<T> {
+        T call() throws IOException;
+    }
+
+    /**
+     * Runs {@code call} with every request it sends on this thread bounded by a socket read timeout: a response
+     * that stalls for {@code socketTimeoutMillis} between packets fails the request with a
+     * {@link java.net.SocketTimeoutException}. The bound is per read, not per request, so a slow but progressing
+     * response (a stream) is unaffected. Scopes nest; the innermost bound applies.
+     */
+    public <T> T withSocketTimeout(int socketTimeoutMillis, ScopedCall<T> call) throws IOException {
+        if (socketTimeoutMillis <= 0) {
+            throw new IllegalArgumentException("Socket timeout must be positive");
+        }
+        Integer enclosing = SCOPED_SOCKET_TIMEOUT.get();
+        SCOPED_SOCKET_TIMEOUT.set(socketTimeoutMillis);
+        try {
+            return call.call();
+        } finally {
+            if (enclosing == null) {
+                SCOPED_SOCKET_TIMEOUT.remove();
+            } else {
+                SCOPED_SOCKET_TIMEOUT.set(enclosing);
+            }
+        }
+    }
+
+    /**
+     * Executes {@code request} on the shared client, applying the thread's {@link #withSocketTimeout} bound unless
+     * the request already carries its own positive socket timeout (a timeout that is itself under test).
+     */
+    private CloseableHttpResponse send(HttpUriRequest request) throws IOException {
+        Integer scoped = SCOPED_SOCKET_TIMEOUT.get();
+        if (scoped != null && request instanceof HttpRequestBase) {
+            HttpRequestBase configurable = (HttpRequestBase) request;
+            RequestConfig base = configurable.getConfig() != null ? configurable.getConfig() : DEFAULT_REQUEST_CONFIG;
+            if (base.getSocketTimeout() <= 0) {
+                configurable.setConfig(RequestConfig.copy(base).setSocketTimeout(scoped).build());
+            }
+        }
+        Lock providerPathLock = providerPathLockFor(request);
+        if (providerPathLock == null) {
+            return client.execute(request);
+        }
+        acquire(providerPathLock, request);
+        try {
+            return client.execute(request);
+        } finally {
+            providerPathLock.unlock();
+        }
+    }
+
+    /**
+     * Publisher requests that add an artifact under the registry's per-provider collection
+     * ({@code /apimgt/applicationdata/provider/<provider>}): creating, copying, importing or generating an API,
+     * API product or MCP server.
+     */
+    private static final Pattern PROVIDER_PATH_CREATE = Pattern.compile(
+            "/api/am/publisher/v\\d+/(apis|api-products|mcp-servers)"
+                    + "(/(copy-api|copy-api-products|import(-[a-z-]+)?|generate-from-[a-z-]+))?/?");
+
+    /** Publisher requests that delete an API, API product or MCP server by id. */
+    private static final Pattern PROVIDER_PATH_DELETE = Pattern.compile(
+            "/api/am/publisher/v\\d+/(apis|api-products|mcp-servers)/[^/]+/?");
+
+    /** Waits longer than this for the provider-path lock are logged. */
+    private static final long PROVIDER_PATH_LOCK_LOG_MS = 1000L;
+
+    /** One provider-path lock per APIM server, keyed by the request's scheme, host and port. */
+    private static final Map<String, ReadWriteLock> PROVIDER_PATH_LOCKS = new ConcurrentHashMap<>();
+
+    /**
+     * The lock that orders {@code request} against the provider-path operations of the same server, or
+     * {@code null} when the request is not one of them.
+     *
+     * <p>Deleting an API, API product or MCP server also deletes its provider's registry collection when that
+     * collection looks empty inside the delete's transaction. A create for the same provider running at the same
+     * time writes its artifact under that collection and loses it: the create answers 201 and its database rows
+     * remain, but the artifact is gone, so every read of the new id is a 404 and its delete fails with a 500.
+     * Creates take the read side, so they still run concurrently with each other; deletes take the write side, so
+     * a delete never overlaps a create on the same server.
+     */
+    private static Lock providerPathLockFor(HttpUriRequest request) {
+        java.net.URI uri = request.getURI();
+        String path = uri.getPath();
+        if (path == null) {
+            return null;
+        }
+        boolean create = HttpPost.METHOD_NAME.equals(request.getMethod())
+                && PROVIDER_PATH_CREATE.matcher(path).matches();
+        boolean delete = HttpDelete.METHOD_NAME.equals(request.getMethod())
+                && PROVIDER_PATH_DELETE.matcher(path).matches();
+        if (!create && !delete) {
+            return null;
+        }
+        String server = uri.getScheme() + "://" + uri.getAuthority();
+        ReadWriteLock lock = PROVIDER_PATH_LOCKS.computeIfAbsent(server, key -> new ReentrantReadWriteLock(true));
+        return create ? lock.readLock() : lock.writeLock();
+    }
+
+    private static void acquire(Lock lock, HttpUriRequest request) {
+        if (lock.tryLock()) {
+            return;
+        }
+        long waitStart = System.currentTimeMillis();
+        lock.lock();
+        long waited = System.currentTimeMillis() - waitStart;
+        if (waited >= PROVIDER_PATH_LOCK_LOG_MS) {
+            logger.info("provider-path-lock: " + request.getMethod() + " " + request.getURI().getPath()
+                    + " waited " + waited + "ms for an overlapping create/delete on the same server");
+        }
     }
 
     /** A deferred HTTP call (build request -> execute -> construct response), rebuilt fresh on each retry. */
@@ -221,7 +345,44 @@ public class SimpleHTTPClient {
         return withGeneralErrorRetry(() -> {
             HttpGet request = new HttpGet(url);
             setHeaders(headers, request);
-            try (CloseableHttpResponse response = client.execute(request)) {
+            try (CloseableHttpResponse response = send(request)) {
+                return constructResponse(response);
+            }
+        });
+    }
+
+    /**
+     * GET with a per-request response timeout, used only when the timeout itself is the assertion target. It does
+     * not retry: retrying a deliberate timeout could send a second request and make the result meaningless.
+     */
+    public org.wso2.carbon.automation.test.utils.http.client.HttpResponse doGetWithSocketTimeout(
+            String url, Map<String, String> headers, int socketTimeoutMillis) throws IOException {
+
+        if (socketTimeoutMillis <= 0) {
+            throw new IllegalArgumentException("Socket timeout must be positive");
+        }
+        HttpGet request = new HttpGet(url);
+        request.setConfig(RequestConfig.custom()
+                .setRedirectsEnabled(false)
+                .setSocketTimeout(socketTimeoutMillis)
+                .build());
+        setHeaders(headers, request);
+        try (CloseableHttpResponse response = send(request)) {
+            return constructResponse(response);
+        }
+    }
+
+    /** GET variant that preserves additional repeated headers and their caller-specified order. */
+    public org.wso2.carbon.automation.test.utils.http.client.HttpResponse doGet(String url,
+            Map<String, String> headers, List<Header> additionalHeaders) throws IOException {
+
+        return withGeneralErrorRetry(() -> {
+            HttpGet request = new HttpGet(url);
+            setHeaders(headers, request);
+            if (additionalHeaders != null) {
+                additionalHeaders.forEach(request::addHeader);
+            }
+            try (CloseableHttpResponse response = send(request)) {
                 return constructResponse(response);
             }
         });
@@ -265,7 +426,7 @@ public class SimpleHTTPClient {
     private DownloadResult doGetToFileOnce(String url, Map<String, String> headers, String suffix) throws IOException {
         HttpGet request = new HttpGet(url);
         setHeaders(headers, request);
-        try (CloseableHttpResponse response = client.execute(request)) {
+        try (CloseableHttpResponse response = send(request)) {
             int code = response.getStatusLine().getStatusCode();
             org.apache.http.Header ct = response.getFirstHeader("Content-Type");
             org.apache.http.Header cd = response.getFirstHeader("Content-Disposition");
@@ -344,7 +505,7 @@ public class SimpleHTTPClient {
         return withGeneralErrorRetry(() -> {
             HttpHead request = new HttpHead(url);
             setHeaders(headers, request);
-            try (CloseableHttpResponse response = client.execute(request)) {
+            try (CloseableHttpResponse response = send(request)) {
                 return constructResponse(response);
             }
         });
@@ -366,7 +527,7 @@ public class SimpleHTTPClient {
         return withGeneralErrorRetry(() -> {
             HttpOptions request = new HttpOptions(url);
             setHeaders(headers, request);
-            try (CloseableHttpResponse response = client.execute(request)) {
+            try (CloseableHttpResponse response = send(request)) {
                 return constructResponse(response);
             }
         });
@@ -393,7 +554,7 @@ public class SimpleHTTPClient {
         HttpGet request = new HttpGet(url);
         request.setConfig(RequestConfig.custom().setNormalizeUri(false).build());
         setHeaders(headers, request);
-        try (CloseableHttpResponse response = client.execute(request)) {
+        try (CloseableHttpResponse response = send(request)) {
             return constructResponse(response);
         }
     }
@@ -427,7 +588,7 @@ public class SimpleHTTPClient {
 
         HttpUriRequest request = RequestBuilder.create(method.toUpperCase(Locale.ROOT)).setUri(url).build();
         setHeaders(headers, request);
-        try (CloseableHttpResponse response = client.execute(request)) {
+        try (CloseableHttpResponse response = send(request)) {
             List<String> values = new ArrayList<>();
             for (Header header : response.getHeaders(headerName)) {
                 values.add(header.getValue());
@@ -563,7 +724,7 @@ public class SimpleHTTPClient {
         return withGeneralErrorRetry(() -> {
             HttpDelete request = new HttpDelete(url);
             setHeaders(headers, request);
-            try (CloseableHttpResponse response = client.execute(request)) {
+            try (CloseableHttpResponse response = send(request)) {
                 return constructResponse(response);
             }
         });
@@ -593,7 +754,7 @@ public class SimpleHTTPClient {
                 request.setEntity(ent);
             }
 
-            try (CloseableHttpResponse response = client.execute(request)) {
+            try (CloseableHttpResponse response = send(request)) {
                 return constructResponse(response);
             }
         });
@@ -630,10 +791,12 @@ public class SimpleHTTPClient {
                     File file = fileEntry.getValue();
                     if (file != null) {
                         String fileName = file.getName();
+                        ContentType fileContentType = fileName.toLowerCase(Locale.ROOT).endsWith(".zip")
+                                ? ContentType.create("application/zip") : ContentType.APPLICATION_OCTET_STREAM;
                         builder.addBinaryBody(
                                 fileEntry.getKey(),
                                 file,
-                                ContentType.APPLICATION_OCTET_STREAM,
+                                fileContentType,
                                 fileName
                         );
                     }
@@ -651,7 +814,7 @@ public class SimpleHTTPClient {
             HttpEntity multipartEntity = builder.build();
             request.setEntity(multipartEntity);
 
-            try (CloseableHttpResponse response = client.execute(request)) {
+            try (CloseableHttpResponse response = send(request)) {
                 return constructResponse(response);
             }
         });
@@ -723,7 +886,7 @@ public class SimpleHTTPClient {
         }
 
         request.setEntity(builder.build());
-        try (CloseableHttpResponse response = client.execute(request)) {
+        try (CloseableHttpResponse response = send(request)) {
             return constructResponse(response);
         }
     }
@@ -752,7 +915,7 @@ public class SimpleHTTPClient {
                 request.setEntity(ent);
             }
 
-            try (CloseableHttpResponse response = client.execute(request)) {
+            try (CloseableHttpResponse response = send(request)) {
                 return constructResponse(response);
             }
         });
@@ -810,7 +973,7 @@ public class SimpleHTTPClient {
             HttpEntity multipartEntity = builder.build();
             request.setEntity(multipartEntity);
 
-            try (CloseableHttpResponse response = client.execute(request)) {
+            try (CloseableHttpResponse response = send(request)) {
                 return constructResponse(response);
             }
         });
@@ -839,7 +1002,7 @@ public class SimpleHTTPClient {
                 request.setEntity(ent);
             }
 
-            try (CloseableHttpResponse response = client.execute(request)) {
+            try (CloseableHttpResponse response = send(request)) {
                 return constructResponse(response);
             }
         });

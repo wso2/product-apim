@@ -28,18 +28,33 @@ import java.util.regex.Pattern;
  * Readiness contract for the asynchronous throttle-data path.
  *
  * <p>Carbon HTTP readiness only proves that a component serves requests. This gate additionally requires the
- * Traffic Manager publisher and Gateway JMS consumer to be active. A readiness marker is accepted only when it
- * is newer than any later registry/binding failure in that component's current log, so a historical successful
- * startup cannot hide a subsequent {@code REG_PATH} failure.</p>
+ * Traffic Manager publisher and Gateway JMS consumer to be active. Each component's log is read only from its most
+ * recent {@code Starting WSO2 Carbon} onwards, because the log file survives a graceful restart: every marker must
+ * come from the server's current start. Within that section a marker is accepted only when it is newer than any
+ * registry/binding failure, so a successful start that later fails cannot hide the failure.</p>
+ *
+ * <p>The Gateway starts its {@code throttleData} consumers in {@code JMSListener.start()}, which logs
+ * {@code Started to listen on destination : throttleData} only when the consumers are running within three
+ * seconds; a slower start logs {@code Polling tasks on destination : throttleData ... have not yet started after 3
+ * seconds} once and nothing further when they start afterwards. Both are accepted, provided the consumer's broker
+ * connection succeeded in the same start. A slow start must stay healthy for {@link #SLOW_START_SETTLE_MILLIS}
+ * instead of {@link #STABLE_PIPELINE_MILLIS}, giving the late polling tasks time to begin.</p>
  */
 public final class ThrottleDataReadiness {
 
     private static final String SERVER_LOG = "wso2carbon.log";
+    private static final Pattern SERVER_START = Pattern.compile("Starting WSO2 Carbon", Pattern.CASE_INSENSITIVE);
     private static final Pattern TM_PUBLISHER_READY = Pattern.compile(
             "Event Publisher configuration successfully deployed and in active state\\s*:\\s*jmsEventPublisher2",
             Pattern.CASE_INSENSITIVE);
     private static final Pattern GATEWAY_CONSUMER_READY = Pattern.compile(
             "Started to listen on destination\\s*:\\s*throttleData\\b", Pattern.CASE_INSENSITIVE);
+    private static final Pattern GATEWAY_CONSUMER_SLOW_START = Pattern.compile(
+            "Polling tasks on destination\\s*:\\s*throttleData\\b[^\\n]*have not yet started",
+            Pattern.CASE_INSENSITIVE);
+    private static final Pattern GATEWAY_CONSUMER_CONNECTED = Pattern.compile(
+            "Connection attempt:\\s*\\d+ for JMS Provider for listener:\\s*Siddhi-JMS-Consumer#throttleData "
+                    + "was successful", Pattern.CASE_INSENSITIVE);
     private static final Pattern CONTROL_PLANE_RECOVERED = Pattern.compile(
             "WSO2 Carbon started in", Pattern.CASE_INSENSITIVE);
     private static final Pattern THROTTLE_FAILURE = Pattern.compile(
@@ -48,6 +63,7 @@ public final class ThrottleDataReadiness {
                     + "|(?:binding|throttledata).*(?:\\b403\\b|\\b504\\b)",
             Pattern.CASE_INSENSITIVE);
     private static final long STABLE_PIPELINE_MILLIS = 3000L;
+    private static final long SLOW_START_SETTLE_MILLIS = 30000L;
 
     private ThrottleDataReadiness() {
     }
@@ -68,30 +84,39 @@ public final class ThrottleDataReadiness {
                         healthySince.compareAndSet(-1L, now);
                         return false;
                     }
-                    return now - firstHealthy >= STABLE_PIPELINE_MILLIS;
+                    long required = result.consumerSlowStart() ? SLOW_START_SETTLE_MILLIS : STABLE_PIPELINE_MILLIS;
+                    return now - firstHealthy >= required;
                 });
     }
 
-    /** Takes one snapshot of all logs relevant to the throttle-data pipeline. */
+    /** Takes one snapshot of all logs relevant to the throttle-data pipeline, each from its current start. */
     public static Result inspect(ApimRuntime runtime) {
-        String controlPlaneLog = runtime.readControlPlaneLogFile(SERVER_LOG);
-        String trafficManagerLog = runtime.readTrafficManagerLogFile(SERVER_LOG);
-        String gatewayLog = runtime.readGatewayLogFile(SERVER_LOG);
+        String controlPlaneLog = currentStart(runtime.readControlPlaneLogFile(SERVER_LOG));
+        String trafficManagerLog = currentStart(runtime.readTrafficManagerLogFile(SERVER_LOG));
+        String gatewayLog = currentStart(runtime.readGatewayLogFile(SERVER_LOG));
 
         boolean controlPlaneHealthy = markerIsCurrent(controlPlaneLog, CONTROL_PLANE_RECOVERED);
         boolean publisherReady = markerIsCurrent(trafficManagerLog, TM_PUBLISHER_READY);
-        boolean consumerReady = markerIsCurrent(gatewayLog, GATEWAY_CONSUMER_READY);
-        return new Result(controlPlaneHealthy, publisherReady, consumerReady,
-                diagnostics("Control Plane", controlPlaneLog)
+        boolean consumerFastStart = markerIsCurrent(gatewayLog, GATEWAY_CONSUMER_READY);
+        boolean consumerSlowStart = markerIsCurrent(gatewayLog, GATEWAY_CONSUMER_SLOW_START);
+        boolean consumerConnected = markerIsCurrent(gatewayLog, GATEWAY_CONSUMER_CONNECTED);
+        boolean consumerReady = consumerConnected && (consumerFastStart || consumerSlowStart);
+        return new Result(controlPlaneHealthy, publisherReady, consumerReady, consumerSlowStart,
+                "controlPlaneHealthy=" + controlPlaneHealthy + " trafficManagerPublisherReady=" + publisherReady
+                        + " gatewayConsumerReady=" + consumerReady + " (connected=" + consumerConnected
+                        + " startedListening=" + consumerFastStart + " slowStart=" + consumerSlowStart + ");"
+                        + diagnostics("Control Plane", controlPlaneLog)
                         + diagnostics("Traffic Manager", trafficManagerLog)
                         + diagnostics("Gateway", gatewayLog));
     }
 
-    /**
-     * A marker from an earlier startup attempt is not sufficient. The last relevant event must be the positive
-     * marker; this permits a product retry that genuinely recovers while rejecting a pipeline that failed after
-     * it had once reported ready.
-     */
+    /** The part of a component log written since its most recent server start, or the whole log if none is found. */
+    private static String currentStart(String log) {
+        int start = lastMatchStart(log, SERVER_START);
+        return start >= 0 ? log.substring(start) : log;
+    }
+
+    /** The last relevant event in the current start must be the positive marker, not a later failure. */
     private static boolean markerIsCurrent(String log, Pattern readyPattern) {
         int readyIndex = lastMatchEnd(log, readyPattern);
         int failureIndex = lastMatchStart(log, THROTTLE_FAILURE);
@@ -137,7 +162,7 @@ public final class ThrottleDataReadiness {
     }
 
     public record Result(boolean controlPlaneHealthy, boolean publisherReady, boolean consumerReady,
-                         String diagnostics) {
+                         boolean consumerSlowStart, String diagnostics) {
         public boolean ready() {
             return controlPlaneHealthy && publisherReady && consumerReady;
         }

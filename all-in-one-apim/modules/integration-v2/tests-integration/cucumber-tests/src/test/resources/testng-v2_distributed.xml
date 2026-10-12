@@ -91,8 +91,12 @@
         <parameter name="initBackend" value="true"/>
         <classes>
         <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayRestInvocationRunner"/>
+        <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayRestEndpointRoutingRunner"/>
+        <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayRestRequestDispatchRunner"/>
         <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayGraphQLInvocationRunner"/>
         <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewaySecurityEnforcementRunner"/>
+        <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayEndpointSecurityRunner"/>
+        <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayCredentialEnforcementRunner"/>
         <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayCredentialTypeConfusionRunner"/>
         <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayBasicAuthSecurityRunner"/>
         <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayGraphQLScopeEnforcementRunner"/>
@@ -213,9 +217,10 @@
         <parameter name="initTenantUsers" value="true"/>
         <parameter name="initBackend" value="true"/>
         <classes>
-        <class name="org.wso2.am.integration.cucumbertests.runners.block.GovernanceRulesetsRunner"/>
-        <class name="org.wso2.am.integration.cucumbertests.runners.block.GovernancePoliciesRunner"/>
+        <class name="org.wso2.am.integration.cucumbertests.runners.block.GovernanceRulesetsPoliciesRunner"/>
         <class name="org.wso2.am.integration.cucumbertests.runners.block.GovernanceComplianceRunner"/>
+        <class name="org.wso2.am.integration.cucumbertests.runners.block.GovernanceComplianceMcpVariantsRunner"/>
+        <class name="org.wso2.am.integration.cucumbertests.runners.block.GovernanceComplianceBlockingRunner"/>
         </classes>
     </test>
     <!-- Restart scenarios target the Gateway management listener in distributed topology. They run sequentially

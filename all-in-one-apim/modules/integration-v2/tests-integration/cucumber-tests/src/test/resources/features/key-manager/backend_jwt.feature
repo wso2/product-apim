@@ -49,7 +49,7 @@ Feature: Backend JWT Claims
     # X-JWT-Assertion. Decode it and assert the standard backend-JWT claims. A short claim suffix is resolved to
     # its dialect-qualified key (http://wso2.org/claims/<suffix>) and compared exactly, so each Examples row
     # asserts ITS OWN subscriber via <actor> rather than a value that is merely a substring of both.
-    When I invoke the API at gateway context "{{jwtApiContext}}/1.0.0/reflect-headers" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
+    When I invoke the API at gateway context "{{jwtApiContext}}/1.0.0/reflect-headers" with method "GET" using access token "generatedAccessToken" in header "Test-Custom-Header" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
     And The reflected backend JWT should contain claim "keytype" with value "PRODUCTION"
     And The reflected backend JWT should contain claim "applicationname" with value "{{jwtAppName}}"
@@ -144,7 +144,7 @@ Feature: Backend JWT Claims
     # the actor, so the enduser/sub claims below are pinned against it rather than against a literal.
     And I extract JWT claim "sub" from access token "generatedAccessToken" and store it as "acEndUserId"
 
-    When I invoke the API at gateway context "{{acApiContext}}/1.0.0/reflect-headers" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
+    When I invoke the API at gateway context "{{acApiContext}}/1.0.0/reflect-headers" with method "GET" using access token "generatedAccessToken" in header "Test-Custom-Header" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
     # App/API/subscription claims are grant-invariant — identical to the client-credentials path above.
     And The reflected backend JWT should contain claim "keytype" with value "PRODUCTION"
@@ -307,7 +307,7 @@ Feature: Backend JWT Claims
     And I request an access token for application id "createdAppId" using payload "eToken"
     Then The response status code should be 200
 
-    When I invoke the API at gateway context "{{eApiContext}}/1.0.0/reflect-headers" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
+    When I invoke the API at gateway context "{{eApiContext}}/1.0.0/reflect-headers" with method "GET" using access token "generatedAccessToken" in header "Test-Custom-Header" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
     # enable_empty_values_in_application_attributes=true => the empty optional attribute is present as "".
     And The reflected backend JWT applicationAttributes claim should contain "Optional attribute" with an empty value
@@ -356,7 +356,7 @@ Feature: Backend JWT Claims
     When I act as "jwtdecode.user<suffix>"
     And I request an OAuth access token for the current user using password grant with scope ""
     Then The response status code should be 200
-    When I invoke the API at gateway context "{{dApiContext}}/1.0.0/reflect-headers" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
+    When I invoke the API at gateway context "{{dApiContext}}/1.0.0/reflect-headers" with method "GET" using access token "generatedAccessToken" in header "Test-Custom-Header" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
     And The reflected backend JWT should contain claim "keytype" with value "PRODUCTION"
     # (The gateway masks the JWT subject/enduser to a pseudonymous UUID in 4.7.0, so the username is not asserted
@@ -368,7 +368,7 @@ Feature: Backend JWT Claims
     # the response IS stored for that claim to be read — the non-retrying exact-count step asserts the status
     # without publishing a response, which would silently leave the claim re-read against the FIRST call's. The
     # retry costs nothing here because the regression is deterministic: a poisoned cache fails every attempt.
-    When I invoke the API at gateway context "{{dApiContext}}/1.0.0/reflect-headers" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
+    When I invoke the API at gateway context "{{dApiContext}}/1.0.0/reflect-headers" with method "GET" using access token "generatedAccessToken" in header "Test-Custom-Header" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
     And The reflected backend JWT should contain claim "keytype" with value "PRODUCTION"
 
@@ -524,7 +524,7 @@ Feature: Backend JWT Claims
     When I act as "jwtclaims.user<suffix>"
     And I request an OAuth access token for the current user using password grant with scope "openid profile"
     Then The response status code should be 200
-    When I invoke the API at gateway context "{{upApiContext}}/1.0.0/reflect-headers" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
+    When I invoke the API at gateway context "{{upApiContext}}/1.0.0/reflect-headers" with method "GET" using access token "generatedAccessToken" in header "Test-Custom-Header" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
     And The reflected backend JWT should contain claim "givenname" with value "ProfileFirstName"
     And The reflected backend JWT should contain claim "lastname" with value "ProfileLastName"

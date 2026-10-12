@@ -4305,8 +4305,32 @@ public class ApplicationBaseSteps {
     public void iSetupApplicationSubscribeAndGetTokenWithPlan(String apiId, String plan, String subscriptionID)
             throws Exception {
 
+        setupApplicationSubscribeAndGetToken("artifacts/payloads/create_apim_test_app.json", apiId, plan,
+                subscriptionID);
+    }
+
+    /**
+     * Payload-file variant of the application-setup composite: creates the application from the given payload file
+     * instead of the default test application, then generates keys, subscribes on {@code Bronze}, and obtains an
+     * access token. Needed where the container declares a required application attribute that every application
+     * must carry.
+     *
+     * @param appPayloadFile application creation payload file (relative to the test resources)
+     * @param apiId          context key holding the API id
+     * @param subscriptionID context key to store the created subscription id under
+     */
+    @When("I have set up application from payload file {string} with keys, subscribed to API {string}, and obtained access token for {string}")
+    public void iSetupApplicationFromPayloadFileSubscribeAndGetToken(String appPayloadFile, String apiId,
+                                                                     String subscriptionID) throws Exception {
+
+        setupApplicationSubscribeAndGetToken(appPayloadFile, apiId, "Bronze", subscriptionID);
+    }
+
+    private void setupApplicationSubscribeAndGetToken(String appPayloadFile, String apiId, String plan,
+                                                      String subscriptionID) throws Exception {
+
         // create an application
-        baseSteps.putJsonPayloadFromFile("artifacts/payloads/create_apim_test_app.json", "<createAppPayload>");
+        baseSteps.putJsonPayloadFromFile(appPayloadFile, "<createAppPayload>");
         iCreateAnApplicationWithJsonPayload("<createAppPayload>");
         baseSteps.theResponseStatusCodeShouldBe(201);
 
@@ -5509,9 +5533,34 @@ public class ApplicationBaseSteps {
     public void iCreateApplicationSharedWithGroup(String name, String group, String idKey) throws IOException {
 
         JSONObject app = new JSONObject();
-        app.put("name", Utils.resolvePayloadPlaceholders(name));
         app.put("throttlingPolicy", "Unlimited");
         app.put("description", "Group-shared test application");
+        createApplicationSharedWithGroup(app, name, group, idKey);
+    }
+
+    /**
+     * Payload-file variant of {@link #iCreateApplicationSharedWithGroup}: the given file supplies the base
+     * application (e.g. a required application attribute), and the step sets its name, {@code tokenType} and
+     * {@code groups} exactly as the plain form does.
+     *
+     * @param name        application name (resolves {@code ${UNIQUE:...}})
+     * @param group       the group to share with (resolves {@code {{...}}})
+     * @param payloadFile base application payload file (relative to the test resources)
+     * @param idKey       context key to store the created application id under
+     */
+    @When("I create an application {string} shared with group {string} from payload file {string} as {string}")
+    public void iCreateApplicationSharedWithGroupFromPayloadFile(String name, String group, String payloadFile,
+                                                                 String idKey) throws IOException {
+
+        baseSteps.putJsonPayloadFromFile(payloadFile, "<groupSharedAppPayload>");
+        JSONObject app = new JSONObject(TestContext.resolve("<groupSharedAppPayload>").toString());
+        createApplicationSharedWithGroup(app, name, group, idKey);
+    }
+
+    private void createApplicationSharedWithGroup(JSONObject app, String name, String group, String idKey)
+            throws IOException {
+
+        app.put("name", Utils.resolvePayloadPlaceholders(name));
         app.put("tokenType", "JWT");
         app.put("groups", new JSONArray().put(Utils.resolveContextPlaceholders(group)));
 

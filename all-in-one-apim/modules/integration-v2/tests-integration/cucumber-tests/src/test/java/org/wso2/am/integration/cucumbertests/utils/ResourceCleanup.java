@@ -19,6 +19,8 @@ package org.wso2.am.integration.cucumbertests.utils;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.wso2.am.integration.cucumbertests.utils.clients.SimpleHTTPClient;
 import org.wso2.am.integration.test.utils.Constants;
 import org.wso2.carbon.automation.engine.context.beans.User;
@@ -698,7 +700,7 @@ public final class ResourceCleanup {
      * (the endpoint self-registers with the caller's own Basic credentials), so an owner who cannot delete their own
      * client is the NORMAL case, not an edge one. Sweeping as the owner therefore leaked every client created by a
      * least-privilege actor: observed as 8 {@code may leak} WARNs from the two OAUTH endpoint-security outlines in
-     * {@code gateway/security_enforcement.feature}, whose Examples include {@code publisherUser} and
+     * {@code gateway/endpoint_security.feature}, whose Examples include {@code publisherUser} and
      * {@code publisherUser@tenant1.com} creator rows (2 outlines x 2 non-admin rows x 2 clients).
      *
      * <p>The tenant admin is the right principal rather than a widening of the rule: the client lives in the owner's
@@ -755,6 +757,73 @@ public final class ResourceCleanup {
      * (via the recorded {@link OwnedResource#actorRef()}) avoids that. {@code tokenKeyFor} selects the token
      * TYPE for this resource kind (devportal for applications, publisher for APIs/policies/scopes).
      */
+    /**
+     * Finishes an application deletion that an active approval workflow accepted (201) but parked as
+     * {@code DELETE_PENDING}: the application and its subscriptions stay until the {@code AM_APPLICATION_DELETION}
+     * task is approved, so every API it subscribes to would refuse deletion (409, active subscriptions). Approves
+     * that task as the owner's tenant admin, matching it by application name, and verifies the application is gone.
+     */
+    private static void completePendingApplicationDeletion(OwnedResource res, User owner, String applicationUrl,
+                                                          Map<String, String> ownerHeaders) throws IOException {
+
+        HttpResponse application = SimpleHTTPClient.getInstance().doGet(applicationUrl, ownerHeaders);
+        if (application.getResponseCode() == 404) {
+            return;
+        }
+        String body = application.getData();
+        JSONObject applicationJson = application.getResponseCode() == 200 && body != null && !body.isBlank()
+                ? new JSONObject(body) : null;
+        if (applicationJson == null || !"DELETE_PENDING".equals(applicationJson.optString("status"))) {
+            logger.warn("Cleanup: application " + res.id() + " delete returned 201 but the application is still "
+                    + "present without DELETE_PENDING; it may leak: " + application.getResponseCode() + " / " + body);
+            return;
+        }
+        String tenant = owner.getUserDomain();
+        String adminRef = Constants.SUPER_TENANT_DOMAIN.equals(tenant)
+                ? Constants.ADMIN_USER_KEY : "admin@" + tenant;
+        Object adminToken = TestContext.get(Identity.adminTokenKey(Identity.resolveActor(adminRef)));
+        if (adminToken == null) {
+            logger.warn("Cleanup: application " + res.id() + " is DELETE_PENDING and no admin token for '" + adminRef
+                    + "' is available to approve its deletion; it and its subscriptions may leak.");
+            return;
+        }
+        Map<String, String> adminHeaders = new HashMap<>();
+        adminHeaders.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + adminToken);
+        String baseUrl = Utils.getBaseUrl();
+        String applicationName = applicationJson.optString("name");
+        HttpResponse tasks = SimpleHTTPClient.getInstance().doGet(
+                Utils.getWorkflowsByTypeURL(baseUrl, "AM_APPLICATION_DELETION"), adminHeaders);
+        String reference = null;
+        if (tasks.getResponseCode() == 200 && tasks.getData() != null && !tasks.getData().isBlank()) {
+            JSONArray list = new JSONObject(tasks.getData()).optJSONArray("list");
+            for (int i = 0; list != null && i < list.length() && reference == null; i++) {
+                JSONObject properties = list.getJSONObject(i).optJSONObject("properties");
+                if (properties != null && applicationName.equals(properties.optString("applicationName"))) {
+                    reference = list.getJSONObject(i).optString("referenceId", null);
+                }
+            }
+        }
+        if (reference == null) {
+            logger.warn("Cleanup: application " + res.id() + " ('" + applicationName + "') is DELETE_PENDING but no "
+                    + "pending AM_APPLICATION_DELETION task was found for it; it and its subscriptions may leak: "
+                    + tasks.getResponseCode() + " / " + tasks.getData());
+            return;
+        }
+        HttpResponse approved = SimpleHTTPClient.getInstance().doPost(
+                Utils.getUpdateWorkflowStatusURL(baseUrl, reference), adminHeaders,
+                new JSONObject().put("status", "APPROVED").put("description", "Approved by test cleanup").toString(),
+                Constants.CONTENT_TYPES.APPLICATION_JSON);
+        HttpResponse after = SimpleHTTPClient.getInstance().doGet(applicationUrl, ownerHeaders);
+        if (approved.getResponseCode() != 200 || after.getResponseCode() != 404) {
+            logger.warn("Cleanup: approving the deletion of DELETE_PENDING application " + res.id() + " as '"
+                    + adminRef + "' did not remove it (approve=" + approved.getResponseCode() + ", read-back="
+                    + after.getResponseCode() + "); it and its subscriptions may leak: " + approved.getData());
+            return;
+        }
+        logger.info("Cleanup: application " + res.id() + " was DELETE_PENDING under an approval workflow; approved "
+                + "its AM_APPLICATION_DELETION task as '" + adminRef + "' and verified it is gone.");
+    }
+
     private static void deleteResources(String contextKey, Function<User, String> tokenKeyFor,
                                         Function<String, String> urlBuilder) {
 
@@ -774,6 +843,10 @@ public final class ResourceCleanup {
                 headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + tokenObj);
                 HttpResponse resp = SimpleHTTPClient.getInstance().doDelete(urlBuilder.apply(res.id()), headers);
                 int code = resp.getResponseCode();
+                if (code == 201 && Constants.CREATED_APPLICATION_IDS.equals(contextKey)) {
+                    completePendingApplicationDeletion(res, owner, urlBuilder.apply(res.id()), headers);
+                    continue;
+                }
                 if (code >= 200 && code < 300) {
                     continue;   // deleted
                 }
