@@ -17,6 +17,7 @@
 
 package org.wso2.am.testcontainers;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.model.ExposedPort;
 import com.github.dockerjava.api.model.PortBinding;
@@ -260,13 +261,19 @@ public class NodeAppServer {
      * <p>Called once per block, each with that block's own unique network; {@link #detachFromNetwork(Network)}
      * removes it at block teardown, before the network is closed (Docker refuses to remove a network that still
      * has a container connected).
+     *
+     * <p>The block network is attached with a gateway priority below the home network's default, so the home
+     * network stays the container's default gateway while block networks come and go. Docker rebuilds a
+     * container's published port forwarding whenever its default gateway changes, and a host connection to a
+     * published port is refused while that happens; the test JVM reads several node apps through those ports.
      */
     public void attachToNetwork(Network network) {
+        BlockNetworkEndpoint endpoint = new BlockNetworkEndpoint();
+        endpoint.withAliases(Arrays.asList(NETWORK_ALIAS, TENANT_NETWORK_ALIAS));
         DockerClientFactory.instance().client().connectToNetworkCmd()
                 .withContainerId(container.getContainerId())
                 .withNetworkId(network.getId())
-                .withContainerNetwork(new com.github.dockerjava.api.model.ContainerNetwork()
-                .withAliases(Arrays.asList(NETWORK_ALIAS, TENANT_NETWORK_ALIAS)))
+                .withContainerNetwork(endpoint)
                 .exec();
         logger.info("NodeAppServer attached to network " + network.getId() + " as '" + NETWORK_ALIAS
                 + "' and '" + TENANT_NETWORK_ALIAS + "'");
@@ -299,5 +306,20 @@ public class NodeAppServer {
     public java.util.Set<String> attachedNetworkNames() {
         return DockerClientFactory.instance().client().inspectContainerCmd(container.getContainerId())
                 .exec().getNetworkSettings().getNetworks().keySet();
+    }
+
+    /**
+     * A block network endpoint for this backend: docker-java's endpoint model plus Docker's {@code GwPriority}
+     * (Engine API 1.48+), which that model does not carry. The home network keeps the default priority 0.
+     */
+    private static final class BlockNetworkEndpoint extends com.github.dockerjava.api.model.ContainerNetwork {
+
+        private static final long serialVersionUID = 1L;
+
+        /** Below the home network's default priority, so attaching this network never moves the gateway. */
+        @JsonProperty("GwPriority")
+        public int getGwPriority() {
+            return -1;
+        }
     }
 }

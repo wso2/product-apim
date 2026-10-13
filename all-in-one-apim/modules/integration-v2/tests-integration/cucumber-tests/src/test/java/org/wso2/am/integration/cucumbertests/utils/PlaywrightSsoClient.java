@@ -78,10 +78,9 @@ public final class PlaywrightSsoClient implements AutoCloseable {
 
     /**
      * How long a console page may take to render the control a step enters it for. The control appears only once
-     * the page has loaded its data, and the first visit to a page in a fresh container also loads that page's
-     * bundle and warms the REST calls behind it, which under CI CPU limits has taken over 30 s.
+     * the page has loaded its bundle and its data.
      */
-    private static final int PAGE_READY_TIMEOUT_MS = 90000;
+    private static final int PAGE_READY_TIMEOUT_MS = 30000;
 
     /** {@code docTrail} size when the current SSO console open began; later hops belong to that open. */
     private int trailMarkAtConsoleOpen;
@@ -94,6 +93,7 @@ public final class PlaywrightSsoClient implements AutoCloseable {
     private String firstIsSessionId;
 
     private final ConnectProxy proxy;
+    private final BrowserProxyRelay browserProxyRelay;
     private final Playwright playwright;
     private final Browser browser;
     private final BrowserContext context;
@@ -106,6 +106,9 @@ public final class PlaywrightSsoClient implements AutoCloseable {
     private final java.util.List<String> apiCalls = java.util.Collections.synchronizedList(new java.util.ArrayList<>());
     /** Browser console errors/warnings — a JS error can wedge a React form's async validation. */
     private final java.util.List<String> consoleMsgs = java.util.Collections.synchronizedList(new java.util.ArrayList<>());
+    /** Requests the browser aborted with {@code ERR_NETWORK_CHANGED}; logged at close, 0 with network isolation. */
+    private final java.util.concurrent.atomic.AtomicInteger networkChangedFailures =
+            new java.util.concurrent.atomic.AtomicInteger();
 
     /**
      * @param apimMappedBase    the APIM host-mapped base URL (e.g. {@code https://localhost:32912/})
@@ -143,6 +146,7 @@ public final class PlaywrightSsoClient implements AutoCloseable {
         Browser createdBrowser = null;
         BrowserContext createdContext = null;
         Page createdPage = null;
+        BrowserProxyRelay createdRelay = null;
         try {
             // Only Chromium is installed (via `playwright install chromium`); tell the driver NOT to download any
             // browser at runtime, so create() never blocks on a slow Firefox/WebKit fetch from the CDN.
@@ -155,23 +159,31 @@ public final class PlaywrightSsoClient implements AutoCloseable {
                     // servers' localhost:9443 URLs are tunnelled to the mapped ports.
                     .setArgs(List.of("--proxy-bypass-list=<-loopback>"));
             Optional<Path> cgroup = BrowserCgroup.active();
-            if (cgroup.isPresent()) {
-                BrowserCgroup.applyTo(launchOptions, createdPlaywright.chromium(), cgroup.get());
+            boolean networkIsolated = BrowserCgroup.networkIsolated(cgroup);
+            if (networkIsolated) {
+                createdRelay = new BrowserProxyRelay(createdProxy.getPort());
+                BrowserCgroup.applyTo(launchOptions, createdPlaywright.chromium(), cgroup, createdRelay,
+                        createdProxy.getPort());
             }
             createdBrowser = createdPlaywright.chromium().launch(launchOptions);
             log.info(cgroup.map(c -> "Browser launched capped: " + BrowserCgroup.describe(c))
                     .orElse("Browser launched uncapped: no browser cgroup on this host (os.name="
                             + System.getProperty("os.name") + ")"));
+            log.info(networkIsolated
+                    ? "Browser network: private namespace, loopback CONNECT proxy via Unix socket"
+                    : "Browser network: host namespace (no setup-browser-network.sh on this host)");
             createdContext = createdBrowser.newContext(new Browser.NewContextOptions().setIgnoreHTTPSErrors(true));
             createdPage = createdContext.newPage();
         } catch (RuntimeException | Error startupFailure) {
             closeQuietly(createdContext);
             closeQuietly(createdBrowser);
             closeQuietly(createdPlaywright);
+            closeQuietly(createdRelay);
             closeQuietly(createdProxy);
             throw startupFailure;
         }
         this.proxy = createdProxy;
+        this.browserProxyRelay = createdRelay;
         this.playwright = createdPlaywright;
         this.browser = createdBrowser;
         this.context = createdContext;
@@ -192,9 +204,13 @@ public final class PlaywrightSsoClient implements AutoCloseable {
         });
         page.onRequestFailed(req -> {
             try {
+                String failure = req.failure();
+                if (failure != null && failure.contains("ERR_NETWORK_CHANGED")) {
+                    networkChangedFailures.incrementAndGet();
+                }
                 String rt = req.resourceType();
                 if ("xhr".equals(rt) || "fetch".equals(rt)) {
-                    apiCalls.add("FAILED " + req.method() + " " + shortUrl(req.url()) + " (" + req.failure() + ")");
+                    apiCalls.add("FAILED " + req.method() + " " + shortUrl(req.url()) + " (" + failure + ")");
                 }
             } catch (RuntimeException ignored) {
                 // request object may be gone; ignore
@@ -397,6 +413,44 @@ public final class PlaywrightSsoClient implements AutoCloseable {
                     + "introspect response: " + body);
         }
         return user;
+    }
+
+    /** The console's own introspection of its session token: status and body, for the caller to assert. */
+    public org.wso2.carbon.automation.test.utils.http.client.HttpResponse sessionIntrospection(String consoleContext) {
+        APIResponse resp = page.request().get(apimInternal + "/" + consoleContext + "/services/auth/introspect");
+        return new org.wso2.carbon.automation.test.utils.http.client.HttpResponse(resp.text(), resp.status());
+    }
+
+    /**
+     * Sends a management REST request authenticated with a console session's own access token (the split-token
+     * cookie the console uses), so the request is authorized exactly as the console session is.
+     *
+     * @param pathHint     which console's split-token cookie to use ({@code /publisher}, {@code /devportal})
+     * @param method       {@code GET} or {@code POST}
+     * @param resourcePath path under the APIM base, e.g. {@code /api/am/publisher/v4/apis}
+     * @param jsonBody     request body for a POST, or {@code null}
+     */
+    public org.wso2.carbon.automation.test.utils.http.client.HttpResponse sessionRequest(String pathHint,
+            String method, String resourcePath, String jsonBody) {
+        String part1 = consoleTokenPart1(pathHint);
+        if (part1 == null) {
+            throw new AssertionError("no " + pathHint + " split-token cookie, so no request can be sent as the "
+                    + "console session. cookies=" + cookieNames());
+        }
+        RequestOptions options = RequestOptions.create().setHeader("Authorization", "Bearer " + part1);
+        if (jsonBody != null) {
+            options.setHeader("Content-Type", "application/json").setData(jsonBody);
+        }
+        String url = apimInternal + resourcePath;
+        APIResponse resp;
+        if ("GET".equals(method)) {
+            resp = page.request().get(url, options);
+        } else if ("POST".equals(method)) {
+            resp = page.request().post(url, options);
+        } else {
+            throw new IllegalArgumentException("Unsupported console-session request method: " + method);
+        }
+        return new org.wso2.carbon.automation.test.utils.http.client.HttpResponse(resp.text(), resp.status());
     }
 
     private static String firstJson(String body, String field) {
@@ -1799,6 +1853,8 @@ public final class PlaywrightSsoClient implements AutoCloseable {
             }
         } catch (RuntimeException ignored) {
         }
+        log.info("Browser network-change request failures: " + networkChangedFailures.get());
+        closeQuietly(browserProxyRelay);
         proxy.close();
     }
 }

@@ -28,9 +28,12 @@ import org.wso2.carbon.automation.engine.context.beans.User;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.stream.Stream;
 
 /**
  * Best-effort, idempotent teardown of the APIs and applications (and operation policies / shared scopes) a
@@ -316,6 +319,132 @@ public final class ResourceCleanup {
         }
     }
 
+    /** Every APIM registration list {@link #deleteRegisteredResources()} sweeps and then clears. */
+    private static final List<String> REGISTRATION_LISTS = List.of(
+            Constants.CREATED_API_PRODUCT_IDS,
+            Constants.CREATED_API_IDS,
+            Constants.CREATED_APPLICATION_IDS,
+            Constants.CREATED_SHARED_SCOPE_IDS,
+            Constants.CREATED_OPERATION_POLICY_IDS,
+            Constants.CREATED_APPLICATION_POLICY_IDS,
+            Constants.CREATED_SUBSCRIPTION_POLICY_IDS,
+            Constants.CREATED_ADVANCED_POLICY_IDS,
+            Constants.CREATED_CUSTOM_POLICY_IDS,
+            Constants.CREATED_ENVIRONMENT_IDS,
+            Constants.CREATED_GOVERNANCE_POLICY_IDS,
+            Constants.CREATED_GOVERNANCE_RULESET_IDS,
+            Constants.CREATED_KEY_MANAGER_IDS,
+            Constants.CREATED_DENY_POLICY_IDS,
+            Constants.CREATED_ORGANIZATION_IDS,
+            Constants.CREATED_API_CATEGORY_IDS,
+            CREATED_AI_PROVIDER_IDS,
+            CREATED_MCP_SERVER_IDS,
+            CREATED_DCR_CLIENT_IDS,
+            CREATED_FOREIGN_OWNED_APPLICATION_IDS,
+            CREATED_ENDPOINT_CERTIFICATE_ALIASES,
+            CREATED_PLATFORM_GATEWAY_IDS,
+            CREATED_USER_NAMES,
+            CREATED_ROLE_NAMES,
+            CREATED_SERVICE_CATALOG_IDS,
+            CREATED_SIGNUP_USERNAMES,
+            CREATED_APPLICATION_KEY_MAPPINGS,
+            CREATED_SUBSCRIPTION_IDS,
+            ORIGINAL_TENANT_CONFIGURATIONS,
+            ORIGINAL_KEY_MAPPINGS);
+
+    /** The registration lists a {@code @cleanup} scenario scopes: the APIM lists and the external IS lists. */
+    private static final List<String> SCENARIO_SCOPED_LISTS = Stream.concat(REGISTRATION_LISTS.stream(),
+            Stream.of(ISResourceCleanup.CREATED_IS_APPLICATION_IDS, ISResourceCleanup.CREATED_IS_USER_IDS,
+                    ISResourceCleanup.CREATED_IS_IDENTITY_PROVIDER_IDS)).toList();
+
+    /** Context key of the registrations present when the current {@code @cleanup} scenario began. */
+    private static final String SCENARIO_START_REGISTRATIONS = "scenarioStartRegistrations";
+
+    /** The registrations present when a {@code @cleanup} scenario began, by registration list. */
+    private record ScenarioStartRegistrations(Map<String, List<Object>> byList) {
+    }
+
+    /**
+     * Records the registrations present when a {@code @cleanup} scenario begins: the runner's setup fixtures and
+     * earlier scenarios' resources. {@link #deleteScenarioRegisteredResources()} leaves those to the runner's
+     * AfterClass sweep.
+     */
+    public static void beginScenarioScope() {
+        Map<String, List<Object>> byList = new HashMap<>();
+        for (String listKey : SCENARIO_SCOPED_LISTS) {
+            byList.put(listKey, new ArrayList<>(TestContext.getList(listKey)));
+        }
+        TestContext.set(SCENARIO_START_REGISTRATIONS, new ScenarioStartRegistrations(byList));
+    }
+
+    /**
+     * Deletes the resources registered since {@link #beginScenarioScope()}. Registrations present when the scenario
+     * began stay registered for the runner's AfterClass sweep. Without a recorded start, nothing is deleted here and
+     * every registration stays for that sweep.
+     */
+    public static void deleteScenarioRegisteredResources() {
+        Object recorded = TestContext.get(SCENARIO_START_REGISTRATIONS);
+        TestContext.remove(SCENARIO_START_REGISTRATIONS);
+        if (!(recorded instanceof ScenarioStartRegistrations start)) {
+            logger.warn("No registrations were recorded when the scenario began; leaving every registration for the "
+                    + "runner sweep.");
+            return;
+        }
+        Map<String, List<Object>> earlier = new HashMap<>();
+        for (String listKey : SCENARIO_SCOPED_LISTS) {
+            List<Object> remaining = new ArrayList<>(start.byList().get(listKey));
+            List<Object> before = new ArrayList<>();
+            List<Object> scenario = new ArrayList<>();
+            for (Object registration : TestContext.getList(listKey)) {
+                int index = indexOfSameResource(remaining, registration);
+                if (index >= 0) {
+                    remaining.remove(index);
+                    before.add(registration);
+                } else {
+                    scenario.add(registration);
+                }
+            }
+            earlier.put(listKey, before);
+            TestContext.set(listKey, scenario);
+        }
+        try {
+            deleteRegisteredResources();
+        } finally {
+            earlier.forEach((listKey, registrations) -> TestContext.set(listKey, registrations));
+        }
+    }
+
+    /**
+     * The position in {@code registrations} of the same resource as {@code registration}: an equal entry, or the same
+     * resource id re-registered under another owner (an ownership change re-registers the resource).
+     */
+    private static int indexOfSameResource(List<Object> registrations, Object registration) {
+        for (int index = 0; index < registrations.size(); index++) {
+            Object candidate = registrations.get(index);
+            if (candidate.equals(registration) || resourceId(candidate).equals(resourceId(registration))) {
+                return index;
+            }
+        }
+        return -1;
+    }
+
+    /** The id a registration names, or the registration itself for one that carries no separate owner. */
+    private static Object resourceId(Object registration) {
+        if (registration instanceof OwnedResource owned) {
+            return owned.id();
+        }
+        if (registration instanceof Subscription subscription) {
+            return subscription.id();
+        }
+        if (registration instanceof ForeignOwnedApplication application) {
+            return application.id();
+        }
+        if (registration instanceof ApplicationKeyMapping mapping) {
+            return mapping.applicationId() + "/" + mapping.keyMappingId();
+        }
+        return registration;
+    }
+
     /** Deletes all registered applications then APIs from the context's current scope. No-op if no baseUrl. */
     public static void deleteRegisteredResources() {
 
@@ -341,36 +470,7 @@ public final class ResourceCleanup {
         // Nothing was registered (e.g. a framework-probe block that boots a container but creates no resources
         // and never sets an acting actor). Skip before resolving any actor-scoped token key — doing so would
         // call Identity.actingActor() and fail with "Tenant not found in context" for an actor-less block.
-        if (TestContext.getList(Constants.CREATED_APPLICATION_IDS).isEmpty()
-                && TestContext.getList(Constants.CREATED_API_IDS).isEmpty()
-                && TestContext.getList(Constants.CREATED_OPERATION_POLICY_IDS).isEmpty()
-                && TestContext.getList(Constants.CREATED_SHARED_SCOPE_IDS).isEmpty()
-                && TestContext.getList(Constants.CREATED_APPLICATION_POLICY_IDS).isEmpty()
-                && TestContext.getList(Constants.CREATED_SUBSCRIPTION_POLICY_IDS).isEmpty()
-                && TestContext.getList(Constants.CREATED_ADVANCED_POLICY_IDS).isEmpty()
-                && TestContext.getList(Constants.CREATED_CUSTOM_POLICY_IDS).isEmpty()
-                && TestContext.getList(Constants.CREATED_API_PRODUCT_IDS).isEmpty()
-                && TestContext.getList(Constants.CREATED_ENVIRONMENT_IDS).isEmpty()
-                && TestContext.getList(Constants.CREATED_GOVERNANCE_POLICY_IDS).isEmpty()
-                && TestContext.getList(Constants.CREATED_GOVERNANCE_RULESET_IDS).isEmpty()
-                && TestContext.getList(Constants.CREATED_KEY_MANAGER_IDS).isEmpty()
-                && TestContext.getList(Constants.CREATED_DENY_POLICY_IDS).isEmpty()
-                && TestContext.getList(Constants.CREATED_ORGANIZATION_IDS).isEmpty()
-                && TestContext.getList(Constants.CREATED_API_CATEGORY_IDS).isEmpty()
-                && TestContext.getList(CREATED_AI_PROVIDER_IDS).isEmpty()
-                && TestContext.getList(CREATED_MCP_SERVER_IDS).isEmpty()
-                && TestContext.getList(CREATED_DCR_CLIENT_IDS).isEmpty()
-                && TestContext.getList(CREATED_FOREIGN_OWNED_APPLICATION_IDS).isEmpty()
-                && TestContext.getList(CREATED_ENDPOINT_CERTIFICATE_ALIASES).isEmpty()
-                && TestContext.getList(CREATED_USER_NAMES).isEmpty()
-                && TestContext.getList(CREATED_ROLE_NAMES).isEmpty()
-                && TestContext.getList(CREATED_SERVICE_CATALOG_IDS).isEmpty()
-                && TestContext.getList(CREATED_PLATFORM_GATEWAY_IDS).isEmpty()
-                && TestContext.getList(CREATED_SIGNUP_USERNAMES).isEmpty()
-                && TestContext.getList(CREATED_APPLICATION_KEY_MAPPINGS).isEmpty()
-                && TestContext.getList(CREATED_SUBSCRIPTION_IDS).isEmpty()
-                && TestContext.getList(ORIGINAL_TENANT_CONFIGURATIONS).isEmpty()
-                && TestContext.getList(ORIGINAL_KEY_MAPPINGS).isEmpty()) {
+        if (REGISTRATION_LISTS.stream().allMatch(listKey -> TestContext.getList(listKey).isEmpty())) {
             return;
         }
         String baseUrl = baseUrlObj.toString();
@@ -482,36 +582,7 @@ public final class ResourceCleanup {
             // its resources would strand them with no owner to delete them as.
             deleteSignedUpUsers();
         } finally {
-            TestContext.remove(Constants.CREATED_API_PRODUCT_IDS);
-            TestContext.remove(Constants.CREATED_API_IDS);
-            TestContext.remove(Constants.CREATED_APPLICATION_IDS);
-            TestContext.remove(Constants.CREATED_SHARED_SCOPE_IDS);
-            TestContext.remove(Constants.CREATED_OPERATION_POLICY_IDS);
-            TestContext.remove(Constants.CREATED_APPLICATION_POLICY_IDS);
-            TestContext.remove(Constants.CREATED_SUBSCRIPTION_POLICY_IDS);
-            TestContext.remove(Constants.CREATED_ADVANCED_POLICY_IDS);
-            TestContext.remove(Constants.CREATED_CUSTOM_POLICY_IDS);
-            TestContext.remove(Constants.CREATED_ENVIRONMENT_IDS);
-            TestContext.remove(Constants.CREATED_GOVERNANCE_POLICY_IDS);
-            TestContext.remove(Constants.CREATED_GOVERNANCE_RULESET_IDS);
-            TestContext.remove(Constants.CREATED_KEY_MANAGER_IDS);
-            TestContext.remove(Constants.CREATED_DENY_POLICY_IDS);
-            TestContext.remove(Constants.CREATED_ORGANIZATION_IDS);
-            TestContext.remove(Constants.CREATED_API_CATEGORY_IDS);
-            TestContext.remove(CREATED_AI_PROVIDER_IDS);
-            TestContext.remove(CREATED_MCP_SERVER_IDS);
-            TestContext.remove(CREATED_DCR_CLIENT_IDS);
-            TestContext.remove(CREATED_FOREIGN_OWNED_APPLICATION_IDS);
-            TestContext.remove(CREATED_ENDPOINT_CERTIFICATE_ALIASES);
-            TestContext.remove(CREATED_PLATFORM_GATEWAY_IDS);
-            TestContext.remove(CREATED_USER_NAMES);
-            TestContext.remove(CREATED_ROLE_NAMES);
-            TestContext.remove(CREATED_SERVICE_CATALOG_IDS);
-            TestContext.remove(CREATED_SIGNUP_USERNAMES);
-            TestContext.remove(CREATED_APPLICATION_KEY_MAPPINGS);
-            TestContext.remove(CREATED_SUBSCRIPTION_IDS);
-            TestContext.remove(ORIGINAL_TENANT_CONFIGURATIONS);
-            TestContext.remove(ORIGINAL_KEY_MAPPINGS);
+            REGISTRATION_LISTS.forEach(TestContext::remove);
         }
     }
 

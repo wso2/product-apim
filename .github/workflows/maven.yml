@@ -348,6 +348,13 @@ jobs:
       # cgroup whenever it exists, and logs the group's limits and member pids at each launch.
       - name: Create browser cgroup
         run: sudo bash all-in-one-apim/modules/integration-v2/tests-integration/cucumber-tests/src/test/resources/browser-cgroup/setup-browser-cgroup.sh
+      # Runs the host Playwright browser in a private network namespace, so the bridges and veths the parallel blocks
+      # create and remove never reach Chromium (which cancels in-flight requests on any host address change).
+      - name: Configure browser network isolation
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y socat iproute2
+          sudo bash all-in-one-apim/modules/integration-v2/tests-integration/cucumber-tests/src/test/resources/browser-cgroup/setup-browser-network.sh
       # `mvn test` (not install) keeps the testcontainers pre-integration-test execs from firing, so the
       # loaded images and the restored target/is7 staging are reused. `-am` builds only the integration-v2
       # reactor deps up to the test phase; product 4.7.0-SNAPSHOT artifacts resolve from the restored repo.

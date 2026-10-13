@@ -27,44 +27,70 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Stream;
 
 /**
- * Caps the host Playwright browser with a cgroup-v2 group on Linux hosts (CI). The group is created once per job by
- * {@code src/test/resources/browser-cgroup/setup-browser-cgroup.sh} (1 CPU, 2.5 GiB, no swap); when it exists,
- * Chromium is launched through {@code chromium-cgroup-wrapper.sh}, which moves itself into the group and execs the
- * real headless shell, so the browser and every process it spawns share that one budget. Hosts without the group
- * (macOS has no cgroups) launch the browser uncapped.
+ * Configures the Linux Chromium wrapper: a private network namespace and, when present, the browser cgroup-v2
+ * budget (1 CPU, 2.5 GiB, no swap). The wrapper's processes inherit the cgroup and the browser keeps its caller's
+ * user identity. The wrapper is used on Linux hosts prepared by {@code setup-browser-network.sh} (CI); other
+ * hosts launch Chromium directly.
  */
 final class BrowserCgroup {
 
     /** System property overriding the cgroup directory. */
     static final String CGROUP_PROPERTY = "playwright.browser.cgroup";
     private static final String DEFAULT_CGROUP = "/sys/fs/cgroup/pw-browser";
+    /** Written by {@code setup-browser-network.sh} once the wrapper's sudo unshare is permitted. */
+    private static final Path NETWORK_SETUP_MARKER = Paths.get("/etc/pw-browser-network");
     private static final Path WRAPPER = Paths.get("src/test/resources/browser-cgroup/chromium-cgroup-wrapper.sh");
-    private static final String HEADLESS_SHELL_BINARY = "chrome-headless-shell";
+    private static final Set<String> HEADLESS_SHELL_BINARIES = Set.of("chrome-headless-shell", "headless_shell");
 
     private BrowserCgroup() {
     }
 
     /** The browser cgroup directory, when this is a Linux host on which the group has been created. */
     static Optional<Path> active() {
-        if (!System.getProperty("os.name", "").toLowerCase(Locale.ROOT).contains("linux")) {
+        if (!isLinux()) {
             return Optional.empty();
         }
         Path cgroup = Paths.get(System.getProperty(CGROUP_PROPERTY, DEFAULT_CGROUP));
         return Files.isRegularFile(cgroup.resolve("cgroup.procs")) ? Optional.of(cgroup) : Optional.empty();
     }
 
-    /** Routes the launch through the wrapper so the browser starts inside {@code cgroup}. */
-    static BrowserType.LaunchOptions applyTo(BrowserType.LaunchOptions options, BrowserType chromium, Path cgroup) {
+    /**
+     * Whether the browser runs in its private network namespace: a Linux host prepared by
+     * {@code setup-browser-network.sh}. A host with the browser cgroup but without that preparation is refused,
+     * since the cgroup is entered only through the namespace wrapper.
+     */
+    static boolean networkIsolated(Optional<Path> cgroup) {
+        if (!isLinux() || !Files.exists(NETWORK_SETUP_MARKER)) {
+            if (cgroup.isPresent()) {
+                throw new IllegalStateException("Browser cgroup " + cgroup.get() + " exists but the browser network "
+                        + "namespace is not configured: run src/test/resources/browser-cgroup/setup-browser-network.sh");
+            }
+            return false;
+        }
+        return true;
+    }
+
+    private static boolean isLinux() {
+        return System.getProperty("os.name", "").toLowerCase(Locale.ROOT).contains("linux");
+    }
+
+    /** Routes the launch through the private network namespace, with the optional cgroup budget. */
+    static BrowserType.LaunchOptions applyTo(BrowserType.LaunchOptions options, BrowserType chromium,
+            Optional<Path> cgroup, BrowserProxyRelay relay, int proxyPort) {
         Path wrapper = WRAPPER.toAbsolutePath();
         if (!Files.isExecutable(wrapper) && !wrapper.toFile().setExecutable(true)) {
             throw new IllegalStateException("Browser cgroup wrapper is not executable: " + wrapper);
         }
         // LaunchOptions.env replaces the browser's whole environment, so start from this process's environment.
         Map<String, String> env = new HashMap<>(System.getenv());
-        env.put("PW_BROWSER_CGROUP", cgroup.toString());
+        env.put("PW_BROWSER_CGROUP", cgroup.map(Path::toString).orElse(""));
+        env.put("PW_BROWSER_PROXY_SOCKET", relay.socket().toString());
+        env.put("PW_BROWSER_PROXY_PORT", Integer.toString(proxyPort));
+        env.put("PW_BROWSER_HOME", System.getenv().getOrDefault("HOME", ""));
         env.put("PW_REAL_BROWSER", headlessShell(chromium).toString());
         return options.setExecutablePath(wrapper).setEnv(env);
     }
@@ -93,12 +119,12 @@ final class BrowserCgroup {
         String revision = revisionDir.getFileName().toString().substring("chromium-".length());
         Path shellDir = revisionDir.resolveSibling("chromium_headless_shell-" + revision);
         try (Stream<Path> files = Files.walk(shellDir)) {
-            return files.filter(p -> p.getFileName().toString().equals(HEADLESS_SHELL_BINARY))
+            return files.filter(p -> HEADLESS_SHELL_BINARIES.contains(p.getFileName().toString()))
                     .filter(Files::isExecutable)
                     .findFirst()
-                    .orElseThrow(() -> new IllegalStateException("No " + HEADLESS_SHELL_BINARY + " under " + shellDir));
+                    .orElseThrow(() -> new IllegalStateException("No Chromium headless shell under " + shellDir));
         } catch (IOException e) {
-            throw new IllegalStateException("Cannot search " + shellDir + " for " + HEADLESS_SHELL_BINARY, e);
+            throw new IllegalStateException("Cannot search " + shellDir + " for the Chromium headless shell", e);
         }
     }
 
