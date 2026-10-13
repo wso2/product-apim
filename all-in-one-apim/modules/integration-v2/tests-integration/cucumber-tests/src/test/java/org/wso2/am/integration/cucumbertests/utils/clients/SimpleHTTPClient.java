@@ -70,6 +70,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -202,21 +203,20 @@ public class SimpleHTTPClient {
 
     /**
      * Executes {@code request} on the shared client, applying the thread's {@link #withSocketTimeout} bound unless
-     * the request already carries its own positive socket timeout (a timeout that is itself under test).
+     * the request already carries its own positive socket timeout (a timeout that is itself under test). A
+     * Publisher REST API request with neither is bounded by {@link #PUBLISHER_SOCKET_TIMEOUT_MILLIS}, because it
+     * holds the server's publisher lock while it runs.
      */
     private CloseableHttpResponse send(HttpUriRequest request) throws IOException {
         Integer scoped = SCOPED_SOCKET_TIMEOUT.get();
-        if (scoped != null && request instanceof HttpRequestBase) {
-            HttpRequestBase configurable = (HttpRequestBase) request;
-            RequestConfig base = configurable.getConfig() != null ? configurable.getConfig() : DEFAULT_REQUEST_CONFIG;
-            if (base.getSocketTimeout() <= 0) {
-                configurable.setConfig(RequestConfig.copy(base).setSocketTimeout(scoped).build());
-            }
+        if (scoped != null) {
+            applySocketTimeoutIfUnset(request, scoped);
         }
         Lock publisherLock = publisherLockFor(request);
         if (publisherLock == null) {
             return client.execute(request);
         }
+        applySocketTimeoutIfUnset(request, PUBLISHER_SOCKET_TIMEOUT_MILLIS);
         acquire(publisherLock, request);
         try {
             return client.execute(request);
@@ -230,6 +230,16 @@ public class SimpleHTTPClient {
 
     /** Waits longer than this for the publisher lock are logged. */
     private static final long PUBLISHER_LOCK_LOG_MS = 1000L;
+
+    /**
+     * Read-stall bound for a Publisher REST API request that sets no socket timeout of its own. The request holds
+     * the server's publisher lock, so a response that never arrives would otherwise block every later Publisher
+     * request to that server. The suite's propagation ceiling, far above any Publisher response.
+     */
+    private static final int PUBLISHER_SOCKET_TIMEOUT_MILLIS = (int) Constants.RUNTIME_PROPAGATION_TIMEOUT;
+
+    /** Longest wait for the publisher lock; a request still queued after it fails instead of waiting on. */
+    private static final long PUBLISHER_LOCK_WAIT_MILLIS = Constants.RUNTIME_PROPAGATION_TIMEOUT;
 
     /** One publisher lock per APIM server, keyed by the request's scheme, host and port. */
     private static final Map<String, ReadWriteLock> PUBLISHER_LOCKS = new ConcurrentHashMap<>();
@@ -261,13 +271,37 @@ public class SimpleHTTPClient {
         return read ? lock.readLock() : lock.writeLock();
     }
 
-    private static void acquire(Lock lock, HttpUriRequest request) {
+    /** Sets {@code socketTimeoutMillis} on {@code request} unless it already carries a positive socket timeout. */
+    private static void applySocketTimeoutIfUnset(HttpUriRequest request, int socketTimeoutMillis) {
+        if (!(request instanceof HttpRequestBase)) {
+            return;
+        }
+        HttpRequestBase configurable = (HttpRequestBase) request;
+        RequestConfig base = configurable.getConfig() != null ? configurable.getConfig() : DEFAULT_REQUEST_CONFIG;
+        if (base.getSocketTimeout() <= 0) {
+            configurable.setConfig(RequestConfig.copy(base).setSocketTimeout(socketTimeoutMillis).build());
+        }
+    }
+
+    private static void acquire(Lock lock, HttpUriRequest request) throws IOException {
         if (lock.tryLock()) {
             return;
         }
         long waitStart = System.currentTimeMillis();
-        lock.lock();
+        boolean acquired;
+        try {
+            acquired = lock.tryLock(PUBLISHER_LOCK_WAIT_MILLIS, TimeUnit.MILLISECONDS);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new InterruptedIOException("Interrupted while waiting for the publisher lock for "
+                    + request.getMethod() + " " + request.getURI().getPath());
+        }
         long waited = System.currentTimeMillis() - waitStart;
+        if (!acquired) {
+            throw new IOException("publisher-lock: " + request.getMethod() + " " + request.getURI().getPath()
+                    + " could not acquire the publisher lock within " + waited
+                    + "ms; another Publisher request on the same server is still running");
+        }
         if (waited >= PUBLISHER_LOCK_LOG_MS) {
             logger.info("publisher-lock: " + request.getMethod() + " " + request.getURI().getPath()
                     + " waited " + waited + "ms for an overlapping Publisher request on the same server");
