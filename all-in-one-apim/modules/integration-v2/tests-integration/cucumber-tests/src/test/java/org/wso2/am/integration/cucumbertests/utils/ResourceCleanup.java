@@ -21,6 +21,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.testng.Assert;
 import org.wso2.am.integration.cucumbertests.utils.clients.SimpleHTTPClient;
 import org.wso2.am.integration.test.utils.Constants;
 import org.wso2.carbon.automation.engine.context.beans.User;
@@ -82,6 +83,14 @@ public final class ResourceCleanup {
      * {@link #deleteDcrClients(String)}, not the generic bearer-token {@link #deleteResources}.
      */
     public static final String CREATED_DCR_CLIENT_IDS = "createdDcrClientIds";
+
+    /**
+     * Teardown list for DevPortal applications owned by a user who is not a test actor (e.g. a federated SSO user
+     * provisioned at runtime), so no token of the owner exists for the generic sweep. Each entry names the admin of
+     * the application's tenant: {@link #deleteForeignOwnedApplications} transfers the application to that admin
+     * through the admin change-owner API and then deletes it as the admin.
+     */
+    public static final String CREATED_FOREIGN_OWNED_APPLICATION_IDS = "createdForeignOwnedApplicationIds";
 
     /**
      * Teardown list for endpoint certificates uploaded via the Publisher {@code /endpoint-certificates} REST API,
@@ -173,6 +182,9 @@ public final class ResourceCleanup {
     private record Subscription(String id, String actorRef, String providerTenant) {
     }
 
+    private record ForeignOwnedApplication(String id, String tenantAdminRef) {
+    }
+
     /**
      * Registers a created resource for teardown under the given {@code CREATED_*} list, tagged with the actor
      * currently acting (so cleanup deletes it as its owner). Use this instead of
@@ -188,9 +200,17 @@ public final class ResourceCleanup {
      * to the new owner, so the creating actor's token can no longer delete it and the sweep would log a misleading
      * failure while the application leaked. The change-owner step therefore re-registers it under the new owner.
      * Pass {@code null} for the super-tenant admin default.
+     *
+     * <p>An id already queued in the list is not queued again: an operation that returns an existing resource
+     * (e.g. an overwrite import that updates a service in place) would otherwise be deleted twice by the sweep.
      */
     public static void registerFor(String listKey, Object id, String actorRef) {
-        TestContext.addToList(listKey, new OwnedResource(String.valueOf(id), actorRef));
+        String target = String.valueOf(id);
+        boolean queued = TestContext.getList(listKey).stream().anyMatch(entry ->
+                entry instanceof OwnedResource owned && owned.id().equals(target));
+        if (!queued) {
+            TestContext.addToList(listKey, new OwnedResource(target, actorRef));
+        }
     }
 
     /**
@@ -236,6 +256,15 @@ public final class ResourceCleanup {
                 String.valueOf(keyMappingId), Identity.actingActorRef()));
     }
 
+    /**
+     * Registers a DevPortal application owned by a user who is not a test actor; {@code tenantAdminRef} is the actor
+     * reference of the admin of the application's tenant, who takes it over for deletion.
+     */
+    public static void registerForeignOwnedApplication(Object applicationId, String tenantAdminRef) {
+        TestContext.addToList(CREATED_FOREIGN_OWNED_APPLICATION_IDS,
+                new ForeignOwnedApplication(String.valueOf(applicationId), tenantAdminRef));
+    }
+
     public static void registerSubscription(Object subscriptionId, String providerTenant) {
         TestContext.addToList(CREATED_SUBSCRIPTION_IDS, new Subscription(String.valueOf(subscriptionId),
                 Identity.actingActorRef(), providerTenant));
@@ -249,7 +278,42 @@ public final class ResourceCleanup {
     public static void deregister(String listKey, Object id) {
         String target = String.valueOf(id);
         TestContext.getList(listKey).removeIf(entry ->
-                entry instanceof OwnedResource && ((OwnedResource) entry).id().equals(target));
+                (entry instanceof OwnedResource owned && owned.id().equals(target))
+                        || (entry instanceof Subscription subscription && subscription.id().equals(target)));
+    }
+
+    /**
+     * DevPortal request headers of the actor that created the registered subscription {@code subscriptionId}, so a
+     * read of that subscription is made by its owner rather than by whoever is acting (a different actor could not
+     * see it and would get the same 404 as for a removed subscription). Fails if the subscription is not registered.
+     */
+    public static Map<String, String> subscriptionOwnerHeaders(String subscriptionId) {
+        for (Object o : TestContext.getList(CREATED_SUBSCRIPTION_IDS)) {
+            if (o instanceof Subscription subscription && subscription.id().equals(subscriptionId)) {
+                User owner = Identity.resolveActor(subscription.actorRef());
+                Object token = TestContext.get(Identity.devportalTokenKey(owner));
+                Assert.assertNotNull(token, "No DevPortal token for subscription owner '" + subscription.actorRef()
+                        + "' of subscription " + subscriptionId);
+                Map<String, String> headers = Identity.bearerHeaders(token.toString());
+                if (subscription.providerTenant() != null) {
+                    headers.put("X-WSO2-Tenant", subscription.providerTenant());
+                }
+                return headers;
+            }
+        }
+        throw new AssertionError("Subscription " + subscriptionId + " is not registered for teardown");
+    }
+
+    /**
+     * Drops {@code id} from the teardown sweep when {@code response} confirms the delete (2xx). A step that deletes
+     * a registered resource calls this with its own response, so the sweep does not delete it a second time and
+     * the server does not log a not-found error for it. A failed delete leaves the id queued, since the resource
+     * still exists.
+     */
+    public static void deregisterIfDeleted(String listKey, Object id, HttpResponse response) {
+        if (response != null && response.getResponseCode() >= 200 && response.getResponseCode() < 300) {
+            deregister(listKey, id);
+        }
     }
 
     /** Deletes all registered applications then APIs from the context's current scope. No-op if no baseUrl. */
@@ -296,6 +360,7 @@ public final class ResourceCleanup {
                 && TestContext.getList(CREATED_AI_PROVIDER_IDS).isEmpty()
                 && TestContext.getList(CREATED_MCP_SERVER_IDS).isEmpty()
                 && TestContext.getList(CREATED_DCR_CLIENT_IDS).isEmpty()
+                && TestContext.getList(CREATED_FOREIGN_OWNED_APPLICATION_IDS).isEmpty()
                 && TestContext.getList(CREATED_ENDPOINT_CERTIFICATE_ALIASES).isEmpty()
                 && TestContext.getList(CREATED_USER_NAMES).isEmpty()
                 && TestContext.getList(CREATED_ROLE_NAMES).isEmpty()
@@ -314,6 +379,7 @@ public final class ResourceCleanup {
             restoreKeyMappings();
             deleteApplicationKeyMappings(baseUrl);
             deleteSubscriptions(baseUrl);
+            deleteForeignOwnedApplications(baseUrl);
             deleteResources(Constants.CREATED_APPLICATION_IDS, Identity::devportalTokenKey,
                     id -> Utils.getApplicationEndpointURL(baseUrl, id));
             // MCP servers AFTER applications (whose removal clears any MCP subscriptions) but BEFORE the APIs they
@@ -435,6 +501,7 @@ public final class ResourceCleanup {
             TestContext.remove(CREATED_AI_PROVIDER_IDS);
             TestContext.remove(CREATED_MCP_SERVER_IDS);
             TestContext.remove(CREATED_DCR_CLIENT_IDS);
+            TestContext.remove(CREATED_FOREIGN_OWNED_APPLICATION_IDS);
             TestContext.remove(CREATED_ENDPOINT_CERTIFICATE_ALIASES);
             TestContext.remove(CREATED_PLATFORM_GATEWAY_IDS);
             TestContext.remove(CREATED_USER_NAMES);
@@ -472,6 +539,61 @@ public final class ResourceCleanup {
             } catch (Exception | AssertionError e) {
                 logger.warn("Cleanup failed to delete application key mapping " + mapping.keyMappingId()
                         + " for actor '" + mapping.actorRef() + "': " + e);
+            }
+        }
+    }
+
+    /**
+     * Deletes applications whose owner is not a test actor: the tenant admin takes each one over through the admin
+     * change-owner API (the only way an admin can act on another user's application) and then deletes it through
+     * the DevPortal as its new owner. Applications go before APIs, so their subscriptions no longer block an API
+     * delete.
+     */
+    private static void deleteForeignOwnedApplications(String baseUrl) {
+        for (Object o : TestContext.getList(CREATED_FOREIGN_OWNED_APPLICATION_IDS)) {
+            if (!(o instanceof ForeignOwnedApplication application)) {
+                continue;
+            }
+            try {
+                User admin = Identity.resolveActor(application.tenantAdminRef());
+                Object adminToken = TestContext.get(Identity.adminTokenKey(admin));
+                Object devportalToken = TestContext.get(Identity.devportalTokenKey(admin));
+                if (adminToken == null || devportalToken == null) {
+                    logger.warn("Cleanup: no admin/DevPortal token for tenant admin '" + application.tenantAdminRef()
+                            + "'; cannot delete application " + application.id() + " — it may leak.");
+                    continue;
+                }
+                // The change-owner API accepts a tenant user only once it is a DevPortal subscriber; any DevPortal
+                // call made with the subscribe scope registers the caller as one.
+                HttpResponse registration = SimpleHTTPClient.getInstance().doGet(
+                        Utils.getApplicationCreateURL(baseUrl), Identity.bearerHeaders(devportalToken.toString()));
+                if (registration == null || registration.getResponseCode() != 200) {
+                    logger.warn("Cleanup: DevPortal access as '" + admin.getUserName() + "' returned HTTP "
+                            + (registration == null ? "none" : registration.getResponseCode())
+                            + "; the transfer of application " + application.id() + " may be refused.");
+                }
+                HttpResponse transfer = SimpleHTTPClient.getInstance().doPost(
+                        Utils.getChangeApplicationOwnerURL(baseUrl, application.id(), admin.getUserName()),
+                        Identity.bearerHeaders(adminToken.toString()), "", null);
+                if (transfer == null || transfer.getResponseCode() != 200) {
+                    logger.warn("Cleanup: transfer of application " + application.id() + " to '"
+                            + admin.getUserName() + "' returned HTTP "
+                            + (transfer == null ? "none" : transfer.getResponseCode() + ": " + transfer.getData())
+                            + " — it may leak.");
+                    continue;
+                }
+                HttpResponse delete = SimpleHTTPClient.getInstance().doDelete(
+                        Utils.getApplicationEndpointURL(baseUrl, application.id()),
+                        Identity.bearerHeaders(devportalToken.toString()));
+                int code = delete == null ? -1 : delete.getResponseCode();
+                if (code < 200 || code >= 300) {
+                    logger.warn("Cleanup: delete of application " + application.id() + " as '" + admin.getUserName()
+                            + "' returned HTTP " + code + " — resource NOT deleted; it may leak: "
+                            + (delete == null ? "" : delete.getData()));
+                }
+            } catch (Exception | AssertionError e) {
+                logger.warn("Cleanup failed to delete application " + application.id() + " via tenant admin '"
+                        + application.tenantAdminRef() + "': " + e);
             }
         }
     }

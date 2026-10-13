@@ -12,7 +12,7 @@ Feature: Admin Throttling Policy Export / Import
   Legacy threw a SkipException for the custom cases in tenant mode — that guard is exactly WHY it skipped, so the
   refusal is a real unported negative rather than a non-item. The advanced/application/subscription exports are
   NOT guarded, which is why legacy ran those in both tenant modes; they stay positive in both.
-  The final re-imported (same-named, unique) policy is left to the block's container teardown.
+  A policy created by an import is registered for teardown like any created policy.
 
   @cap:admin @feat:throttling-policies @type:regression @legacy:ThrottlePolicyExportImportTestCase
   Scenario Outline: Export and re-import a subscription throttling policy as <actor>

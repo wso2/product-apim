@@ -99,6 +99,9 @@ public class SimpleHTTPClient {
     /** Read-stall bound applied to every request this thread sends inside {@link #withSocketTimeout}. */
     private static final ThreadLocal<Integer> SCOPED_SOCKET_TIMEOUT = new ThreadLocal<>();
 
+    /** Set while this thread runs inside {@link #withoutGeneralErrorRetry}. */
+    private static final ThreadLocal<Boolean> GENERAL_ERROR_RETRY_SUSPENDED = new ThreadLocal<>();
+
     private SimpleHTTPClient()  {
 
         try {
@@ -178,6 +181,26 @@ public class SimpleHTTPClient {
     }
 
     /**
+     * Runs {@code call} with the transient {@value #GENERAL_ERROR_CODE} retry (see {@link #withGeneralErrorRetry})
+     * switched off for every request it sends on this thread, so each request is sent exactly once. For a step
+     * whose request the product rejects with that same generic 500 envelope by design: retrying a deterministic
+     * rejection only re-sends it. Scopes nest.
+     */
+    public <T> T withoutGeneralErrorRetry(ScopedCall<T> call) throws IOException {
+        Boolean enclosing = GENERAL_ERROR_RETRY_SUSPENDED.get();
+        GENERAL_ERROR_RETRY_SUSPENDED.set(Boolean.TRUE);
+        try {
+            return call.call();
+        } finally {
+            if (enclosing == null) {
+                GENERAL_ERROR_RETRY_SUSPENDED.remove();
+            } else {
+                GENERAL_ERROR_RETRY_SUSPENDED.set(enclosing);
+            }
+        }
+    }
+
+    /**
      * Executes {@code request} on the shared client, applying the thread's {@link #withSocketTimeout} bound unless
      * the request already carries its own positive socket timeout (a timeout that is itself under test).
      */
@@ -190,64 +213,52 @@ public class SimpleHTTPClient {
                 configurable.setConfig(RequestConfig.copy(base).setSocketTimeout(scoped).build());
             }
         }
-        Lock providerPathLock = providerPathLockFor(request);
-        if (providerPathLock == null) {
+        Lock publisherLock = publisherLockFor(request);
+        if (publisherLock == null) {
             return client.execute(request);
         }
-        acquire(providerPathLock, request);
+        acquire(publisherLock, request);
         try {
             return client.execute(request);
         } finally {
-            providerPathLock.unlock();
+            publisherLock.unlock();
         }
     }
 
-    /**
-     * Publisher requests that add an artifact under the registry's per-provider collection
-     * ({@code /apimgt/applicationdata/provider/<provider>}): creating, copying, importing or generating an API,
-     * API product or MCP server.
-     */
-    private static final Pattern PROVIDER_PATH_CREATE = Pattern.compile(
-            "/api/am/publisher/v\\d+/(apis|api-products|mcp-servers)"
-                    + "(/(copy-api|copy-api-products|import(-[a-z-]+)?|generate-from-[a-z-]+))?/?");
+    /** Publisher REST API requests. */
+    private static final Pattern PUBLISHER_API = Pattern.compile("/api/am/publisher/v\\d+/.*");
 
-    /** Publisher requests that delete an API, API product or MCP server by id. */
-    private static final Pattern PROVIDER_PATH_DELETE = Pattern.compile(
-            "/api/am/publisher/v\\d+/(apis|api-products|mcp-servers)/[^/]+/?");
+    /** Waits longer than this for the publisher lock are logged. */
+    private static final long PUBLISHER_LOCK_LOG_MS = 1000L;
 
-    /** Waits longer than this for the provider-path lock are logged. */
-    private static final long PROVIDER_PATH_LOCK_LOG_MS = 1000L;
-
-    /** One provider-path lock per APIM server, keyed by the request's scheme, host and port. */
-    private static final Map<String, ReadWriteLock> PROVIDER_PATH_LOCKS = new ConcurrentHashMap<>();
+    /** One publisher lock per APIM server, keyed by the request's scheme, host and port. */
+    private static final Map<String, ReadWriteLock> PUBLISHER_LOCKS = new ConcurrentHashMap<>();
 
     /**
-     * The lock that orders {@code request} against the provider-path operations of the same server, or
-     * {@code null} when the request is not one of them.
+     * The lock that orders {@code request} against the other Publisher REST API requests to the same server, or
+     * {@code null} when the request is not a Publisher REST API request.
      *
-     * <p>Deleting an API, API product or MCP server also deletes its provider's registry collection when that
-     * collection looks empty inside the delete's transaction. A create for the same provider running at the same
-     * time writes its artifact under that collection and loses it: the create answers 201 and its database rows
-     * remain, but the artifact is gone, so every read of the new id is a 404 and its delete fails with a 500.
-     * Creates take the read side, so they still run concurrently with each other; deletes take the write side, so
-     * a delete never overlaps a create on the same server.
+     * <p>The Publisher keeps API artifacts in the registry, whose writes are not safe against concurrent requests:
+     * deleting an API removes its provider's registry collection when that collection looks empty inside the
+     * delete's transaction, so a concurrent create for the same provider loses its artifact (201 with no readable
+     * API, and a delete that fails with 500); two first creates for a provider collide on creating that collection
+     * (a registry foreign-key violation, answered as 500/900967); and a read during an update can re-cache the
+     * previous artifact version. Reads ({@code GET}, {@code HEAD}, {@code OPTIONS}) take the read side and run
+     * concurrently with each other; every other method takes the write side, so a write never overlaps another
+     * write or a read on the same server.</p>
      */
-    private static Lock providerPathLockFor(HttpUriRequest request) {
+    private static Lock publisherLockFor(HttpUriRequest request) {
         java.net.URI uri = request.getURI();
         String path = uri.getPath();
-        if (path == null) {
+        if (path == null || !PUBLISHER_API.matcher(path).matches()) {
             return null;
         }
-        boolean create = HttpPost.METHOD_NAME.equals(request.getMethod())
-                && PROVIDER_PATH_CREATE.matcher(path).matches();
-        boolean delete = HttpDelete.METHOD_NAME.equals(request.getMethod())
-                && PROVIDER_PATH_DELETE.matcher(path).matches();
-        if (!create && !delete) {
-            return null;
-        }
+        String method = request.getMethod();
+        boolean read = HttpGet.METHOD_NAME.equals(method) || HttpHead.METHOD_NAME.equals(method)
+                || HttpOptions.METHOD_NAME.equals(method);
         String server = uri.getScheme() + "://" + uri.getAuthority();
-        ReadWriteLock lock = PROVIDER_PATH_LOCKS.computeIfAbsent(server, key -> new ReentrantReadWriteLock(true));
-        return create ? lock.readLock() : lock.writeLock();
+        ReadWriteLock lock = PUBLISHER_LOCKS.computeIfAbsent(server, key -> new ReentrantReadWriteLock(true));
+        return read ? lock.readLock() : lock.writeLock();
     }
 
     private static void acquire(Lock lock, HttpUriRequest request) {
@@ -257,9 +268,9 @@ public class SimpleHTTPClient {
         long waitStart = System.currentTimeMillis();
         lock.lock();
         long waited = System.currentTimeMillis() - waitStart;
-        if (waited >= PROVIDER_PATH_LOCK_LOG_MS) {
-            logger.info("provider-path-lock: " + request.getMethod() + " " + request.getURI().getPath()
-                    + " waited " + waited + "ms for an overlapping create/delete on the same server");
+        if (waited >= PUBLISHER_LOCK_LOG_MS) {
+            logger.info("publisher-lock: " + request.getMethod() + " " + request.getURI().getPath()
+                    + " waited " + waited + "ms for an overlapping Publisher request on the same server");
         }
     }
 
@@ -280,6 +291,9 @@ public class SimpleHTTPClient {
      */
     private org.wso2.carbon.automation.test.utils.http.client.HttpResponse withGeneralErrorRetry(HttpCall call)
             throws IOException {
+        if (Boolean.TRUE.equals(GENERAL_ERROR_RETRY_SUSPENDED.get())) {
+            return call.invoke();
+        }
         org.wso2.carbon.automation.test.utils.http.client.HttpResponse response = null;
         for (int attempt = 1; attempt <= GENERAL_ERROR_RETRIES; attempt++) {
             response = call.invoke();
@@ -406,9 +420,10 @@ public class SimpleHTTPClient {
         // level, not per step. Only a 5xx whose body carries code 900967 + "General Error" is retried; any other
         // outcome (2xx, a deterministic 4xx, a different 5xx) returns on the first attempt.
         DownloadResult result = null;
-        for (int attempt = 1; attempt <= GENERAL_ERROR_RETRIES; attempt++) {
+        int attempts = Boolean.TRUE.equals(GENERAL_ERROR_RETRY_SUSPENDED.get()) ? 1 : GENERAL_ERROR_RETRIES;
+        for (int attempt = 1; attempt <= attempts; attempt++) {
             result = doGetToFileOnce(url, headers, suffix);
-            if (attempt == GENERAL_ERROR_RETRIES || !isTransientGeneralError(result)) {
+            if (attempt == attempts || !isTransientGeneralError(result)) {
                 break;
             }
             logger.warn("Transient " + GENERAL_ERROR_CODE + " General Error on download attempt " + attempt + "/"

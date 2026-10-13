@@ -10,8 +10,10 @@ Feature: Admin Key Manager Configuration
   optional-parameter round-trip over the full-optional payloads (the equivalent of legacy's
   verifyKeyManagerDTO - exact field equality, not a substring match); a secret-masking check on GET; a
   missing-connector-config negative (400) over all types; a duplicate-name negative (409); and a
-  delete-nonexistent-id negative (404). This is pure config CRUD — the connector endpoints are stored, not
-  contacted, so no external connectivity is needed (verified). Runs ×2 tenant (super + tenant) for parity with
+  delete-nonexistent-id negative (404). This is config CRUD: the assertions read back stored configuration only.
+  The Auth0 connector does request a token from its token endpoint when a key manager loads, so the Auth0
+  fixtures point at the local oauth-token-stub (http://nodebackend:3028) on the block's backend; the other
+  connectors' endpoints are stored without being contacted. Runs ×2 tenant (super + tenant) for parity with
   the legacy Factory; KM registration is a per-tenant admin registry. Teardown via @cleanup deletes any created
   key manager with the admin token.
   The WSO2 Identity Server 7 connector (type WSO2-IS-7) is a distinct type with mandatory IS7-specific connector
@@ -90,7 +92,7 @@ Feature: Admin Key Manager Configuration
 
     Examples: Super tenant
       | type         | payload                                                   | issuer                                     | grantTypes                                                            | jwks                                                                    | actor |
-      | Auth0        | artifacts/payloads/keymanagers/auth0-optional.json        | https://dev-ted144kt.us.auth0.com/         | client_credentials,password,implicit,refresh_token                    | https://dev-ted144kt.us.auth0.com/.well-known/jwks.json                 | admin |
+      | Auth0        | artifacts/payloads/keymanagers/auth0-optional.json        | http://nodebackend:3028/                   | client_credentials,password,implicit,refresh_token                    | http://nodebackend:3028/.well-known/jwks.json                           | admin |
       | WSO2-IS      | artifacts/payloads/keymanagers/wso2is-optional.json       | https://localhost:9444/services            | client_credentials,password,implicit,refresh_token                    | https://localhost:9443/oauth2/jwks                                      | admin |
       | KeyCloak     | artifacts/payloads/keymanagers/keycloak-optional.json     | https://localhost:8443/auth/realms/master  | client_credentials,password,implicit,refresh_token                    | https://localhost:8443/auth/realms/master/protocol/openid-connect/certs | admin |
       | Okta         | artifacts/payloads/keymanagers/okta-optional.json         | https://dev-599740.okta.com/oauth2/default | client_credentials,password,implicit,refresh_token,authorization_code | https://dev-599740.okta.com/oauth2/default/v1/keys                      | admin |
@@ -99,7 +101,7 @@ Feature: Admin Key Manager Configuration
 
     Examples: Tenant
       | type         | payload                                                   | issuer                                     | grantTypes                                                            | jwks                                                                    | actor             |
-      | Auth0        | artifacts/payloads/keymanagers/auth0-optional.json        | https://dev-ted144kt.us.auth0.com/         | client_credentials,password,implicit,refresh_token                    | https://dev-ted144kt.us.auth0.com/.well-known/jwks.json                 | admin@tenant1.com |
+      | Auth0        | artifacts/payloads/keymanagers/auth0-optional.json        | http://nodebackend:3028/                   | client_credentials,password,implicit,refresh_token                    | http://nodebackend:3028/.well-known/jwks.json                           | admin@tenant1.com |
       | WSO2-IS      | artifacts/payloads/keymanagers/wso2is-optional.json       | https://localhost:9444/services            | client_credentials,password,implicit,refresh_token                    | https://localhost:9443/oauth2/jwks                                      | admin@tenant1.com |
       | KeyCloak     | artifacts/payloads/keymanagers/keycloak-optional.json     | https://localhost:8443/auth/realms/master  | client_credentials,password,implicit,refresh_token                    | https://localhost:8443/auth/realms/master/protocol/openid-connect/certs | admin@tenant1.com |
       | Okta         | artifacts/payloads/keymanagers/okta-optional.json         | https://dev-599740.okta.com/oauth2/default | client_credentials,password,implicit,refresh_token,authorization_code | https://dev-599740.okta.com/oauth2/default/v1/keys                      | admin@tenant1.com |

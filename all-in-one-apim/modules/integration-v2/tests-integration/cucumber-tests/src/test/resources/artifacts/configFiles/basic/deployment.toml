@@ -27,3 +27,10 @@ password = "$env{SHARED_DATABASE_PASSWORD}"
 validationQuery = "$env{SHARED_DATABASE_VALIDATION_QUERY}"
 pool_options.maxActive = "100"
 pool_options.maxWait = "60000"
+
+# The gateway processes deploy events one at a time and, before fetching each artifact, sleeps event_waiting_time
+# (product default 5000 ms) so a write replicated across HA nodes can land first. A test runtime is a single node
+# reading the database the Publisher writes to, so the wait only throttles deploys to 12 per minute and backs up
+# behind the deploy events of APIs that cleanup has already removed. A value of 0 (anything <= 1) skips the wait.
+[apim.sync_runtime_artifacts.gateway]
+event_waiting_time = 0

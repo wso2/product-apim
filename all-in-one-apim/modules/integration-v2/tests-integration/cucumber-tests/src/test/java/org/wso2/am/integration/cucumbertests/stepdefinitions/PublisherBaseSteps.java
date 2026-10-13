@@ -29,6 +29,7 @@ import org.slf4j.LoggerFactory;
 import org.apache.commons.io.IOUtils;
 import org.testng.Assert;
 import org.wso2.am.integration.cucumbertests.utils.ContainerLogDiagnostics;
+import org.wso2.am.integration.cucumbertests.utils.GatewaySynapseLog;
 import org.wso2.am.integration.cucumbertests.utils.HealGate;
 import org.wso2.am.integration.cucumbertests.utils.Identity;
 import org.wso2.am.integration.cucumbertests.utils.Names;
@@ -38,7 +39,6 @@ import org.wso2.am.integration.cucumbertests.utils.TestContext;
 import org.wso2.am.integration.cucumbertests.utils.Utils;
 import org.wso2.am.integration.cucumbertests.utils.clients.SimpleHTTPClient;
 import org.wso2.am.integration.test.utils.Constants;
-import org.wso2.am.testcontainers.ApimRuntime;
 import org.wso2.carbon.automation.engine.context.beans.User;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 import org.yaml.snakeyaml.Yaml;
@@ -412,96 +412,63 @@ public class PublisherBaseSteps {
                         Constants.CONTENT_TYPES.APPLICATION_JSON);
     }
 
-    /** Context key holding the gateway-log offset captured immediately before a resource's deploy. */
-    private static final String DEPLOY_LOG_MARK_PREFIX = "deployGatewayLogMark::";
-
-    /** Synapse's per-artifact hot-swap line; the artifact name is {@code prod--<apiName>:v<version>}. */
-    private static final String SYNAPSE_ADDED = "was added to the Synapse configuration successfully";
     /** The operation-policy spec version the product writes into the envelope of every exported policy. */
     private static final String EXPORTED_OPERATION_POLICY_SPEC_VERSION = "v4.7.0";
 
     /**
-     * Decides whether the artifact now on the gateway is the one THIS scenario's deploy put there.
+     * Decides whether the artifact now on the gateway is the one THIS scenario's deploy put there, by resource type.
+     * Each type's deploy mark and synapse artifact name live with that type's steps.
      *
      * <p>Only reached once the artifact endpoint has already answered 200, so the extra log read costs nothing on
      * the common first-deploy path (the artifact is absent until the deploy lands, and the very first 200 is
      * confirmed with a single read). It is the RE-deploy path — where the endpoint answers 200 immediately from
      * the previous artifact — that polls here, which is exactly the case that needs it.
-     *
-     * <p><b>Falls back to the old behaviour whenever it cannot do better</b>, and never invents a failure: no
-     * mark (the gate was reached without a deploy in this scenario, e.g. the fixture was deployed by a
-     * {@code _setup_} feature), a non-{@code apis} resource, or an unreadable log all return {@link
-     * HealGate.Ready} — byte-for-byte what this gate did before. The check can only make the gate stricter where
-     * it has the evidence to be, never weaker.
-     *
-     * <p>Matching is on {@code prod--<name>:v<version>}, which is scenario-unique because API names are unique by
-     * construction (§4). That matters: block classes run in parallel against ONE container and ONE log, so a
-     * substring match on anything less specific could be satisfied by a sibling scenario's deploy.
      */
-    private HealGate.Verdict synapseSwappedInSinceDeploy(String resourceId, String name, String version) {
+    private HealGate.Verdict swappedInSinceDeploy(String resourceType, String resourceId, String name,
+                                                  String version) {
+        switch (resourceType) {
+            case "apis":
+                return apiSwappedInSinceDeploy(resourceId, name, version);
+            case "mcp-servers":
+                return MCPServerSteps.mcpServerSwappedInSinceDeploy(resourceId, name, version);
+            case "api-products":
+                return ApiProductSteps.apiProductSwappedInSinceDeploy(resourceId, name, version);
+            default:
+                return new HealGate.Ready();
+        }
+    }
 
-        Object mark = TestContext.get(DEPLOY_LOG_MARK_PREFIX + resourceId);
-        if (mark == null) {
-            return new HealGate.Ready();
+    /** Records the gateway log ahead of a deploy, by resource type (see {@link #swappedInSinceDeploy}). */
+    private void markGatewayLogForDeploy(String resourceType, String resourceId) {
+        switch (resourceType) {
+            case "apis":
+                markGatewayLogForApiDeploy(resourceId);
+                break;
+            case "mcp-servers":
+                MCPServerSteps.markGatewayLogForMcpServerDeploy(resourceId);
+                break;
+            case "api-products":
+                ApiProductSteps.markGatewayLogForApiProductDeploy(resourceId);
+                break;
+            default:
+                break;
         }
-        String log;
-        try {
-            Object candidate = TestContext.get("blockApimContainer");
-            if (!(candidate instanceof ApimRuntime runtime)) {
-                return new HealGate.Ready();
-            }
-            log = runtime.readGatewayLogFile(ContainerLogDiagnostics.SERVER_LOG);
-        } catch (Throwable unreadable) {
-            logger.warn("Could not read the gateway log to confirm the synapse hot-swap of {} (accepting the"
-                    + " artifact-endpoint 200): {}", name, unreadable.toString());
-            return new HealGate.Ready();
-        }
-        if (log == null) {
-            return new HealGate.Ready();
-        }
-        int from = Integer.parseInt(mark.toString());
-        // A rotated/truncated log can leave the mark past the end; scan the whole file rather than throw.
-        String appended = from <= log.length() ? log.substring(from) : log;
-        String artifact = "prod--" + name + ":v" + version;
-        for (String line : appended.split("\\R")) {
-            if (line.contains(artifact) && line.contains(SYNAPSE_ADDED)) {
-                return new HealGate.Ready();
-            }
-        }
-        return new HealGate.NotReady("gateway holds an artifact for " + name + " v" + version + ", but synapse"
-                + " has not logged adding THIS deploy's artifact (" + artifact + ") yet — the 200 is the"
-                + " previously deployed artifact");
+    }
+
+    /** Records the gateway log ahead of deploying the API {@code apiId}. */
+    private static void markGatewayLogForApiDeploy(String apiId) {
+        GatewaySynapseLog.mark(apiId);
     }
 
     /**
-     * Captures the gateway log's current length ahead of a deploy, keyed BY RESOURCE so a scenario that deploys
-     * several resources cannot have one resource's gate read another's mark.
-     *
-     * <p>Best-effort by design: if the container or the log cannot be read, no mark is stored and
-     * {@link #resourceShouldBeLiveOnGateway} silently falls back to its original artifact-existence probe. A
-     * diagnostic aid must never be able to fail a deploy.
+     * Whether synapse has added the API's artifact since its deploy was marked. An API's synapse artifact is named
+     * {@code prod--<name>:v<version>} (gateway/mediation_policies asserts that line).
      */
-    private void markGatewayLogForDeploy(String resourceType, String resourceId) {
-        if (!"apis".equals(resourceType)) {
-            // Scoped to APIs: the synapse line is verified for API artifacts (gateway/mediation_policies asserts
-            // it). Whether an api-product or mcp-server deploy emits the same line is UNVERIFIED, so those keep
-            // the original probe rather than risk a gate that waits for a line that never comes.
-            return;
-        }
-        try {
-            Object candidate = TestContext.get("blockApimContainer");
-            if (candidate instanceof ApimRuntime runtime) {
-                TestContext.set(DEPLOY_LOG_MARK_PREFIX + resourceId,
-                        runtime.readGatewayLogFile(ContainerLogDiagnostics.SERVER_LOG).length());
-            }
-        } catch (Throwable unreadable) {
-            // Deliberately Throwable: this only sharpens a later gate; it must never break the deploy itself.
-            logger.warn("Could not mark the gateway log before deploying {} (the readiness gate will fall back"
-                    + " to artifact existence): {}", resourceId, unreadable.toString());
-        }
+    private static HealGate.Verdict apiSwappedInSinceDeploy(String apiId, String name, String version) {
+        return GatewaySynapseLog.artifactAddedSinceMark(apiId, "prod--" + name + ":v" + version);
     }
 
-     /**
+    /**
      * Deletes a resource (API, API Product, etc.) by its ID.
      *
      * @param resourceType Type of resource to delete (e.g., "apis", "api-products")
@@ -1130,7 +1097,7 @@ public class PublisherBaseSteps {
                         // ever arriving — the failure mode this second check exists to close. Synapse logs a
                         // per-artifact line on every hot-swap, so "the log gained THIS artifact's line since the
                         // deploy" is true only once the new artifact is actually live.
-                        return synapseSwappedInSinceDeploy(actualResourceId, name, version);
+                        return swappedInSinceDeploy(resourceType, actualResourceId, name, version);
                     }
                     // 401/403 can never become a 200, and any 5xx here already survived the client's
                     // transient 900967 retry, so neither is worth waiting out.
@@ -2432,7 +2399,8 @@ public class PublisherBaseSteps {
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION,
                 "Bearer " + Identity.publisherToken());
 
-        Requests.delete(Utils.getAPIScopesById(Utils.getBaseUrl(), scopeId), headers);
+        HttpResponse response = Requests.delete(Utils.getAPIScopesById(Utils.getBaseUrl(), scopeId), headers);
+        ResourceCleanup.deregisterIfDeleted(Constants.CREATED_SHARED_SCOPE_IDS, scopeId, response);
     }
 
     /**

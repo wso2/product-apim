@@ -18,6 +18,9 @@ Feature: Setup - multi-tenant console SSO broker topology
     When I create a key manager from payload "artifacts/payloads/keymanagers/wso2is7.json" as "mtSsoKm"
     Then The response status code should be 201
     When I provision the SSO tenant "abc.com" on the identity server with admin password "Admin@12345"
+    # Tokens for the tenant's admin, as which the journey's tenant-owned resources are torn down.
+    And I have valid access tokens as "admin@abc.com"
+    And I act as "admin"
     And I provision the SSO identity server application in tenant "abc.com"
     And I provision the SSO user "ssouser" with password "Test@12345" in groups "creator,publisher,subscriber,admin" in tenant "abc.com"
     And I configure the SSO tenant identity provider in tenant "abc.com"

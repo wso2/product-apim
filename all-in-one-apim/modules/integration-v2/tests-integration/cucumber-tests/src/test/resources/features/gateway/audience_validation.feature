@@ -8,6 +8,7 @@ Feature: Gateway Audience Validation
   AudienceValidationTestCase in full — the API half with a production-key token, and the API PRODUCT half (a
   separate gateway artifact with its own audiences field and revision cycle) with a sandbox-key token. Runs in the
   gateway block (backend up) as the tenant admin, in both tenants. Teardown via the per-scenario cleanup hook.
+  Each audience change is re-deployed and gated on the new revision being live on the gateway before it is invoked.
 
   @cap:gateway @feat:security-enforcement @rule:audience @type:regression @dep:publisher @legacy:AudienceValidationTestCase
   Scenario Outline: Audience claim validation gates gateway access as <actor>
@@ -38,6 +39,7 @@ Feature: Gateway Audience Validation
     Then The response status code should be 200
     When I deploy the API with id "audApiId"
     Then The response status code should be 201
+    And the "apis" resource "audApiId" should be live on the gateway, redeploying if propagation is lost
     When I invoke the API at gateway context "{{audApiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 403 within 60 seconds
     Then The response status code should be 403
     And The error response should have code "900914" message "Access Denied" and description containing "The access token does not allow you to access the requested resource"
@@ -52,6 +54,7 @@ Feature: Gateway Audience Validation
     Then The response status code should be 200
     When I deploy the API with id "audApiId"
     Then The response status code should be 201
+    And the "apis" resource "audApiId" should be live on the gateway, redeploying if propagation is lost
     When I invoke the API at gateway context "{{audApiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
     And The value of response field "id" should be "123"
@@ -123,6 +126,7 @@ Feature: Gateway Audience Validation
     Then The response status code should be 200
     When I deploy the "api-products" resource with id "audProductId"
     Then The response status code should be 201
+    And the "api-products" resource "audProductId" should be live on the gateway, redeploying if propagation is lost
     When I invoke the API at gateway context "{{audProductContext}}/1.0.0/customers/123/" with method "GET" using access token "audProdSandboxToken" and payload "" until response status code becomes 403 within 60 seconds
     Then The response status code should be 403
     And The error response should have code "900914" message "Access Denied" and description containing "The access token does not allow you to access the requested resource"
@@ -137,6 +141,7 @@ Feature: Gateway Audience Validation
     Then The response status code should be 200
     When I deploy the "api-products" resource with id "audProductId"
     Then The response status code should be 201
+    And the "api-products" resource "audProductId" should be live on the gateway, redeploying if propagation is lost
     When I invoke the API at gateway context "{{audProductContext}}/1.0.0/customers/123/" with method "GET" using access token "audProdSandboxToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
     And The value of response field "id" should be "123"

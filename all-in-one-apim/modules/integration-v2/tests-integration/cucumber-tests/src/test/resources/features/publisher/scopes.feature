@@ -9,8 +9,8 @@ Feature: Publisher API Shared Scopes
   cleanup hook (created scopes and APIs are both registered for teardown).
 
   @cap:publisher @feat:scopes @type:smoke @legacy:SharedScopeTestCase @legacy:SharedScopeTestWithRestart
-  Scenario Outline: Create and retrieve a shared scope as <admin>
-    Given The system is ready and I have valid publisher access tokens as "<admin>"
+  Scenario Outline: Create and retrieve a shared scope as <actor>
+    Given The system is ready and I have valid publisher access tokens as "<actor>"
     # The name is a BASE — the step uniquifies it (a shared scope is tenant-wide, so a literal would 409 a
     # re-run whose teardown could not complete). Capture the created name and assert against that.
     When I create a new shared scope as "scope-create-test"
@@ -30,12 +30,13 @@ Feature: Publisher API Shared Scopes
     And The response field "bindings" should be exactly the list "admin"
 
     Examples:
+      | actor             |
       | admin             |
       | admin@tenant1.com |
 
   @cap:publisher @feat:scopes @type:regression @legacy:SharedScopeTestCase @legacy:APIScopeTestCase
-  Scenario Outline: Assign a shared scope to an API and to an operation as <admin>
-    Given The system is ready and I have valid publisher access tokens as "<admin>"
+  Scenario Outline: Assign a shared scope to an API and to an operation as <actor>
+    Given The system is ready and I have valid publisher access tokens as "<actor>"
     And I have created an api from "artifacts/payloads/create_apim_test_api.json" as "scopeApiId" and deployed it
     When I create a new shared scope as "scope-assign-test"
     Then The response status code should be 201
@@ -81,18 +82,20 @@ Feature: Publisher API Shared Scopes
     And The response field "operations[?(@.target=='/customers/{id}' && @.verb=='GET')].scopes[*]" should be exactly the list ""
 
     Examples:
+      | actor             |
       | admin             |
       | admin@tenant1.com |
 
   @cap:publisher @feat:scopes @type:regression @legacy:SharedScopeTestCase
-  Scenario Outline: Create and delete a shared scope as <admin>
-    Given The system is ready and I have valid publisher access tokens as "<admin>"
+  Scenario Outline: Create and delete a shared scope as <actor>
+    Given The system is ready and I have valid publisher access tokens as "<actor>"
     When I create a new shared scope as "scope-delete-test"
     Then The response status code should be 201
     When I delete shared scope with "scopeID"
     Then The response status code should be 200
 
     Examples:
+      | actor             |
       | admin             |
       | admin@tenant1.com |
 
@@ -101,8 +104,8 @@ Feature: Publisher API Shared Scopes
   # path from the first, e.g. if an update were implemented as insert-if-absent). A single update cannot show that.
   # The final re-read confirms the last write is what is stored, not merely what the PUT echoed back.
   @cap:publisher @feat:scopes @type:regression @legacy:SharedScopeTestWithRestart
-  Scenario Outline: A shared scope survives three consecutive description updates as <admin>
-    Given The system is ready and I have valid publisher access tokens as "<admin>"
+  Scenario Outline: A shared scope survives three consecutive description updates as <actor>
+    Given The system is ready and I have valid publisher access tokens as "<actor>"
     When I create a new shared scope as "scope-update-test"
     Then The response status code should be 201
     And I extract response field "name" and store it as "updateScopeName"
@@ -122,6 +125,7 @@ Feature: Publisher API Shared Scopes
     And The response field "bindings" should be exactly the list "admin"
 
     Examples:
+      | actor             |
       | admin             |
       | admin@tenant1.com |
 

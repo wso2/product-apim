@@ -42,6 +42,8 @@
         <parameter name="apimCpuLimit" value="1"/>
         <parameter name="initTenantUsers" value="true"/>
         <parameter name="initSecondaryUserStore" value="true"/>
+        <!-- The Auth0 key manager fixtures' token endpoint is the backend's oauth-token-stub. -->
+        <parameter name="initBackend" value="true"/>
         <classes>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.DevPortalUnifiedSearchRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.DevPortalApplicationsRunner"/>

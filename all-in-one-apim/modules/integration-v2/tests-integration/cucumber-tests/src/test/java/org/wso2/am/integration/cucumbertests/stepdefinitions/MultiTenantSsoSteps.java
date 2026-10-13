@@ -27,6 +27,7 @@ import org.wso2.am.integration.cucumbertests.utils.MultiTenantSsoProvisioner;
 import org.wso2.am.integration.cucumbertests.utils.Names;
 import org.wso2.am.integration.cucumbertests.utils.PlaywrightSsoClient;
 import org.wso2.am.integration.cucumbertests.utils.ResourceCleanup;
+import org.wso2.am.integration.cucumbertests.utils.TenantUserProvisioner;
 import org.wso2.am.integration.cucumbertests.utils.TestContext;
 import org.wso2.am.integration.test.utils.Constants;
 
@@ -68,6 +69,8 @@ public class MultiTenantSsoSteps {
     public void iProvisionTheSsoTenant(String domain, String adminPassword) throws Exception {
         MultiTenantSsoProvisioner.createIsTenant(domain, "admin", adminPassword, "sso-admin@" + domain);
         MultiTenantSsoProvisioner.awaitApimTenantSynced(domain);
+        // The tenant's admin becomes an actor, so resources the tenant's users create can be torn down as it.
+        TenantUserProvisioner.registerRuntimeTenantAdmin(domain, adminPassword);
         TestContext.set("mtTenantDomain", domain);
         TestContext.set("mtTenantAdmin", "admin");
         TestContext.set("mtTenantAdminPassword", adminPassword);
@@ -379,7 +382,9 @@ public class MultiTenantSsoSteps {
         String apiId = browser.createRestApi(unique, "/" + unique.toLowerCase(Locale.ROOT), "1.0.0",
                 "http://nodebackend:3001/jaxrs_basic/services/customers/customerservice");
         TestContext.set("mtApiId", apiId);
-        ResourceCleanup.register(Constants.CREATED_API_IDS, apiId);
+        // Owned by the tenant's SSO user, so the tenant admin deletes it.
+        ResourceCleanup.registerFor(Constants.CREATED_API_IDS, apiId,
+                "admin@" + TestContext.resolve("mtTenantDomain"));
         TestContext.set("mtApiName", unique);
         TestContext.set("mtApiContext", "/t/" + TestContext.resolve("mtTenantDomain") + "/"
                 + unique.toLowerCase(Locale.ROOT));
@@ -425,7 +430,8 @@ public class MultiTenantSsoSteps {
         String appName = Names.unique(name);
         String appId = browser.createDevportalApp(appName);
         TestContext.set("mtAppId", appId);
-        ResourceCleanup.register(Constants.CREATED_APPLICATION_IDS, appId);
+        // Owned by the federated SSO user, who is not an actor: the tenant admin takes it over to delete it.
+        ResourceCleanup.registerForeignOwnedApplication(appId, "admin@" + TestContext.resolve("mtTenantDomain"));
         TestContext.set("mtAppName", appName);
         String owner = browser.recordedPrincipal("/api/am/devportal/v3/applications/" + appId,
                 "/devportal", "owner");

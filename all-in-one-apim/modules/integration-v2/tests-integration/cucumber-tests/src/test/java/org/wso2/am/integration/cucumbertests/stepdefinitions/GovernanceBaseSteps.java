@@ -186,7 +186,9 @@ public class GovernanceBaseSteps {
     public void iDeleteGovernanceRuleset(String idKey) throws IOException {
 
         String rulesetId = TestContext.resolve(idKey).toString();
-        Requests.delete(Utils.getGovernanceRulesetByIdURL(Utils.getBaseUrl(), rulesetId), governanceAuthHeaders());
+        HttpResponse response = Requests.delete(Utils.getGovernanceRulesetByIdURL(Utils.getBaseUrl(), rulesetId),
+                governanceAuthHeaders());
+        ResourceCleanup.deregisterIfDeleted(Constants.CREATED_GOVERNANCE_RULESET_IDS, rulesetId, response);
     }
 
     /**

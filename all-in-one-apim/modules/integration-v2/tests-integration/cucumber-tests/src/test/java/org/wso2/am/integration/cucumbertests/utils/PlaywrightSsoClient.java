@@ -76,6 +76,13 @@ public final class PlaywrightSsoClient implements AutoCloseable {
     /** Attempts to unload the current console when a page-initiated navigation keeps cancelling it. */
     private static final int LEAVE_CONSOLE_ATTEMPTS = 3;
 
+    /**
+     * How long a console page may take to render the control a step enters it for. The control appears only once
+     * the page has loaded its data, and the first visit to a page in a fresh container also loads that page's
+     * bundle and warms the REST calls behind it, which under CI CPU limits has taken over 30 s.
+     */
+    private static final int PAGE_READY_TIMEOUT_MS = 90000;
+
     /** {@code docTrail} size when the current SSO console open began; later hops belong to that open. */
     private int trailMarkAtConsoleOpen;
     private java.util.List<String> lastLogoutHops = java.util.Collections.emptyList();
@@ -1085,7 +1092,7 @@ public final class PlaywrightSsoClient implements AutoCloseable {
         page.navigate(apimInternal + "/publisher/apis/" + currentApiId + "/deployments",
                 new Page.NavigateOptions().setWaitUntil(WaitUntilState.DOMCONTENTLOADED));
         Locator deploy = page.locator("#deploy-btn");
-        deploy.waitFor(new Locator.WaitForOptions().setTimeout(30000));
+        awaitPageElement(deploy, "the Deploy button", "deploy-btn-missing");
         if (!waitForEnabled(deploy, 30000)) {
             snap("deploy-btn-disabled");
             dumpDiagnostics("deploy-btn-disabled");
@@ -1121,7 +1128,7 @@ public final class PlaywrightSsoClient implements AutoCloseable {
         page.navigate(apimInternal + "/publisher/apis/" + currentApiId + "/lifecycle",
                 new Page.NavigateOptions().setWaitUntil(WaitUntilState.DOMCONTENTLOADED));
         Locator publish = page.locator("[data-testid=Publish-btn]");
-        publish.waitFor(new Locator.WaitForOptions().setTimeout(30000));
+        awaitPageElement(publish, "the Publish button", "publish-btn-missing");
         if (!waitForEnabled(publish, 20000)) {
             snap("publish-btn-disabled");
             throw new AssertionError("the Publish button never enabled. " + pageDiagnostic());
@@ -1157,7 +1164,7 @@ public final class PlaywrightSsoClient implements AutoCloseable {
         Locator dnr = page.getByRole(AriaRole.BUTTON,
                 new Page.GetByRoleOptions().setName("Deploy New Revision"));
         try {
-            dnr.waitFor(new Locator.WaitForOptions().setTimeout(30000));
+            dnr.waitFor(new Locator.WaitForOptions().setTimeout(PAGE_READY_TIMEOUT_MS));
         } catch (RuntimeException e) {
             snap("redeploy-no-button");
             throw new AssertionError("'Deploy New Revision' not found on the deployments page (did the admin→"
@@ -1403,7 +1410,7 @@ public final class PlaywrightSsoClient implements AutoCloseable {
     public String createDevportalApp(String appName) {
         page.navigate(apimInternal + "/devportal/applications/create?tenant=" + devportalTenant,
                 new Page.NavigateOptions().setWaitUntil(WaitUntilState.DOMCONTENTLOADED));
-        page.waitForSelector("input[name=name]", new Page.WaitForSelectorOptions().setTimeout(30000));
+        awaitPageElement(page.locator("input[name=name]"), "the application name field", "dp-app-form-missing");
         // The form enables SAVE before it has loaded its application tiers and attributes, and its save handler
         // reads the attribute list without a null check, so a SAVE in that window fails client-side and sends
         // nothing. Both values arrive in one state update that also selects the first tier, so a selected tier
@@ -1481,7 +1488,7 @@ public final class PlaywrightSsoClient implements AutoCloseable {
     public void subscribeAppToApi(String apiId, String appName) {
         page.navigate(apimInternal + "/devportal/apis/" + apiId + "/credentials?tenant=" + devportalTenant,
                 new Page.NavigateOptions().setWaitUntil(WaitUntilState.DOMCONTENTLOADED));
-        page.waitForSelector("#subscribe-to-api-btn", new Page.WaitForSelectorOptions().setTimeout(30000));
+        awaitPageElement(page.locator("#subscribe-to-api-btn"), "the Subscribe button", "dp-subscribe-btn-missing");
         // The "Application" select defaults to DefaultApplication — switch it to OUR app. (The "Business Plan"
         // select already defaults to a valid tier, e.g. Unlimited, so we leave it.) MUI Select is opened by
         // clicking the label-associated combobox, then the matching option is clicked in the popup listbox.
@@ -1528,7 +1535,7 @@ public final class PlaywrightSsoClient implements AutoCloseable {
                         + "/productionkeys/oauth?tenant=" + devportalTenant,
                 new Page.NavigateOptions().setWaitUntil(WaitUntilState.DOMCONTENTLOADED));
         Locator gen = page.locator("#generate-keys");
-        gen.waitFor(new Locator.WaitForOptions().setTimeout(30000));
+        awaitPageElement(gen, "the Generate Keys button", "dp-generate-keys-missing");
         waitForEnabled(gen, 20000);
         com.microsoft.playwright.Response resp;
         try {
@@ -1644,6 +1651,21 @@ public final class PlaywrightSsoClient implements AutoCloseable {
     }
 
     /** Best-effort debug screenshot to {@code /tmp/snap-<label>.png} (never throws). */
+    /**
+     * Waits for the control a step entered a console page for, recording a screenshot and the page state when it
+     * never appears so the failure shows what the page rendered instead.
+     */
+    private void awaitPageElement(Locator element, String what, String label) {
+        try {
+            element.waitFor(new Locator.WaitForOptions().setTimeout(PAGE_READY_TIMEOUT_MS));
+        } catch (RuntimeException e) {
+            snap(label);
+            dumpDiagnostics(label);
+            throw new AssertionError(what + " did not appear within " + PAGE_READY_TIMEOUT_MS + " ms. "
+                    + pageDiagnostic(), e);
+        }
+    }
+
     private void snap(String label) {
         try {
             page.screenshot(new Page.ScreenshotOptions()

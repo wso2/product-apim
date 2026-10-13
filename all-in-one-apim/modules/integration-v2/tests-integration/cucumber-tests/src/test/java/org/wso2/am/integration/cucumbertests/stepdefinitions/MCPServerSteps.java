@@ -22,6 +22,8 @@ import io.cucumber.java.en.When;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.testng.Assert;
+import org.wso2.am.integration.cucumbertests.utils.GatewaySynapseLog;
+import org.wso2.am.integration.cucumbertests.utils.HealGate;
 import org.wso2.am.integration.cucumbertests.utils.Identity;
 import org.wso2.am.integration.cucumbertests.utils.Requests;
 import org.wso2.am.integration.cucumbertests.utils.ResourceCleanup;
@@ -885,5 +887,18 @@ public class MCPServerSteps {
         String jsonPayload = TestContext.resolve(payload).toString();
         HttpResponse response = Requests.put(Utils.getMCPServerBackendByIdURL(Utils.getBaseUrl(), actualId, actualBackendId),
                 publisherHeaders(), jsonPayload, Constants.CONTENT_TYPES.APPLICATION_JSON);
+    }
+
+    /** Records the gateway log ahead of deploying the MCP server {@code mcpServerId}. */
+    static void markGatewayLogForMcpServerDeploy(String mcpServerId) {
+        GatewaySynapseLog.mark(mcpServerId);
+    }
+
+    /**
+     * Whether synapse has added the MCP server's artifact since its deploy was marked. Synapse deploys a MCP server
+     * as an API artifact named {@code prod--<name>:v<version>}, the same form as an API's.
+     */
+    static HealGate.Verdict mcpServerSwappedInSinceDeploy(String mcpServerId, String name, String version) {
+        return GatewaySynapseLog.artifactAddedSinceMark(mcpServerId, "prod--" + name + ":v" + version);
     }
 }
