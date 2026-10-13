@@ -469,6 +469,20 @@
             <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayWebSocketProxyNoMatchRunner"/>
         </classes>
     </test>
+    <!-- Keep thread-count=1: analytics is container-wide, so the mock Moesif collector (port 3029) sees every
+         invocation, and the scenarios assert exact event counts and break or re-rate the shared collector.
+         serverFilesToCopy adds the publisher loggers the config-plumbing scenario reads. -->
+    <test name="IntegrationV2-Analytics" parallel="classes" thread-count="1">
+        <parameter name="blockLabel" value="analytics"/>
+        <parameter name="apimCpuLimit" value="1"/>
+        <parameter name="initTenantUsers" value="true"/>
+        <parameter name="initBackend" value="true"/>
+        <parameter name="tomlExtraOverlayPath" value="src/test/resources/artifacts/configFiles/analytics/deployment.toml"/>
+        <parameter name="serverFilesToCopy" value="src/test/resources/artifacts/configFiles/analytics/log4j2.properties::repository/conf/log4j2.properties"/>
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.AnalyticsMoesifEventsRunner"/>
+        </classes>
+    </test>
     <!-- Run analytics first; keep logging runners sequential because they mutate and inspect server-global state.
          bootstrapThrottleData: ELK's throttling-fault scenario needs the Gateway throttleData JMS consumer, which can
          fail to start polling on first boot; the bootstrap repairs the throttle-data registry hierarchy and, if the

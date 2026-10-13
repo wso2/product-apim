@@ -227,6 +227,37 @@ router.all('/reflect-body-typed', express.text({ type: () => true }), (req, res)
   res.status(200).send(body);
 });
 
+// ANY /reflect-body-sensitive — like /reflect-body-typed, but ALSO emits the response headers the Moesif
+// analytics tests need on the way back: a Set-Cookie (which carbon-apimgt#13956 must strip from the published
+// analytics event unconditionally) and an X-Account-Number (which [apim.analytics.mask] response_headers must
+// replace with *****). Both assertions need a header the BACKEND set, not one the gateway injects, and both
+// need the echoed body in the same call so one invocation drives the request-body, response-body and
+// header-redaction assertions together.
+//
+// duplicate-header-backend (3005) already sends Set-Cookie, but only on a bare GET / with no body echo, so it
+// could not carry the body half; keeping this beside the reflect family means one API and one backend port for
+// the whole analytics feature. The cookie value is obvious filler — nothing asserts on it, only on its ABSENCE
+// from the published event.
+router.all('/reflect-body-sensitive', express.text({ type: () => true }), (req, res) => {
+  const body = typeof req.body === 'string' ? req.body : JSON.stringify(req.body);
+  const contentType = req.headers['content-type'];
+  console.log(`----invoking reflect-body-sensitive, content-type: ${contentType}`);
+  if (contentType) {
+    res.type(contentType);
+  }
+  res.append('Set-Cookie', 'analyticsSession=must-never-reach-moesif');
+  res.set('X-Account-Number', '4111-1111-1111-1111');
+  res.set('X-Backend-Marker', 'reflect-body-sensitive');
+  // WHAT THE BACKEND RECEIVED, REPORTED IN HEADERS. A test proving the gateway forwarded the body intact cannot
+  // read the ECHOED BODY to do it: analytics body capture can rebuild and re-serialize the message on the response
+  // leg too, so the echoed body cannot isolate the request leg — comparing it to the request cannot distinguish
+  // "the request was altered" from "the response was". Response HEADERS are not touched by the message builder, so
+  // these two are the sound observation of the REQUEST leg.
+  res.set('X-Received-Bytes', String(Buffer.byteLength(body, 'utf8')));
+  res.set('X-Received-Sha256', require('crypto').createHash('sha256').update(body, 'utf8').digest('hex'));
+  res.status(200).send(body);
+});
+
 // --- Petstore routes for the gateway schema-validation tests (SchemaValidationTestCase) ---
 // The gateway validates requests/responses against the imported petstore OpenAPI when the API has
 // enableSchemaValidation=true. These routes return schema-shaped bodies so the SAME resources drive both

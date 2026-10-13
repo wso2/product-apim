@@ -226,6 +226,15 @@ module.exports = {
     env: {
       PORT: 3028
     }
+  },
+  {
+    name: "moesif-collector",
+    script: "./moesif-collector/server.js",
+    cwd: "./",
+    env: {
+      // 3029: duplicate-header-backend already binds 3025 for its SMTP mail sink, and oauth-token-stub binds 3028.
+      PORT: 3029
+    }
   }
   ]
 };

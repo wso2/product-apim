@@ -1,0 +1,12 @@
+{
+  "name": "moesif-collector",
+  "version": "1.0.0",
+  "description": "Mock Moesif collector (event ingest + app-config + outage control) for Moesif analytics-publisher tests",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}
