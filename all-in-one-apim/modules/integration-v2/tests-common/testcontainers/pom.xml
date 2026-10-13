@@ -187,6 +187,22 @@
                             </arguments>
                         </configuration>
                     </execution>
+                    <!-- Pull the OTLP collector (Jaeger) image before the test blocks start. -->
+                    <execution>
+                        <id>pull-jaeger-collector-docker-image</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>docker</executable>
+                            <arguments>
+                                <argument>pull</argument>
+                                <argument>${jaeger.collector.docker.image.name}</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                    <!-- Build the Squid proxy image (anonymous + authenticated instances). -->
                     <execution>
                         <id>build-squid-proxy-docker-image</id>
                         <phase>pre-integration-test</phase>
@@ -214,7 +230,7 @@
                             <arguments>
                                 <argument>-c</argument>
                                 <argument>
-                                    docker build ${docker.extra.hosts} https://github.com/wso2/docker-apim.git#master:dockerfiles/ubuntu/apim \
+                                    docker build ${docker.extra.hosts} "${project.basedir}/src/main/resources/apim" \
                                     -t ${apim.docker.image.name} \
                                     --build-arg WSO2_SERVER_VERSION=${apim.server.version} \
                                     --build-arg WSO2_SERVER_ZIP_VERSION=${apim.server.version} \

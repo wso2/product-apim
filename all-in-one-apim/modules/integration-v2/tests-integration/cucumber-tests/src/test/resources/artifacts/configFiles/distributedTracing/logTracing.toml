@@ -1,0 +1,15 @@
+# Feature-specific TOML overlay for the IntegrationV2-AnalyticsTracingLogTracing block.
+#
+# Merged ON TOP of the shared `basic` overlay (which is itself merged onto the product distribution
+# deployment.toml) via the block's `tomlExtraOverlayPath` parameter — so only the tracing keys live here.
+#
+# Why `remote_tracer.enable = false` with `log_tracer.enable = true`:
+#   The OpenTelemetry module allows only ONE tracing output path at a time. The log tracer writes each exported
+#   span as a TRACE line into `wso2-apimgt-open-tracing.log` (the distribution ships the `OPEN_TRACING` appender
+#   and the `tracer` logger at TRACE level in log4j2.properties), instead of POSTing it to a collector — so this
+#   block has neither a Jaeger nor a Zipkin nor a Moesif endpoint, and the remote tracer is turned off. The
+#   assertion read-back is the log file itself, read from inside the APIM container.
+
+[apim.open_telemetry]
+remote_tracer.enable = false
+log_tracer.enable = true

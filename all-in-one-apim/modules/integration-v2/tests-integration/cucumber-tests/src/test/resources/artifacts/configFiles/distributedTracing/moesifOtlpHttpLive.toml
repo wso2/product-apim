@@ -1,0 +1,42 @@
+# Feature-specific TOML overlay for the IntegrationV2-AnalyticsTracingMoesifLive block.
+#
+# Merged ON TOP of the shared `basic` overlay via the block's `tomlExtraOverlayPath` parameter.
+#
+# This is the LIVE leg of the OTLP/HTTP path: it exports to the REAL Moesif collector rather than to the
+# local `moesif` stand-in, and its delivery is asserted by querying Moesif's own Management API (see
+# `MoesifManagementApiClient`) instead of by inspecting a recorded request.
+#
+# It is reachable ONLY through `name = "otlp"`, since `JaegerTelemetry` hardcodes the gRPC exporter.
+# The URL is used VERBATIM by `OtlpHttpSpanExporter.setEndpoint()` — there is no implicit `/v1/traces` — so
+# the path is part of the configured URL. Verified against the live service: `/v1/traces` is accepted
+# (HTTP 200) while `/v1/otlp/v1/traces` returns HTTP 404, so the older comment claiming the `/v1/otlp/`
+# form was wrong.
+#
+# `properties` is the ARRAY of tables `OTLPTelemetry.getHeaderKeyProperty()` iterates to add the auth header
+# on every export. Only the FIRST matching property is used.
+#
+# The credential is supplied through the runner JVM's environment (resolved by
+# `Utils.resolveEnvironmentPlaceholders`, so it is never committed). The collector application id is what
+# Moesif's API-keys page issues and is unrelated to the Management API key the test queries with.
+#
+# This block exports to the REAL Moesif collector and needs outbound network access. The hermetic
+# `moesifOtlpHttp.toml` ingest stand-in leg has been retired (Moesif's search API returns modelled events,
+# so the wire facts a stand-in could observe are no longer asserted).
+
+[apim.open_telemetry]
+remote_tracer.enable = true
+remote_tracer.name = "otlp"
+remote_tracer.protocol = "http"
+remote_tracer.url = "https://api.moesif.net/v1/traces"
+
+[apim.analytics]
+enable =true
+type = "moesif"
+
+[[apim.open_telemetry.remote_tracer.properties]]
+name = "X-Moesif-Application-Id"
+value = "${env:MOESIF_COLLECTOR_APP_ID}"
+
+[apim.analytics.properties]
+moesifKey = "${env:MOESIF_COLLECTOR_APP_ID}"
+moesif_base_url = "https://api.moesif.net"

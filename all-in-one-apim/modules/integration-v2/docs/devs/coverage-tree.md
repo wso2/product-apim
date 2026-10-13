@@ -1057,7 +1057,7 @@ integration-v2 product tests
 │   └── scope-issuance  — Scope issuance in tokens  (2)
 │       ├── Role-mapped scope is withheld before, then issued after IdP role config as <actor>  (key-manager/jwt_grant.feature:214)
 │       └── [role-filtering] Management scopes granted in a token are filtered by the requesting user's roles in <tenant>  (key-manager/token_issuance.feature:234)
-└── analytics  — Analytics — logging & observability  (19)
+└── analytics  — Analytics — logging & observability  (23)
     ├── request-logging  — Request / access logging  (—)
     ├── remote-logging  — Remote server log publishing  (9)
     │   ├── [end-to-end] Audit logs stream to a remote endpoint when enabled and stop when disabled  (analytics/remote_logging.feature:29)
@@ -1082,7 +1082,12 @@ integration-v2 product tests
     ├── analytics-events  — Analytics events  (2)
     │   ├── [response-event] An invocation writes an ELK response metric carrying the API name, proxy response code and creator tenant as <actor>  (analytics/elk_metrics.feature:29)
     │   └── [respond-mediator] A respond-mediator short circuit still publishes a metric, with a placeholder destination, as <actor>  (analytics/elk_metrics.feature:76)
-    └── alerts  — Alerts  (—)
+    ├── alerts  — Alerts  (—)
+    └── tracing  — Distributed tracing (OTLP span export)  (4)
+        ├── [log-tracing] The API Manager writes its gateway spans to the open tracing log as <actor>  (analytics/tracing_log.feature:19)
+        ├── [otlp-http] OTLP/HTTP spans are delivered to Moesif and readable through its Management API as <actor>  (analytics/tracing_moesif_live.feature:20)
+        ├── [otlp-grpc] Gateway spans reach a real Jaeger collector with semantic-convention attributes as <actor>  (analytics/tracing_otlp_grpc.feature:32)
+        └── [zipkin] Gateway spans reach a real Zipkin collector over the Zipkin v2 JSON path as <actor>  (analytics/tracing_zipkin.feature:22)
 ```
 
 ## Excluded (31)

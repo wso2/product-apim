@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+
+<!--
+  All four distributed-tracing legs. Each is its own <test> block because a server has exactly ONE tracer
+  output and it is selected at startup, so each leg needs its own container.
+
+  The OTLP/gRPC leg is hermetic against a real Jaeger (asserts span semantics from its query API). The
+  OTLP/HTTP leg exports to the real api.moesif.net and asserts DELIVERY through Moesif's Management API,
+  skipping itself when the two Moesif credentials are absent. Moesif's search API returns modelled events
+  rather than the bytes the gateway sent, so the OTLP/HTTP exporter's wire contract (method, path, auth
+  header, content type, gzip) is not asserted anywhere.
+
+  The ZIPKIN leg is hermetic against a real openzipkin/zipkin collector and reads spans back from ITS OWN
+  v2 query API (ZipkinTelemetry composes the exporter endpoint from hostname + port, ignoring the protocol
+  key). The LOG leg turns the remote tracer off and the log tracer on, so the read-back is
+  wso2-apimgt-open-tracing.log read from inside the container — nothing is exported anywhere.
+-->
+
+<suite name="TRACING" parallel="none" thread-count="1">
+    <listeners>
+        <listener class-name="org.wso2.am.integration.cucumbertests.utils.listeners.BlockLifecycleListener"/>
+        <listener class-name="org.wso2.am.integration.cucumbertests.utils.listeners.BlockScopeListener"/>
+    </listeners>
+
+    <test name="IntegrationV2-AnalyticsTracingOtlpGrpc" parallel="classes" thread-count="1">
+        <parameter name="blockLabel" value="analytics-tracing-otlp-grpc"/>
+        <parameter name="initTenantUsers" value="true"/>
+        <parameter name="initBackend" value="true"/>
+        <parameter name="initOtlpCollector" value="true"/>
+        <parameter name="tomlExtraOverlayPath" value="src/test/resources/artifacts/configFiles/distributedTracing/jaegerOtlpGrpc.toml"/>
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.AnalyticsTracingOtlpGrpcRunner"/>
+        </classes>
+    </test>
+
+    <test name="IntegrationV2-AnalyticsTracingMoesifLive" parallel="classes" thread-count="1">
+        <parameter name="blockLabel" value="analytics-tracing-moesif-live"/>
+        <parameter name="initTenantUsers" value="true"/>
+        <parameter name="initBackend" value="true"/>
+        <parameter name="tomlExtraOverlayPath" value="src/test/resources/artifacts/configFiles/distributedTracing/moesifOtlpHttpLive.toml"/>
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.AnalyticsTracingMoesifLiveRunner"/>
+        </classes>
+    </test>
+
+    <test name="IntegrationV2-AnalyticsTracingZipkin" parallel="classes" thread-count="1">
+        <parameter name="blockLabel" value="analytics-tracing-zipkin"/>
+        <parameter name="initTenantUsers" value="true"/>
+        <parameter name="initBackend" value="true"/>
+        <parameter name="initZipkinCollector" value="true"/>
+        <parameter name="tomlExtraOverlayPath" value="src/test/resources/artifacts/configFiles/distributedTracing/zipkinOtlpHttp.toml"/>
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.AnalyticsTracingZipkinRunner"/>
+        </classes>
+    </test>
+
+    <test name="IntegrationV2-AnalyticsTracingLogTracing" parallel="classes" thread-count="1">
+        <parameter name="blockLabel" value="analytics-tracing-log"/>
+        <parameter name="initTenantUsers" value="true"/>
+        <parameter name="initBackend" value="true"/>
+        <parameter name="tomlExtraOverlayPath" value="src/test/resources/artifacts/configFiles/distributedTracing/logTracing.toml"/>
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.AnalyticsTracingLogTracingRunner"/>
+        </classes>
+    </test>
+</suite>

@@ -787,6 +787,82 @@
         </classes>
     </test>
 
+    <!-- Distributed tracing, leg 1 of 4: OTLP/gRPC into a REAL per-block Jaeger collector (alias "jaeger").
+         The overlay selects the "jaeger" tracer, which hardcodes OtlpGrpcSpanExporter and IGNORES
+         RemoteTracer.Protocol, and points remote_tracer.hostname at the collector alias — so the block boots
+         DynamicOtlpCollector BEFORE APIM (an exporter endpoint naming an absent host drops spans silently).
+         All span-semantics assertions (kind, parent/child, attribute values and types, the process.pid
+         resource attribute) are made against this real collector, never against a double.
+         thread-count=1: one class, and the remote-tracer config is container-global and read once at startup. -->
+    <test name="IntegrationV2-AnalyticsTracingOtlpGrpc" parallel="classes" thread-count="1">
+        <parameter name="blockLabel" value="analytics-tracing-otlp-grpc"/>
+        <parameter name="initTenantUsers" value="true"/>
+        <parameter name="initBackend" value="true"/>
+        <parameter name="initOtlpCollector" value="true"/>
+        <parameter name="tomlExtraOverlayPath" value="src/test/resources/artifacts/configFiles/distributedTracing/jaegerOtlpGrpc.toml"/>
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.AnalyticsTracingOtlpGrpcRunner"/>
+        </classes>
+    </test>
+
+    <!-- Distributed tracing, leg 2 of 4: OTLP/HTTP into the REAL Moesif collector (api.moesif.net), with
+         delivery confirmed by reading the event back out of Moesif through its own Management API.
+         It needs TWO credentials that are NOT interchangeable: the collector application id the gateway
+         exports with (X-Moesif-Application-Id), and a Management API key to read the result back, which
+         Moesif rejects a collector id for (HTTP 401 code 107). Both come from the environment, never from
+         a committed file. The scenario skips itself when either is absent, so a CI job without the secrets
+         reports skipped rather than red.
+         The hermetic OTLP/HTTP leg (a local ingest stand-in that asserted the WIRE facts a SaaS would
+         observe — method, path, content type, content encoding, the X-Moesif-Application-Id header value,
+         and the semconv keys in the payload bytes) has been retired: Moesif's search API returns modelled
+         events rather than the bytes the gateway sent, so those assertions could not survive the move to
+         the live endpoint. The semantic span assertions live in the gRPC leg above.
+         initBackend is load-bearing in both legs: without it the gateway suspends the endpoint (303001)
+         and no span is ever exported. -->
+    <test name="IntegrationV2-AnalyticsTracingMoesifLive" parallel="classes" thread-count="1">
+        <parameter name="blockLabel" value="analytics-tracing-moesif-live"/>
+        <parameter name="initTenantUsers" value="true"/>
+        <parameter name="initBackend" value="true"/>
+        <parameter name="tomlExtraOverlayPath" value="src/test/resources/artifacts/configFiles/distributedTracing/moesifOtlpHttpLive.toml"/>
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.AnalyticsTracingMoesifLiveRunner"/>
+        </classes>
+    </test>
+
+    <!-- Distributed tracing, leg 3 of 4: ZIPKIN v2 JSON into a REAL per-block openzipkin/zipkin collector
+         (network alias "zipkin"). The overlay selects the "zipkin" tracer: ZipkinTelemetry composes the
+         exporter endpoint from hostname + port (http://zipkin:9411/api/v2/spans) and IGNORES
+         RemoteTracer.Protocol, so the collector is addressed on remote_tracer.port 9411 and boots BEFORE
+         APIM (an exporter endpoint naming an absent host drops spans silently). Span facts — the v2
+         parentId chain, kind, and the string->string tags map — are read back from Zipkin's OWN query API
+         (GET /api/v2/traces), never from a double.
+         thread-count=1: one class, and the remote-tracer config is container-global and read once at startup. -->
+    <test name="IntegrationV2-AnalyticsTracingZipkin" parallel="classes" thread-count="1">
+        <parameter name="blockLabel" value="analytics-tracing-zipkin"/>
+        <parameter name="initTenantUsers" value="true"/>
+        <parameter name="initBackend" value="true"/>
+        <parameter name="initZipkinCollector" value="true"/>
+        <parameter name="tomlExtraOverlayPath" value="src/test/resources/artifacts/configFiles/distributedTracing/zipkinOtlpHttp.toml"/>
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.AnalyticsTracingZipkinRunner"/>
+        </classes>
+    </test>
+
+    <!-- Distributed tracing, leg 4 of 4: LOG tracing. The overlay turns the remote tracer OFF and the log
+         tracer ON, so nothing is exported anywhere; LogTelemetry writes one TRACE line per finished span into
+         wso2-apimgt-open-tracing.log (the distribution's log4j2.properties wires the "tracer" logger at TRACE
+         to the OPEN_TRACING appender). The read-back IS the assertion target, read from inside the container.
+         thread-count=1: one class, and the tracer config is container-global and read once at startup. -->
+    <test name="IntegrationV2-AnalyticsTracingLogTracing" parallel="classes" thread-count="1">
+        <parameter name="blockLabel" value="analytics-tracing-log"/>
+        <parameter name="initTenantUsers" value="true"/>
+        <parameter name="initBackend" value="true"/>
+        <parameter name="tomlExtraOverlayPath" value="src/test/resources/artifacts/configFiles/distributedTracing/logTracing.toml"/>
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.AnalyticsTracingLogTracingRunner"/>
+        </classes>
+    </test>
+
     <!-- Devops logging plane: correlation logging (per-component) and per-API / per-resource log levels.
          The two CO-HOST because their config is genuinely orthogonal — different devops resources
          (/config/correlation vs /tenant-logs), different appenders, different files (correlation.log vs

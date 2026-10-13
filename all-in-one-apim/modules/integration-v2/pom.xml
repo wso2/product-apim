@@ -81,6 +81,10 @@
              DynamicSolaceBroker reads them as system properties at container-create time. -->
         <solace.broker.docker.image.name>solace/solace-pubsub-standard:latest</solace.broker.docker.image.name>
         <solace.shim.docker.image.name>solace-apim-shim:latest</solace.shim.docker.image.name>
+        <!-- OTLP collector: a REAL Jaeger all-in-one per tracing block, the independent validator the span
+             assertions are made against. PULLED (never built). Pinned rather than :latest so the query-JSON
+             shape the steps parse cannot drift under a block. -->
+        <jaeger.collector.docker.image.name>jaegertracing/all-in-one:1.76.0</jaeger.collector.docker.image.name>
         <!-- WSO2 Identity Server image used as an external Key Manager (integration-v2 external-KM block). -->
         <!-- WSO2 IS version used as the external key manager. 7.3.0 is multi-arch (native linux/arm64 and
              linux/amd64), so it boots natively on Apple-silicon dev machines and amd64 CI alike (7.1.0 was
@@ -215,6 +219,7 @@
                                 <node.docker.image.name>${node.docker.image.name}</node.docker.image.name>
                                 <solace.broker.docker.image.name>${solace.broker.docker.image.name}</solace.broker.docker.image.name>
                                 <solace.shim.docker.image.name>${solace.shim.docker.image.name}</solace.shim.docker.image.name>
+                                <jaeger.collector.docker.image.name>${jaeger.collector.docker.image.name}</jaeger.collector.docker.image.name>
                                 <is.docker.image.name>${is.docker.image.name}</is.docker.image.name>
                                 <is.server.version>${is.server.version}</is.server.version>
                                 <squid.docker.image.name>${squid.docker.image.name}</squid.docker.image.name>
@@ -288,6 +293,7 @@
                                 <node.docker.image.name>${node.docker.image.name}</node.docker.image.name>
                                 <solace.broker.docker.image.name>${solace.broker.docker.image.name}</solace.broker.docker.image.name>
                                 <solace.shim.docker.image.name>${solace.shim.docker.image.name}</solace.shim.docker.image.name>
+                                <jaeger.collector.docker.image.name>${jaeger.collector.docker.image.name}</jaeger.collector.docker.image.name>
                                 <is.docker.image.name>${is.docker.image.name}</is.docker.image.name>
                                 <is.server.version>${is.server.version}</is.server.version>
                                 <squid.docker.image.name>${squid.docker.image.name}</squid.docker.image.name>

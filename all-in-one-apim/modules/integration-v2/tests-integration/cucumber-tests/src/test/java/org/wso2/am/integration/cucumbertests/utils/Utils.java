@@ -20,7 +20,9 @@ package org.wso2.am.integration.cucumbertests.utils;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.databind.node.TextNode;
 import com.fasterxml.jackson.dataformat.toml.TomlMapper;
 import com.jayway.jsonpath.JsonPath;
 import org.apache.axiom.om.OMElement;
@@ -72,6 +74,12 @@ public class Utils {
     private static final Log log = LogFactory.getLog(Utils.class);
     private static final ObjectMapper mapper = new ObjectMapper();
     private static final Pattern UNIQUE_PLACEHOLDER = Pattern.compile("\\$\\{UNIQUE:([^}]+)\\}");
+
+    /**
+     * Environment placeholders an overlay may use, e.g. {@code ${env:MOESIF_COLLECTOR_APP_ID}}. Resolved
+     * from the runner JVM's own environment so a secret never has to be committed to an overlay file.
+     */
+    private static final Pattern ENV_PLACEHOLDER = Pattern.compile("\\$\\{env:([^}]+)\\}");
 
     /** The block's APIM management base URL from the shared context; throws if the block has not booted yet. */
     public static String getBaseUrl() {
@@ -2013,6 +2021,67 @@ public class Utils {
     }
 
     /**
+     * Substitutes {@code ${env:NAME}} placeholders in the string values of a parsed TOML tree with the
+     * corresponding environment variable, so an overlay can reference a secret without the secret being
+     * committed to the repository.
+     *
+     * <p>Substitution walks the tree rather than rewriting the serialized TOML text, so a value containing
+     * quotes or newlines cannot corrupt the surrounding TOML syntax.
+     *
+     * <p>A placeholder whose variable is <b>not</b> set in the runner JVM is deliberately left untouched: the
+     * product resolves {@code ${env:NAME}} itself at runtime inside the container, where the variable may well
+     * be present. Resolving it here regardless would break that passthrough, so a placeholder reaching the
+     * server verbatim is a legitimate outcome rather than an error. Callers that depend on the value (the
+     * live-Moesif block) check for their own variable and skip with a clear reason instead of failing obscurely
+     * once the server rejects the unresolved literal.
+     */
+    private static void resolveEnvironmentPlaceholders(JsonNode node) {
+
+        if (node instanceof ObjectNode) {
+            ObjectNode objectNode = (ObjectNode) node;
+            objectNode.fields().forEachRemaining(entry -> {
+                if (entry.getValue() instanceof TextNode) {
+                    String resolved = resolveEnvironmentPlaceholders(entry.getValue().asText());
+                    if (!resolved.equals(entry.getValue().asText())) {
+                        log.info("Resolved environment placeholder in deployment.toml key '" + entry.getKey() + "'");
+                        objectNode.put(entry.getKey(), resolved);
+                    }
+                } else {
+                    resolveEnvironmentPlaceholders(entry.getValue());
+                }
+            });
+        } else if (node instanceof ArrayNode) {
+            for (JsonNode element : node) {
+                resolveEnvironmentPlaceholders(element);
+            }
+        }
+    }
+
+    /**
+     * Replaces every {@code ${env:NAME}} occurrence whose variable is set in the runner JVM's environment.
+     * Unset variables are left as-is — see {@link #resolveEnvironmentPlaceholders(JsonNode)} for why.
+     *
+     * @param content the value to resolve
+     * @return the value with the set placeholders substituted
+     */
+    private static String resolveEnvironmentPlaceholders(String content) {
+
+        if (content == null || !content.contains("${env:")) {
+            return content;
+        }
+        Matcher matcher = ENV_PLACEHOLDER.matcher(content);
+        StringBuffer result = new StringBuffer();
+        while (matcher.find()) {
+            String name = matcher.group(1);
+            String value = System.getenv(name);
+            // An unset variable keeps its placeholder, so the product can still resolve it container-side.
+            matcher.appendReplacement(result, Matcher.quoteReplacement(value == null ? matcher.group(0) : value));
+        }
+        matcher.appendTail(result);
+        return result.toString();
+    }
+
+    /**
      * Merges two TOML files. Values from the changesTomlPath will override those in the baseTomlPath.
      *
      * @param baseTomlPath    path to the base TOML file
@@ -2028,6 +2097,7 @@ public class Utils {
         ObjectNode changesNode = (ObjectNode) tomlMapper.readTree(new File(changesTomlPath));
 
         deepMerge(baseNode, changesNode);
+        resolveEnvironmentPlaceholders(baseNode);
         return tomlMapper.writerWithDefaultPrettyPrinter().writeValueAsString(baseNode);
     }
 
@@ -2047,6 +2117,7 @@ public class Utils {
             ObjectNode changesNode = (ObjectNode) tomlMapper.readTree(new File(changesTomlPath));
             deepMerge(baseNode, changesNode);
         }
+        resolveEnvironmentPlaceholders(baseNode);
         return tomlMapper.writerWithDefaultPrettyPrinter().writeValueAsString(baseNode);
     }
 
