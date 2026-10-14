@@ -32,6 +32,7 @@ import org.wso2.am.integration.cucumbertests.utils.RegistryAdminService;
 import org.wso2.am.integration.cucumbertests.utils.ServerReadiness;
 import org.wso2.am.integration.cucumbertests.utils.SecondaryUserStoreProvisioner;
 import org.wso2.am.integration.cucumbertests.utils.TenantUserProvisioner;
+import org.wso2.am.integration.cucumbertests.utils.ListenerSslReloadReadiness;
 import org.wso2.am.integration.cucumbertests.utils.ThrottleDataReadiness;
 import org.wso2.am.integration.cucumbertests.utils.TestContext;
 import org.wso2.am.integration.cucumbertests.utils.Utils;
@@ -39,6 +40,7 @@ import org.wso2.am.integration.test.utils.Constants;
 import org.testcontainers.containers.Network;
 import org.wso2.am.testcontainers.DynamicApimContainer;
 import org.wso2.am.testcontainers.ApimRuntime;
+import org.wso2.am.testcontainers.CpuLimit;
 import org.wso2.am.testcontainers.DynamicISContainer;
 import org.wso2.am.testcontainers.DynamicPlatformGatewayContainer;
 import org.wso2.am.testcontainers.JacocoCoverage;
@@ -51,6 +53,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Semaphore;
 
@@ -91,6 +94,13 @@ public class BlockLifecycleListener implements ITestListener {
     static final String PARAM_LIFECYCLE_LOCK = "lifecycleLock";
     private static final String LIFECYCLE_LOCK_KEY = "lifecycleLockPermit";
     private static final Map<String, Semaphore> LIFECYCLE_LOCKS = new ConcurrentHashMap<>();
+    /**
+     * Optional hard CPU cap for the block's APIM container, in CPUs (Docker {@code --cpus}; fractions allowed,
+     * e.g. {@code 1.5}). Absent or blank leaves the container uncapped. Only the APIM container is capped — the
+     * block's IS has its own {@link #PARAM_IS_CPU_LIMIT}; Solace, proxy and the shared backend are not capped. A
+     * malformed or non-positive value fails the block's boot.
+     */
+    static final String PARAM_APIM_CPU_LIMIT = "apimCpuLimit";
     static final String PARAM_TOML_OVERLAY = "tomlOverlayPath";
     /**
      * Optional path to a small feature-specific TOML overlay merged on top of the default {@code basic}
@@ -103,6 +113,8 @@ public class BlockLifecycleListener implements ITestListener {
             "src/test/resources/artifacts/configFiles/emailUserName/deployment.toml";
     /** When {@code true}, onStart provisions tenants/users into the block's own container after readiness. */
     static final String PARAM_INIT_TENANT_USERS = "initTenantUsers";
+    /** When {@code true}, provisions a second non-super tenant for cross-tenant subscription coverage. */
+    static final String PARAM_INIT_CROSS_TENANT_PEER = "initCrossTenantPeer";
     /**
      * FRAMEWORK VERIFICATION ONLY. When {@code true}, provisioning deliberately fails: it targets a tenant
      * domain that was never created on this container, so the user-admin SOAP call is refused and the
@@ -183,6 +195,18 @@ public class BlockLifecycleListener implements ITestListener {
     /** When true, repair the registry-backed throttle-data hierarchy and recover its event pipeline during boot. */
     static final String PARAM_BOOTSTRAP_THROTTLE_DATA = "bootstrapThrottleData";
     /**
+     * When set, wait up to this many seconds for the Gateway's HTTPS listener to start and restart the Gateway once if
+     * its SSL-profile reload is disabled (see {@link ListenerSslReloadReadiness}). For blocks whose scenarios upload
+     * mutual-SSL client certificates and expect the handshake to trust them. The restart is a ServerAdmin graceful
+     * restart, so the block's overlay must set {@code [server] enable_restart_from_api = true}.
+     */
+    static final String PARAM_LISTENER_SSL_RELOAD_READINESS_SECONDS = "listenerSslReloadReadinessSeconds";
+    /**
+     * How long the throttle-data bootstrap watches the current start before deciding a recovery restart is needed. A
+     * healthy start returns as soon as it has been stable; only a start that never becomes ready uses the full window.
+     */
+    private static final int THROTTLE_DATA_OBSERVE_SECONDS = 180;
+    /**
      * When {@code true}, onStart boots {@link DynamicSolaceBroker} — a faked Solace connector control plane
      * (network alias {@code solaceshim}) plus a REAL PubSub+ broker (alias {@code solacebroker}) — BEFORE APIM,
      * because the block's toml declares a gateway environment whose {@code service_url} is
@@ -258,6 +282,12 @@ public class BlockLifecycleListener implements ITestListener {
      * across concurrent blocks — the old shared-singleton fail-fast is gone.
      */
     static final String PARAM_IS_TOML_EXTRA_OVERLAY = "isTomlExtraOverlayPath";
+    /**
+     * Optional hard CPU cap for the block's external IS container, in CPUs (Docker {@code --cpus}; fractions
+     * allowed). Absent or blank leaves IS uncapped. Valid only with {@link #PARAM_BOOT_EXTERNAL_IS}; a malformed,
+     * non-positive or IS-less value fails the block's boot.
+     */
+    static final String PARAM_IS_CPU_LIMIT = "isCpuLimit";
     /** Shared-scope key holding the host-mapped external IS base URL (for scenarios requesting a token from IS). */
     static final String IS_BASE_URL_KEY = "isBaseUrl";
 
@@ -361,9 +391,19 @@ public class BlockLifecycleListener implements ITestListener {
             // IS infrastructure only. Registering IS as a key manager is admin product behaviour and lives in
             // the features (see PARAM_BOOT_EXTERNAL_IS javadoc).
             boolean bootExternalIs = Boolean.parseBoolean(param(context, PARAM_BOOT_EXTERNAL_IS));
+            Optional<CpuLimit> apimCpuLimit = cpuLimit(context, label, PARAM_APIM_CPU_LIMIT);
+            Optional<CpuLimit> isCpuLimit = cpuLimit(context, label, PARAM_IS_CPU_LIMIT);
+            if (isCpuLimit.isPresent() && !bootExternalIs) {
+                throw new IllegalArgumentException("Block '" + label + "' sets " + PARAM_IS_CPU_LIMIT
+                        + " but does not set " + PARAM_BOOT_EXTERNAL_IS + "=true");
+            }
 
             container = createApimContainer(label, context, blockNetwork);
             configureServerFiles(context, container);
+            if (apimCpuLimit.isPresent()) {
+                container.withCpuLimit(apimCpuLimit.get());
+                logger.info("Block '" + label + "' caps its APIM container at " + apimCpuLimit.get());
+            }
             // Opt-in integration coverage: attach the JaCoCo agent before boot (see CoverageSupport).
             if (CoverageSupport.enabled()) {
                 container.withCoverage();
@@ -422,6 +462,9 @@ public class BlockLifecycleListener implements ITestListener {
                         Boolean.parseBoolean(param(context, PARAM_INJECT_PROVISIONING_FAILURE)),
                         Boolean.parseBoolean(param(context, PARAM_EMAIL_USER_MODE)));
             }
+            if (Boolean.parseBoolean(param(context, PARAM_INIT_CROSS_TENANT_PEER))) {
+                provisionCrossTenantPeer();
+            }
             // Runtime secondary user store (replaces the seeded .mv.db fixture). After tenant provisioning so the
             // tenant admin SOAP credentials exist. Registered + seeded for BOTH tenants — one shared H2 DB,
             // isolated by UM_TENANT_ID — so scenarios exercise the ×4 matrix (2 tenants × 2 store-user actors).
@@ -443,12 +486,17 @@ public class BlockLifecycleListener implements ITestListener {
                 }
             }
 
+            String listenerSslReloadSeconds = param(context, PARAM_LISTENER_SSL_RELOAD_READINESS_SECONDS);
+            if (listenerSslReloadSeconds != null && !listenerSslReloadSeconds.isBlank()) {
+                ensureListenerSslReload(container, label, Integer.parseInt(listenerSslReloadSeconds));
+            }
+
             // External IS: start THIS block's own IS on the block's private network and publish its host-mapped
             // base URL. Done AFTER provisioning so a super-admin token exists for any subsequent admin REST call.
             // APIM's truststore was already augmented above (before boot), so federated OIDC / JWKS /
             // introspection calls trust IS.
             if (bootExternalIs) {
-                bootExternalIdentityServer(label, param(context, PARAM_IS_TOML_EXTRA_OVERLAY),
+                bootExternalIdentityServer(label, param(context, PARAM_IS_TOML_EXTRA_OVERLAY), isCpuLimit,
                         (Network) TestContext.get(BLOCK_NETWORK_KEY));
             }
 
@@ -491,9 +539,12 @@ public class BlockLifecycleListener implements ITestListener {
     /**
      * Repairs the registry parent hierarchy before any block scenario can trigger a throttle-data subscription.
      * The product components start before the registry SOAP service is available, so repair is necessarily a
-     * post-boot bootstrap operation followed by a single, ordered component recovery when the first startup
-     * binding was rejected. Existing tests still assert the same enforcement responses; this only prepares the
-     * infrastructure they consume.
+     * post-boot bootstrap operation. The ordered component recovery (a graceful restart) runs only when the
+     * current start's throttle-data pipeline is not ready, which is what a rejected startup binding produces: its
+     * {@code REG_PATH}/subscription failure is newer than any consumer marker. A repaired registry alone does not
+     * trigger it, because the hierarchy is created on every fresh database while the binding normally succeeds.
+     * Existing tests still assert the same enforcement responses; this only prepares the infrastructure they
+     * consume.
      */
     private void bootstrapThrottleDataInfrastructure(ApimRuntime runtime, String label, boolean tenantUsersEnabled)
             throws Exception {
@@ -505,8 +556,10 @@ public class BlockLifecycleListener implements ITestListener {
                     Identity.resolveActor("admin@tenant1.com"));
         }
 
-        ThrottleDataReadiness.Result observed = ThrottleDataReadiness.inspect(runtime);
-        if (!repaired && observed.ready()) {
+        ThrottleDataReadiness.Result observed = ThrottleDataReadiness.await(runtime, THROTTLE_DATA_OBSERVE_SECONDS);
+        if (observed.ready()) {
+            logger.info("Throttle-data bootstrap for block '" + label + "': pipeline ready on the current start, no "
+                    + "component recovery needed (registry repaired=" + repaired + ")");
             return;
         }
 
@@ -526,6 +579,32 @@ public class BlockLifecycleListener implements ITestListener {
             throw new IllegalStateException("Throttle-data infrastructure for block '" + label
                     + "' did not recover after registry bootstrap: " + recovered.diagnostics());
         }
+    }
+
+    /**
+     * Fails or repairs a start whose HTTPS listener can no longer reload its SSL profile. The defect is decided once the
+     * listener has started and lasts until the server restarts, so a single graceful restart is the repair; a second
+     * broken start fails the block rather than letting its mutual-SSL scenarios time out one by one.
+     */
+    private void ensureListenerSslReload(ApimRuntime runtime, String label, int timeoutSeconds) throws Exception {
+
+        ListenerSslReloadReadiness.Result observed = ListenerSslReloadReadiness.await(runtime, timeoutSeconds);
+        if (observed.state() == ListenerSslReloadReadiness.State.READY) {
+            return;
+        }
+        if (observed.state() == ListenerSslReloadReadiness.State.PENDING) {
+            throw new IllegalStateException("Gateway HTTPS listener for block '" + label + "' did not start within "
+                    + timeoutSeconds + "s: " + observed.diagnostics());
+        }
+        logger.warn("Block '" + label + "': Gateway HTTPS listener SSL-profile reload is disabled on this start; "
+                + "restarting the Gateway once. " + observed.diagnostics());
+        GracefulServerRestart.gateway();
+        ListenerSslReloadReadiness.Result recovered = ListenerSslReloadReadiness.await(runtime, timeoutSeconds);
+        if (recovered.state() != ListenerSslReloadReadiness.State.READY) {
+            throw new IllegalStateException("Gateway HTTPS listener SSL-profile reload for block '" + label
+                    + "' is still not usable after a restart: " + recovered.diagnostics());
+        }
+        logger.info("Block '" + label + "': Gateway HTTPS listener SSL-profile reload usable after restart");
     }
 
     @Override
@@ -811,6 +890,21 @@ public class BlockLifecycleListener implements ITestListener {
     }
 
     /**
+     * Adds a second non-super tenant and a subscriber actor for the focused cross-tenant subscription row.
+     * Kept behind a block parameter so unrelated runners retain the standard two-tenant fixture.
+     */
+    private void provisionCrossTenantPeer() throws java.io.IOException, JaxenException, InterruptedException {
+
+        String tenantDomain = "crossconsumer.com";
+        TenantUserProvisioner.addTenant(tenantDomain, "admin", "admin", "Cross", "Consumer",
+                "admin@" + tenantDomain);
+        TenantUserProvisioner.awaitRequiredApimRoles(tenantDomain);
+        TenantUserProvisioner.addUser(tenantDomain, "subscriberUser", "subscriberUser", "subscriberUser",
+                "Internal/subscriber");
+        logger.info("Provisioned cross-tenant peer tenant '" + tenantDomain + "' and subscriber actor");
+    }
+
+    /**
      * Starts THIS block's own external WSO2 IS container on the block's private network (alias {@code wso2is}),
      * waits for its OIDC discovery to serve 200, and publishes its host-mapped base URL under
      * {@link #IS_BASE_URL_KEY}. Does NOT register a key manager.
@@ -825,11 +919,12 @@ public class BlockLifecycleListener implements ITestListener {
      *
      * @param isTomlExtraOverlayPath module-relative path of an IS EXTRA overlay toml appended after the built-in
      *                               overlay, or {@code null}/blank for none
+     * @param cpuLimit               CPU cap for the IS container, or empty to leave it uncapped
      * @param blockNetwork           the block's private network the IS joins under the {@code wso2is} alias
      * @return the started IS container, for the caller to publish and later stop
      */
     private DynamicISContainer bootExternalIdentityServer(String label, String isTomlExtraOverlayPath,
-            Network blockNetwork) throws java.io.IOException {
+            Optional<CpuLimit> cpuLimit, Network blockNetwork) throws java.io.IOException {
 
         String extraContent = null;
         if (isTomlExtraOverlayPath != null && !isTomlExtraOverlayPath.isBlank()) {
@@ -838,6 +933,10 @@ public class BlockLifecycleListener implements ITestListener {
         }
         DynamicISContainer is = new DynamicISContainer(label, extraContent);
         is.withNetwork(blockNetwork).withNetworkAliases(DynamicISContainer.NETWORK_ALIAS);
+        if (cpuLimit.isPresent()) {
+            is.withCpuLimit(cpuLimit.get());
+            logger.info("Block '" + label + "' caps its external Identity Server container at " + cpuLimit.get());
+        }
         // Published BEFORE start so a start/readiness failure is still reachable by the boot-failure teardown.
         TestContext.setShared(IS_CONTAINER_KEY, is);
         is.start();
@@ -922,6 +1021,16 @@ public class BlockLifecycleListener implements ITestListener {
     protected String emailUserOverlayContent() throws java.io.IOException {
         String moduleDir = ModulePathResolver.getModuleDir(BlockLifecycleListener.class);
         return Files.readString(Paths.get(moduleDir, EMAIL_USER_OVERLAY).normalize());
+    }
+
+    /** The block's CPU-limit parameter {@code name}, or empty when the block leaves that container uncapped. */
+    Optional<CpuLimit> cpuLimit(ITestContext context, String label, String name) {
+        try {
+            return CpuLimit.parse(param(context, name));
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Block '" + label + "' has an invalid " + name + ": "
+                    + e.getMessage(), e);
+        }
     }
 
     protected String param(ITestContext context, String name) {

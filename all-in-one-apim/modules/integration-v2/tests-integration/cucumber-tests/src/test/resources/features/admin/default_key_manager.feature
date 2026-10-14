@@ -69,6 +69,8 @@ Feature: External Key Manager Tenant Sharing Auto-Configuration
   #    200 still fails the row - see the step's javadoc for the §15 retryUntil-vs-HealGate reasoning.
   # The lifecycle change itself stays asserted separately through the tenant admin's token issuance flipping, which
   # is what the legacy assertions ultimately checked - the 200 alone would not show the event took effect.
+  # Each deactivate waits for the new tenant's default throttle-policy deployment to settle: a deactivate that lands
+  # among those deployments leaves the tenant cached as active (see TenantPolicyDeployReadiness).
   @legacy:APIMTenantCreationNotificationTestCase
   Scenario: A tenantActivated=false event blocks the synced tenant admin's token issuance
     Given The system is ready
@@ -76,6 +78,7 @@ Feature: External Key Manager Tenant Sharing Auto-Configuration
     When I synchronize a new tenant "syncdeactivate.com" with admin password "Admin@123" via the tenant-sharing notify endpoint
     Then The response status code should be 200
     And a token request for tenant admin "admin@syncdeactivate.com" with password "Admin@123" eventually succeeds
+    And the throttle policy deployment for tenant "syncdeactivate.com" settles within 120 seconds
     When I notify tenant "syncdeactivate.com" activation status "false" via the tenant-sharing notify endpoint until it returns status 200 within 60 seconds
     Then The response status code should be 200
     And a token request for tenant admin "admin@syncdeactivate.com" with password "Admin@123" is eventually rejected with status 401
@@ -87,6 +90,7 @@ Feature: External Key Manager Tenant Sharing Auto-Configuration
     When I synchronize a new tenant "syncactivate.com" with admin password "Admin@123" via the tenant-sharing notify endpoint
     Then The response status code should be 200
     And a token request for tenant admin "admin@syncactivate.com" with password "Admin@123" eventually succeeds
+    And the throttle policy deployment for tenant "syncactivate.com" settles within 120 seconds
     When I notify tenant "syncactivate.com" activation status "false" via the tenant-sharing notify endpoint until it returns status 200 within 60 seconds
     Then The response status code should be 200
     And a token request for tenant admin "admin@syncactivate.com" with password "Admin@123" is eventually rejected with status 401

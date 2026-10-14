@@ -78,13 +78,14 @@ mutable.**
   `@cleanup` for teardown's sake (see §12). A non-2xx/404 delete is logged as a WARN (a real leak signal);
   don't ignore those.
 - **Two teardown granularities — pick by lifetime of the resource:**
-  - **Per-scenario:** tag the feature `@cleanup`. The `@After("@cleanup")` hook deletes the scenario's
-    resources right after it. Use for self-contained single-scenario features (e.g. a full lifecycle in one
-    scenario).
+  - **Per-scenario:** tag the feature `@cleanup`. The `@Before`/`@After("@cleanup")` hooks delete the resources
+    the scenario itself registered, right after it. Anything registered before the scenario began (a `_setup_*`
+    fixture, an earlier scenario's resources) stays registered for the per-runner sweep. Use for self-contained
+    features (e.g. a full lifecycle in one scenario).
   - **Per-runner:** for the `_setup_*` fixture pattern (§10), where a setup feature's resources must survive
-    across the runner's later scenarios, **leave the feature untagged** and rely on `BaseBlockRunner`'s
-    `@AfterClass` sweep, which deletes once after all the runner's scenarios. A per-scenario `@cleanup` here
-    would delete the shared fixture out from under the scenarios that follow.
+    across the runner's later scenarios, **leave the setup feature untagged**. `BaseBlockRunner`'s `@AfterClass`
+    sweep deletes its resources once, after all the runner's scenarios — also when the features that use the
+    fixture are tagged `@cleanup`.
 - **Introducing a NEW top-level resource type? `register(...)` alone is NOT enough — wire the sweep too.**
   `ResourceCleanup.register(key, id)` only enqueues an id; it is deleted only if
   `ResourceCleanup.deleteRegisteredResources()` actually sweeps that list. Registering to a list nothing sweeps
@@ -92,8 +93,8 @@ mutable.**
   `CREATED_<X>_IDS` list constant; (2) `register(...)` it on every successful create; (3) add a
   `deleteResources(CREATED_<X>_IDS, <owner-token>, <delete-URL>)` call in **FK-safe order** (a resource another
   one references must be deleted first — e.g. applications before APIs, API products before APIs, an AI
-  provider after the APIs binding it); and (4) add the list to **both** the early-return guard and the
-  `finally` block. Only child/sub-resources that vanish with their parent (a subscription with its app, a
+  provider after the APIs binding it); and (4) add the list to `REGISTRATION_LISTS` (it drives
+  the early-return guard, the final clear, and the per-scenario `@cleanup` scope). Only child/sub-resources that vanish with their parent (a subscription with its app, a
   document/revision/endpoint with its API) need no separate registration.
     - **Don't assume a bearer-token REST delete exists — and verify the sweep actually deletes.** Some
       resources have no REST delete or don't use a bearer token, so `deleteResources(...)` doesn't fit and they
@@ -422,6 +423,15 @@ distribution defaults. Only reach for an overlay when a feature genuinely needs 
     under the suite's concurrent CRUD load a read that lands while an API artifact is being written re-caches the
     previous version, and the write can then commit that stale copy (a publish that leaves the API `Created`, an
     edit that is lost). The product default is `true`, so v2 does not exercise registry-cache behaviour.
+- **Browser network namespace.** On a Linux host the browser shares the network namespace in which Docker creates
+  and removes the other lanes' bridges and veths; Chromium treats every such address change as a network change
+  and cancels in-flight requests (`net::ERR_NETWORK_CHANGED`, then `ChunkLoadError`, and the console control never
+  renders). On hosts prepared by `src/test/resources/browser-cgroup/setup-browser-network.sh` (CI runs it with
+  sudo; needs `socat`), `chromium-cgroup-wrapper.sh` starts Chromium in a private namespace whose interfaces never
+  change, reaching the JVM's `ConnectProxy` through a Unix-socket relay (`BrowserProxyRelay`). Each launch logs
+  `Browser network: private namespace …` or `Browser network: host namespace …`, and each close logs
+  `Browser network-change request failures: N` (0 in the private namespace). A host with the browser cgroup but
+  without this setup is refused at launch.
 - A config-overlay feature lives in its own `<test>` block; it's still subject to the parallel model, so set
   the block's `parallel="classes" thread-count` per its needs (a feature that **restarts** the container needs
   `thread-count=1` so no sibling class shares the container mid-restart — but it can still run as one of the

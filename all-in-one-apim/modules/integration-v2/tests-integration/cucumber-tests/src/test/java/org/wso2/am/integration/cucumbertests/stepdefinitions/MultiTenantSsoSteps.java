@@ -21,15 +21,20 @@ import io.cucumber.java.After;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
+import org.json.JSONObject;
 import org.testng.Assert;
 import org.wso2.am.integration.cucumbertests.utils.IntegrationActors;
 import org.wso2.am.integration.cucumbertests.utils.MultiTenantSsoProvisioner;
 import org.wso2.am.integration.cucumbertests.utils.Names;
 import org.wso2.am.integration.cucumbertests.utils.PlaywrightSsoClient;
+import org.wso2.am.integration.cucumbertests.utils.Requests;
 import org.wso2.am.integration.cucumbertests.utils.ResourceCleanup;
+import org.wso2.am.integration.cucumbertests.utils.TenantUserProvisioner;
 import org.wso2.am.integration.cucumbertests.utils.TestContext;
 import org.wso2.am.integration.test.utils.Constants;
+import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Locale;
 
@@ -68,6 +73,8 @@ public class MultiTenantSsoSteps {
     public void iProvisionTheSsoTenant(String domain, String adminPassword) throws Exception {
         MultiTenantSsoProvisioner.createIsTenant(domain, "admin", adminPassword, "sso-admin@" + domain);
         MultiTenantSsoProvisioner.awaitApimTenantSynced(domain);
+        // The tenant's admin becomes an actor, so resources the tenant's users create can be torn down as it.
+        TenantUserProvisioner.registerRuntimeTenantAdmin(domain, adminPassword);
         TestContext.set("mtTenantDomain", domain);
         TestContext.set("mtTenantAdmin", "admin");
         TestContext.set("mtTenantAdminPassword", adminPassword);
@@ -203,6 +210,9 @@ public class MultiTenantSsoSteps {
 
     @When("I open the {string} console expecting multi-tenant SSO")
     public void iOpenTheConsoleExpectingSso(String console) {
+        if ("devportal".equals(console) && TestContext.get("mtTenantDomain") != null) {
+            browser.setDevportalTenant(TestContext.resolve("mtTenantDomain").toString());
+        }
         browser.openConsoleExpectingSso(console);
     }
 
@@ -345,28 +355,6 @@ public class MultiTenantSsoSteps {
     }
 
     /**
-     * DIAGNOSTIC (temporary): reports where the federated user was provisioned and what roles it holds, so the
-     * two open questions — which tenant, and whether the groups became roles — are answered from the product
-     * rather than inferred from a disabled button.
-     */
-    @Then("I report where the federated user landed and what roles it holds")
-    public void reportUserTenantAndRoles() {
-        String user = TestContext.resolve("mtUser").toString();
-        for (String tenant : new String[] {"carbon.super", "abc.com"}) {
-            String roles;
-            try {
-                roles = (MultiTenantSsoProvisioner.userExists(tenant, user) ? "EXISTS" : "ABSENT")
-                        + " roleList=" + MultiTenantSsoProvisioner.rolesOfUser(tenant, user)
-                                .replaceAll(".*?(<ns:return>.*</ns:return>).*", "$1");
-            } catch (Exception e) {
-                roles = "ERROR:" + e.getClass().getSimpleName() + ":" + e.getMessage();
-            }
-            org.apache.commons.logging.LogFactory.getLog(MultiTenantSsoSteps.class)
-                    .info("[MT-DIAG] roles of '" + user + "' in " + tenant + " -> " + roles);
-        }
-    }
-
-    /**
      * Creates an API through the Publisher as the federated tenant user — work that only a creator/publisher
      * role can do, so it fails outright if the identity server's groups were not mapped onto API Manager roles.
      */
@@ -376,7 +364,9 @@ public class MultiTenantSsoSteps {
         String apiId = browser.createRestApi(unique, "/" + unique.toLowerCase(Locale.ROOT), "1.0.0",
                 "http://nodebackend:3001/jaxrs_basic/services/customers/customerservice");
         TestContext.set("mtApiId", apiId);
-        ResourceCleanup.register(Constants.CREATED_API_IDS, apiId);
+        // Owned by the tenant's SSO user, so the tenant admin deletes it.
+        ResourceCleanup.registerFor(Constants.CREATED_API_IDS, apiId,
+                "admin@" + TestContext.resolve("mtTenantDomain"));
         TestContext.set("mtApiName", unique);
         TestContext.set("mtApiContext", "/t/" + TestContext.resolve("mtTenantDomain") + "/"
                 + unique.toLowerCase(Locale.ROOT));
@@ -405,6 +395,80 @@ public class MultiTenantSsoSteps {
                         + "not multi-tenant single sign-on.");
     }
 
+    /**
+     * Asserts the console session's own token is active, belongs to the tenant's SSO user, and carries every scope in
+     * {@code scopes} (comma-separated). Scopes are compared as whole tokens of the space-separated {@code scope}.
+     */
+    @Then("the {string} console session token should carry the scopes {string}")
+    public void theSessionTokenShouldCarryTheScopes(String console, String scopes) {
+        java.util.Set<String> granted = activeSessionScopes(console);
+        for (String scope : scopes.split("\\s*,\\s*")) {
+            Assert.assertTrue(granted.contains(scope), "the '" + console + "' session token of the tenant's SSO user "
+                    + "does not carry '" + scope + "'; it carries " + granted);
+        }
+    }
+
+    /** As {@link #theSessionTokenShouldCarryTheScopes}, asserting the token carries NONE of {@code scopes}. */
+    @Then("the {string} console session token should carry none of the scopes {string}")
+    public void theSessionTokenShouldCarryNoneOfTheScopes(String console, String scopes) {
+        java.util.Set<String> granted = activeSessionScopes(console);
+        for (String scope : scopes.split("\\s*,\\s*")) {
+            Assert.assertFalse(granted.contains(scope), "the '" + console + "' session token of the tenant's SSO "
+                    + "user carries '" + scope + "'; it carries " + granted);
+        }
+    }
+
+    /** The scopes of the console session's token, after asserting the token is active and is the SSO user's. */
+    private java.util.Set<String> activeSessionScopes(String console) {
+        HttpResponse response = browser.sessionIntrospection(console);
+        String body = response.getData();
+        Assert.assertTrue(response.getResponseCode() == 200 && body != null && !body.isBlank(),
+                "the '" + console + "' console introspection failed: got=" + response.getResponseCode() + "/" + body);
+        JSONObject token = new JSONObject(body);
+        Assert.assertTrue(token.optBoolean("active", false),
+                "the '" + console + "' console session token is not active: " + body);
+        Assert.assertEquals(stripTenant(token.optString("username", "")).toLowerCase(Locale.ROOT),
+                TestContext.resolve("mtUser").toString().toLowerCase(Locale.ROOT),
+                "the '" + console + "' console session token belongs to someone other than the tenant's SSO user: "
+                        + body);
+        return new java.util.HashSet<>(List.of(token.optString("scope", "").trim().split("\\s+")));
+    }
+
+    /** Lists the Publisher's APIs with the Publisher console session's own token. Non-asserting. */
+    @When("I retrieve the Publisher API list through the {string} console session")
+    public void iRetrieveThePublisherApiListThroughTheSession(String console) throws IOException {
+        Requests.execute(() -> browser.sessionRequest("/" + console, "GET", "/api/am/publisher/v4/apis", null));
+    }
+
+    /**
+     * Creates a REST API through the Publisher REST API with the console session's own token, sending the request
+     * the Publisher UI sends for its create form. Non-asserting: the feature asserts the outcome. A created API is
+     * owned by the tenant's SSO user, so it is registered for deletion by the tenant admin.
+     */
+    @When("I create a REST API named {string} through the {string} console session")
+    public void iCreateARestApiThroughTheSession(String name, String console) throws IOException {
+        String unique = Names.unique(name);
+        String endpoint = "http://nodebackend:3001/jaxrs_basic/services/customers/customerservice";
+        String payload = new JSONObject()
+                .put("name", unique)
+                .put("version", "1.0.0")
+                .put("context", "/" + unique.toLowerCase(Locale.ROOT))
+                .put("gatewayType", "wso2/synapse")
+                .put("policies", new org.json.JSONArray().put("Unlimited"))
+                .put("endpointConfig", new JSONObject()
+                        .put("endpoint_type", "http")
+                        .put("sandbox_endpoints", new JSONObject().put("url", endpoint))
+                        .put("production_endpoints", new JSONObject().put("url", endpoint)))
+                .toString();
+        HttpResponse response = Requests.execute(
+                () -> browser.sessionRequest("/" + console, "POST", "/api/am/publisher/v4/apis", payload));
+        if (response.getResponseCode() == 201) {
+            ResourceCleanup.registerFor(Constants.CREATED_API_IDS,
+                    new JSONObject(response.getData()).getString("id"),
+                    "admin@" + TestContext.resolve("mtTenantDomain"));
+        }
+    }
+
     @Then("I should land authenticated in the {string} console as a tenant user")
     public void iShouldLandAuthenticated(String console) {
         browser.assertLandedInConsole(console);
@@ -422,7 +486,8 @@ public class MultiTenantSsoSteps {
         String appName = Names.unique(name);
         String appId = browser.createDevportalApp(appName);
         TestContext.set("mtAppId", appId);
-        ResourceCleanup.register(Constants.CREATED_APPLICATION_IDS, appId);
+        // Owned by the federated SSO user, who is not an actor: the tenant admin takes it over to delete it.
+        ResourceCleanup.registerForeignOwnedApplication(appId, "admin@" + TestContext.resolve("mtTenantDomain"));
         TestContext.set("mtAppName", appName);
         String owner = browser.recordedPrincipal("/api/am/devportal/v3/applications/" + appId,
                 "/devportal", "owner");

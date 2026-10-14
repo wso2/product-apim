@@ -18,10 +18,10 @@ Feature: Per-API custom gateway handler
     Then The lifecycle status of API "customHandlerApiId" should be "Published"
     When I retrieve the "apis" resource with id "customHandlerApiId"
     And I extract response field "context" and store it as "customHandlerContext"
-    And I have set up application with keys, subscribed to API "customHandlerApiId", and obtained access token for "customHandlerSubscriptionId"
+    And I have set up application from payload file "artifacts/payloads/create_apim_test_app_with_external_ref.json" with keys, subscribed to API "customHandlerApiId", and obtained access token for "customHandlerSubscriptionId"
     Then The response status code should be 200
 
-    When I invoke the API at gateway context "{{customHandlerContext}}/1.0.0/handler" with method "GET" using access token "generatedAccessToken" and payload "" with request header "CustomAuthorization" set to "CustomAuthKey 123456789" until response status code becomes 200 within 60 seconds
+    When I invoke the API at gateway context "{{customHandlerContext}}/1.0.0/handler" with method "GET" using access token "generatedAccessToken" in header "Test-Custom-Header" and payload "" with request header "CustomAuthorization" set to "CustomAuthKey 123456789" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
     And The custom handler response body should be exactly "I was at CustomAPIAuthenticationHandler"
 
@@ -40,11 +40,11 @@ Feature: Per-API custom gateway handler
     Then The lifecycle status of API "runtimeSoapHandlerApiId" should be "Published"
     When I retrieve the "apis" resource with id "runtimeSoapHandlerApiId"
     And I extract response field "context" and store it as "runtimeSoapHandlerContext"
-    And I have set up application with keys, subscribed to API "runtimeSoapHandlerApiId", and obtained access token for "runtimeSoapHandlerSubscriptionId"
+    And I have set up application from payload file "artifacts/payloads/create_apim_test_app_with_external_ref.json" with keys, subscribed to API "runtimeSoapHandlerApiId", and obtained access token for "runtimeSoapHandlerSubscriptionId"
     Then The response status code should be 200
 
     When I attach the custom gateway handler to API context "{{runtimeSoapHandlerContext}}" through ConfigServiceAdmin
-    And I invoke the API once at gateway context "{{runtimeSoapHandlerContext}}/1.0.0/handler" with method "GET" using access token "generatedAccessToken" and payload "" with request header "CustomAuthorization" set to "CustomAuthKey 123456789"
+    And I invoke the API once at gateway context "{{runtimeSoapHandlerContext}}/1.0.0/handler" with method "GET" using access token "generatedAccessToken" in header "Test-Custom-Header" and payload "" with request header "CustomAuthorization" set to "CustomAuthKey 123456789"
     Then The response status code should be 200
     And The custom handler response body should be exactly "I was at CustomAPIAuthenticationHandler"
 
@@ -62,10 +62,10 @@ Feature: Per-API custom gateway handler
     Then The lifecycle status of API "handlerTemplateControlApiId" should be "Published"
     When I retrieve the "apis" resource with id "handlerTemplateControlApiId"
     And I extract response field "context" and store it as "handlerTemplateControlContext"
-    And I have set up application with keys, subscribed to API "handlerTemplateControlApiId", and obtained access token for "handlerTemplateControlSubscriptionId"
+    And I have set up application from payload file "artifacts/payloads/create_apim_test_app_with_external_ref.json" with keys, subscribed to API "handlerTemplateControlApiId", and obtained access token for "handlerTemplateControlSubscriptionId"
     Then The response status code should be 200
 
-    When I invoke the API at gateway context "{{handlerTemplateControlContext}}/1.0.0/handler" once with method "GET" using access token "generatedAccessToken" and payload ""
+    When I invoke the API once at gateway context "{{handlerTemplateControlContext}}/1.0.0/handler" with method "GET" using access token "generatedAccessToken" and payload "" with request header "Test-Custom-Header" set to "Bearer {{generatedAccessToken}}"
     Then The response status code should be 200
     And The custom handler response body should be exactly ""
 

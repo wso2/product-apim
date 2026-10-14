@@ -20,17 +20,18 @@ package org.wso2.am.integration.cucumbertests.runners.block;
 import io.cucumber.testng.CucumberOptions;
 
 /**
- * Runner for API Governance ruleset CRUD (the port of the legacy RulesetMgtTestCase). Runs in the concurrent
- * IntegrationV2-Governance block; each scenario uses uniquely-named rulesets, so it is parallel-safe.
+ * Runner for the API Governance BLOCK-on-deploy policy (the blocking half of the legacy APIComplianceTestCase).
+ * The policy is labelled global, so while it exists every API deployment in the tenant is rejected: it runs last
+ * in a sequential block, where no other runner deploys concurrently or afterwards.
  */
 @CucumberOptions(
         features = {
-                "src/test/resources/features/governance/rulesets.feature"
+                "src/test/resources/features/governance/compliance_blocking.feature"
         },
         glue = {
                 "org.wso2.am.integration.cucumbertests.stepdefinitions"
         },
-        plugin = {"pretty", "html:target/cucumber-report/governance-rulesets.html"}
+        plugin = {"pretty", "html:target/cucumber-report/governance-compliance-blocking.html"}
 )
-public class GovernanceRulesetsRunner extends BaseBlockRunner {
+public class GovernanceComplianceBlockingRunner extends BaseBlockRunner {
 }

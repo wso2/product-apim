@@ -1,36 +1,20 @@
-# Merged overlay for the IntegrationV2-Is7TokenExchange block, which now ALSO hosts the publisher
-# security-audit runner (thread-count=2).
+# Overlay for the IntegrationV2-SecurityAuditCorsDisabledAndSecretRotation block (the publisher security-audit runner,
+# the AllowedScopesTestWithCorsDisabled runner, the consumer-secret rotation runner and the WebSocket catch-all proxy
+# runner). The distributed suite's token-exchange/security-audit block uses the distributed-*-overlay.toml files
+# beside this one.
 #
-# WHY THESE TWO CO-HOST, AND WHY CONCURRENTLY.
-# The two tables below are disjoint and mutually inert, verified rather than assumed:
-#   - The security-audit runner performs ZERO gateway invocations (it is publisher-plane only: create,
-#     publish, then GET /apis/{id}/auditapi). [apim.token.validation] enforce_type_header_validation
-#     changes how the Resident Key Manager's TypeEnforcedJWTValidatorImpl treats a token presented AT THE
-#     GATEWAY, so it cannot affect a runner that never reaches the gateway.
-#   - [security_audit] is inert for everything else in the container: ApisApiServiceImplUtils
-#     #getAuditReport has exactly ONE product call site (the GET /apis/{id}/auditapi resource), and
-#     nothing in API create/update/publish consults it. global=true is tenant SCOPING only, not an
-#     auto-audit switch.
-# Neither runner mutates container-global runtime state, so at thread-count=2 they overlap safely.
+# The three tables below are disjoint and mutually inert:
+#   - The security-audit runner performs ZERO gateway invocations and creates no applications (it is publisher-plane
+#     only: create, publish, then GET /apis/{id}/auditapi), so the gateway-global CORS, allowed-scopes and
+#     client-secret keys cannot affect it.
+#   - [security_audit] is inert for everything else in the container: ApisApiServiceImplUtils#getAuditReport has
+#     exactly ONE product call site (the GET /apis/{id}/auditapi resource), and nothing in API create/update/publish
+#     consults it. global=true is tenant SCOPING only, not an auto-audit switch.
+#   - The CORS and allowed-scopes keys do not touch rotation: it invokes the gateway without an Origin header and
+#     requests no scopes. The single-secret model does not touch the CORS-disabled runner: it takes its consumer
+#     secret from the generate-keys response (unchanged between models) and never uses the /secrets endpoints.
+# No runner mutates container-global runtime state.
 #
-# The pairing exists to amortise the EXTERNAL IDENTITY SERVER BOOT (bootExternalIdentityServer starts a
-# full WSO2 IS 7 container), which previously bought a container used by one runner.
-#
-# ---------------------------------------------------------------------------------------------
-# From the former is7tx/deployment.toml
-# ---------------------------------------------------------------------------------------------
-# The shipped distribution config already enables the token-exchange grant
-# ([oauth.grant_type.token_exchange] enable=true, allow_refresh_tokens=true, iat_validity_period="1h"),
-# and this overlay deep-merges on top of base+basic, so that is inherited.
-#
-# The one behaviour this block adds: enforce JWT type-header validation at the gateway. With this on, the
-# Resident Key Manager's TypeEnforcedJWTValidatorImpl only accepts self-contained JWTs whose header typ is
-# "at+jwt" (RFC 9068 access tokens) - so the at+jwt token the exchange issues is accepted, while an OIDC
-# id_token (no at+jwt type header) is refused (900905). That is what lets this block pin "ID tokens cannot
-# invoke gateway APIs" alongside the token-exchange happy paths.
-[apim.token.validation]
-enforce_type_header_validation = true
-
 # ---------------------------------------------------------------------------------------------
 # From the former securityAudit/deployment.toml
 # ---------------------------------------------------------------------------------------------
@@ -52,3 +36,53 @@ api_token = "mock-audit-api-token"
 collection_id = "mock-audit-collection-id"
 base_url = "http://nodebackend:3002/auditapi"
 global = true
+
+# ---------------------------------------------------------------------------------------------
+# From allowedScopesCorsDisabled/deployment.toml (the exact legacy AllowedScopesTestWithCorsDisabled config)
+# ---------------------------------------------------------------------------------------------
+# Gateway-global CORS disabled plus the allowed-scopes whitelist. The security-audit runner never invokes the gateway.
+[oauth]
+allowed_scopes = ["^device_.*", "openid", "scope1", "scope2"]
+
+[apim.cors]
+enable = false
+allow_origins = "*"
+allow_methods = ["GET", "PUT", "POST", "DELETE", "PATCH", "OPTIONS"]
+allow_headers = ["authorization", "Access-Control-Allow-Origin", "Content-Type", "SOAPAction"]
+
+# ---------------------------------------------------------------------------------------------
+# Single-client-secret credential model (KeyManagerConsumerSecretRotationRunner, ApplicationRegenerateConsumerSecretTestCase)
+# ---------------------------------------------------------------------------------------------
+# With multiple client secrets disabled an application key mapping holds exactly ONE consumer secret and ROTATION
+# replaces it in place. On default config POST /applications/{appId}/oauth-keys/{keyMappingId}/regenerate-secret
+# answers 500 (900967), because AMDefaultKeyManagerImpl#getNewApplicationConsumerSecret passes
+# Base64.getUrlEncoder().encodeToString(clientId) where keymanager-operations' /dcr/register/{clientId}/
+# regenerate-consumer-secret documents the RAW client identifier; under this key the same call returns 200.
+# Container-wide effects of this key (carbon-apimgt): the devportal /secrets endpoints answer "not supported"
+# (ApplicationsApiServiceImpl), the consumer secret is no longer masked on key retrieve/update and the
+# client-secret description/expiry additional properties are dropped (AMDefaultKeyManagerImpl). The multiple-secret
+# model's behaviour stays on the KeyManager block in multiple_client_secrets.feature.
+[oauth.multiple_client_secrets]
+enable = false
+
+# ---------------------------------------------------------------------------------------------
+# GatewayWebSocketProxyCatchAllRunner (WebSocketProxyProfileTestCase), from wsProxyCatchAll/deployment.toml. [[transport.ws.proxy_profile]] only
+# routes the gateway's OUTBOUND WebSocket connections; no other runner in this block invokes a WebSocket API,
+# so the proxy sees only this runner's traffic and its exact Squid CONNECT counts stay valid.
+# ---------------------------------------------------------------------------------------------
+# Tests bypass_hosts within a catch-all ws proxy profile. A single catch-all profile is loaded:
+#
+#   Profile — target_hosts = ["*"]: matches every backend hostname, including "nodebackend".
+#             bypass_hosts contains "nodebackend", so the gateway bypasses Squid and connects
+#             directly to the node WS echo backend.
+#             A passing echo proves the bypass path was taken; no CONNECT is recorded in the Squid
+#             access log (asserted via SquidProxyServer.getAnonConnectCount()).
+#
+# No specific profile is present — nodebackend falls through to this catch-all, which is the exact
+# condition needed to test catch-all bypass_hosts behaviour in isolation from specific-profile bypass.
+
+[[transport.ws.proxy_profile]]
+target_hosts = ["*"]
+proxy_host = "squid-proxy"
+proxy_port = 3128
+bypass_hosts = ["nodebackend"]

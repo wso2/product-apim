@@ -152,7 +152,7 @@ Feature: Admin Configurable Default Throttling Policy
     And I set the field "DefaultAPILevelTier" to "{{advThrottlePolicyName}}" in the payload "cdpGuardModified"
     And I update the tenant configuration from "cdpGuardModified"
     Then The response status code should be 200
-    When I delete the "advanced" throttling policy with id "advThrottlePolicyId"
+    When I attempt to delete the "advanced" throttling policy with id "advThrottlePolicyId"
     Then The response status code should be 500
     # Un-configure the default; the very same delete now succeeds.
     When I update the tenant configuration from "cdpGuardOriginal"

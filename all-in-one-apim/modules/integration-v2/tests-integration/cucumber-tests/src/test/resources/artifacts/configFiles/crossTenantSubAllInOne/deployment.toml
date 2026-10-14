@@ -1,0 +1,53 @@
+# All-in-one overlay for the IntegrationV2-CrossTenantSubscription block: the crossTenantSub/ keys plus the
+# wsProxyAuthWrongCreds WebSocket proxy profile and the permissive network access-control platform policy for
+# NetworkAccessControlUrlTenantAllowRunner. The distributed suite keeps using crossTenantSub/ and
+# wsProxyAuthWrongCreds/ separately.
+#
+# Feature-specific TOML overlay for the IntegrationV2-CrossTenantSubscription block.
+#
+# Merged ON TOP of the shared `basic` overlay (itself merged onto the product distribution
+# deployment.toml) via the block's `tomlExtraOverlayPath` parameter — so only the ONE extra key
+# cross-tenant subscription needs lives here; everything else is inherited.
+#
+# enable_cross_tenant_subscriptions lets a subscriber in one tenant subscribe to (and get a token
+# for / invoke) an API published in another tenant with subscriptionAvailability=ALL_TENANTS. It is
+# OFF by default in the distribution, so the cross-tenant subscribe would otherwise be refused.
+# (Ported from the legacy CrossTenantSubscriptionTestSuite overlay's one load-bearing key.)
+
+[apim.devportal]
+enable_cross_tenant_subscriptions = true
+
+# ---------------------------------------------------------------------------------------------
+# GatewayWebSocketProxyAuthWrongCredsRunner (WebSocketProxyProfileTestCase), from wsProxyAuthWrongCreds/deployment.toml. [[transport.ws.proxy_profile]] only
+# routes the gateway's OUTBOUND WebSocket connections; no other runner in this block invokes a WebSocket API,
+# so the proxy sees only this runner's traffic and its exact Squid CONNECT counts stay valid.
+# ---------------------------------------------------------------------------------------------
+# Tests that the gateway is rejected by the authenticated Squid proxy when the proxy profile
+# carries incorrect credentials. The profile matches "nodebackend" and points at squid-proxy:3129
+# (the Basic-auth Squid instance), but the username/password are intentionally wrong.
+#
+# The gateway DOES send CONNECT to the authenticated Squid with these wrong credentials and is refused
+# with 407, which Squid records as a denied CONNECT — so the authenticated access log receives ONE entry,
+# not zero, and the anonymous one receives none. The test asserts the WS rejection, the gateway's own
+# 407 reason, anon count = 0 and auth count = 1, which together distinguish this failure from a broken
+# network, a wrong target host, or an API that was never routable in the first place.
+
+[[transport.ws.proxy_profile]]
+target_hosts = ["nodebackend"]
+proxy_host = "squid-proxy"
+proxy_port = 3129
+proxy_username = "wronguser"
+proxy_password = "wrongpass"
+
+# --- NetworkAccessControlUrlTenantAllowRunner (HostValidationTenantAllowModeTestCase): the access-control feature is
+# enabled but permissive at platform level; each scenario applies, then removes, a super-tenant allow policy. The
+# policy gates every publisher/admin operation that takes a remote URL, including API create and update and
+# key-manager creation, so while a scenario's policy is applied the other runners' super-tenant creates would be
+# rejected. The block runs one runner at a time and each scenario removes its policy, so no other runner's create
+# overlaps a policy window. This block has no required custom API property, so the runner's API-update scenarios
+# reach the access-control check. ---
+# The platform policy is permissive (feature enabled, no mode/hosts), so nothing is blocked at the platform
+# level; each scenario applies a per-tenant NetworkSecurityAccessControl allow policy at runtime and asserts
+# that the tenant policy gates the publisher URL-validation entry points. Ports HostValidationTenantAllowMode.
+[server.network_security.access_control]
+block_private_network_access = false

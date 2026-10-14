@@ -377,48 +377,61 @@ public class MCPInvocationSteps {
     }
 
     /**
-     * Negative auth: attempts a tool INVOCATION with an INVALID bearer token and asserts the gateway rejects it
-     * with the EXACT {@code expectedStatus} (strict — so a future change of code is caught as a regression).
-     * FINDINGS (verify-first): (a) the gateway does NOT authenticate the MCP {@code initialize} handshake (200
-     * even with a bad token) — auth is enforced at {@code tools/call}; (b) the rejection code differs by
-     * subtype — the proxy subtype returns 401, the DirectBackend (OpenAPI) subtype returns 403 — so each
-     * feature asserts its own exact code. Retries only to ride out warm-up.
+     * Negative auth: calls an existing tool of the MCP server with an INVALID bearer token and asserts the gateway
+     * rejects the token: the exact {@code expectedStatus} AND the gateway fault's {@code code} and {@code message}.
+     * The rejection is read from whichever request the gateway refuses first, the {@code initialize} handshake or
+     * the {@code tools/call}. Naming a tool the server exposes keeps a resource-matching failure (900906, which also
+     * maps to 403) from satisfying the step; the error code pins that the token itself was refused. Retries only to
+     * ride out warm-up (a not-yet-routable server answers 404).
      */
-    @When("I invoke the MCP server at gateway context {string} version {string} with an invalid token expecting status {int} within {int} seconds")
-    public void invokeMcpInvalidToken(String context, String version, int expectedStatus, int timeoutSeconds)
+    @When("I invoke the MCP tool {string} at gateway context {string} version {string} with an invalid token expecting status {int} with error code {string} and message {string} within {int} seconds")
+    public void invokeMcpToolWithInvalidToken(String toolName, String context, String version, int expectedStatus,
+                                              String expectedCode, String expectedMessage, int timeoutSeconds)
             throws Exception {
         String mcpUrl = buildMcpUrl(context, version);
         String badToken = "invalid-mcp-token-xyz";
-        String callPayload = "{\"jsonrpc\":\"2.0\",\"id\":7,\"method\":\"tools/call\",\"params\":{"
-                + "\"name\":\"echo\",\"arguments\":{\"message\":\"x\"}}}";
+        String callPayload = new JSONObject()
+                .put("jsonrpc", "2.0").put("id", 7).put("method", "tools/call")
+                .put("params", new JSONObject().put("name", toolName).put("arguments", new JSONObject()))
+                .toString();
         HttpClient client = newClient();
-        AtomicInteger last = new AtomicInteger(-1);
+        AtomicReference<HttpResponse<String>> rejection = new AtomicReference<>();
         // No auth-rejection marker in this step: the rejection IS what it asserts (a deliberately invalid
         // token), so logging one would fire on expected behaviour.
-        Integer matched = Utils.retryUntil(timeoutSeconds * 1000L, () -> {
+        Utils.retryUntil(timeoutSeconds * 1000L, () -> {
             try {
-                // A tool call with a bad token — the handshake may 200, but the invocation must be rejected.
                 HttpResponse<String> initResp = post(client, mcpUrl, badToken, null, INIT);
-                if (initResp.statusCode() == expectedStatus) {
-                    return initResp.statusCode(); // rejected already at the handshake with the exact code
+                if (initResp.statusCode() == 404) {
+                    return null; // not routable yet
+                }
+                if (initResp.statusCode() >= 400) {
+                    rejection.set(initResp);
+                    return initResp;
                 }
                 String sessionId = initResp.headers().firstValue("mcp-session-id").orElse(null);
                 post(client, mcpUrl, badToken, sessionId, INITIALIZED);
                 HttpResponse<String> callResp = post(client, mcpUrl, badToken, sessionId, callPayload);
-                last.set(callResp.statusCode());
-                if (last.get() == expectedStatus) {
-                    return callResp.statusCode();
-                }
-                return null;
+                rejection.set(callResp);
+                return callResp;
             } catch (IOException transientDuringWarmup) {
-                // retry
                 return null;
             }
-        }, result -> true);
-        if (matched == null) {
-            Assert.fail("MCP invalid-token tool call expected status " + expectedStatus + " but last was "
-                    + last.get());
+        }, result -> result != null);
+        HttpResponse<String> rejected = rejection.get();
+        Assert.assertNotNull(rejected, "MCP server at " + mcpUrl + " never answered within " + timeoutSeconds + "s");
+        Assert.assertEquals(rejected.statusCode(), expectedStatus,
+                "MCP invalid-token request was not rejected with the expected status: " + rejected.body());
+        JSONObject fault;
+        try {
+            fault = new JSONObject(rejected.body());
+        } catch (JSONException notJson) {
+            throw new AssertionError("MCP invalid-token rejection did not carry a JSON fault: " + rejected.body(),
+                    notJson);
         }
+        Assert.assertEquals(String.valueOf(fault.opt("code")), expectedCode,
+                "MCP invalid-token rejection carried an unexpected error code: " + rejected.body());
+        Assert.assertEquals(fault.optString("message"), expectedMessage,
+                "MCP invalid-token rejection carried an unexpected error message: " + rejected.body());
     }
 
     /**

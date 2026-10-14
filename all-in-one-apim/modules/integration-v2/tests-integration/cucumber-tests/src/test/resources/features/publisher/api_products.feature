@@ -441,6 +441,7 @@ Feature: Publisher API Products
     When I retrieve the subscriptions of API "d5ProductId"
     Then The response status code should be 200
     And The subscription list should contain exactly 0 subscriptions
+    And The subscription "d5SubId" should no longer exist
     When I delete the "api-products" resource with id "d5ProductId"
     Then The response status code should be 200
 
@@ -688,6 +689,7 @@ Feature: Publisher API Products
     When I retrieve the subscriptions of API "storeProductId"
     Then The response status code should be 200
     And The subscription list should contain exactly 0 subscriptions
+    And The subscription "storeProdSubId" should no longer exist
     When I delete the "api-products" resource with id "storeProductId"
     Then The response status code should be 200
 

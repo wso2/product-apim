@@ -30,6 +30,20 @@ session_manager = "org.apache.catalina.session.StandardManager"
 [event.default_listener.jit_provisioning_handler]
 enable = false
 
+# An overlay's [[event_listener]] array replaces the distribution's whole array, so the distribution's default
+# token_revocation listener is restated here. It configures the notification sender that the OAuth application
+# listener uses to publish token revocations when an OAuth application with active tokens is removed.
+[[event_listener]]
+id = "token_revocation"
+type = "org.wso2.carbon.identity.core.handler.AbstractIdentityHandler"
+name = "org.wso2.is.notification.ApimOauthEventInterceptor"
+order = 1
+[event_listener.properties]
+notification_endpoint = "https://localhost:${mgt.transport.https.port}/internal/data/v1/notify"
+username = "${admin.username}"
+password = "${admin.password}"
+'header.X-WSO2-KEY-MANAGER' = "default"
+
 # The organization-aware provisioning handler that replaces the default one, at the same order.
 [[event_listener]]
 id = "org_jit_provisioning_handler"

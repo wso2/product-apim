@@ -376,8 +376,10 @@ public class ServiceCatalogSteps {
     /** Deletes a service by id (publishes the response). */
     @When("I delete the service catalog entry {string}")
     public void iDeleteService(String idKey) throws IOException {
-        Requests.delete(Utils.getServiceCatalogByIdURL(Utils.getBaseUrl(), TestContext.resolve(idKey).toString()),
+        String serviceId = TestContext.resolve(idKey).toString();
+        HttpResponse response = Requests.delete(Utils.getServiceCatalogByIdURL(Utils.getBaseUrl(), serviceId),
                 serviceCatalogHeaders());
+        ResourceCleanup.deregisterIfDeleted(ResourceCleanup.CREATED_SERVICE_CATALOG_IDS, serviceId, response);
     }
 
     /** Searches services by a single field ({@code name}/{@code version}/{@code definitionType}/{@code key}). */

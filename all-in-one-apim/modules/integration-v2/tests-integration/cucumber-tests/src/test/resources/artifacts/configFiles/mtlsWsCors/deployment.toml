@@ -1,14 +1,14 @@
-# Extra overlay shared by the mutual-SSL and WebSocket-CORS blocks, merged on top of the shared `basic` overlay.
-# These two features co-locate in one container because their config is orthogonal (different TOML tables, no
-# behavioural collision): the SSL-profile read interval only speeds up client-cert pickup (client auth stays
-# "optional", so it doesn't affect the CORS flows), and the WS-CORS toggle/allow-list only applies to a WS
-# handshake carrying an Origin header (the mTLS REST invocation sends none). The block runs the two runners as
-# parallel classes (thread-count=2): they use different data planes — mTLS on the 8243 HTTPS passthrough,
-# WS-CORS on the ws:// inbound — so their dynamic config doesn't interfere.
+# Extra overlay shared by the mutual-SSL, WebSocket-CORS and endpoint-certificate TLS scenarios, merged on top of
+# the shared `basic` overlay. Their config is orthogonal (different TOML tables, no behavioural collision): the
+# SSL-profile read interval only speeds up client-cert pickup (client auth stays "optional", so it doesn't affect
+# the CORS flows), the WS-CORS toggle/allow-list only applies to a WS handshake carrying an Origin header (the mTLS
+# REST invocation sends none), and the endpoint-certificate settings act on the backend-facing HTTPS sender.
 
 # --- mutual-SSL: when a client cert is uploaded to an API, APIM adds it to the gateway trust store and the
 # passthrough HTTPS listener picks it up on its next dynamic-SSL-profile read (default 600000 ms = 10 min, far
-# too long for a test). Shrink it to 10s so an uploaded client cert is honoured within seconds.
+# too long for a test). The listener never checks more often than once a minute (Synapse's
+# FileUpdateNotificationHandler raises any read interval below 60000 ms to 60000 ms), so this value gives a 60 s
+# read and an uploaded client cert is honoured within about a minute.
 # (SSLVerifyClient already defaults to "optional" on the 8243 listener, so no other change is needed.)
 [transport.http.listener.ssl_profile]
 read_interval = "10000"
@@ -19,3 +19,21 @@ read_interval = "10000"
 [apim.cors]
 allow_origins = ["http://allowed.example.com"]
 enable_validation_for_ws = true
+
+# --- Endpoint-certificate TLS invocation (500 -> upload -> 200 -> delete -> 500 against a self-signed backend).
+# This is the passthrough HTTPS SENDER (backend-facing) side, distinct from the listener read_interval above.
+# The sender re-reads its trust store every ssl_profile.interval (default 600000 ms; like the listener, never more
+# often than every 60000 ms, so 30000 gives 60 s) and the certificate reloader
+# writes an uploaded certificate into that trust store every certificate_reloader.period (default 600 s); both
+# are shortened so upload -> trust propagates in about a minute. enable_restart_from_api allows the endpoint
+# step's single gateway-restart recovery when the product drops the upload event, and the block's
+# listenerSslReloadReadinessSeconds gate's restart when the listener's SSL-profile reload is disabled on a start.
+# Same values as the endpointCertificateReload overlay used by the distributed suite.
+[transport.passthru_https.sender.ssl_profile]
+interval = 30000
+
+[apim.certificate_reloader]
+period = "1m"
+
+[server]
+enable_restart_from_api = true

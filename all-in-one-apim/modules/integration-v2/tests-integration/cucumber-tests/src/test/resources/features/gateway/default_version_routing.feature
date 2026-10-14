@@ -58,6 +58,7 @@ Feature: Gateway Default Version Routing
     Then The response status code should be 200
     When I deploy the API with id "dvV2Id"
     Then The response status code should be 201
+    And the "apis" resource "dvV2Id" should be live on the gateway, redeploying if propagation is lost
     When I publish the "apis" resource with id "dvV2Id"
     Then The lifecycle status of API "dvV2Id" should be "Published"
     # No new subscription needed: creating v2 via "create new version" copies v1's subscription onto v2, so the
@@ -79,6 +80,7 @@ Feature: Gateway Default Version Routing
     Then The response status code should be 200
     When I deploy the API with id "dvV2Id"
     Then The response status code should be 201
+    And the "apis" resource "dvV2Id" should be live on the gateway, redeploying if propagation is lost
 
     # G3: with no default version, the versionless context is not routable → 404.
     When I invoke the API at gateway context "{{dvContext}}/name" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 404 within 60 seconds
@@ -177,6 +179,7 @@ Feature: Gateway Default Version Routing
     # Now DEPLOY v2 and gate on the revision actually being deployed before asserting the data-plane moved.
     When I deploy the API with id "pdV2Id"
     Then The response status code should be 201
+    And the "apis" resource "pdV2Id" should be live on the gateway, redeploying if propagation is lost
     When I wait until "apis" "pdV2Id" revision is deployed in the gateway
 
     # Post-deploy: the SAME versionless context now routes to the new default (v2) → the File 2 backend.
@@ -194,6 +197,7 @@ Feature: Gateway Default Version Routing
     Then The response status code should be 200
     When I deploy the API with id "pdV1Id"
     Then The response status code should be 201
+    And the "apis" resource "pdV1Id" should be live on the gateway, redeploying if propagation is lost
     When I wait until "apis" "pdV1Id" revision is deployed in the gateway
 
     # The versionless context routes back to v1 → the File 1 backend once more.

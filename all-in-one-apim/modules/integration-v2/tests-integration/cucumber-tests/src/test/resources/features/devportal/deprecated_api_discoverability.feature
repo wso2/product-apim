@@ -24,7 +24,7 @@ Feature: DevPortal deprecated-API discoverability under DisplayAllAPIs
   Scenario Outline: A deprecated API stays discoverable in the devportal search when DisplayAllAPIs is enabled (<tenant>)
     Given The system is ready
     And I have valid access tokens as "admin<tenantSuffix>"
-    And I have created an api from "artifacts/payloads/create_apim_test_api.json" as "depDiscApiId" and deployed it
+    And I have created an api from "artifacts/payloads/create_apim_test_api_with_mandatory_property.json" as "depDiscApiId" and deployed it
     When I retrieve the "apis" resource with id "depDiscApiId"
     Then The response status code should be 200
     And I extract response field "name" and store it as "depDiscApiName"
