@@ -572,6 +572,51 @@ public class APIInvocationSteps {
     }
 
     /**
+     * As {@link #invokeApiByContextNTimesExpecting200}, but with an explicit content type and extra request
+     * headers on every call.
+     *
+     * <p>Needed because the analytics scenarios that invoke a FIXED number of times — proving an exact published
+     * event count across a collector outage, and proving the sampling weight over a burst — must still stamp
+     * their per-scenario correlation header on each call, or the events they produce cannot be told apart from
+     * the rest of the block's traffic. The plain N-times variant sends only the bearer token.
+     *
+     * <p>Header list format and resolution are the same as
+     * {@link #invokeApiByContextWithHeadersUntilStatus}: comma-separated {@code name=value}, with
+     * {@code {{contextKey}}} placeholders resolved. Resolved ONCE before the loop, so every call in the burst
+     * carries the identical correlation value.
+     */
+    @When("I invoke the API at gateway context {string} with method {string} using access token {string} and payload {string} with content type {string} and request headers {string} {int} times expecting status 200")
+    public void invokeApiByContextWithHeadersNTimesExpecting200(String context, String httpMethod,
+                                                                String accessToken, String payload,
+                                                                String contentType, String headerList, int times)
+            throws Exception {
+
+        String resolvedContext = Utils.resolveContextPlaceholders(context);
+        Map<String, String> extraHeaders = parseHeaderList(headerList);
+        for (int i = 1; i <= times; i++) {
+            int attempt = i;
+            // Each call is retried only until it COMPLETES (any status); the burst's assertion is 200 below.
+            HttpResponse response = Utils.retryUntil(Constants.RUNTIME_PROPAGATION_TIMEOUT, () -> {
+                String actualAccessToken = TestContext.resolve(accessToken).toString();
+                String actualPayload = (payload == null || payload.isEmpty())
+                        ? "" : TestContext.resolve(payload).toString();
+                String endpointUrl = Utils.getBaseGatewayUrl()
+                        + (resolvedContext.startsWith("/") ? "" : "/") + resolvedContext;
+                Map<String, String> headers = new HashMap<>();
+                headers.put("Authorization", "Bearer " + actualAccessToken);
+                headers.putAll(extraHeaders);
+                return execute(CurlOption.HttpMethod.valueOf(httpMethod.toUpperCase()), endpointUrl, headers,
+                        actualPayload, contentType);
+            }, completed -> true);
+            Requests.publishPollResult(response);
+            Assert.assertNotNull(response, "Invocation " + attempt + " of " + times + " never completed (gateway "
+                    + "unreachable within the warmup window).");
+            Assert.assertEquals(response.getResponseCode(), 200, "Invocation " + attempt + " of " + times
+                    + " was not 200; last response: " + response.getData());
+        }
+    }
+
+    /**
      * Invokes a load-balanced API {@code times} times back-to-back and asserts the responses ROUND-ROBIN across
      * the given comma-separated backend markers (a distinguishing substring of each member's body, e.g.
      * {@code File 1,File 2,File 3}). Asserts three things, in increasing strength:
@@ -1224,6 +1269,72 @@ public class APIInvocationSteps {
             return execute(CurlOption.HttpMethod.valueOf(httpMethod.toUpperCase()), endpointUrl, headers,
                     actualPayload, contentType);
         });
+    }
+
+    /**
+     * As {@link #invokeApiByContextWithContentTypeUntilStatus}, but with SEVERAL extra request headers rather
+     * than one. Needed by the Moesif analytics header-redaction scenarios, which must present a whole set of
+     * headers in a SINGLE call — credential headers the gateway strips unconditionally
+     * ({@code Authorization}, {@code apikey}, {@code Cookie}), a header the operator masks by configuration
+     * ({@code X-Custom-Auth}), and a benign one that must survive — because the assertion is about which of
+     * them appear in the ONE analytics event that call produces. Chaining the existing single-header variant
+     * cannot express that: each invocation is its own event.
+     *
+     * <p>Headers are given as a comma-separated {@code name=value} list, the same shape the block parameter
+     * {@code serverFilesToCopy} uses for its pairs. A malformed entry fails loudly rather than being skipped,
+     * so a typo cannot quietly turn a redaction assertion into a vacuous one. {@code {{contextKey}}}
+     * placeholders are resolved in the values, so a scenario can send something a previous step computed (its
+     * unique trace id, an access token). An entry may deliberately override {@code Authorization} — that is
+     * how the fault-path scenario presents a garbage credential.
+     */
+    @When("I invoke the API at gateway context {string} with method {string} using access token {string} and payload {string} with content type {string} and request headers {string} until response status code becomes {int} within {int} seconds")
+    public void invokeApiByContextWithHeadersUntilStatus(String context, String httpMethod, String accessToken,
+                                                         String payload, String contentType, String headerList,
+                                                         int expectedStatus, int timeoutSeconds) throws Exception {
+
+        String resolvedContext = Utils.resolveContextPlaceholders(context);
+        Map<String, String> extraHeaders = parseHeaderList(headerList);
+        invokeUntilStatus(resolvedContext, accessToken, expectedStatus, timeoutSeconds, () -> {
+            String actualAccessToken = TestContext.resolve(accessToken).toString();
+            String actualPayload = (payload == null || payload.isEmpty())
+                    ? "" : TestContext.resolve(payload).toString();
+            String endpointUrl = Utils.getBaseGatewayUrl()
+                    + (resolvedContext.startsWith("/") ? "" : "/") + resolvedContext;
+            Map<String, String> headers = new HashMap<>();
+            headers.put("Authorization", "Bearer " + actualAccessToken);
+            // Applied AFTER the bearer token so a scenario can deliberately replace it.
+            headers.putAll(extraHeaders);
+            return execute(CurlOption.HttpMethod.valueOf(httpMethod.toUpperCase()), endpointUrl, headers,
+                    actualPayload, contentType);
+        });
+    }
+
+    /**
+     * Parses a {@code name=value,name=value} header list, resolving {@code {{contextKey}}} placeholders in each
+     * value. Preserves the given header-name CASING — several analytics assertions turn on the gateway matching
+     * a credential header case-insensitively, so a lowercase {@code apikey} must reach the wire as written.
+     * Only the first {@code =} splits, so a value may itself contain one.
+     */
+    private static Map<String, String> parseHeaderList(String headerList) {
+
+        Map<String, String> headers = new HashMap<>();
+        if (headerList == null || headerList.isBlank()) {
+            return headers;
+        }
+        for (String entry : headerList.split(",")) {
+            String pair = entry.trim();
+            if (pair.isEmpty()) {
+                continue;
+            }
+            int split = pair.indexOf('=');
+            if (split <= 0 || split == pair.length() - 1) {
+                throw new IllegalArgumentException("Malformed request-header entry '" + pair
+                        + "' — expected <name>=<value> in a comma-separated list");
+            }
+            headers.put(pair.substring(0, split).trim(),
+                    Utils.resolveContextPlaceholders(pair.substring(split + 1).trim()));
+        }
+        return headers;
     }
 
     /**

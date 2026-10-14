@@ -426,6 +426,33 @@ public class LoggingSteps {
     }
 
     /**
+     * Asserts the log file contains {@code marker} ANYWHERE, without requiring a mark.
+     *
+     * <p>The sibling of {@link #logFileShouldGainLine} for a line that was written BEFORE the scenario could
+     * have marked anything — in practice a startup line. {@link #appendedSinceMark} deliberately throws when the
+     * file was never marked, and a mark taken inside the scenario is by definition after boot, so a
+     * "should gain" assertion can never see a boot-time line. Reading the whole file is the only sound way to
+     * assert on one.
+     *
+     * <p>Retried rather than read once: a scenario can start before a late startup line is flushed, and the
+     * shared retry envelope is what every other timing-sensitive read here uses.
+     *
+     * <p>Only for content whose writer is NOT the scenario. When the scenario causes the line, use
+     * {@link #logFileShouldGainLine} — a whole-file match there would also be satisfied by an identical line an
+     * EARLIER scenario provoked, which is exactly the false pass the mark exists to prevent.
+     */
+    @Then("The server log file {string} should contain a line containing {string} within {int} seconds")
+    public void logFileShouldContainLine(String fileName, String marker, int seconds) throws InterruptedException {
+        String expected = Utils.resolveContextPlaceholders(marker);
+        String content = Utils.retryUntil(seconds * 1000L,
+                () -> readLogFile(fileName),
+                text -> containsMarker(text, expected));
+        Assert.assertTrue(content != null && containsMarker(content, expected),
+                "No line containing '" + expected + "' was found anywhere in " + fileName + " within " + seconds
+                        + "s.");
+    }
+
+    /**
      * Waits out a settle period and then asserts NO line appended after the mark contains {@code marker}.
      *
      * <p>The wait is deliberate and cannot be shortened into a poll: proving absence means giving the server

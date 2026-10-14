@@ -49,12 +49,13 @@ public class NodeAppServer {
     public static final String TENANT_NETWORK_ALIAS = "tenantbackend";
 
     // Publishing is only needed for HOST access; container-to-container traffic over the attached networks works
-    // regardless (which is why mcp-server on 3020 functions unpublished). 3021 (sse-emitter) and 3022
-    // (websub-receiver) ARE published because their introspection/reset endpoints are read from the test JVM.
+    // regardless (which is why mcp-server on 3020 functions unpublished). 3021 (sse-emitter), 3022
+    // (websub-receiver) and 3029 (moesif-collector) ARE published because their introspection/control endpoints
+    // are read and driven from the test JVM.
     // Every port listed also joins the startup liveness set (Wait.forListeningPort waits on ALL exposed ports),
     // so an app added here must actually listen or every block's boot stalls.
     private final Integer[] exposedPorts = {3000, 3001, 3002, 3003, 3004, 3005, 3006, 3007, 3008, 3009, 3010, 3011,
-            3012, 3013, 3014, 3015, 3016, 3017, 3018, 3019, 3021, 3022, 3023, 3024, 3026, 3027};
+            3012, 3013, 3014, 3015, 3016, 3017, 3018, 3019, 3021, 3022, 3023, 3024, 3026, 3027, 3029};
 
     /** Attempts to draw a fresh set of host ports when docker reports one of them already bound. */
     private static final int START_ATTEMPTS = 4;

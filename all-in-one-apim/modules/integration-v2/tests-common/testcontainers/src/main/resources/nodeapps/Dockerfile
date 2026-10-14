@@ -33,6 +33,7 @@ COPY websub-receiver/package*.json ./websub-receiver/
 COPY tls-backend/package*.json ./tls-backend/
 COPY tenant1-tls-backend/package*.json ./tenant1-tls-backend/
 COPY custom-status-backend/package*.json ./custom-status-backend/
+COPY moesif-collector/package*.json ./moesif-collector/
 
 # 4. Install dependencies + pm2 in a single layer, then drop the npm cache so it
 #    is not baked into the image.
@@ -41,7 +42,7 @@ RUN for d in node-coffee-service node-customer-service am-auditApi-sample \
         etcdmock jaxrs_basic name-check1 name-check1_SB name-check2 name-check2_SB \
         name-check3 name-check3_SB name-checkOne name-checkTwo name-checkThree \
         wildcard node-people-service soap-stub mcp-server sse-emitter websub-receiver \
-        tls-backend tenant1-tls-backend custom-status-backend; do \
+        tls-backend tenant1-tls-backend custom-status-backend moesif-collector; do \
         (cd "$d" && npm install) || exit 1; \
     done \
     && npm install -g pm2 \
@@ -78,13 +79,14 @@ COPY custom-status-backend ./custom-status-backend
 COPY network-access-control-fixtures ./network-access-control-fixtures
 # oauth-token-stub is dependency-free (pure Node http) as well.
 COPY oauth-token-stub ./oauth-token-stub
+COPY moesif-collector ./moesif-collector
 
 # 6. Copy PM2 ecosystem config file
 COPY ecosystem.config.js .
 
 # 7. Expose ports used by the apps
 EXPOSE 3000 3001 3002 3003 3004 3005 3006 3007 3008 3009 3010 3011 3012 3013 3014 3015 3016 3017 3018 3019 \
-       3021 3022 3023 3024 3026 3027 3028
+       3021 3022 3023 3024 3026 3027 3028 3029
 
 # 8. Start  apps using pm2-runtime
 CMD ["pm2-runtime", "ecosystem.config.js"]

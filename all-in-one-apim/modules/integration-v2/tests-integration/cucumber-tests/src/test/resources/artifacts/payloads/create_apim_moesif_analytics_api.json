@@ -1,0 +1,57 @@
+{
+  "name": "${UNIQUE:APIMMoesifAnalytics}",
+  "context": "${UNIQUE:apiMoesifAnalyticsContext}",
+  "version": "1.0.0",
+  "endpointConfig": {
+    "endpoint_type": "http",
+    "production_endpoints": {
+      "template_not_supported": false,
+      "config": null,
+      "url": "http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/"
+    },
+    "sandbox_endpoints": {
+      "url": "http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/",
+      "config": null,
+      "template_not_supported": false
+    }
+  },
+  "description": "Backend-reflecting API for the Moesif analytics body-capture, header-redaction, sampling and retry-queue scenarios. Every operation targets a node-customer-service reflect route, so the response body echoes the request body and the assertion can compare what the backend received against what Moesif was told.",
+  "tags": [
+    "analytics",
+    "moesif"
+  ],
+  "policies": [
+    "Unlimited"
+  ],
+  "businessInformation": {
+    "businessOwner": "analyticsOwner",
+    "businessOwnerEmail": "analyticsOwner@ee.com",
+    "technicalOwner": "analyticsTech",
+    "technicalOwnerEmail": "analyticsTech@ww.com"
+  },
+  "operations": [
+    {
+      "verb": "POST",
+      "target": "/reflect-body-typed",
+      "scopes": []
+    },
+    {
+      "verb": "POST",
+      "target": "/reflect-body-sensitive",
+      "scopes": []
+    },
+    {
+      "verb": "POST",
+      "target": "/reflect-body",
+      "scopes": []
+    },
+    {
+      "verb": "GET",
+      "target": "/reflect-headers",
+      "scopes": []
+    }
+  ],
+  "isDefaultVersion": false,
+  "additionalProperties": [],
+  "additionalPropertiesMap": {}
+}

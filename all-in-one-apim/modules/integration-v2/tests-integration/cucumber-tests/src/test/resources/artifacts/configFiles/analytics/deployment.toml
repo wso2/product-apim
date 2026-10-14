@@ -1,0 +1,104 @@
+# Extra overlay for the IntegrationV2-Analytics block: turns the Moesif analytics publisher ON.
+#
+# Merged on top of base (distribution) + basic. The distribution already ships
+# `[apim.analytics] enable = false, type = "moesif"` and `basic` sets `enable = false, auth_token = ""`;
+# deepMerge can override but NOT delete, so `type = "moesif"` is inherited and only `enable` is flipped here.
+# That inherited `type` is exactly why the Moesif reporter is the reachable code path at all.
+#
+# WHY THIS IS A BLOCK OVERLAY AND NOT A RUNTIME CHANGE. Every key under [apim.analytics.properties] is read
+# ONCE, at analytics initialisation: the template renders them into <Analytics><Properties> in
+# api-manager.xml, APIManagerConfiguration parses them into the static map behind getAnalyticsProperties(),
+# and MoesifReporter's constructor consumes them when the gateway component binds the configuration service.
+# There is no runtime API for any of it and no per-API override, so a different combination means a different
+# container. Hence ONE combination, chosen so that the interesting variation can still be driven at RUNTIME
+# from the mock collector (sample rate, and reachability) rather than needing more blocks.
+#
+# WHY thread-count=1 ON THE BLOCK. `enable = true` is container-global: the collector below receives an event
+# for EVERY gateway invocation in this container. Event-count assertions are only sound while no sibling class
+# is generating traffic into the same publisher.
+
+[apim.analytics]
+enable = true
+type = "moesif"
+
+[apim.analytics.properties]
+# Points the Moesif SDK at the in-network mock collector (nodeapps/moesif-collector, port 3029) instead of
+# https://api.moesif.net. MoesifReporter passes this to SimpleMoesifClient -> MoesifAPIClient(key, baseUrl),
+# which sets the client's per-instance Configuration.baseUri; the SDK then appends /v1/events,
+# /v1/events/batch and /v1/config. initBackend=true on the block is therefore load-bearing twice over: the
+# APIs need a backend, and the publisher needs this collector. Plain HTTP is fine — the SDK's unirest client
+# has no https-only constraint.
+moesif_base_url = "http://nodebackend:3029"
+# Deliberately not UUID- or base64-shaped, so a secret scanner does not flag a fixture value. The collector
+# never validates it; the retry-queue log assertions do depend on its last four characters ("-key"), because
+# the publisher masks the key to its tail in every outage/recovery line.
+moesifKey = "integration-mock-moesif-key"
+
+# --- request/response body capture (carbon-apimgt #13927/#13951/#13956, publisher #168/#169) ---
+# Both opt-ins ON: this block exists to exercise the enabled state. The DISABLED state ("no body keys are
+# published at all") is already pinned by unit tests on both sides of the wire
+# (SynapseAnalyticsDataProviderBodyTestCase#testGetPropertiesPublishesNoBodiesWhenCaptureDisabled, and
+# AnalyticsPayloadUtilTestCase's shouldSendPayloads matrix), which is cheaper than a second container.
+send_headers = "true"
+send_payloads = "true"
+# 2000 bytes rather than the 100000 default, purely so the oversize/boundary scenarios can use a ~2 KB body
+# instead of a 100 KB one. The default itself is a config-reader concern and is unit-covered by
+# AnalyticsPayloadUtilTestCase#testGetPayloadSizeLimit*. The limit applies per direction, per body.
+payload_size_limit = "2000"
+# ON, and this is NOT the default — it is the only configuration in which a request body is observable at all
+# from this suite. MEASURED: the shared SimpleHTTPClient builds its POST entity with an Apache HttpClient
+# EntityTemplate, which has unknown content length, so EVERY POST from these tests goes out
+# `Transfer-Encoding: chunked` with no Content-Length. With this key at its `false` default the gateway therefore
+# takes the memory-safe skip for every request body, and the first run of this block confirmed it: the published
+# event carried `response.body` but no `request.body` at all.
+#
+# That asymmetry is a property of this suite's traffic, not of the product: the capture guard treats both
+# directions identically and skips any body without a Content-Length. Requests from SimpleHTTPClient are chunked,
+# while the node backend sets Content-Length on its responses, so with this key at its default only the response
+# body would be captured. The capture docs cover this under "Payloads Without a Content-Length".
+#
+# Consequence for the oversize scenario: with no Content-Length the pre-build gate cannot fire, so an oversize
+# body is built and THEN dropped by the post-build byte check. That is a different code path and a different log
+# line, and the scenario names the direction explicitly so it cannot pass on the response-side message.
+capture_payloads_without_content_length = "true"
+
+# --- dynamic sampling (publisher #165) ---
+# ON, but with a fallback rate of 100 so nothing is dropped until a scenario moves the rate at the collector.
+# The rates themselves are NOT configurable here by design: they come from GET /v1/config, which is what makes
+# a rate change observable WITHOUT a restart and lets one block cover the whole sampling arc.
+sampling_enabled = "true"
+# 5s instead of the 60000ms default, so "a rate change takes effect within one refresh window" is a
+# seconds-scale wait rather than a minutes-scale one. Asserted verbatim by the config-plumbing scenario.
+sampling_refresh_interval_ms = "5000"
+sampling_fallback_rate = "100"
+
+# --- retry queue (publisher #165) ---
+# Explicitly true even though that is the default, because this is the ONE feature here that is opt-OUT: an
+# overlay that says nothing would still have the queue on, and stating it keeps the config-plumbing assertion
+# honest about what it is proving.
+retry_buffer_enabled = "true"
+retry_buffer_size = "10000"
+# 2s instead of the 5s default: this is the probe cadence, so it sets how long the outage/recovery scenario
+# waits for the queue to drain.
+retry_interval_seconds = "2"
+# 2 instead of the 10 default. The repeated-failure log throttle is retry_interval_seconds x this, so 4s here
+# rather than 50s — short enough that a scenario can observe a throttled line inside its window.
+retry_log_multiplier = "2"
+
+# --- header masking (pre-existing feature, asserted alongside the unconditional credential strip) ---
+# X-Custom-Auth stands in for the custom auth header the gateway CANNOT strip automatically (it cannot resolve
+# a per-API auth header name at that layer), which is precisely the case the docs tell users to mask by hand.
+# X-Account-Number is set by the reflect-body-sensitive backend route on the response.
+#
+# NOTE ON THE VALUE SHAPE — this is deliberately the form the DOCS prescribe (a TOML array), not the form that
+# is trivially safe. The gateway reads these as a JSON-ARRAY STRING: the template renders {{value}} into
+# <MaskProperties><Property name="request_headers">, APIManagerConfiguration takes that element's TEXT (and
+# upper-cases it), and SynapseAnalyticsDataProvider#parseMaskSet hands the text to Gson as List<String>. A TOML
+# array therefore has to survive the config renderer as something Gson accepts, and parseMaskSet fails SAFE on
+# malformed input — it logs "Failed to parse mask configuration JSON" and masks NOTHING. So a broken shape here
+# does not error, it silently stops masking, which is exactly why the masking scenario asserts the masked value
+# positively (== "*****") rather than asserting the real value is absent. If that scenario fails with the real
+# header value published, the finding is in the documented config shape, not in the test.
+[apim.analytics.mask]
+request_headers = ["X-Custom-Auth"]
+response_headers = ["X-Account-Number"]

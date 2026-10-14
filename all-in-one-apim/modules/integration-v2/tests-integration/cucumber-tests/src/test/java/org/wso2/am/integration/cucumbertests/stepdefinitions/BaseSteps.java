@@ -580,6 +580,27 @@ public class BaseSteps {
     }
 
     /**
+     * Stores an arbitrary literal body in the context from a doc string.
+     *
+     * <p>The non-JSON sibling of {@link #putJsonPayloadInContext}, and the MINTING step
+     * {@link #iPutValueInContextAs}'s javadoc points at: that one is an alias for an existing context key and
+     * throws on a literal, deliberately, so seeding a value the product never produced needs a step that says so.
+     * Exists because request bodies whose CONTENT TYPE is the point — an XML body, a plain-text body, a byte
+     * sequence — are not JSON, and passing them through the JSON-named step would misdescribe them. A doc string
+     * rather than a quoted argument so XML needs no escaping.
+     *
+     * <p>{@code {{contextKey}}} placeholders are resolved, the same as for the JSON variant.
+     *
+     * @param key           context key to store the text under
+     * @param docStringText the literal body
+     */
+    @When("I put the following text in context as {string}")
+    public void putTextInContext(String key, String docStringText) {
+
+        TestContext.set(Utils.normalizeContextKey(key), Utils.resolvePayloadPlaceholders(docStringText));
+    }
+
+    /**
      * Stores a filler text payload of exactly {@code sizeKb} KB in the context, for a request whose BYTE COUNT is
      * the point rather than its content — a bandwidth (BANDWIDTHLIMIT) throttle quota is spent by bytes, so one
      * body larger than the whole quota trips it in a single call. Generated rather than held as a fixture so the
@@ -592,6 +613,26 @@ public class BaseSteps {
     public void putSizedTextPayloadInContext(int sizeKb, String key) {
 
         TestContext.set(Utils.normalizeContextKey(key), "A".repeat(sizeKb * 1024));
+    }
+
+    /**
+     * Stores a filler text payload of exactly {@code sizeBytes} BYTES in the context. Sibling of
+     * {@link #putSizedTextPayloadInContext} in KB, not a replacement: the analytics {@code payload_size_limit}
+     * boundary is expressed in bytes and is a DROP rather than a truncation, so proving it needs a body one byte
+     * over and one body exactly at the limit — neither of which is expressible in whole KB. Picking the step IS
+     * the statement of which unit the scenario means.
+     *
+     * <p>ASCII filler, so the byte length equals the character length under UTF-8 (the gateway measures
+     * {@code payload.getBytes(StandardCharsets.UTF_8).length}) and a multibyte character cannot silently shift
+     * the body across the boundary.
+     *
+     * @param sizeBytes size of the payload in bytes
+     * @param key       context key to store the payload under
+     */
+    @When("I put a {int} byte text payload in context as {string}")
+    public void putSizedBytesTextPayloadInContext(int sizeBytes, String key) {
+
+        TestContext.set(Utils.normalizeContextKey(key), "A".repeat(sizeBytes));
     }
 
     /**
