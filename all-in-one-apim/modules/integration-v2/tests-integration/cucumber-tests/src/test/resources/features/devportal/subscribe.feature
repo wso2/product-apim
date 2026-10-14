@@ -43,7 +43,7 @@ Feature: DevPortal Subscribe
     Then The response status code should be 200
     And The subscription with id "createdSubscriptionId" should be in the list of all subscriptions
 
-    Examples:
+  Examples:
       | actor                          | tenantSuffix |
       | subscriberUser                 |              |
       | subscriberUser@tenant1.com     | @tenant1.com |

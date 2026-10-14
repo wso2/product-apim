@@ -11,17 +11,7 @@ Feature: DevPortal Application Management
   the default server silently drops the `groups` field. That assertion belongs in a feature with its own
   group-sharing TOML overlay, like gateway/custom-auth-header has its own block.
 
-  # Also tags ApplicationCallbackURLTestCase (commented out of the legacy testng.xml). Its observable — "create an
-  # application with callbackUrl X, then the app list entry's callbackUrl equals X" — is NOT PORTABLE: the DevPortal
-  # store v1 ApplicationDTO has NO callbackUrl field on this build (verified against the shipped
-  # api#am#devportal.war); callbackUrl exists only on the KEY (ApplicationKeyDTO /
-  # ApplicationKeyGenerateRequestDTO). The product removed the application-level field, which is consistent with the
-  # class being commented out AND with two of its four methods being @Test(enabled=false) noting that callback-URL
-  # validation was removed. So this lifecycle scenario carries the tag for the class's create/update arc, but the
-  # callback-URL assertion itself has no product surface left to assert. The KEY-level callbackUrl (including the
-  # cross-owner overwrite regression) is covered in key-manager/oauth_keys.feature — deliberately NOT substituted
-  # here, since a key field is not the application field the legacy asserted.
-  @cap:devportal @feat:applications @type:smoke @legacy:ApplicationCreationTestCase @legacy:ApplicationCallbackURLTestCase
+  @cap:devportal @feat:applications @type:smoke @legacy:ApplicationCreationTestCase @legacy:ApplicationTestCase
   Scenario Outline: Create, update and delete an application as <actor>
     Given The system is ready and I have valid devportal access token as "<actor>"
 
@@ -59,7 +49,70 @@ Feature: DevPortal Application Management
       | subscriberUser              |
       | subscriberUser@tenant1.com  |
 
-  @cap:devportal @feat:applications @type:negative @legacy:ApplicationCreationTestCase
+  # The current DevPortal v3 application representation exposes the scopes made available by the APIs subscribed
+  # to this application. This replaces the removed Store /applications/scopes/{applicationId} endpoint and its
+  # filterByUserRoles query: role authorization is verified separately by the role-bound token and Gateway cases.
+  # The API is unique to this scenario, so these assertions do not depend on shared/global scope-list counts.
+  @cap:devportal @feat:applications @type:regression @dep:publisher @legacy:ApplicationScopeValidationTestCase
+  Scenario Outline: An application exposes its subscribed API scopes and role bindings as <actor>
+    Given The system is ready and I have valid access tokens as "<actor>"
+    And I have created an api from "artifacts/payloads/create_apim_local_scope_role_matrix_api.json" as "appScopeApiId" and deployed it
+    And the "apis" resource "appScopeApiId" should be live on the gateway, redeploying if propagation is lost
+    When I publish the "apis" resource with id "appScopeApiId"
+    Then The lifecycle status of API "appScopeApiId" should be "Published"
+
+    When I put JSON payload from file "artifacts/payloads/create_apim_test_app.json" in context as "appScopeAppPayload"
+    And I create an application with payload "appScopeAppPayload"
+    Then The response status code should be 201
+    And I extract response field "applicationId" and store it as "appScopeAppId"
+    When I put the following JSON payload in context as "appScopeSubscriptionPayload"
+    """
+    {"applicationId":"{{appScopeAppId}}","apiId":"{{appScopeApiId}}","throttlingPolicy":"Unlimited"}
+    """
+    And I subscribe to API "appScopeApiId" using application "appScopeAppId" with payload "appScopeSubscriptionPayload" as "appScopeSubscriptionId"
+
+    When I retrieve the application with id "appScopeAppId"
+    Then The response status code should be 200
+    And The response array field "subscriptionScopes[?(@.key=='local_get_scope')]" should have exactly 1 entries
+    And The response field "subscriptionScopes[?(@.key=='local_get_scope')].roles[*]" should be exactly the list "Internal/subscriber"
+    And The response array field "subscriptionScopes[?(@.key=='local_post_scope')]" should have exactly 1 entries
+    And The response field "subscriptionScopes[?(@.key=='local_post_scope')].roles[*]" should be exactly the list "admin"
+
+    When I delete the subscription with id "appScopeSubscriptionId"
+    Then The response status code should be 200
+    When I delete the application with id "appScopeAppId"
+    Then The response status code should be 200
+    When I retrieve the application with id "appScopeAppId"
+    Then The response status code should be 404
+
+    Examples:
+      | actor             |
+      | admin             |
+      | admin@tenant1.com |
+
+  # The owner must preserve the actor's complete physical username in both username modes. The application
+  # owner field omits only the super-tenant suffix; deriving the expected value from the resolved actor keeps
+  # this assertion valid for standard and email-user blocks without weakening the exact comparison.
+  @cap:devportal @feat:applications @rule:email-username-owner @type:regression
+  Scenario Outline: An application records the full username-mode principal as its owner for <actor>
+    Given The system is ready
+    And I have valid access tokens as "<actor>"
+    When I store the acting actor credentials as "appOwnerUsername" and "appOwnerPassword"
+    Then the actual value of "appOwnerUsername" should match standard-mode value "<standardUsername>" and email-mode value "<emailUsername>"
+    When I store the username of actor "<actor>" as "expectedAppOwner"
+    And I put JSON payload from file "artifacts/payloads/create_apim_test_app.json" in context as "emailOwnerAppPayload"
+    And I create an application with payload "emailOwnerAppPayload"
+    Then The response status code should be 201
+    When I retrieve the application with id "createdAppId"
+    Then The response status code should be 200
+    And The value of response field "owner" should be "{{expectedAppOwner}}"
+
+    Examples:
+      | actor             | standardUsername  | emailUsername                     |
+      | superTenantAdmin  | admin             | emailAdmin@email.com@carbon.super |
+      | admin@tenant1.com | admin@tenant1.com | admin@email.com@tenant1.com       |
+
+  @cap:devportal @feat:applications @type:negative
   Scenario Outline: A publisher-role user without app-management scope cannot create an application as <actor>
     Given The system is ready and I have valid devportal access token as "<actor>"
     When I put JSON payload from file "artifacts/payloads/create_apim_test_app.json" in context as "createAppPayload"

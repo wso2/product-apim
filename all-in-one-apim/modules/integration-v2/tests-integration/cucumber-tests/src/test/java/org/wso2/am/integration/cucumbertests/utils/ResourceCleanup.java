@@ -276,13 +276,15 @@ public final class ResourceCleanup {
     /**
      * Drops a previously-registered id from the teardown sweep — for a resource a test deletes itself mid-scenario
      * (e.g. a common operation policy in an export/delete/import round-trip), so the later sweep does not attempt a
-     * spurious delete of an already-gone id and log a misleading 404. Matches on id only. No-op if not present.
+     * spurious delete of an already-gone id and log a misleading 404. Matches on id only (a key mapping's id is its
+     * key mapping id). No-op if not present.
      */
     public static void deregister(String listKey, Object id) {
         String target = String.valueOf(id);
         TestContext.getList(listKey).removeIf(entry ->
                 (entry instanceof OwnedResource owned && owned.id().equals(target))
-                        || (entry instanceof Subscription subscription && subscription.id().equals(target)));
+                        || (entry instanceof Subscription subscription && subscription.id().equals(target))
+                        || (entry instanceof ApplicationKeyMapping mapping && mapping.keyMappingId().equals(target)));
     }
 
     /**
@@ -311,12 +313,17 @@ public final class ResourceCleanup {
      * Drops {@code id} from the teardown sweep when {@code response} confirms the delete (2xx). A step that deletes
      * a registered resource calls this with its own response, so the sweep does not delete it a second time and
      * the server does not log a not-found error for it. A failed delete leaves the id queued, since the resource
-     * still exists.
+     * still exists. An application delete answered 201 was only accepted by an approval workflow: the application
+     * stays {@code DELETE_PENDING}, so its id stays queued for the sweep that approves the pending deletion.
      */
     public static void deregisterIfDeleted(String listKey, Object id, HttpResponse response) {
-        if (response != null && response.getResponseCode() >= 200 && response.getResponseCode() < 300) {
-            deregister(listKey, id);
+        if (response == null || response.getResponseCode() < 200 || response.getResponseCode() >= 300) {
+            return;
         }
+        if (response.getResponseCode() == 201 && Constants.CREATED_APPLICATION_IDS.equals(listKey)) {
+            return;
+        }
+        deregister(listKey, id);
     }
 
     /** Every APIM registration list {@link #deleteRegisteredResources()} sweeps and then clears. */
@@ -786,7 +793,17 @@ public final class ResourceCleanup {
             }
             try {
                 String tenantDomain = Identity.resolveActor(resource.actorRef()).getUserDomain();
+                if (!TenantUserProvisioner.roleExists(tenantDomain, resource.id())) {
+                    logger.info("Cleanup: scenario-provisioned role '" + resource.id()
+                            + "' is already absent from tenant '" + tenantDomain + "' — nothing to delete.");
+                    continue;
+                }
                 TenantUserProvisioner.deleteRole(tenantDomain, resource.id());
+                if (TenantUserProvisioner.roleExists(tenantDomain, resource.id())) {
+                    throw new IOException("role still exists after delete in tenant '" + tenantDomain + "'");
+                }
+                logger.info("Cleanup: deleted scenario-provisioned role '" + resource.id() + "' from tenant '"
+                        + tenantDomain + "' (verified absent).");
             } catch (IOException | RuntimeException | AssertionError e) {
                 logger.warn("Cleanup failed to delete scenario-provisioned role '" + resource.id()
                         + "' for actor '" + resource.actorRef() + "': " + e);
@@ -951,13 +968,15 @@ public final class ResourceCleanup {
      * TYPE for this resource kind (devportal for applications, publisher for APIs/policies/scopes).
      */
     /**
-     * Finishes an application deletion that an active approval workflow accepted (201) but parked as
-     * {@code DELETE_PENDING}: the application and its subscriptions stay until the {@code AM_APPLICATION_DELETION}
-     * task is approved, so every API it subscribes to would refuse deletion (409, active subscriptions). Approves
-     * that task as the owner's tenant admin, matching it by application name, and verifies the application is gone.
+     * Finishes an application deletion that an active approval workflow parked as {@code DELETE_PENDING}: the sweep's
+     * delete is accepted (201), or rejected (400) when an earlier delete already parked it. The application and its
+     * subscriptions stay until the {@code AM_APPLICATION_DELETION} task is approved, so every API it subscribes to
+     * would refuse deletion (409, active subscriptions). Approves that task as the owner's tenant admin, matching it
+     * by application name, and verifies the application is gone.
      */
     private static void completePendingApplicationDeletion(OwnedResource res, User owner, String applicationUrl,
-                                                          Map<String, String> ownerHeaders) throws IOException {
+                                                          Map<String, String> ownerHeaders, HttpResponse delete)
+            throws IOException {
 
         HttpResponse application = SimpleHTTPClient.getInstance().doGet(applicationUrl, ownerHeaders);
         if (application.getResponseCode() == 404) {
@@ -967,8 +986,9 @@ public final class ResourceCleanup {
         JSONObject applicationJson = application.getResponseCode() == 200 && body != null && !body.isBlank()
                 ? new JSONObject(body) : null;
         if (applicationJson == null || !"DELETE_PENDING".equals(applicationJson.optString("status"))) {
-            logger.warn("Cleanup: application " + res.id() + " delete returned 201 but the application is still "
-                    + "present without DELETE_PENDING; it may leak: " + application.getResponseCode() + " / " + body);
+            logger.warn("Cleanup: application " + res.id() + " delete returned HTTP " + delete.getResponseCode()
+                    + " and the application is still present without DELETE_PENDING; it may leak: "
+                    + application.getResponseCode() + " / " + body + " (delete response: " + delete.getData() + ")");
             return;
         }
         String tenant = owner.getUserDomain();
@@ -1036,8 +1056,8 @@ public final class ResourceCleanup {
                 headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + tokenObj);
                 HttpResponse resp = SimpleHTTPClient.getInstance().doDelete(urlBuilder.apply(res.id()), headers);
                 int code = resp.getResponseCode();
-                if (code == 201 && Constants.CREATED_APPLICATION_IDS.equals(contextKey)) {
-                    completePendingApplicationDeletion(res, owner, urlBuilder.apply(res.id()), headers);
+                if ((code == 201 || code == 400) && Constants.CREATED_APPLICATION_IDS.equals(contextKey)) {
+                    completePendingApplicationDeletion(res, owner, urlBuilder.apply(res.id()), headers, resp);
                     continue;
                 }
                 if (code >= 200 && code < 300) {

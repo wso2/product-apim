@@ -4,8 +4,8 @@ Feature: Publisher Mandatory Custom API Properties
   Ports MandatoryPropertiesTestWithRestart: with a mandatory custom API property declared server-side
   ([[apim.publisher.custom_properties]] required=true name="PropertyName"), updating an API with that property
   present but EMPTY is rejected (400 "required properties cannot be empty"), and updating it with a non-empty
-  value succeeds (200). Runs in its own IntegrationV2-MandatoryProperties block (the overlay declares the
-  property); the legacy "restart" was incidental (config is applied at block boot). Teardown via @cleanup.
+  value succeeds (200). Runs in the IntegrationV2-MandatoryPropertiesAndDisplayDeprecated block (the overlay
+  declares the property); the legacy "restart" was incidental (config is applied at block boot). Teardown via @cleanup.
 
   @cap:publisher @feat:api-config @rule:mandatory-properties @type:regression @legacy:MandatoryPropertiesTestWithRestart
   Scenario Outline: A mandatory custom API property must be non-empty on update as <actor>
@@ -32,6 +32,8 @@ Feature: Publisher Mandatory Custom API Properties
     # been observed echoing a stale pre-update representation (CI 2026-07-23), so only a re-GET proves the
     # required property was durably persisted.
     And I retrieve the "apis" resource with id "mpApiId" until it contains "PropertyValue" within 60 seconds
+    And The value of response field "additionalPropertiesMap.PropertyName.name" should be "PropertyName"
+    And The value of response field "additionalPropertiesMap.PropertyName.value" should be "PropertyValue"
 
     Examples:
       | actor                     |

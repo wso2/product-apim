@@ -6,24 +6,34 @@ Feature: Publisher API Lifecycle
   outcomes — subscription and gateway invocation are covered by devportal/subscribe and
   gateway/rest-invocation. Teardown via the @cleanup hook.
 
-  @cap:publisher @feat:api-lifecycle @type:smoke @legacy:APIMANAGERPublisherTestCase
+  @cap:publisher @feat:api-lifecycle @type:smoke @legacy:APIMANAGERPublisherTestCase @legacy:APITestCase
   Scenario Outline: Create, update, publish and list a REST API as <actor>
     # Runs as a least-privilege publisher user (creator+publisher, not admin), in both the super tenant
     # and tenant1.com, proving the publisher-plane lifecycle is tenant-agnostic.
     Given The system is ready and I have valid publisher access tokens as "<actor>"
 
-    # Create + deploy a revision
-    Given I have created an api from "artifacts/payloads/create_apim_test_api.json" as "createdApiId" and deployed it
-
-    # A freshly created (not-yet-published) API is in the CREATED lifecycle state
-    And The lifecycle status of API "createdApiId" should be "Created"
-
-    # Retrieve and confirm the created metadata
+    # Create once, capture the product-returned identity, then verify the same metadata survives a readback.
+    Given I put JSON payload from file "artifacts/payloads/create_apim_test_api.json" in context as "apiLifecycleCreatePayload"
+    And I extract field "name" from json payload "apiLifecycleCreatePayload" and store it as "apiLifecycleCreatedName"
+    And I extract field "context" from json payload "apiLifecycleCreatePayload" and store it as "apiLifecycleCreatedContext"
+    # API definitions use a leading slash. Publisher readback tenant-qualifies tenant API contexts with /t/<domain>.
+    And I set the field "context" to "/{{apiLifecycleCreatedContext}}" in the payload "apiLifecycleCreatePayload"
+    And I put literal value "<tenantContextPrefix>/{{apiLifecycleCreatedContext}}" in context as "apiLifecycleExpectedContext"
+    When I create an "apis" resource with payload "apiLifecycleCreatePayload" as "createdApiId"
+    Then The response status code should be 201
     When I retrieve the "apis" resource with id "createdApiId"
     Then The response status code should be 200
-    And The response should contain "1.0.0"
+    And The value of response field "name" should be "{{apiLifecycleCreatedName}}"
+    And The value of response field "context" should be "{{apiLifecycleExpectedContext}}"
+    And The value of response field "version" should be "1.0.0"
     And The response should contain "lastUpdatedTimestamp"
+    And The response field "lastUpdatedTimestamp" should be non-blank
     And I put the response payload in context as "retrievedApiPayload"
+
+    # A freshly created (not-yet-published) API is still CREATED after its revision is deployed.
+    When I deploy the API with id "createdApiId"
+    Then The response status code should be 201
+    And The lifecycle status of API "createdApiId" should be "Created"
 
     # Update description and tier collection
     When I put JSON payload from file "artifacts/payloads/update_apim_test_api.json" in context as "apiUpdatePayload"
@@ -49,9 +59,9 @@ Feature: Publisher API Lifecycle
     Then The API with id "createdApiId" should be in the list of all APIS
 
     Examples:
-      | actor                      |
-      | publisherUser              |
-      | publisherUser@tenant1.com  |
+      | actor                     | tenantContextPrefix |
+      | publisherUser             |                     |
+      | publisherUser@tenant1.com | /t/tenant1.com      |
 
   @cap:publisher @feat:api-lifecycle @type:negative @legacy:APIMANAGERPublisherTestCase @legacy:APICreationForTenantsTestCase
   Scenario Outline: A subscriber-role user cannot create a REST API as <actor>
@@ -197,30 +207,97 @@ Feature: Publisher API Lifecycle
     # A rejected transition must not half-apply — the API stays in its pre-publish state.
     And The lifecycle status of API "noTierApiId" should be "Created"
 
-    Examples:
-      | actor                     |
-      | publisherUser             |
-      | publisherUser@tenant1.com |
+  Examples:
+    | actor                     |
+    | publisherUser             |
+    | publisherUser@tenant1.com |
 
-  # Duplicate-context — creating a second API whose context matches an existing API is rejected (409). Ports the
-  # same-context case of APIM18. The first API's resolved context is captured and reused for the second create,
-  # whose (independently unique) name isolates the failure to the context clash.
-  @cap:publisher @feat:api-lifecycle @type:negative @legacy:APIM18CreateAnAPIThroughThePublisherRestAPITestCase
-  Scenario Outline: Creating an API with an already-existing context is rejected as <actor>
+  # Legacy APIM514 explicitly sent an empty action field, but its assertion accepted either a created API id or an
+  # HTTP 500. V2's API create contract rejects the unrecognized field; pin the exact client-error envelope and
+  # description so this input cannot silently become accepted or fail for an unrelated reason.
+  @cap:publisher @feat:api-lifecycle @rule:create-validation @type:regression @legacy:APIM514CreateAnAPIWithoutProvidingMandatoryFieldsTestCase
+  Scenario Outline: Creating an API with an empty action is rejected as <actor>
     Given The system is ready and I have valid publisher access tokens as "<actor>"
-    When I put JSON payload from file "artifacts/payloads/create_apim_test_api.json" in context as "dupCtxA"
-    And I create an "apis" resource with payload "dupCtxA" as "dupApiIdA"
-    Then The response status code should be 201
-    And I extract response field "context" and store it as "dupContext"
-    When I put JSON payload from file "artifacts/payloads/create_apim_test_api.json" in context as "dupCtxB"
-    And I set the field "context" to "{{dupContext}}" in the payload "dupCtxB"
-    And I attempt to create an "apis" resource with payload "dupCtxB"
-    Then The response status code should be 409
+    When I put JSON payload from file "artifacts/payloads/create_apim_test_api.json" in context as "emptyActionPayload"
+    And I set the field "action" to "" in the payload "emptyActionPayload"
+    And I attempt to create an "apis" resource with payload "emptyActionPayload"
+    Then The response status code should be 400
+    And The error response should have code "400" message "Bad Request" and description containing "Unrecognized property 'action'"
 
     Examples:
       | actor                     |
       | publisherUser             |
       | publisherUser@tenant1.com |
+
+  # Table-driven API creation collision matrix. Each row creates one uniquely named/contexted API, then tries the
+  # listed identity combination against it. Keeping setup shared makes the differences under test explicit while
+  # retaining the established context-mismatch response detail. The exact direct-create duplicate is pinned to
+  # HTTP 409; its body is intentionally not guessed from the separate copy-version endpoint contract.
+  @cap:publisher @feat:api-lifecycle @type:negative @legacy:APIM18CreateAnAPIThroughThePublisherRestAPITestCase @legacy:APIMANAGER5834APICreationWithInvalidInputsTestCase
+  Scenario Outline: Creating an API with a colliding identity combination is rejected as <actor>
+    Given The system is ready and I have valid publisher access tokens as "<actor>"
+    When I put JSON payload from file "artifacts/payloads/create_apim_test_api.json" in context as "collisionBase"
+    And I extract field "name" from json payload "collisionBase" and store it as "collisionBaseName"
+    And I extract field "context" from json payload "collisionBase" and store it as "collisionBaseContext"
+    And I create an "apis" resource with payload "collisionBase" as "collisionBaseId"
+    Then The response status code should be 201
+
+    # The candidate starts with independently generated name/context values. The Examples table selects which
+    # identity fields to reuse, so each row isolates one collision dimension without repeating the create flow.
+    When I put JSON payload from file "artifacts/payloads/create_apim_test_api.json" in context as "collisionCandidate"
+    And I extract field "name" from json payload "collisionCandidate" and store it as "collisionCandidateName"
+    And I extract field "context" from json payload "collisionCandidate" and store it as "collisionCandidateContext"
+    And I set the field "name" to "<candidateName>" in the payload "collisionCandidate"
+    And I set the field "context" to "<candidateContext>" in the payload "collisionCandidate"
+    And I set the field "version" to "<candidateVersion>" in the payload "collisionCandidate"
+    And I attempt to create an "apis" resource with payload "collisionCandidate"
+    Then The response status code should be <expectedStatus>
+    And The collision response should contain "<expectedErrorFragment>" when specified
+
+    Examples:
+      | actor                     | candidateName                | candidateContext                | candidateVersion | expectedStatus | expectedErrorFragment       |
+      | publisherUser             | {{collisionCandidateName}}   | {{collisionBaseContext}}        | 1.0.0            | 409            | -                           |
+      | publisherUser             | {{collisionBaseName}}        | {{collisionBaseContext}}        | 1.0.0            | 409            | -                           |
+      | publisherUser             | {{collisionBaseName}}        | {{collisionCandidateContext}}   | 2.0.0            | 400            | API Context does not exist |
+      | publisherUser@tenant1.com | {{collisionCandidateName}}   | {{collisionBaseContext}}        | 1.0.0            | 409            | -                           |
+      | publisherUser@tenant1.com | {{collisionBaseName}}        | {{collisionBaseContext}}        | 1.0.0            | 409            | -                           |
+      | publisherUser@tenant1.com | {{collisionBaseName}}        | {{collisionCandidateContext}}   | 2.0.0            | 400            | API Context does not exist |
+
+  # APITestCase's legacy v0.16 requests expected a second same-name API version with a different context to succeed.
+  # The current v4 runtime rejects that combination with 400/900977 because versions of the same API must retain
+  # the existing context. Pin that current behavior and ensure the rejected create does not alter the first version.
+  @cap:publisher @feat:api-lifecycle @type:negative @legacy:APITestCase
+  Scenario Outline: A same-name API version with a different context is rejected as <actor>
+    Given The system is ready and I have valid publisher access tokens as "<actor>"
+    When I put JSON payload from file "artifacts/payloads/create_apim_test_api.json" in context as "sameNameFirstPayload"
+    And I extract field "name" from json payload "sameNameFirstPayload" and store it as "sameNameExpected"
+    And I extract field "context" from json payload "sameNameFirstPayload" and store it as "sameNameFirstContext"
+    And I set the field "context" to "/{{sameNameFirstContext}}" in the payload "sameNameFirstPayload"
+    And I put literal value "<tenantContextPrefix>/{{sameNameFirstContext}}" in context as "sameNameExpectedContext"
+    And I set the field "version" to "2.0.0" in the payload "sameNameFirstPayload"
+    And I create an "apis" resource with payload "sameNameFirstPayload" as "sameNameFirstId"
+    Then The response status code should be 201
+
+    # A fresh payload supplies a distinct generated context; only the name is reused from the first API.
+    When I put JSON payload from file "artifacts/payloads/create_apim_test_api.json" in context as "sameNameSecondPayload"
+    And I set the field "name" to "{{sameNameExpected}}" in the payload "sameNameSecondPayload"
+    And I set the field "version" to "3.0.0" in the payload "sameNameSecondPayload"
+    And I attempt to create an "apis" resource with payload "sameNameSecondPayload"
+    Then The response status code should be 400
+    And The error response should have code "900977" message "Block Condition Error" and description containing "API Context does not exist"
+
+    # The failed version create must leave the existing API unchanged.
+    When I retrieve the "apis" resource with id "sameNameFirstId"
+    Then The response status code should be 200
+    And The value of response field "name" should be "{{sameNameExpected}}"
+    And The value of response field "context" should be "{{sameNameExpectedContext}}"
+    And The value of response field "version" should be "2.0.0"
+    And The response field "id" should be non-blank
+
+    Examples:
+      | actor                     | tenantContextPrefix |
+      | publisherUser             |                     |
+      | publisherUser@tenant1.com | /t/tenant1.com      |
 
   # Ports DAOTestCase#testDAOTestCase — an API deleted via DELETE /apis/{id} can be re-created by a PLAIN POST
   # with the SAME name and context. v2 today only re-creates via IMPORT (definitions.feature:import-export), which
@@ -250,6 +327,13 @@ Feature: Publisher API Lifecycle
     And The value of response field "context" should be "{{recreateContext}}"
     And The value of response field "version" should be "1.0.0"
     And The value of response field "provider" should be "{{recreateProvider}}"
+    When I publish the "apis" resource with id "recreatedApiId"
+    Then The lifecycle status of API "recreatedApiId" should be "Published"
+    When I retrieve the "apis" resource with id "recreatedApiId"
+    Then The response status code should be 200
+    And The response array field "tags" should have exactly 3 entries
+    And The response field "tags[*]" should be exactly the list "tag18-1,tag18-2,tag18-3"
+    And The value of response field "description" should be "This is Test API Created by API Manager Integration Test"
 
     Examples:
       | actor                     |
@@ -340,15 +424,22 @@ Feature: Publisher API Lifecycle
       | publisherUser             |
       | publisherUser@tenant1.com |
 
-  # An API whose name contains a hyphen / URL-encodable characters round-trips correctly through get-by-id and
-  # publish (the identifier is not mangled). Ports GIT_1638_UrlEncodedApiName.
+  # An API whose name contains a hyphen round-trips correctly through the UUID-addressed v4 GET and publish.
+  # v4 identifies APIs by UUID rather than the legacy provider-name-version composite, so pin the exact name in
+  # the returned DTO instead of exercising the removed composite-id path. Ports the current-contract behavior of
+  # GIT_1638_UrlEncodedApiName.
   @cap:publisher @feat:api-lifecycle @type:regression @legacy:GIT_1638_UrlEncodedApiNameTestCase
   Scenario Outline: An API with a hyphenated name can be retrieved and published as <actor>
     Given The system is ready and I have valid publisher access tokens as "<actor>"
-    And I have created an api from "artifacts/payloads/create_apim_hyphen_name_api.json" as "hyphenApiId" and deployed it
+    And I put JSON payload from file "artifacts/payloads/create_apim_hyphen_name_api.json" in context as "hyphenApiPayload"
+    And I extract field "name" from json payload "hyphenApiPayload" and store it as "hyphenApiExpectedName"
+    When I create an "apis" resource with payload "hyphenApiPayload" as "hyphenApiId"
+    Then The response status code should be 201
+    When I deploy the API with id "hyphenApiId"
+    Then The response status code should be 201
     When I retrieve the "apis" resource with id "hyphenApiId"
     Then The response status code should be 200
-    And The response should contain "hyphen-api-name"
+    And The value of response field "name" should be "{{hyphenApiExpectedName}}"
     When I publish the "apis" resource with id "hyphenApiId"
     And The lifecycle status of API "hyphenApiId" should be "Published"
 
@@ -378,6 +469,7 @@ Feature: Publisher API Lifecycle
     When I publish the "apis" resource with id "tierApiId"
     Then The lifecycle status of API "tierApiId" should be "Published"
     Then I retrieve the devportal API "tierApiId" until it contains "{{subThrottlePolicyName}}" within 60 seconds
+    And The devportal API tiers should be exactly "Bronze,{{subThrottlePolicyName}}"
     When I delete the "subscription" throttling policy with id "subThrottlePolicyId"
     Then The response status code should be 200
     When I retrieve the "apis" resource with id "tierApiId"
@@ -389,33 +481,15 @@ Feature: Publisher API Lifecycle
     Then The response status code should be 200
     When I retrieve the "apis" resource with id "tierApiId"
     Then The response should not contain "{{subThrottlePolicyName}}"
+    When I retrieve the devportal API "tierApiId" until its tiers are exactly "Bronze" within 60 seconds
+    Then The response status code should be 200
+    And The value of response field "id" should be "{{tierApiId}}"
+    And The devportal API tiers should be exactly "Bronze"
 
     Examples:
       | actor             |
       | admin             |
       | admin@tenant1.com |
-
-  # Ports the context-mismatch case of APIMANAGER5834 — creating a second API with the SAME name but a different
-  # context (here also a new version) is rejected with 400. The first API's resolved name is captured and reused.
-  # Verified live on 4.7.0 (400). Legacy also asserted the body "API Context does not exist"; we assert the code
-  # only — the message text is version-brittle.
-  @cap:publisher @feat:api-lifecycle @type:negative @legacy:APIMANAGER5834APICreationWithInvalidInputsTestCase
-  Scenario Outline: Creating a same-named API with a different context is rejected as <actor>
-    Given The system is ready and I have valid publisher access tokens as "<actor>"
-    When I put JSON payload from file "artifacts/payloads/create_apim_test_api.json" in context as "ctxV1"
-    And I create an "apis" resource with payload "ctxV1" as "ctxV1Id"
-    Then The response status code should be 201
-    And I extract response field "name" and store it as "ctxName"
-    When I put JSON payload from file "artifacts/payloads/create_apim_test_api.json" in context as "ctxV2"
-    And I set the field "name" to "{{ctxName}}" in the payload "ctxV2"
-    And I set the field "version" to "2.0.0" in the payload "ctxV2"
-    And I attempt to create an "apis" resource with payload "ctxV2"
-    Then The response status code should be 400
-
-    Examples:
-      | actor                     |
-      | publisherUser             |
-      | publisherUser@tenant1.com |
 
   # Ports the independent second-version create of AccessibilityOfDeprecatedOldAPIAndPublishedCopyAPITestCase — a
   # plain POST /apis with the SAME name and the SAME context as an existing API and a new version is accepted and

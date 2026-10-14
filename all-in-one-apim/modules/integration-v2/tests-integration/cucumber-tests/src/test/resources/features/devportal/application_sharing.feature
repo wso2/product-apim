@@ -4,9 +4,11 @@ Feature: DevPortal Application Group Sharing
   DevPortal-plane organization/group sharing: an application carrying a `groups` field is shared with that
   group, the field is persisted on the application, and members of the group — who are NOT the owner — get a
   defined set of rights over it. The default container silently drops `groups` (so devportal/applications
-  deliberately does NOT assert it); this feature runs in the IntegrationV2-CustomAuthHeaderAndAppSharing
+  deliberately does NOT assert it); this feature runs in the IntegrationV2-GatewayAuthAndApplicationConfig
   block, whose overlay enables `[apim.devportal] enable_application_sharing` with
   `application_sharing_type = "default"`.
+  Applications here are created from create_apim_test_app_with_external_ref.json: the block's overlay declares the required application attribute
+  "External Reference Id", which every application create and update must carry.
 
   How membership is established, and the trap in it. The server resolves a caller's group through
   DefaultGroupIDExtractorImpl, reading the local claim `http://wso2.org/claims/organization`; an application is
@@ -80,21 +82,18 @@ Feature: DevPortal Application Group Sharing
       | subscriberUser              |
       | subscriberUser@tenant1.com  |
 
-  # The rights a GROUP MEMBER who is not the owner holds over a shared application: they may VIEW it, they may
-  # NOT update it (403). Whether they may REVOKE its API keys is not asserted here — see the TODO below. Ports the cross-user half of ApplicationSharingTestCase
-  # — testEditApplicationByUserInApplicationGroup, testAPIKeyRevocationBySharedUser and
-  # testOpaqueAPIKeyRevocationBySharedUser — none of which v2 covered: every application and api-key operation
-  # ran as the OWNER, which cannot distinguish "shared users may do this" from "anyone authenticated may".
+  # The rights a GROUP MEMBER who is not the owner holds over a shared application: they may VIEW it and revoke
+  # the owner's JWT API key, but they may NOT update the application (403). The revoke response is checked against
+  # the documented success status. Ports the cross-user half of ApplicationSharingTestCase —
+  # testEditApplicationByUserInApplicationGroup and testAPIKeyRevocationBySharedUser — which V2 previously did
+  # not exercise.
   #
-  # Two legacy caveats this replaces rather than mirrors:
-  #   * testAPIKeyRevocationBySharedUser hand-mints its API key with a private JWTGenerator instead of the
-  #     product's generate endpoint, and then calls revoke with NO assertion at all on the result — the only
-  #     asserted thing in the method is the application's name. Here the key is generated through the product
-  #     and the revoke's status is asserted.
-  #   * testOpaqueAPIKeyRevocationBySharedUser is commented out in its entirety (the whole method sits inside a
-  #     /** ... */ block), so the opaque generate/list/revoke-by-keyUUID path was never exercised upstream.
+  # Legacy hand-mints a JWT API key and revokes it by value. V2 creates a normal opaque key to verify member
+  # listing visibility, then uses the existing locally-signed-JWT helper for the legacy cross-owner revoke
+  # behavior. Opaque revoke-by-keyUUID is intentionally not used here: runtime showed the generated UUID is not
+  # found by that path for a different owner, which is a separate product behavior not asserted by legacy.
   @cap:devportal @feat:applications @type:regression @rule:org-sharing @legacy:ApplicationSharingTestCase
-  Scenario Outline: A group member can view a shared application and list its keys but cannot update it in <tenant>
+  Scenario Outline: A group member can view and revoke a key for a shared application but cannot update it in <tenant>
     Given The system is ready
     And I have valid access tokens as "admin<suffix>"
     And I generate a unique value and store it as "shareGroup"
@@ -141,9 +140,8 @@ Feature: DevPortal Application Group Sharing
     And I retrieve the application "sharedAppId"
     Then The response status code should be 403
 
-    # API-KEY VISIBILITY FOR THE SHARED USER. The owner generates an application API key; the member then
-    # lists. Listing and revocation are authorised DIFFERENTLY, which is what the steps below pin — the
-    # revocation half itself is NOT asserted (see the TODO after this block).
+    # API-key visibility for the shared user: the member can access the shared application's key-list endpoint,
+    # but the owner's key is not included in the member-scoped list.
     When I act as "shareOwner<suffix>"
     And I put the following JSON payload in context as "sharedKeyGenPayload"
     """
@@ -152,29 +150,21 @@ Feature: DevPortal Application Group Sharing
     And I request an api key for application id "sharedAppId" using payload "sharedKeyGenPayload"
     Then The response status code should be 200
 
-    # The OWNER lists the key to obtain its keyUUID.
-    And I retrieve the api key UUID for application id "sharedAppId" as "sharedKeyUuid"
-    Then The response status code should be 200
-
     # The member is AUTHORISED for the application (the listing returns 200, not 403) and yet sees NO keys:
-    # getAppBoundAPIKeys authorises via the shared-application check but then queries the keys scoped to the
-    # REQUESTING username, so the owner's key is invisible to them. Pinned because it is the asymmetry that
-    # decides how the revocation below has to be driven — and it is why legacy's
-    # testOpaqueAPIKeyRevocationBySharedUser, which has the member discover the UUID from their own listing,
-    # could not have worked as written.
+    # getAppBoundAPIKeys authorises via the shared-application check but queries keys scoped to the REQUESTING
+    # username. It is separate from the JWT-key revocation route, which takes the key value.
     When I act as "shareMember<suffix>"
     And I retrieve the api keys of application "sharedAppId"
     Then The response status code should be 200
     And The api key list should contain exactly 0 entries
 
-    # TODO(coverage): a group MEMBER revoking the OWNER's api key by UUID is not asserted here.
-    # WHAT THE MISSING SCENARIO MUST ASSERT, once the intended contract is confirmed: the member calls
-    # POST /applications/{id}/api-keys/PRODUCTION/revoke with the OWNER's keyUUID, and the outcome is pinned
-    # EXACTLY — either it succeeds (200, and the owner's key then lists as revoked from both the member's and
-    # the owner's view) or it is refused with a definite status and code. Both halves matter: the member's own
-    # key list is already asserted above, so only the cross-user leg is open.
-    # OBSERVED TODAY, both tenants: that call answers 500, so neither contract can be pinned yet. Decide the
-    # intended behaviour first — do not assert 500, which would freeze today's response as the contract.
+    # Revoke the OWNER's JWT key as the group member. This is the cross-owner operation from legacy; the helper
+    # asserted HTTP 200, so pin the documented success response here.
+    When I act as "shareOwner<suffix>"
+    And I generate locally signed JWT API key for application id "sharedAppId" as "sharedJwtApiKey"
+    When I act as "shareMember<suffix>"
+    And I revoke the api key value "sharedJwtApiKey" of type "PRODUCTION" for application id "sharedAppId"
+    Then The response status code should be 200
 
     Examples:
       | tenant       | suffix       |

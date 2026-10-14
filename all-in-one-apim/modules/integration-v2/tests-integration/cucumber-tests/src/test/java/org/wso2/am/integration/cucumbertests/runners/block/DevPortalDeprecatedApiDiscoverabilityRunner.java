@@ -21,9 +21,9 @@ import io.cucumber.testng.CucumberOptions;
 
 /**
  * Runner for devportal/deprecated_api_discoverability — a DEPRECATED API remains discoverable in the devportal
- * search when {@code DisplayAllAPIs} is enabled, across both tenants. MUST run in the
- * IntegrationV2-DisplayDeprecatedApis block, whose overlay sets
- * {@code apim.devportal.display_deprecated_apis = true}; under the shipped default the same API is filtered out
+ * search when {@code DisplayAllAPIs} is enabled, across both tenants. MUST run in a block whose overlay sets
+ * {@code apim.devportal.display_deprecated_apis = true} (IntegrationV2-MandatoryPropertiesAndDisplayDeprecated,
+ * IntegrationV2-Distributed-DisplayDeprecatedApis); under the shipped default the same API is filtered out
  * of every devportal query (that direction is asserted in devportal/subscribe.feature). Self-contained
  * {@code @cleanup} scenario outline. Extends {@link BaseBlockRunner} for the block boot-failure guard and
  * runner-scoped cleanup safety net.

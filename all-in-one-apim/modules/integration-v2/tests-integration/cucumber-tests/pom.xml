@@ -78,6 +78,20 @@
             <version>${project.version}</version>
             <scope>test</scope>
         </dependency>
+        <!-- Carbon SOAP APIs used to upload the legacy CAR fixture. pax-logging-api is excluded: the stub never
+             calls it, and its embedded SLF4J binding would otherwise win over slf4j-log4j12, bypassing
+             log4j.properties and logging everything (HTTP wire traffic included) at DEBUG. -->
+        <dependency>
+            <groupId>org.wso2.carbon.commons</groupId>
+            <artifactId>org.wso2.carbon.application.mgt.stub</artifactId>
+            <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.ops4j.pax.logging</groupId>
+                    <artifactId>pax-logging-api</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
         <dependency>
             <groupId>io.cucumber</groupId>
             <artifactId>cucumber-picocontainer</artifactId>

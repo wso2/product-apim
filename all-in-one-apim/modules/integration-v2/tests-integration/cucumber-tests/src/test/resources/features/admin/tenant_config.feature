@@ -86,10 +86,11 @@ Feature: Admin Tenant Configuration
     And The value of response field "EnableMonetization" should be "true"
 
     # Deploy an API as a PROTOTYPE while monetization is on.
+    And I generate a unique value and store it as "monetProtoNameSuffix"
     When I put JSON payload from file "artifacts/payloads/create_apim_prototype_api.json" in context as "monetProtoPayload"
+    And I set the field "name" to "MonetizedPrototype{{monetProtoNameSuffix}}" in the payload "monetProtoPayload"
     And I create an "apis" resource with payload "monetProtoPayload" as "monetProtoApiId"
     Then The response status code should be 201
-    And I extract response field "name" and store it as "monetProtoName"
     When I change the lifecycle of API "monetProtoApiId" with action "Deploy as a Prototype"
     Then The response status code should be 200
     And The lifecycle status of API "monetProtoApiId" should be "Prototyped"
@@ -97,8 +98,12 @@ Feature: Admin Tenant Configuration
     Then The response status code should be 201
 
     # Publisher: the prototyped API is listed — exactly one hit for its uniquely-generated name.
-    When I search Publisher APIs with content query "name:{{monetProtoName}}" until the result count is 1 within 60 seconds
-    Then The response should contain "{{monetProtoName}}"
+    When I search Publisher APIs with content query "name:MonetizedPrototype{{monetProtoNameSuffix}}" until the result count is 1 within 60 seconds
+    Then The response status code should be 200
+    And The response array field "list" should have exactly 1 entries
+    And The value of response field "list[0].provider" should be "<expectedProvider>"
+    And The value of response field "list[0].name" should be "MonetizedPrototype{{monetProtoNameSuffix}}"
+    And The value of response field "list[0].version" should be "1.0.0"
 
     # DevPortal: the prototyped API is visible to consumers, carrying PROTOTYPED.
     When I retrieve the devportal API "monetProtoApiId" until it contains "PROTOTYPED" within 60 seconds
@@ -110,9 +115,9 @@ Feature: Admin Tenant Configuration
     Then The response status code should be 200
 
     Examples:
-      | actor             |
-      | admin             |
-      | admin@tenant1.com |
+      | actor             | expectedProvider  |
+      | admin             | admin             |
+      | admin@tenant1.com | admin@tenant1.com |
 
   @cap:admin @feat:tenants-orgs @type:negative @legacy:AdvancedConfigurationsTestCase
   Scenario Outline: A non-admin token cannot update the tenant configuration as <actor>

@@ -12,7 +12,11 @@ Feature: DevPortal Custom Application Attributes
   application; both are covered via the token-type column, and x2 tenant (super + tenant) though legacy was
   super-only. Teardown via the per-scenario cleanup hook removes the application and API.
 
-  @cap:devportal @feat:application-attributes @type:regression @dep:gateway @dep:key-manager @legacy:ApplicationAttributesTestCase
+  The block's gateway reads OAuth tokens from the custom `Test-Custom-Header` (`[apim.oauth_config] auth_header`), so
+  every OAuth-token invocation here sends its bearer token in that header; API-key invocations are unaffected.
+
+  # The required Production/Sandbox defaults mirror URLSafeJWTTestCase and are checked alongside the custom value.
+  @cap:devportal @feat:application-attributes @type:regression @dep:gateway @dep:key-manager @legacy:ApplicationAttributesTestCase @legacy:URLSafeJWTTestCase
   Scenario Outline: A custom application attribute is stored and surfaced in the backend JWT for a <tokenType> application as <actor>
     Given The system is ready
     And I have valid access tokens as "<actor>"
@@ -58,6 +62,8 @@ Feature: DevPortal Custom Application Attributes
     When I invoke the API at gateway context "{{apiContext}}/1.0.0/reflect-headers" with method "GET" using access token "generatedAccessToken" in header "Test-Custom-Header" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
     And The reflected backend JWT should contain application attribute "External Reference Id" with value "c1237890"
+    And The reflected backend JWT should contain application attribute "Production access required" with value "Yes"
+    And The reflected backend JWT should contain application attribute "Sandbox access required" with value "Yes"
 
     Examples:
       | tokenType | actor             |

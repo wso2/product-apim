@@ -146,6 +146,47 @@ public class OasDefinitionSteps {
     }
 
     /**
+     * Confirms an imported definition contains the remote-reference target as an actual schema object, not merely
+     * the schema name somewhere in serialized text. Supports both OpenAPI 3 {@code components.schemas} and
+     * Swagger 2 {@code definitions}, which are the two response shapes accepted by the import API.
+     */
+    @Then("The imported OpenAPI definition in {string} should have resolved schema {string} with properties {string}")
+    public void importedOpenApiShouldContainResolvedSchema(String definitionKey, String schemaName,
+                                                           String expectedProperties) {
+
+        String definition = TestContext.resolve(definitionKey).toString();
+        JSONObject root = new JSONObject(definition);
+        JSONObject schemas = root.optJSONObject("components") == null
+                ? root.optJSONObject("definitions")
+                : root.optJSONObject("components").optJSONObject("schemas");
+        Assert.assertNotNull(schemas,
+                "Imported definition has neither OpenAPI 3 components.schemas nor Swagger 2 definitions: "
+                        + root.keySet());
+        Object resolvedSchema = null;
+        for (String key : schemas.keySet()) {
+            if (key.equalsIgnoreCase(schemaName)) {
+                resolvedSchema = schemas.get(key);
+                break;
+            }
+        }
+        Assert.assertTrue(resolvedSchema instanceof JSONObject,
+                "Expected a resolved schema object named '" + schemaName + "' in the imported definition; schemas="
+                        + schemas.keySet());
+        JSONObject schemaObject = (JSONObject) resolvedSchema;
+        Assert.assertFalse(schemaObject.has("$ref"),
+                "Expected the remote reference to be resolved into schema content, but '" + schemaName
+                        + "' still contains a $ref: " + schemaObject);
+        JSONObject properties = schemaObject.optJSONObject("properties");
+        Assert.assertNotNull(properties,
+                "Resolved schema '" + schemaName + "' has no properties: " + schemaObject);
+        for (String expectedProperty : expectedProperties.split(",")) {
+            String property = expectedProperty.trim();
+            Assert.assertTrue(properties.has(property),
+                    "Resolved schema '" + schemaName + "' is missing property '" + property + "': " + properties);
+        }
+    }
+
+    /**
      * Replaces the {@code operations} array of an API payload held in context with the operation list read from a
      * classpath JSON ARRAY file — the setup for the DTO-update path of legacy {@code OASTestCase#testAPIUpdate},
      * where the resource set changes through {@code PUT /apis/{id}} rather than through a swagger update, and the
@@ -410,18 +451,6 @@ public class OasDefinitionSteps {
         JSONObject dto = retrieveApiDto(apiIdKey);
 
         String apiContext = dto.getString("context");
-        String provider = dto.optString("provider", "");
-        int tenantSeparator = provider.lastIndexOf('@');
-        if (tenantSeparator >= 0) {
-            String tenantDomain = provider.substring(tenantSeparator + 1);
-            String tenantPrefix = "/t/" + tenantDomain;
-            // Publisher exposes tenant APIs under /t/{tenant-domain}, even though the API DTO's context omits
-            // that routing prefix. This mirrors the legacy OASBaseUtils assertion; without it the tenant rows
-            // would either fail against the correct basePath or silently skip checking the tenant namespace.
-            if (!"carbon.super".equals(tenantDomain) && !apiContext.startsWith(tenantPrefix + "/")) {
-                apiContext = tenantPrefix + apiContext;
-            }
-        }
         String expectedBasePath = apiContext + "/" + dto.getString("version");
         Assert.assertEquals(definition.optString("x-wso2-basePath", null), expectedBasePath,
                 "x-wso2-basePath of the definition stored as '" + definitionKey + "' does not match the API's "
@@ -740,6 +769,66 @@ public class OasDefinitionSteps {
             Assert.assertTrue(!definition.has("swagger") || definition.isNull("swagger"),
                     "OpenAPI " + expectedVersion + " definition '" + definitionKey + "' unexpectedly declares Swagger");
         }
+    }
+
+    /**
+     * Checks the saved resource-replacement definition against the two explicit contracts used by the parity
+     * scenario. The Swagger 2.0 profile is the legacy APIResourceModificationTestCase payload: one wildcard path,
+     * all five methods, body parameters on POST/PUT/PATCH, and the expected publisher operation extensions.
+     */
+    @Then("The definition stored as {string} should match the published replacement profile {string}")
+    public void definitionShouldMatchPublishedReplacementProfile(String definitionKey, String profile) {
+
+        JSONObject definition = definitionFromContext(definitionKey);
+        JSONObject paths = definition.optJSONObject("paths");
+        Assert.assertNotNull(paths, "Definition '" + definitionKey + "' has no paths: " + definition);
+        if ("Swagger 2.0".equals(profile)) {
+            Assert.assertEquals(definition.optString("swagger", null), "2.0",
+                    "Published replacement did not persist as Swagger 2.0: " + definition);
+            Assert.assertEquals(paths.keySet(), new HashSet<>(Arrays.asList("/*")),
+                    "Swagger 2.0 replacement should leave only the legacy wildcard resource: " + paths.keySet());
+            JSONObject wildcardPath = paths.getJSONObject("/*");
+            Set<String> methods = new HashSet<>();
+            for (String key : wildcardPath.keySet()) {
+                if (HTTP_METHODS.contains(key.toLowerCase())) {
+                    methods.add(key.toLowerCase());
+                }
+            }
+            Assert.assertEquals(methods, new HashSet<>(Arrays.asList("get", "post", "put", "delete", "patch")),
+                    "Swagger 2.0 wildcard resource should contain the legacy five methods: " + wildcardPath);
+            for (String method : methods) {
+                JSONObject operation = wildcardPath.getJSONObject(method);
+                Assert.assertEquals(operation.optString("x-auth-type", null), "None",
+                        "Unexpected x-auth-type on Swagger 2.0 " + method + " operation: " + operation);
+                Assert.assertEquals(operation.optString("x-throttling-tier", null), "Unlimited",
+                        "Unexpected x-throttling-tier on Swagger 2.0 " + method + " operation: " + operation);
+                if (Arrays.asList("post", "put", "patch").contains(method)) {
+                    JSONArray parameters = operation.optJSONArray("parameters");
+                    Assert.assertNotNull(parameters, "Swagger 2.0 " + method + " operation has no body parameter");
+                    Assert.assertEquals(parameters.length(), 1,
+                            "Swagger 2.0 " + method + " should have exactly one legacy body parameter: " + parameters);
+                    JSONObject body = parameters.getJSONObject(0);
+                    Assert.assertEquals(body.optString("name", null), "Payload");
+                    Assert.assertEquals(body.optString("description", null), "Request Body");
+                    Assert.assertEquals(body.optString("in", null), "body");
+                    Assert.assertFalse(body.optBoolean("required", true),
+                            "Swagger 2.0 " + method + " body parameter should be optional: " + body);
+                    JSONObject schema = body.optJSONObject("schema");
+                    Assert.assertNotNull(schema, "Swagger 2.0 " + method + " body parameter has no schema: " + body);
+                    Assert.assertEquals(schema.optString("type", null), "object");
+                    Assert.assertEquals(schema.getJSONObject("properties").getJSONObject("payload")
+                                    .optString("type", null), "string",
+                            "Swagger 2.0 " + method + " body parameter payload property differs: " + schema);
+                }
+            }
+            return;
+        }
+
+        Assert.assertEquals("OAS 3.0.1", profile, "Unknown published replacement profile: " + profile);
+        Assert.assertEquals(definition.optString("openapi", null), "3.0.1",
+                "Published replacement did not persist as OpenAPI 3.0.1: " + definition);
+        Assert.assertEquals(paths.keySet(), new HashSet<>(Arrays.asList("/pets", "/pets/{petId}", "/oldpets")),
+                "OpenAPI 3.0.1 resource replacement has an unexpected path set: " + paths.keySet());
     }
 
     /** Parses a definition held in context, failing clearly when the key holds something that is not JSON. */

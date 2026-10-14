@@ -174,7 +174,7 @@ public class WorkflowAdminSteps {
     }
 
     /**
-     * The original {@code workflow-extensions.xml} content, captured before the Approval variant is written, so
+     * The original {@code workflow-extensions.xml} content, captured before an executor override is written, so
      * the runner's {@code @AfterClass} can restore it. Static because the setup feature and the runner teardown
      * are different instances on the same runner; a null value means the setup never ran (nothing to restore).
      */
@@ -189,6 +189,17 @@ public class WorkflowAdminSteps {
      */
     @When("I enable approval workflow executors from {string}")
     public void iEnableApprovalWorkflowExecutors(String resourcePath) throws IOException {
+        setWorkflowExtensions(resourcePath, false);
+    }
+
+    /** Installs an alternate workflow executor configuration while retaining the same failure-safe restore. */
+    @When("I enable custom HTTP-redirect subscription workflow executor from {string}")
+    public void iEnableCustomHttpRedirectSubscriptionWorkflowExecutor(String resourcePath) throws IOException {
+        setWorkflowExtensions(resourcePath, true);
+    }
+
+    private void setWorkflowExtensions(String resourcePath, boolean verifyReadback) throws IOException {
+
         String tenant = Identity.actingTenantDomain();
         Map<String, String> originalsByTenant = originalWorkflowExtensions.computeIfAbsent(
                 Utils.getBaseUrl(), ignored -> new ConcurrentHashMap<>());
@@ -201,20 +212,25 @@ public class WorkflowAdminSteps {
                 originalsByTenant.put(tenant, original);
             }
         }
-        String approvalXml = Utils.readClasspathResource(resourcePath);
-        boolean written = updateRegistryTextContent(WF_EXTENSIONS_REGISTRY_PATH, approvalXml);
+        String replacementXml = Utils.readClasspathResource(resourcePath);
+        boolean written = updateRegistryTextContent(WF_EXTENSIONS_REGISTRY_PATH, replacementXml);
         Assert.assertTrue(written, "ResourceAdminService.updateTextContent did not return true for the "
-                + "workflow-extensions.xml write — the executor flip did not take effect.");
+                + "workflow-extensions.xml write — the executor change did not take effect.");
+        if (verifyReadback) {
+            String readBack = getRegistryTextContent(WF_EXTENSIONS_REGISTRY_PATH);
+            Assert.assertEquals(readBack, replacementXml,
+                    "Registry workflow-extensions.xml did not read back the requested executor configuration.");
+        }
     }
 
     /**
-     * Restores the workflow executors to the content captured before the flip, and VERIFIES the restore by reading
+     * Restores the workflow executors to the content captured before the override, and VERIFIES the restore by reading
      * the registry back. Called from the runner's {@code @AfterClass}; a no-op if the setup step never captured an
      * original.
      *
      * <p>Self-verifying because {@code workflow-extensions.xml} is SERVER-GLOBAL: a silently failed restore leaves
-     * the Approval executors active for every OTHER runner sharing this block's container, whose unrelated
-     * application/subscription scenarios then hang {@code ON_HOLD} with nothing pointing back here. Scope, measured
+     * a custom workflow executor active for every OTHER runner sharing this block's container, whose unrelated
+     * application/subscription scenarios may then observe unexpected workflow responses. Scope, measured
      * rather than assumed: under the {@code default} profile the databases are in-container H2, so the state dies
      * with the container and does NOT reach a later run; under {@code migration}, which points at an external
      * MySQL, it does persist across runs. A discarded SOAP result is not enough to detect either — the service
@@ -245,15 +261,14 @@ public class WorkflowAdminSteps {
                     logger.error("WorkflowAdminSteps: FAILED to restore workflow-extensions.xml for tenant " + tenant
                             + " — updateTextContent returned " + written + " and the registry content "
                             + (original.equals(readBack) ? "matches" : "DOES NOT match") + " the captured original. "
-                            + "This state is server-global, so the Approval executors may still be active for any "
-                            + "other runner sharing this container — its application/subscription scenarios will "
-                            + "hang ON_HOLD. On the default profile the DB is in-container H2 so it dies with the "
+                            + "This state is server-global, so the custom executor override may still be active for "
+                            + "any other runner sharing this container. On the default profile the DB is in-container H2 so it dies with the "
                             + "container; against an external DB (migration profile) it also poisons the next run.");
                 }
             } catch (IOException | RuntimeException | AssertionError e) {
                 logger.error("WorkflowAdminSteps: FAILED to restore workflow-extensions.xml for tenant " + tenant
-                        + " (" + e.getMessage() + "). This state is server-global — the Approval executors may still "
-                        + "be active for any other runner sharing this container.", e);
+                        + " (" + e.getMessage() + "). This state is server-global — the workflow executor override "
+                        + "may still be active for any other runner sharing this container.", e);
             }
         }
     }

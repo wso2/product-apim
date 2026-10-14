@@ -21,6 +21,7 @@ const Customer = require('../models/customer');
 
 let customers = {};
 let currentId = 123;
+const timeoutProbeCompletions = new Map();
 
 // Initialize with one customer
 //customers[currentId] = new Customer(currentId, 'John');
@@ -30,6 +31,27 @@ for (let i = 0; i < names.length; i++) {
     const id = currentId + i;  // 123, 124, 125
     customers[id] = new Customer(id, names[i]);
 }
+
+// A bounded delayed response for the APIMANAGER-4312 timeout regression. The test's caller times out first;
+// this status route lets it wait until the upstream response path has completed before API cleanup begins.
+router.get('/timeout-probe/:requestId/status', (req, res) => {
+  const completed = timeoutProbeCompletions.get(req.params.requestId) === true;
+  if (completed) {
+    timeoutProbeCompletions.delete(req.params.requestId);
+  }
+  res.status(200).json({ requestId: req.params.requestId, completed });
+});
+
+router.get('/timeout-probe/:requestId', (req, res) => {
+  const requestId = req.params.requestId;
+  timeoutProbeCompletions.set(requestId, false);
+  setTimeout(() => {
+    timeoutProbeCompletions.set(requestId, true);
+    res.status(200).json({ requestId, completed: true });
+    // Drop abandoned probes too, so a failed scenario cannot grow the shared fixture's state indefinitely.
+    setTimeout(() => timeoutProbeCompletions.delete(requestId), 60000).unref();
+  }, 5000);
+});
 
 // GET /customers/{id}/
 router.get('/customers/:id', (req, res) => {
@@ -175,12 +197,14 @@ router.all('/verb-echo/*', (req, res) => {
 // content-type the app-level parsers miss; application/json is already consumed by the app-level
 // bodyParser.json(), which leaves req.body as a parsed OBJECT, so that case is re-serialised (same as
 // /reflect-body does). `body` is added ONLY when an entity actually arrived — a bodyless request leaves
-// req.body as {} — so the GET response stays byte-for-byte what it has always been.
+// req.body as {} — so existing header and body reflection behavior remains unchanged for bodyless GET requests.
 router.all('/reflect-headers', express.text({ type: () => true }), (req, res) => {
   const body = typeof req.body === 'string'
     ? req.body
     : (req.body && Object.keys(req.body).length > 0 ? JSON.stringify(req.body) : '');
-  const reflected = { headers: req.headers };
+  // req.headers combines duplicate values and loses their wire order. Keep rawHeaders as an alternating
+  // name/value array too, so gateway tests can verify backend-observed duplicate-header ordering.
+  const reflected = { headers: req.headers, rawHeaders: req.rawHeaders };
   if (body.length > 0) {
     reflected.body = body;
   }
@@ -194,6 +218,14 @@ router.all('/reflect-headers', express.text({ type: () => true }), (req, res) =>
 // text/plain, text/xml and json, so application/xml would otherwise arrive unparsed as {}). Scoped to
 // /reflect-body so it does not mask other routes.
 router.all('/reflect-body', express.text({ type: () => true }), (req, res) => {
+  const body = typeof req.body === 'string' ? req.body : JSON.stringify(req.body);
+  res.status(200).send(body);
+});
+
+// PATCH / — exercises a gateway API operation mapped to /* when the invocation has no resource suffix. The legacy
+// HttpPATCHSupportTestCase targets the API root; this route gives that request a deterministic body-echo response
+// without adding a catch-all that could mask unrelated missing backend routes.
+router.patch('/', express.text({ type: () => true }), (req, res) => {
   const body = typeof req.body === 'string' ? req.body : JSON.stringify(req.body);
   res.status(200).send(body);
 });

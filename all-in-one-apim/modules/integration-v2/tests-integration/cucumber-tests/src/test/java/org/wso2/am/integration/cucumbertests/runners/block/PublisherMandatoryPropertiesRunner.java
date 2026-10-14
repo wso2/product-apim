@@ -21,7 +21,7 @@ import io.cucumber.testng.CucumberOptions;
 
 /**
  * Runner for mandatory custom API property enforcement — the port of MandatoryPropertiesTestWithRestart. Runs
- * in the IntegrationV2-MandatoryProperties block, whose overlay declares a required custom property.
+ * in the IntegrationV2-MandatoryPropertiesAndDisplayDeprecated block, whose overlay declares a required custom property.
  */
 @CucumberOptions(
         features = {

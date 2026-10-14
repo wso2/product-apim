@@ -81,6 +81,67 @@ public class VisibilityAccessSteps {
     }
 
     /**
+     * Changes an existing API's DevPortal visibility as the acting publisher and verifies the persisted state
+     * through a Publisher GET. This deliberately exercises the legacy public-to-restricted update flow rather
+     * than creating an API with the final visibility already set.
+     */
+    @When("I change API {string} to restricted visibility for role {string} and verify the publisher readback")
+    public void iUpdateApiVisibilityAndVerifyReadback(String apiIdKey, String roleName)
+            throws IOException, InterruptedException {
+        String apiId = TestContext.resolve(apiIdKey).toString();
+        String resolvedRole = Utils.resolveContextPlaceholders(roleName);
+        String apiUrl = Utils.getResourceEndpointURL(Utils.getBaseUrl(), "apis", apiId);
+        Map<String, String> headers = Identity.publisherHeaders();
+
+        HttpResponse updateResponse = Utils.retryUntil(60_000L,
+                () -> Requests.get(apiUrl, headers),
+                response -> response != null && response.getResponseCode() == 200);
+        Assert.assertNotNull(updateResponse, "Publisher could not read API " + apiId + " before visibility update");
+        Assert.assertEquals(updateResponse.getResponseCode(), 200,
+                "Publisher API GET failed before visibility update: " + updateResponse.getData());
+        JSONObject api = new JSONObject(updateResponse.getData());
+        Assert.assertEquals(api.optString("id"), apiId, "Publisher GET returned a different API");
+        api.put("visibility", "RESTRICTED");
+        api.put("visibleRoles", new JSONArray().put(resolvedRole));
+
+        HttpResponse putResponse = Requests.put(apiUrl, headers, api.toString(),
+                Constants.CONTENT_TYPES.APPLICATION_JSON);
+        Assert.assertTrue(putResponse.getResponseCode() >= 200 && putResponse.getResponseCode() < 300,
+                "Publisher visibility update failed: " + putResponse.getResponseCode() + " "
+                        + putResponse.getData());
+
+        HttpResponse readback = Utils.retryUntil(60_000L,
+                () -> Requests.get(apiUrl, headers),
+                response -> publisherReadbackMatches(response, apiId, resolvedRole));
+        Assert.assertNotNull(readback, "Publisher readback did not expose the saved visibility role for API " + apiId);
+        Assert.assertEquals(readback.getResponseCode(), 200,
+                "Publisher API readback failed after visibility update: " + readback.getData());
+        JSONObject savedApi = new JSONObject(readback.getData());
+        Assert.assertEquals(savedApi.optString("id"), apiId, "Publisher readback returned a different API");
+        Assert.assertEquals(savedApi.optString("visibility"), "RESTRICTED",
+                "Publisher readback did not persist restricted visibility");
+        JSONArray savedRoles = savedApi.optJSONArray("visibleRoles");
+        Assert.assertNotNull(savedRoles, "Publisher readback omitted visibleRoles");
+        Assert.assertEquals(savedRoles.length(), 1, "Publisher readback returned unexpected visibleRoles");
+        Assert.assertEquals(savedRoles.getString(0), resolvedRole,
+                "Publisher readback did not persist the expected visible role");
+    }
+
+    private boolean publisherReadbackMatches(HttpResponse response, String apiId, String role) {
+        if (response == null || response.getResponseCode() != 200) {
+            return false;
+        }
+        try {
+            JSONObject api = new JSONObject(response.getData());
+            JSONArray roles = api.optJSONArray("visibleRoles");
+            return apiId.equals(api.optString("id")) && "RESTRICTED".equals(api.optString("visibility"))
+                    && roles != null && roles.length() == 1 && role.equals(roles.optString(0));
+        } catch (RuntimeException e) {
+            return false;
+        }
+    }
+
+    /**
      * As above, but starting from a payload already prepared into a context key (e.g. one whose description was
      * set for a content-search assertion) rather than a file — so a scenario can both customise a field AND apply
      * the restricted visibility. Ports the visibility-restricted content-search API of ContentSearchTestCase.
@@ -145,6 +206,13 @@ public class VisibilityAccessSteps {
         JSONObject json = new JSONObject(TestContext.resolve(payloadKey).toString());
         json.put("description", Utils.resolveContextPlaceholders(description));
         TestContext.set(Utils.normalizeContextKey(payloadKey), json.toString());
+    }
+
+    @When("I have created an api from context payload {string} as {string} and deployed it")
+    public void iCreateApiFromContextAndDeploy(String payloadKey, String apiIdKey)
+            throws IOException, InterruptedException {
+        JSONObject api = new JSONObject(TestContext.resolve(payloadKey).toString());
+        createAndDeployFromJson(api, apiIdKey);
     }
 
     /**
@@ -309,6 +377,101 @@ public class VisibilityAccessSteps {
         putPublisherApi(apiIdKey, api);
     }
 
+    /**
+     * Changes Publisher access control on an existing API, rather than setting it on create. The response remains
+     * available to the feature for its exact HTTP assertion.
+     */
+    @When("I update the Publisher access-control roles of API {string} to {string}")
+    public void iUpdatePublisherAccessControlRoles(String apiIdKey, String rolesCsv)
+            throws IOException, InterruptedException {
+        String expectedRolesCsv = Utils.resolveContextPlaceholders(rolesCsv);
+        JSONObject api = fetchPublisherApi(apiIdKey);
+        api.put("accessControl", "RESTRICTED");
+        api.put("accessControlRoles", csvToJsonArray(rolesCsv));
+        HttpResponse update = putPublisherApi(apiIdKey, api);
+        Assert.assertNotNull(update, "No response updating Publisher access control for API " + apiIdKey);
+        Assert.assertEquals(update.getResponseCode(), 200,
+                "Updating Publisher access control failed: " + update.getData());
+
+        String apiId = TestContext.resolve(apiIdKey).toString();
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
+        String apiUrl = Utils.getResourceEndpointURL(Utils.getBaseUrl(), "apis", apiId);
+        HttpResponse persisted = Utils.retryUntil(Constants.RUNTIME_PROPAGATION_TIMEOUT,
+                () -> Requests.get(apiUrl, headers), response -> hasUpdatedAccessControl(response, expectedRolesCsv));
+        Assert.assertTrue(hasUpdatedAccessControl(persisted, expectedRolesCsv),
+                "Publisher API " + apiId + " did not converge to accessControl=RESTRICTED and the exact role set; "
+                        + "final response: "
+                        + (persisted == null ? "no response" : persisted.getResponseCode() + " / " + persisted.getData()));
+        Requests.publishPollResult(update);
+    }
+
+    /**
+     * Applies the legacy Store-visibility update shape to an already published API and waits for the exact
+     * Publisher representation to converge. This verifies the API update itself, not merely the eventual search
+     * filtering result; the response published afterward is still the original PUT for the feature's exact 200
+     * assertion.
+     */
+    @When("I update API {string} to restricted Store visibility for role {string} and no Publisher access restriction")
+    public void iUpdateStoreVisibilityAndClearPublisherAccess(String apiIdKey, String role)
+            throws IOException, InterruptedException {
+        String expectedRole = Utils.resolveContextPlaceholders(role);
+        JSONObject api = fetchPublisherApi(apiIdKey);
+        api.put("visibility", "RESTRICTED");
+        api.put("visibleRoles", csvToJsonArray(role));
+        api.put("accessControl", "NONE");
+        api.put("accessControlRoles", new JSONArray());
+        HttpResponse update = putPublisherApi(apiIdKey, api);
+        Assert.assertNotNull(update, "No response updating Store visibility for API " + apiIdKey);
+        Assert.assertEquals(update.getResponseCode(), 200,
+                "Updating Store visibility/access control failed: " + update.getData());
+
+        String apiId = TestContext.resolve(apiIdKey).toString();
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
+        String apiUrl = Utils.getResourceEndpointURL(Utils.getBaseUrl(), "apis", apiId);
+        HttpResponse persisted = Utils.retryUntil(Constants.RUNTIME_PROPAGATION_TIMEOUT,
+                () -> Requests.get(apiUrl, headers), response -> hasUpdatedStoreVisibility(response, expectedRole));
+        Assert.assertTrue(hasUpdatedStoreVisibility(persisted, expectedRole),
+                "Publisher API " + apiId + " did not converge to visibility=RESTRICTED, visibleRoles=[" + expectedRole
+                        + "], accessControl=NONE; final response: "
+                        + (persisted == null ? "no response" : persisted.getResponseCode() + " / " + persisted.getData()));
+        Requests.publishPollResult(update);
+    }
+
+    private boolean hasUpdatedStoreVisibility(HttpResponse response, String expectedRole) {
+        if (response == null || response.getResponseCode() != 200 || response.getData() == null
+                || response.getData().isBlank()) {
+            return false;
+        }
+        JSONObject api = new JSONObject(response.getData());
+        JSONArray roles = api.optJSONArray("visibleRoles");
+        return "RESTRICTED".equalsIgnoreCase(api.optString("visibility"))
+                && "NONE".equalsIgnoreCase(api.optString("accessControl"))
+                && roles != null && roles.length() == 1 && expectedRole.equals(roles.optString(0));
+    }
+
+    private boolean hasUpdatedAccessControl(HttpResponse response, String expectedRolesCsv) {
+        if (response == null || response.getResponseCode() != 200 || response.getData() == null
+                || response.getData().isBlank()) {
+            return false;
+        }
+        JSONObject api = new JSONObject(response.getData());
+        JSONArray roles = api.optJSONArray("accessControlRoles");
+        JSONArray expectedRoles = csvToJsonArray(expectedRolesCsv);
+        if (!"RESTRICTED".equalsIgnoreCase(api.optString("accessControl")) || roles == null
+                || roles.length() != expectedRoles.length()) {
+            return false;
+        }
+        for (int i = 0; i < expectedRoles.length(); i++) {
+            // Publisher canonicalizes role names to lowercase in its API representation.
+            if (!expectedRoles.optString(i).equalsIgnoreCase(roles.optString(i))) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     private JSONObject fetchPublisherApi(String apiIdKey) throws IOException {
         String apiId = TestContext.resolve(apiIdKey).toString();
         Map<String, String> headers = new HashMap<>();
@@ -324,11 +487,11 @@ public class VisibilityAccessSteps {
         return new JSONObject(current.getData());
     }
 
-    private void putPublisherApi(String apiIdKey, JSONObject api) throws IOException {
+    private HttpResponse putPublisherApi(String apiIdKey, JSONObject api) throws IOException {
         String apiId = TestContext.resolve(apiIdKey).toString();
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
-        Requests.put(Utils.getResourceEndpointURL(Utils.getBaseUrl(), "apis", apiId), headers, api.toString(),
+        return Requests.put(Utils.getResourceEndpointURL(Utils.getBaseUrl(), "apis", apiId), headers, api.toString(),
                 Constants.CONTENT_TYPES.APPLICATION_JSON);
     }
 

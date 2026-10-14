@@ -21,8 +21,9 @@ import io.cucumber.testng.CucumberOptions;
 
 /**
  * Runner for devportal/visibility — store-side role-based API visibility (the port of DevPortalVisibilityTestCase
- * and APIVisibilityWithDirectURLTestCase). Provisions custom roles and role-bearing devportal users inline per
- * scenario. Runs in the DevPortal block. Self-contained {@code @cleanup} scenarios.
+ * and APIVisibilityWithDirectURLTestCase). Provisions custom roles and role-bearing DevPortal users inline per
+ * scenario. The complete feature runs in standard and email-user blocks; blocks that run the secondary-store case
+ * initialize that store. Scenarios are self-contained and use {@code @cleanup}.
  */
 @CucumberOptions(
         features = "src/test/resources/features/devportal/visibility.feature",

@@ -142,8 +142,8 @@ public class ServiceCatalogSteps {
 
     /**
      * Creates a service (multipart metadata + definition), asserts 200 (the create returns 200, not 201 — pinned
-     * live), stores its id under {@code idKey}, and registers it for teardown. Name/version/key resolve
-     * {@code {{...}}} so a scenario-unique service flows through.
+     * live), verifies the returned name/version/key and non-empty id, stores that id under {@code idKey}, and
+     * registers it for teardown. Name/version/key resolve {@code {{...}}} so a scenario-unique service flows through.
      */
     @When("I create a service catalog entry named {string} version {string} key {string} from definition {string} as {string}")
     public void iCreateService(String name, String version, String key, String definitionResource, String idKey)
@@ -151,8 +151,19 @@ public class ServiceCatalogSteps {
         HttpResponse response = createService(buildMetadata(name, version, key, "Catalog entry"), definitionResource);
         // Pinned to the product's actual 200; the contract declares 201 (wso2/api-manager#5195).
         // Change to 201 once that is fixed.
+        Assert.assertNotNull(response, "Service catalog create returned no HTTP response");
         Assert.assertEquals(response.getResponseCode(), 200, response.getData());
-        Object id = Utils.extractValueFromPayload(response.getData(), "id");
+        Assert.assertNotNull(response.getData(), "Service catalog create returned no DTO body");
+        JSONObject createdService = new JSONObject(response.getData());
+        Assert.assertEquals(createdService.optString("name"), Utils.resolveContextPlaceholders(name),
+                "Created service name mismatch");
+        Assert.assertEquals(createdService.optString("version"), Utils.resolveContextPlaceholders(version),
+                "Created service version mismatch");
+        Assert.assertEquals(createdService.optString("serviceKey"), Utils.resolveContextPlaceholders(key),
+                "Created service key mismatch");
+        Object id = createdService.opt("id");
+        Assert.assertNotNull(id, "Service catalog create DTO has no id");
+        Assert.assertFalse(String.valueOf(id).isBlank(), "Service catalog create DTO has an empty id");
         TestContext.set(idKey, id);
         ResourceCleanup.register(ResourceCleanup.CREATED_SERVICE_CATALOG_IDS, id);
     }
@@ -395,9 +406,45 @@ public class ServiceCatalogSteps {
     public void iSearchServicesWithPagination(String name, int limit, int offset) throws IOException {
         Map<String, String> params = new LinkedHashMap<>();
         params.put("name", Utils.resolveContextPlaceholders(name));
+        // A stable order makes scenario-owned page boundaries deterministic while other tests add services.
+        params.put("sortBy", "name");
+        params.put("sortOrder", "asc");
         params.put("limit", String.valueOf(limit));
         params.put("offset", String.valueOf(offset));
         Requests.get(Utils.getServiceCatalogSearchURL(Utils.getBaseUrl(), params), serviceCatalogHeaders());
+    }
+
+    /**
+     * Asserts that an unscoped type search contains this scenario's service with exact identity fields. It does not
+     * assert a global result count because the catalog is shared by concurrent scenarios.
+     */
+    @Then("The service catalog search results should contain name {string}, key {string}, and definition type {string}")
+    public void theSearchResultsShouldContainService(String name, String key, String definitionType) {
+        HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
+        Assert.assertNotNull(response, "No service-catalog search response captured");
+        Assert.assertEquals(response.getResponseCode(), 200, response.getData());
+        Assert.assertNotNull(response.getData(), "Service-catalog search returned no response body");
+
+        String expectedName = Utils.resolveContextPlaceholders(name);
+        String expectedKey = Utils.resolveContextPlaceholders(key);
+        JSONArray list = new JSONObject(response.getData()).optJSONArray("list");
+        Assert.assertNotNull(list, "Service-catalog search response has no list: " + response.getData());
+
+        int matchingNames = 0;
+        JSONObject match = null;
+        for (int i = 0; i < list.length(); i++) {
+            JSONObject entry = list.optJSONObject(i);
+            if (entry != null && expectedName.equals(entry.optString("name"))) {
+                matchingNames++;
+                match = entry;
+            }
+        }
+        Assert.assertEquals(matchingNames, 1,
+                "Expected exactly one scenario-owned result named " + expectedName + "; response=" + response.getData());
+        Assert.assertEquals(match.optString("serviceKey"), expectedKey,
+                "Search result key did not match scenario-owned service " + expectedName);
+        Assert.assertEquals(match.optString("definitionType"), definitionType,
+                "Search result definition type did not match scenario-owned service " + expectedName);
     }
 
     /**

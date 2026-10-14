@@ -69,7 +69,6 @@
             <class name="org.wso2.am.integration.cucumbertests.runners.block.AdminApplicationOwnerChangeRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.AdminSecondaryUserStoreRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.AdminOrganizationVisibilityRunner"/>
-            <class name="org.wso2.am.integration.cucumbertests.runners.block.DevPortalCommentsRunner"/>
         </classes>
     </test>
     <test name="IntegrationV2-Gateway-A" parallel="classes" thread-count="2">
@@ -156,7 +155,6 @@
             <class name="org.wso2.am.integration.cucumbertests.runners.block.KeyManagerPkceKeysRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.KeyManagerPasswordChangeRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.RemoteLoggingRunner"/>
-            <class name="org.wso2.am.integration.cucumbertests.runners.block.KeyManagerTokenIssuanceStorePrincipalRunner"/>
         </classes>
     </test>
     <!-- Platform Gateway integration tests. -->
@@ -186,6 +184,10 @@
             <class name="org.wso2.am.integration.cucumbertests.runners.block.ServerRestartMultiProtocolRunner"/>
         </classes>
     </test>
+    <!-- Restart scenarios mutate the shared APIM server. -->
+    <!-- Restart scenarios mutate the shared APIM server. -->
+    <!-- Restart scenarios mutate the shared APIM server. -->
+    <!-- Restart scenarios mutate the shared APIM server. -->
     <!-- Gateway throttling runtime: request-count, bandwidth and application-tier limits enforced on live throttle
          counters, one runner at a time. -->
     <test name="IntegrationV2-GatewayIsolatedRuntime-Throttling" parallel="classes" thread-count="1">
@@ -257,48 +259,60 @@
             <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayCustomHandlerRunner"/>
         </classes>
     </test>
-    <!-- Email as username: its own block, and the only one that may set emailUserMode. The listener automatically
-         applies the email-user overlay when emailUserMode is true; no separate tomlExtraOverlayPath is required.
-         The mode and its automatically applied overlay must remain together: the overlay configures product
-         username resolution, while the mode provisions the matching email-form users. Neither is co-hostable with
-         runners that expect the plain actor usernames.
-         The runners after the dedicated email ones are MODE FAN-OUT: existing classes re-run under the mode,
-         which is how legacy obtained SUPER_TENANT_EMAIL_USER / TENANT_EMAIL_USER coverage. A class is listed
-         only where the PHYSICAL username is load-bearing for an assertion it already makes.
-         thread-count=2 is measured, not assumed: 13 runners / 100 scenarios pass at both tc=2 and tc=3 with no
-         cross-class interference. Not higher — the block is propagation-bound, so tc=3 bought 4% wall-clock
-         while pushing gateway deploy waits from 131s to 150s against the 180s RUNTIME_PROPAGATION_TIMEOUT. -->
-    <test name="IntegrationV2-EmailUserName" parallel="classes" thread-count="2">
-        <parameter name="blockLabel" value="email-username"/>
+    <!-- Token-persistence Gateway runners. -->
+    <!-- Email-mode Gateway runners require the node backend. -->
+    <test name="IntegrationV2-EmailUserName-Gateway" parallel="classes" thread-count="2">
+        <parameter name="blockLabel" value="email-username-gateway"/>
         <parameter name="apimCpuLimit" value="1"/>
         <parameter name="initTenantUsers" value="true"/>
         <parameter name="emailUserMode" value="true"/>
+        <parameter name="initSecondaryUserStore" value="true"/>
+        <parameter name="initBackend" value="true"/>
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayRestRequestDispatchRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayRestInvocationRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayRestEndpointRoutingRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayBasicAuthSecurityRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayRestArtifactsRunner"/>
+        </classes>
+    </test>
+    <!-- Keep UnifiedSearch first and throttling enforcement last to isolate their runtime state. -->
+    <test name="IntegrationV2-EmailUserName-DevPortal" parallel="classes" thread-count="1">
+        <parameter name="blockLabel" value="email-username-devportal"/>
+        <parameter name="apimCpuLimit" value="1"/>
+        <parameter name="initTenantUsers" value="true"/>
+        <parameter name="emailUserMode" value="true"/>
+        <parameter name="initSecondaryUserStore" value="true"/>
+        <parameter name="initBackend" value="true"/>
         <parameter name="tomlExtraOverlayPath" value="src/test/resources/artifacts/configFiles/logging/deployment.toml"/>
         <parameter name="bootstrapThrottleData" value="true"/>
         <parameter name="throttleDataReadinessSeconds" value="180"/>
-        <!-- Gateway invocation in this block needs the node backend; without it Basic auth reaches a SUSPENDED
-             endpoint (500) and a 200 would be unreachable (CLAUDE.md §11). -->
-        <parameter name="initBackend" value="true"/>
-        <!-- Deliberately NO initSecondaryUserStore: the SECONDARY.COM store-principal token arcs live in their own
-             feature/runner (KeyManagerTokenIssuanceStorePrincipalRunner, KeyManager block only) because they
-             CANNOT pass here. Measured: with emailUserMode the carbon.super row passes but
-             SECONDARY.COM/subscriberUser1@tenant1.com is refused 401 — EnableEmailUserName splits on the LAST "@"
-             only when a name carries TWO or more, so a single-"@" store principal resolves to carbon.super and
-             never to tenant1. That is the specified rule this block exists to exercise, not a defect to seed around. -->
         <classes>
-            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayBasicAuthEmailUserNameRunner"/>
-            <class name="org.wso2.am.integration.cucumbertests.runners.block.DevPortalApplicationEmailUserNameRunner"/>
-            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayThrottleEmailUserNameRunner"/>
-            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayThrottleResetEmailUserNameRunner"/>
-            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayDenyEnforcementEmailUserNameRunner"/>
-            <class name="org.wso2.am.integration.cucumbertests.runners.block.KeyManagerEmailUserNameLoginRunner"/>
-            <class name="org.wso2.am.integration.cucumbertests.runners.block.PublisherApiProductEmailUserNameRunner"/>
-            <class name="org.wso2.am.integration.cucumbertests.runners.block.DevPortalCommentsRunner"/>
-            <class name="org.wso2.am.integration.cucumbertests.runners.block.DevPortalRatingsRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.DevPortalUnifiedSearchRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.DevPortalApplicationsRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.DevPortalSearchRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.DevPortalVisibilityRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.DevPortalVisibilityDomainsRunner"/>
-            <class name="org.wso2.am.integration.cucumbertests.runners.block.DevPortalSearchRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.DevPortalCommentThreadsRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.DevPortalRatingsRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayDenyEnforcementRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayThrottlingEnforcementRunner"/>
+        </classes>
+    </test>
+    <test name="IntegrationV2-EmailUserName-Publisher" parallel="classes" thread-count="1">
+        <parameter name="blockLabel" value="email-username-publisher"/>
+        <parameter name="apimCpuLimit" value="1"/>
+        <parameter name="initTenantUsers" value="true"/>
+        <parameter name="emailUserMode" value="true"/>
+        <parameter name="initSecondaryUserStore" value="true"/>
+        <parameter name="initBackend" value="true"/>
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.PublisherDefinitionsRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.PublisherAccessControlRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.PublisherApiVisibilityDomainsRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.PublisherServiceCatalogRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.PublisherVersioningRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.PublisherApiProductsRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.KeyManagerTokenIssuanceRunner"/>
         </classes>
     </test>
@@ -306,6 +320,7 @@
     <!-- =====================================================================================
          IS7 / SPECIAL blocks below.
         ===================================================================================== -->
+    <!-- Keep FederatedBackendJwtRunner last: its IdP remains referenced until block teardown. -->
     <test name="IntegrationV2-Is7KeyManager" parallel="classes" thread-count="1">
         <parameter name="blockLabel" value="is7-km"/>
         <parameter name="apimCpuLimit" value="1"/>
@@ -424,17 +439,6 @@
             <class name="org.wso2.am.integration.cucumbertests.runners.block.DevPortalDeprecatedApiDiscoverabilityRunner"/>
         </classes>
     </test>
-    <!-- The deployment-acknowledgement contract runs in its own Publisher-configured block so its strict
-         gateway acknowledgement assertion is isolated from the high-churn Publisher runner classes. -->
-    <test name="IntegrationV2-Publisher-Acknowledgement" parallel="classes" thread-count="2">
-        <parameter name="blockLabel" value="publisher-acknowledgement"/>
-        <parameter name="apimCpuLimit" value="1"/>
-        <parameter name="initTenantUsers" value="true"/>
-        <parameter name="initSecondaryUserStore" value="true"/>
-        <classes>
-            <class name="org.wso2.am.integration.cucumbertests.runners.block.PublisherAPIRevisionAcknowledgementRunner"/>
-        </classes>
-    </test>
     <!-- Suppressing the Resident Key Manager breaks API creation. -->
     <test name="IntegrationV2-Is7TenantSharingOff" parallel="classes" thread-count="1">
         <parameter name="blockLabel" value="is7-no-km"/>
@@ -490,6 +494,7 @@
             <class name="org.wso2.am.integration.cucumbertests.runners.block.NetworkAccessControlTenantConfRunner"/>
         </classes>
     </test>
+    <!-- Run the redirect runner first to avoid stale workflow-executor cache from earlier config writes. -->
     <test name="IntegrationV2-ApprovalWorkflow" parallel="classes" thread-count="1">
         <parameter name="blockLabel" value="approval-workflow"/>
         <parameter name="apimCpuLimit" value="1"/>

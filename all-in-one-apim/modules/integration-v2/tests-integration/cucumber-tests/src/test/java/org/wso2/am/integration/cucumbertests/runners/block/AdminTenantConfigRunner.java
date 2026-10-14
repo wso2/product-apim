@@ -21,7 +21,7 @@ import io.cucumber.testng.CucumberOptions;
 
 /**
  * Runner for the admin tenant-configuration API (the port of the legacy AdvancedConfigurationsTestCase). Runs in
- * the concurrent IntegrationV2-Admin block; the update scenarios capture-then-restore the tenant config, so they
+ * the IntegrationV2-DevPortal block; the update scenarios capture-then-restore the tenant config, so they
  * leave it unchanged.
  */
 @CucumberOptions(
