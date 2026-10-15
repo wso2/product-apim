@@ -1,4 +1,4 @@
-# Feature-specific TOML overlay for the IntegrationV2-MandatoryProperties block.
+# Feature-specific TOML overlay for the IntegrationV2-Distributed-MandatoryProperties block (CP overlay).
 #
 # Merged ON TOP of the shared `basic` overlay (base + basic + this) via tomlExtraOverlayPath — only the extra
 # key this feature needs lives here. Declares a mandatory custom API property, so updating an API with the

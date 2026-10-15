@@ -1,0 +1,3 @@
+# Persist OAuth-issued token state on the control plane for the distributed ExternalIdpJwt persistence block.
+[oauth.token_persistence]
+enable = true

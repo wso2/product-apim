@@ -1,5 +1,6 @@
-# Merged overlay for the IntegrationV2-Solace block, which now ALSO hosts the mutual-SSL
-# certificate-chain-validation runner (thread-count=2).
+# Overlay for the IntegrationV2-Distributed-SolaceAndMtlsChain block (applied to both CP and Gateway), which hosts
+# the Solace runner and the mutual-SSL certificate-chain-validation runner at thread-count=2. The all-in-one suite
+# carries these keys in solace/ and backendJwtUrlSafeMtlsChain/.
 #
 # WHY THESE TWO CO-HOST, AND WHY CONCURRENTLY.
 # The two tables below are disjoint and mutually inert, verified rather than assumed:
@@ -55,3 +56,10 @@ enable_certificate_chain_validation = true
 # is honoured within seconds. SSLVerifyClient already defaults to "optional" on 8243.
 [transport.http.listener.ssl_profile]
 read_interval = "10000"
+
+# The chain walk that completes a head-only leaf (MutualSSLAuthenticator -> Utils.getCertificateFromListenerTrustStore)
+# reads the IN-MEMORY listener trust store, which CertificateReLoader refreshes from the file 60 s after boot and then
+# every certificate_reloader.period (default 600 s). The listener read_interval above does not refresh it. Shorten it so
+# an uploaded intermediate reaches the chain walk within seconds wherever the runner sits in the block.
+[apim.certificate_reloader]
+period = "10s"

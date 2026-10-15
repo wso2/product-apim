@@ -1,4 +1,5 @@
-# Feature-specific TOML overlay for the IntegrationV2-ExternalIdpJwt block.
+# Feature-specific TOML overlay for the IntegrationV2-Distributed-ExternalIdpJwt block (Gateway). testng-v2.xml runs
+# ExternalIdpJwtRunner in IntegrationV2-Is7KeyManager, whose is7kmValidationModes overlay carries the same keys.
 #
 # Merged ON TOP of the shared `basic` overlay (itself merged onto the product distribution deployment.toml) via
 # the block's `tomlExtraOverlayPath`, so only the keys this feature needs live here.

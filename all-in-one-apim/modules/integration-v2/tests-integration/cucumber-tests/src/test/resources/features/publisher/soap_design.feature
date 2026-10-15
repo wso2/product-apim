@@ -105,7 +105,7 @@ Feature: Publisher SOAP API Design
     And The response should contain "hello.wsdl"
 
     # Complete the Store-download behavior for the archive-imported API: only a deployed, published API appears in
-    # the Store. This expected 200 currently exposes the known product failure documented above.
+    # the Store, which then serves the imported WSDL archive.
     When I deploy the API with id "wsdlZipId"
     Then The response status code should be 201
     When I publish the "apis" resource with id "wsdlZipId"
