@@ -38,6 +38,10 @@ Feature: Publisher Streaming API Design
     And the "apis" resource "sseApiId" should be live on the gateway, redeploying if propagation is lost
     When I publish the "apis" resource with id "sseApiId"
     Then The lifecycle status of API "sseApiId" should be "Published"
+    # Verify the published SSE API is discoverable by its ID in both management and Store listings.
+    When I retrieve all APIs created through the Publisher REST API
+    Then The API with id "sseApiId" should be in the list of all APIS
+    And I retrieve the devportal API list until it contains "sseApiId" within 60 seconds
 
     Examples:
       | actor                      |
@@ -56,6 +60,10 @@ Feature: Publisher Streaming API Design
     And the "apis" resource "websubApiId" should be live on the gateway, redeploying if propagation is lost
     When I publish the "apis" resource with id "websubApiId"
     Then The lifecycle status of API "websubApiId" should be "Published"
+    # Check discoverability in both management and Store listings by this scenario's unique API ID.
+    When I retrieve all APIs created through the Publisher REST API
+    Then The API with id "websubApiId" should be in the list of all APIS
+    And I retrieve the devportal API list until it contains "websubApiId" within 60 seconds
 
     Examples:
       | actor                      |
@@ -87,6 +95,8 @@ Feature: Publisher Streaming API Design
     Then The response status code should be 201
     When I publish the "apis" resource with id "asyncV3ApiId"
     Then The lifecycle status of API "asyncV3ApiId" should be "Published"
+    When I retrieve all APIs created through the Publisher REST API
+    Then The API with id "asyncV3ApiId" should be in the list of all APIS
 
     Examples:
       | actor                     |
@@ -94,10 +104,10 @@ Feature: Publisher Streaming API Design
       | publisherUser@tenant1.com |
 
   # ---- Advertise-only consequences: no revisions, but still discoverable and subscribable ----------------
-  # W6. Three behaviours legacy asserted that v2 did not: revision creation is refused, the published API is
-  # visible in the publisher listing, and a subscription to it lands UNBLOCKED. None of them depends on which
-  # AsyncAPI parser is configured, which is why they are covered once here rather than in a second container
-  # (see the parser note below).
+  # Advertise-only consequences shared across AsyncAPI versions: revision creation is refused, a published API is
+  # visible in the Publisher listing, and a subscription to it lands UNBLOCKED. The v3 import outline checks its
+  # own listing identity; the separate v2 listing scenario remains useful coverage of that format. These behaviors
+  # do not depend on parser configuration, so they are covered in this runner rather than a second container.
   #
   # THE PARSER CONFLICT, RESOLVED — read this before "fixing" the :105 rejection row. The audit flagged that
   # legacy's async/asyncapi.yaml is byte-identical to v2's and yet legacy asserts it imports 201 while

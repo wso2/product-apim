@@ -78,11 +78,22 @@ Feature: Admin API Categories
     When I retrieve the "apis" resource with id "catApiId"
     Then The response status code should be 200
     And The response should contain "{{catName}}"
+    And The response field "categories" should be exactly the list "{{catName}}"
+    And The response array field "categories" should have exactly 1 entries
 
-    # Delete the attached API FIRST so the category delete is deterministic. Deleting a STILL-attached category
-    # is non-deterministic under load — the product auto-detaches and returns 200 usually, but under full-suite
-    # load sometimes 500s "Unable to delete the category. It is attached to API(s)" (flagged as an upstream
-    # inconsistency; not pinned here to avoid a flaky assertion).
+    # Detach the category from the existing API and verify the persisted API readback has no categories.
+    And I put the response payload in context as "catApiUpdatePayload"
+    When I update the "apis" resource "catApiId" and "catApiUpdatePayload" with configuration type "categories" and value:
+      """
+      []
+      """
+    Then The response status code should be 200
+    When I retrieve the "apis" resource with id "catApiId"
+    Then The response status code should be 200
+    And The response field "categories" should be exactly the list ""
+    And The response array field "categories" should have exactly 0 entries
+
+    # The category is verified detached above, so API and category teardown is deterministic.
     When I delete the "apis" resource with id "catApiId"
     Then The response status code should be 200
     When I delete the API category "catId"

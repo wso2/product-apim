@@ -20,11 +20,12 @@ Feature: Admin Configurable Default Throttling Policy
   unlimited_tier_disabled.feature, since it is the same product check).
   All scenarios run x2 tenant — the tenant configuration is per tenant.
 
-  # Rows 135/139 — the GraphQL leg. A GraphQL schema UPDATE re-derives the operation list from the new schema;
-  # operations with no carried-over tier are filled from APIUtil.getDefaultAPILevelPolicy, i.e. the configured
-  # DefaultAPILevelTier. NOTE: the graphql CREATE path resolves its default through
-  # APIUtil.getDefaultThrottlingPolicy instead, which does NOT consult the tenant configuration — that
-  # inconsistency is reported, not asserted here.
+  # Rows 135/139 — the GraphQL leg. A GraphQL schema UPDATE re-derives the operation list; operations with no
+  # carried-over tier are filled from APIUtil.getDefaultAPILevelPolicy, i.e. the configured DefaultAPILevelTier.
+  # The graphql CREATE path resolves its default through APIUtil.getDefaultThrottlingPolicy instead, which does NOT
+  # consult the tenant configuration: with Unlimited disabled in this block it yields the fall-through 10KPerMin,
+  # not the configured 20KPerMin. The create check pins that product inconsistency, so a product change to
+  # either path fails here and must be reviewed deliberately.
   @cap:admin @feat:throttling-policies @type:regression @dep:publisher @legacy:ConfigurableDefaultPolicyTestCase
   Scenario Outline: GraphQL operations derived from a schema update take the configured default API-level tier as <actor>
     Given The system is ready
@@ -38,6 +39,9 @@ Feature: Admin Configurable Default Throttling Policy
     When I put JSON payload from file "artifacts/payloads/create_default_tier_graphql_api.json" in context as "cdpGqlPayload"
     And I create a GraphQL API with schema file "artifacts/payloads/graphql_schema.graphql" and additional properties "cdpGqlPayload" as "cdpGqlApiId"
     Then The response status code should be 201
+    When I retrieve the "apis" resource with id "cdpGqlApiId"
+    Then The response status code should be 200
+    And Every operation in the response should have throttling policy "10KPerMin"
     When I update the GraphQL schema of API "cdpGqlApiId" with schema file "artifacts/payloads/updated_graphql_schema.graphql"
     Then The response status code should be 200
     When I retrieve the "apis" resource with id "cdpGqlApiId"
@@ -73,7 +77,67 @@ Feature: Admin Configurable Default Throttling Policy
     Then The response status code should be 200
     And The value of response field "$.paths['/resource'].get['x-throttling-tier']" should be "20KPerMin"
     And The value of response field "$.paths['/resource'].post['x-throttling-tier']" should be "20KPerMin"
+    When I deploy the API with id "cdpRestApiId"
+    Then The response status code should be 201
+    When I publish the "apis" resource with id "cdpRestApiId"
+    Then The lifecycle status of API "cdpRestApiId" should be "Published"
     When I update the tenant configuration from "cdpRestOriginal"
+    Then The response status code should be 200
+
+    Examples:
+      | actor             |
+      | admin             |
+      | admin@tenant1.com |
+
+  # The product rejects deleting a policy while its level is selected as the tenant default. This is an
+  # established contract: the legacy test checks HTTP 500 for all three policy levels, and the advanced-policy
+  # guard above retains that assertion. The docs describe how to configure these defaults; they do not spell out
+  # the deletion response, so these cases preserve the existing product behavior rather than infer a new rule.
+  @cap:admin @feat:throttling-policies @type:negative @legacy:ConfigurableDefaultPolicyTestCase
+  Scenario Outline: A subscription policy configured as the tenant default cannot be deleted as <actor>
+    Given The system is ready
+    And I have valid access tokens as "<actor>"
+    When I create a subscription throttling policy "cdpDefaultSub${UNIQUE:P}" allowing 10 requests per minute
+    Then The response status code should be 201
+    When I capture the tenant configuration as "cdpSubGuardOriginal"
+    And I register tenant configuration "cdpSubGuardOriginal" for cleanup
+    And I capture the tenant configuration as "cdpSubGuardModified"
+    And I set the field "DefaultSubscriptionLevelTier" to "{{subThrottlePolicyName}}" in the payload "cdpSubGuardModified"
+    And I update the tenant configuration from "cdpSubGuardModified"
+    Then The response status code should be 200
+    When I delete the "subscription" throttling policy with id "subThrottlePolicyId"
+    Then The response status code should be 500
+    When I retrieve the "subscription" throttling policy with id "subThrottlePolicyId"
+    Then The response status code should be 200
+    When I update the tenant configuration from "cdpSubGuardOriginal"
+    Then The response status code should be 200
+    When I delete the "subscription" throttling policy with id "subThrottlePolicyId"
+    Then The response status code should be 200
+
+    Examples:
+      | actor             |
+      | admin             |
+      | admin@tenant1.com |
+
+  @cap:admin @feat:throttling-policies @type:negative @legacy:ConfigurableDefaultPolicyTestCase
+  Scenario Outline: An application policy configured as the tenant default cannot be deleted as <actor>
+    Given The system is ready
+    And I have valid access tokens as "<actor>"
+    When I create an application throttling policy "cdpDefaultApp${UNIQUE:P}" allowing 10 requests per minute
+    Then The response status code should be 201
+    When I capture the tenant configuration as "cdpAppGuardOriginal"
+    And I register tenant configuration "cdpAppGuardOriginal" for cleanup
+    And I capture the tenant configuration as "cdpAppGuardModified"
+    And I set the field "DefaultApplicationLevelTier" to "{{appThrottlePolicyName}}" in the payload "cdpAppGuardModified"
+    And I update the tenant configuration from "cdpAppGuardModified"
+    Then The response status code should be 200
+    When I delete the "application" throttling policy with id "appThrottlePolicyId"
+    Then The response status code should be 500
+    When I retrieve the "application" throttling policy with id "appThrottlePolicyId"
+    Then The response status code should be 200
+    When I update the tenant configuration from "cdpAppGuardOriginal"
+    Then The response status code should be 200
+    When I delete the "application" throttling policy with id "appThrottlePolicyId"
     Then The response status code should be 200
 
     Examples:

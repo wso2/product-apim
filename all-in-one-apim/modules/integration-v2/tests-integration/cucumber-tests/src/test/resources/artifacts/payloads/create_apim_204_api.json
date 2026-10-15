@@ -1,0 +1,35 @@
+{
+  "name": "${UNIQUE:Backend204API}",
+  "context": "${UNIQUE:backend204Context}",
+  "version": "1.0.0",
+  "endpointConfig": {
+    "endpoint_type": "http",
+    "production_endpoints": {
+      "template_not_supported": false,
+      "config": null,
+      "url": "http://nodebackend:3004"
+    },
+    "sandbox_endpoints": {
+      "url": "http://nodebackend:3004",
+      "config": null,
+      "template_not_supported": false
+    }
+  },
+  "description": "Backend status propagation test: process-instance DELETE and HEAD respond with 204",
+  "policies": ["Unlimited"],
+  "operations": [
+    {
+      "verb": "HEAD",
+      "target": "/process-instances/{id}",
+      "scopes": []
+    },
+    {
+      "verb": "DELETE",
+      "target": "/process-instances/{id}",
+      "scopes": []
+    }
+  ],
+  "isDefaultVersion": true,
+  "additionalProperties": [],
+  "additionalPropertiesMap": {}
+}

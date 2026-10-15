@@ -27,6 +27,7 @@ import org.wso2.am.integration.cucumbertests.utils.Requests;
 import org.wso2.am.integration.cucumbertests.utils.ResourceCleanup;
 import org.wso2.am.integration.cucumbertests.utils.TestContext;
 import org.wso2.am.integration.cucumbertests.utils.Utils;
+import org.wso2.am.integration.cucumbertests.utils.clients.SimpleHTTPClient;
 import org.wso2.am.integration.test.utils.Constants;
 import org.wso2.carbon.automation.engine.context.beans.User;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
@@ -194,6 +195,98 @@ public class KeyManagerAdminSteps {
         }
         Requests.post(Utils.getAPIMTokenEndpointURL(Utils.getBaseUrl()), headers, body,
                 "application/x-www-form-urlencoded");
+    }
+
+    /**
+     * Switches an application's OAuth client from JWT to opaque-token issuance through the Carbon
+     * {@code OAuthAdminService}. The DevPortal application's {@code tokenType} is a separate representation and is
+     * not changed by this operation. Read the current DTO first because {@code updateConsumerApplication} replaces
+     * it; preserve its fields and change only {@code tokenType}.
+     */
+    @When("I switch the OAuth client with consumer key {string} to opaque token issuance")
+    public void iSwitchOAuthClientToOpaqueTokenIssuance(String consumerKeyRef) throws IOException {
+        String consumerKey = TestContext.resolve(consumerKeyRef).toString();
+        User actor = Identity.actingActor();
+        String serviceUrl = Utils.getOAuthAdminServiceURL(Utils.getBaseUrl());
+        String axisNs = "http://org.apache.axis2/xsd";
+        String dtoNs = "http://dto.oauth.identity.carbon.wso2.org/xsd";
+        String getPayload = "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" "
+                + "xmlns:xsd=\"" + axisNs + "\"><soapenv:Body><xsd:getOAuthApplicationData>"
+                + "<xsd:consumerKey>" + Utils.escapeXml(consumerKey)
+                + "</xsd:consumerKey></xsd:getOAuthApplicationData></soapenv:Body></soapenv:Envelope>";
+        HttpResponse before = SimpleHTTPClient.getInstance().sendSoapRequest(serviceUrl, getPayload,
+                "urn:getOAuthApplicationData", actor.getUserName(), actor.getPassword());
+        assertOAuthAdminSoapSuccess(before, "getOAuthApplicationData before opaque-token switch");
+        String beforeBody = before.getData();
+        String appName = soapFieldValue(beforeBody, "applicationName");
+        String oauthVersion = soapFieldValue(beforeBody, "OAuthVersion");
+        String callbackUrl = soapFieldValue(beforeBody, "callbackUrl");
+        String grantTypes = soapFieldValue(beforeBody, "grantTypes");
+        String registeredKey = soapFieldValue(beforeBody, "oauthConsumerKey");
+        String registeredSecret = soapFieldValue(beforeBody, "oauthConsumerSecret");
+        Assert.assertNotNull(appName, "OAuthAdminService did not return applicationName for the consumer key");
+        Assert.assertNotNull(registeredKey, "OAuthAdminService did not return oauthConsumerKey for the consumer key");
+        Assert.assertNotNull(registeredSecret,
+                "OAuthAdminService did not return oauthConsumerSecret for the consumer key");
+        Assert.assertEquals(registeredKey, consumerKey,
+                "OAuthAdminService returned a different client than the requested consumer key");
+        Assert.assertEquals(soapFieldValue(beforeBody, "tokenType"), "JWT",
+                "Expected a JWT OAuth client before switching it to opaque-token issuance");
+
+        String updatePayload = "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" "
+                + "xmlns:xsd=\"" + axisNs + "\" xmlns:xsd1=\"" + dtoNs + "\"><soapenv:Body>"
+                + "<xsd:updateConsumerApplication><xsd:consumerAppDTO>"
+                + soapDtoField("OAuthVersion", oauthVersion)
+                + soapDtoField("applicationName", appName)
+                + soapDtoField("callbackUrl", callbackUrl)
+                + soapDtoField("grantTypes", grantTypes)
+                + soapDtoField("oauthConsumerKey", registeredKey)
+                + soapDtoField("oauthConsumerSecret", registeredSecret)
+                + soapDtoField("tokenType", "OAUTH")
+                + "</xsd:consumerAppDTO></xsd:updateConsumerApplication></soapenv:Body></soapenv:Envelope>";
+        HttpResponse update = SimpleHTTPClient.getInstance().sendSoapRequest(serviceUrl, updatePayload,
+                "urn:updateConsumerApplication", actor.getUserName(), actor.getPassword());
+        assertOAuthAdminSoapSuccess(update, "updateConsumerApplication to opaque-token issuance");
+
+        HttpResponse after = SimpleHTTPClient.getInstance().sendSoapRequest(serviceUrl, getPayload,
+                "urn:getOAuthApplicationData", actor.getUserName(), actor.getPassword());
+        assertOAuthAdminSoapSuccess(after, "getOAuthApplicationData after opaque-token switch");
+        Assert.assertEquals(soapFieldValue(after.getData(), "tokenType"), "OAUTH",
+                "OAuthAdminService did not retain OAUTH tokenType after updateConsumerApplication");
+    }
+
+    /** Validates token format without ever including the credential itself in assertion output or logs. */
+    @Then("The stored access token {string} should be opaque, not a JWT")
+    public void theStoredAccessTokenShouldBeOpaque(String tokenRef) {
+        String token = TestContext.resolve(tokenRef).toString();
+        Assert.assertFalse(token.isBlank(), "Expected a nonblank access token");
+        Assert.assertEquals(token.split("\\.", -1).length, 1,
+                "Expected an opaque access token (not a three-segment JWT); token value is intentionally omitted");
+    }
+
+    private static void assertOAuthAdminSoapSuccess(HttpResponse response, String operation) {
+        String body = response == null ? null : response.getData();
+        String lowerBody = body == null ? "" : body.toLowerCase();
+        Assert.assertTrue(response != null && response.getResponseCode() >= 200 && response.getResponseCode() < 300
+                        && body != null && !body.isBlank() && !lowerBody.contains("<faultstring")
+                        && !lowerBody.contains("exception"),
+                operation + " failed: HTTP " + (response == null ? "no response" : response.getResponseCode())
+                        + ", responseBodyPresent=" + (body != null && !body.isBlank()));
+    }
+
+    /**
+     * The decoded text of the first {@code localName} element in a SOAP response, or {@code null} when none
+     * matches. Decoded so {@link #soapDtoField} can escape it exactly once when the value is sent back.
+     */
+    private static String soapFieldValue(String body, String localName) {
+        java.util.regex.Matcher matcher = java.util.regex.Pattern.compile("<[^>]*" + localName
+                + ">(.*?)</[^>]*" + localName + ">", java.util.regex.Pattern.DOTALL).matcher(body);
+        return matcher.find() ? Utils.unescapeXml(matcher.group(1)) : null;
+    }
+
+    private static String soapDtoField(String localName, String value) {
+        return value == null ? "" : "<xsd1:" + localName + ">" + Utils.escapeXml(value)
+                + "</xsd1:" + localName + ">";
     }
 
     /**

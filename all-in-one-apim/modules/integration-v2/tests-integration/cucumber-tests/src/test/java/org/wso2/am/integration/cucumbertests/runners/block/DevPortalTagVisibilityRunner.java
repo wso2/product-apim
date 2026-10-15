@@ -12,24 +12,20 @@
  *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
- *
  */
 
 package org.wso2.am.integration.cucumbertests.runners.block;
 
 import io.cucumber.testng.CucumberOptions;
 
-/**
- * Runner for devportal/comments — API comment CRUD, threaded replies, pagination, cross-plane visibility and
- * the moderator permission model, across both tenants. Self-contained {@code @cleanup} scenario outlines.
- * Extends {@link BaseBlockRunner} for the block boot-failure guard and runner-scoped cleanup safety net.
- */
+/** Focused runner for the legacy tag-visibility parity scenario's primary-store actor rows. */
 @CucumberOptions(
-        features = "src/test/resources/features/devportal/comments.feature",
+        features = "src/test/resources/features/devportal/search.feature",
+        tags = "@legacy:APITagVisibilityByRoleTestCase and not @secondary-store",
         glue = {
                 "org.wso2.am.integration.cucumbertests.stepdefinitions"
         },
-        plugin = {"pretty", "html:target/cucumber-report/devportal-comments.html"}
+        plugin = {"pretty", "html:target/cucumber-report/devportal-tag-visibility.html"}
 )
-public class DevPortalCommentsRunner extends BaseBlockRunner {
+public class DevPortalTagVisibilityRunner extends BaseBlockRunner {
 }

@@ -37,6 +37,7 @@ import org.wso2.am.integration.cucumbertests.utils.Names;
 import org.wso2.am.integration.cucumbertests.utils.ResourceCleanup;
 import org.wso2.am.integration.cucumbertests.utils.ServerReadiness;
 import org.wso2.am.integration.cucumbertests.utils.TestContext;
+import org.wso2.am.integration.cucumbertests.utils.TenantUserProvisioner;
 import org.wso2.am.integration.test.utils.Constants;
 import org.wso2.am.integration.cucumbertests.utils.Utils;
 import org.wso2.am.testcontainers.DistributedDynamicApimContainer;
@@ -49,6 +50,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.Collection;
 import java.util.Collections;
@@ -88,7 +90,7 @@ public class BaseSteps {
      */
     @Given("I act as {string}")
     public void iActAs(String actorRef) {
-        Identity.setActingActor(actorRef);
+        Identity.setActingActor(Utils.resolveContextPlaceholders(actorRef));
     }
 
     /**
@@ -428,12 +430,21 @@ public class BaseSteps {
     @Given("I have valid access tokens as {string}")
     public void iHaveTokensAs(String actorRef) throws Exception {
 
-        Identity.setActingActor(actorRef);
-        User actor = Identity.resolveActor(actorRef);
+        String resolvedActorRef = Utils.resolveContextPlaceholders(actorRef);
+        Identity.setActingActor(resolvedActorRef);
+        User actor = Identity.resolveActor(resolvedActorRef);
         createDcrApplication(actor);
         mintPublisherToken(actor);
         mintDevportalToken(actor);
         mintAdminToken(actor);
+    }
+
+    /** Alias used by older feature prose that combines readiness with named-actor token setup. */
+    @Given("The system is ready and I have valid access tokens as {string}")
+    public void theSystemIsReadyAndIHaveTokensAs(String actorRef) throws Exception {
+
+        theSystemIsReady();
+        iHaveTokensAs(actorRef);
     }
 
     /**
@@ -444,6 +455,7 @@ public class BaseSteps {
      * (e.g. {@code publisherUser} vs {@code publisherUser@tenant1.com}).
      */
     @Given("The system is ready and I have valid publisher access tokens as {string}")
+    @Given("I have valid publisher access tokens as {string}")
     public void iHavePublisherTokensAs(String actorRef) throws Exception {
 
         theSystemIsReady();
@@ -483,6 +495,26 @@ public class BaseSteps {
         User actor = Identity.resolveActor(actorRef);
         createDcrApplication(actor);
         mintDevportalToken(actor);
+    }
+
+    /**
+     * Switches to a DevPortal consumer and prepares only the credentials needed for application operations.
+     * Reuses credentials already created earlier in the scenario, which is useful when a Publisher actor also
+     * owns the application, while allowing a distinct subscriber actor to own it when API ownership and
+     * application privileges differ.
+     */
+    @Given("I use DevPortal consumer {string}, preparing credentials if needed")
+    public void iUseDevportalConsumerPreparingCredentialsIfNeeded(String actorRef) throws Exception {
+
+        String resolvedActorRef = Utils.resolveContextPlaceholders(actorRef);
+        Identity.setActingActor(resolvedActorRef);
+        User actor = Identity.resolveActor(resolvedActorRef);
+        if (!TestContext.contains(Identity.dcrCredentialsKey(actor))) {
+            createDcrApplication(actor, resolvedActorRef);
+        }
+        if (!TestContext.contains(Identity.devportalTokenKey(actor))) {
+            mintDevportalToken(actor);
+        }
     }
 
     /**
@@ -546,6 +578,46 @@ public class BaseSteps {
         }
         Assert.assertTrue(payload.contains(expected),
                 "Decoded JWT payload does not contain '" + expected + "': " + payload);
+    }
+
+    /** Decodes a JWT and asserts one named claim has the exact expected value. */
+    @Then("The JWT stored as {string} should have claim {string} equal to {string}")
+    public void theJwtStoredShouldHaveClaimEqualTo(String contextKey, String claim, String expectedValue) {
+
+        String jwt = TestContext.resolve(contextKey).toString();
+        String[] segments = jwt.split("\\.");
+        Assert.assertTrue(segments.length >= 2, "Malformed JWT (expected >= 2 segments): " + jwt);
+        String payload;
+        try {
+            payload = new String(Base64.getUrlDecoder().decode(segments[1]), StandardCharsets.UTF_8);
+        } catch (IllegalArgumentException e) {
+            payload = new String(Base64.getDecoder().decode(segments[1]), StandardCharsets.UTF_8);
+        }
+        JSONObject claims = new JSONObject(payload);
+        Assert.assertTrue(claims.has(claim), "Decoded JWT payload has no '" + claim + "' claim: " + payload);
+        Assert.assertEquals(String.valueOf(claims.get(claim)), expectedValue,
+                "Decoded JWT claim '" + claim + "' differs from expected value. Payload: " + payload);
+    }
+
+    /** Asserts that a JWT's standard exp and iat claims encode the requested lifetime in seconds. */
+    @Then("The JWT stored as {string} should have a validity of {int} seconds")
+    public void theJwtStoredShouldHaveValiditySeconds(String contextKey, int expectedSeconds) {
+        String jwt = TestContext.resolve(contextKey).toString();
+        String[] segments = jwt.split("\\.");
+        Assert.assertTrue(segments.length >= 2, "Malformed JWT (expected >= 2 segments): " + jwt);
+        String payload;
+        try {
+            payload = new String(Base64.getUrlDecoder().decode(segments[1]), StandardCharsets.UTF_8);
+        } catch (IllegalArgumentException e) {
+            payload = new String(Base64.getDecoder().decode(segments[1]), StandardCharsets.UTF_8);
+        }
+        JSONObject claims = new JSONObject(payload);
+        Assert.assertTrue(claims.has("iat"), "Decoded JWT payload has no 'iat' claim: " + payload);
+        Assert.assertTrue(claims.has("exp"), "Decoded JWT payload has no 'exp' claim: " + payload);
+        long issuedAt = claims.getLong("iat");
+        long expiresAt = claims.getLong("exp");
+        Assert.assertEquals(expiresAt - issuedAt, (long) expectedSeconds,
+                "JWT lifetime from exp - iat differs from expected seconds. Payload: " + payload);
     }
 
     /**
@@ -875,6 +947,19 @@ public class BaseSteps {
     }
 
     /**
+     * Applies a response-fragment assertion when a table-driven negative case has a known body contract. A dash
+     * means the scenario intentionally pins only the status because the response body for that exact request
+     * shape has not been established yet.
+     */
+    @Then("The collision response should contain {string} when specified")
+    public void collisionResponseShouldContainWhenSpecified(String expectedFragment) {
+
+        if (!"-".equals(expectedFragment)) {
+            responseShouldContainFieldValue(expectedFragment);
+        }
+    }
+
+    /**
      * Asserts that a named field in a non-2xx JSON response contains the expected fragment. This keeps error
      * diagnostics scoped to the field under test rather than allowing the text to match elsewhere in the payload.
      */
@@ -968,6 +1053,66 @@ public class BaseSteps {
     }
 
     /**
+     * Asserts that a field in a successful response is present as a non-blank string. Use for opaque identifiers
+     * whose exact generated value is intentionally unstable, but whose presence is part of the response contract.
+     *
+     * @param fieldName field name or JSONPath to read from the successful response body
+     */
+    @Then("The response field {string} should be non-blank")
+    public void theResponseFieldShouldBeNonBlank(String fieldName) throws IOException {
+
+        fieldName = Utils.resolveContextPlaceholders(fieldName);
+        HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
+        Assert.assertTrue(response != null && response.getResponseCode() >= 200 && response.getResponseCode() < 300
+                        && response.getData() != null && !response.getData().isBlank(),
+                "Expected a 2xx response with a body to read field '" + fieldName + "' from, but got: "
+                        + (response == null ? "null" : response.getResponseCode() + " / " + response.getData()));
+        Object actual = Utils.extractValueFromPayload(response.getData(), fieldName);
+        Assert.assertTrue(actual instanceof String && !((String) actual).isBlank(),
+                String.format("Response field '%s' was absent, non-string, or blank: [%s]. Data: %s",
+                        fieldName, actual, response.getData()));
+    }
+
+    /**
+     * Asserts membership of one whitespace-delimited token in a successful response field, such as the OAuth
+     * {@code scope} field. Comparing individual tokens prevents a requested scope from passing merely because
+     * its text appears inside a different scope name or another response property.
+     */
+    @Then("The response field {string} should contain token {string}")
+    public void theResponseFieldShouldContainToken(String fieldName, String expectedToken) throws IOException {
+
+        assertResponseFieldContainsToken(fieldName, expectedToken, true);
+    }
+
+    /** Asserts that one exact whitespace-delimited token is absent from a successful response field. */
+    @Then("The response field {string} should not contain token {string}")
+    public void theResponseFieldShouldNotContainToken(String fieldName, String unexpectedToken) throws IOException {
+
+        assertResponseFieldContainsToken(fieldName, unexpectedToken, false);
+    }
+
+    private void assertResponseFieldContainsToken(String fieldName, String expectedToken, boolean shouldContain)
+            throws IOException {
+
+        fieldName = Utils.resolveContextPlaceholders(fieldName);
+        expectedToken = Utils.resolveContextPlaceholders(expectedToken);
+        HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
+        Assert.assertTrue(response != null && response.getResponseCode() >= 200 && response.getResponseCode() < 300
+                        && response.getData() != null && !response.getData().isBlank(),
+                "Expected a 2xx response with a body to read field '" + fieldName + "' from, but got: "
+                        + (response == null ? "null" : response.getResponseCode() + " / " + response.getData()));
+        Object actual = Utils.extractValueFromPayload(response.getData(), fieldName);
+        Assert.assertTrue(actual instanceof String && !((String) actual).isBlank(),
+                String.format("Response field '%s' was absent, non-string, or blank: [%s]. Data: %s",
+                        fieldName, actual, response.getData()));
+        boolean containsToken = Arrays.asList(((String) actual).trim().split("\\s+")).contains(expectedToken);
+        Assert.assertEquals(containsToken, shouldContain,
+                String.format("Response field '%s' was [%s]; expected token '%s' %s. Data: %s",
+                        fieldName, actual, expectedToken, shouldContain ? "to be present" : "to be absent",
+                        response.getData()));
+    }
+
+    /**
      * GATEWAY fault envelope with a DYNAMIC description (one the product formats per request, e.g. the throttle
      * fault's " .You can access API after ..." suffix or the missing-credentials header name). {@code code} and
      * {@code type} are still exact; only the description is a fragment, because an exact match would be asserting
@@ -1048,20 +1193,13 @@ public class BaseSteps {
         for (String field : new String[] {"code", "type", "message", "description"}) {
             Matcher m = Pattern.compile(String.format(FAULT_ELEMENT, field), Pattern.DOTALL).matcher(body);
             if (m.find()) {
-                fault.put(field, unescapeXml(m.group(1).trim()));
+                fault.put(field, Utils.unescapeXml(m.group(1).trim()));
             }
         }
         Assert.assertTrue(fault.has("code"),
                 "Response body carries no fault envelope in either form (no embedded JSON object with a "
                         + "'code', no <code> element), got=" + response.getResponseCode() + "/" + body);
         return fault;
-    }
-
-    /** The five predefined XML entities, so a description carrying markup compares as its literal text. */
-    private static String unescapeXml(String value) {
-
-        return value.replace("&lt;", "<").replace("&gt;", ">").replace("&quot;", "\"")
-                .replace("&apos;", "'").replace("&amp;", "&");
     }
 
     /**
@@ -1509,6 +1647,26 @@ public class BaseSteps {
                 "Response header '" + headerName + "' (" + actual + ") does not contain '" + resolved + "'");
     }
 
+    /** Asserts a response header ends with a value while allowing gateway-specific host rewriting. */
+    @Then("The response header {string} should end with {string}")
+    public void responseHeaderShouldEndWith(String headerName, String expectedSuffix) {
+        String resolved = Utils.resolveContextPlaceholders(expectedSuffix);
+        String actual = responseHeaderValue(headerName);
+        Assert.assertNotNull(actual, "Response header '" + headerName + "' is not present");
+        Assert.assertTrue(actual.endsWith(resolved),
+                "Response header '" + headerName + "' (" + actual + ") does not end with '" + resolved + "'");
+    }
+
+    /** Asserts a response header does not end with a value. */
+    @Then("The response header {string} should not end with {string}")
+    public void responseHeaderShouldNotEndWith(String headerName, String unexpectedSuffix) {
+        String resolved = Utils.resolveContextPlaceholders(unexpectedSuffix);
+        String actual = responseHeaderValue(headerName);
+        Assert.assertNotNull(actual, "Response header '" + headerName + "' is not present");
+        Assert.assertFalse(actual.endsWith(resolved),
+                "Response header '" + headerName + "' (" + actual + ") unexpectedly ends with '" + resolved + "'");
+    }
+
     /** Pins a response header's complete value when the wire contract is exact (for example Content-Type). */
     @Then("The response header {string} should be exactly {string}")
     public void responseHeaderShouldBeExactly(String headerName, String expected) {
@@ -1516,6 +1674,20 @@ public class BaseSteps {
         String actual = responseHeaderValue(headerName);
         Assert.assertNotNull(actual, "Response header '" + headerName + "' is not present");
         Assert.assertEquals(actual, resolved, "Response header '" + headerName + "' value mismatch");
+    }
+
+    /** Asserts a response header's exact value, or its complete absence when the expected value is "absent". */
+    @Then("The response header {string} should match expectation {string}")
+    public void responseHeaderShouldMatchExpectation(String headerName, String expectation) {
+        String actual = responseHeaderValue(headerName);
+        if ("absent".equalsIgnoreCase(expectation)) {
+            Assert.assertNull(actual, "Response header '" + headerName
+                    + "' unexpectedly present with value '" + actual + "'");
+        } else {
+            String resolved = Utils.resolveContextPlaceholders(expectation);
+            Assert.assertNotNull(actual, "Response header '" + headerName + "' is not present");
+            Assert.assertEquals(actual, resolved, "Response header '" + headerName + "' value mismatch");
+        }
     }
 
     /** Asserts a response header is present and its value does NOT contain the substring (e.g. no doubled slash). */
@@ -1979,6 +2151,45 @@ public class BaseSteps {
         Object actualValue = TestContext.resolve(actualKey);
         String finalExpectedValue = Utils.resolveIfContextKey(expectedValue).toString();
         Utils.assertConfigValueMatchesExpectedValue(actualValue, finalExpectedValue);
+    }
+
+    /**
+     * Asserts the actor's exact physical username against the expected value for the current block mode. This
+     * keeps a scenario's behavior identical in standard and email-user blocks while making the mode-dependent
+     * identity transformation an explicit assertion rather than inferring it from successful authentication.
+     */
+    @Then("the actual value of {string} should match standard-mode value {string} and email-mode value {string}")
+    public void actualValueShouldMatchUsernameForBlockMode(String actualKey, String standardModeValue,
+                                                           String emailModeValue) {
+
+        Object actualValue = TestContext.resolve(actualKey);
+        Object emailUserMode = TestContext.get(TenantUserProvisioner.EMAIL_USER_MODE_KEY);
+        Assert.assertTrue(emailUserMode instanceof Boolean,
+                "Block did not publish the emailUserMode setting; cannot select the expected physical username");
+        String expectedValue = (Boolean) emailUserMode ? emailModeValue : standardModeValue;
+        Utils.assertConfigValueMatchesExpectedValue(actualValue, expectedValue);
+    }
+
+    /**
+     * Selects and asserts the product's exact expected HTTP response by configured username mode. This is used
+     * for email-shaped Basic credentials, which are valid only when email-domain parsing is enabled.
+     */
+    @Then("the email-shaped Basic-auth response should be accepted with body containing {string} when email username mode is enabled, otherwise rejected with code {string}")
+    public void emailShapedBasicAuthShouldFollowUsernameMode(String successBody, String standardModeErrorCode) {
+        Object emailUserMode = TestContext.get(TenantUserProvisioner.EMAIL_USER_MODE_KEY);
+        Assert.assertTrue(emailUserMode instanceof Boolean,
+                "Block did not publish the emailUserMode setting; cannot assert Basic-auth mode contract");
+        HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
+        Assert.assertNotNull(response, "No HTTP response was recorded for the Basic-auth invocation");
+        if ((Boolean) emailUserMode) {
+            Assert.assertEquals(response.getResponseCode(), 200, response.getData());
+            Assert.assertTrue(response.getData().contains(Utils.resolveContextPlaceholders(successBody)),
+                    "Successful email-user response did not contain the expected backend body: " + response.getData());
+        } else {
+            Assert.assertEquals(response.getResponseCode(), 403, response.getData());
+            JSONObject error = new JSONObject(response.getData());
+            Assert.assertEquals(error.optString("code"), standardModeErrorCode, response.getData());
+        }
     }
 
     /**

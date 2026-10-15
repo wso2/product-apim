@@ -1,0 +1,59 @@
+{
+  "name": "${UNIQUE:LocalScopeRoleMatrixAPI}",
+  "context": "${UNIQUE:localScopeRoleMatrixContext}",
+  "version": "1.0.0",
+  "endpointConfig": {
+    "endpoint_type": "http",
+    "production_endpoints": {
+      "template_not_supported": false,
+      "config": null,
+      "url": "http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/verb-echo"
+    },
+    "sandbox_endpoints": {
+      "url": "http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/verb-echo",
+      "config": null,
+      "template_not_supported": false
+    }
+  },
+  "description": "API-local GET/POST scopes bound to different principal roles for the APIScopeTestCase role and method matrix.",
+  "policies": ["Unlimited"],
+  "scopes": [
+    {
+      "scope": {
+        "name": "local_get_scope",
+        "displayName": "local_get_scope",
+        "description": "GET scope granted to subscribers",
+        "bindings": ["Internal/subscriber"]
+      },
+      "shared": false
+    },
+    {
+      "scope": {
+        "name": "local_post_scope",
+        "displayName": "local_post_scope",
+        "description": "POST scope granted to administrators",
+        "bindings": ["admin"]
+      },
+      "shared": false
+    }
+  ],
+  "operations": [
+    {
+      "verb": "GET",
+      "target": "/comp/cartes/op/*",
+      "authType": "Application & Application User",
+      "throttlingPolicy": "Unlimited",
+      "scopes": ["local_get_scope"]
+    },
+    {
+      "verb": "POST",
+      "target": "/comp/cartes/op/*",
+      "authType": "Application & Application User",
+      "throttlingPolicy": "Unlimited",
+      "scopes": ["local_post_scope"]
+    }
+  ],
+  "isDefaultVersion": true,
+  "additionalProperties": [],
+  "additionalPropertiesMap": {}
+}

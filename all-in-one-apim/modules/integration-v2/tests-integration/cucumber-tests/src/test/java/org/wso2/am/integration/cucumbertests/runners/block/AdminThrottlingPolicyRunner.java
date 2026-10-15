@@ -21,9 +21,9 @@ import io.cucumber.testng.CucumberOptions;
 
 /**
  * Runner for admin-plane throttling policy CRUD — application (request-count) and custom (Siddhi) rules — the
- * non-restart ports of the legacy Application/CustomThrottlingPolicyServerRestartTestCase. Runs in the
- * dedicated sequential admin-throttling-policy block. The policy names are unique per scenario, but the runner is
- * isolated because API/policy updates can overlap with asynchronous control-plane configuration events.
+ * non-restart ports of the legacy Application/CustomThrottlingPolicyServerRestartTestCase. Runs first in the
+ * sequential KeyManager block. The policy names are unique per scenario, but the runner is isolated because
+ * API/policy updates can overlap with asynchronous control-plane configuration events.
  */
 @CucumberOptions(
         features = {

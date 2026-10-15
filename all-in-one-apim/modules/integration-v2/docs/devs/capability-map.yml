@@ -83,6 +83,7 @@ capabilities:
       environments:        { name: Gateway environments }
       tenants-orgs:        { name: Tenants & organizations }
       application-management: { name: Admin application search & management }
+      carbon-app-upload:    { name: Carbon application archive upload }
       bot-detection:       { name: Bot detection }
       role-scope-mapping:  { name: System scope role-alias mapping }
       api-categories:      { name: API category management }

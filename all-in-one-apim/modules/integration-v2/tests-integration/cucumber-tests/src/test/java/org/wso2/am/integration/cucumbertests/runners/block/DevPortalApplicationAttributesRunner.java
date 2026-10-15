@@ -21,7 +21,7 @@ import io.cucumber.testng.CucumberOptions;
 
 /**
  * Runner for custom application attributes — the port of the legacy ApplicationAttributesTestCase. Runs in the
- * IntegrationV2-ApplicationAttributes block, which needs a feature-specific TOML overlay (backend JWT
+ * IntegrationV2-GatewayAuthAndApplicationConfig block, which needs a feature-specific TOML overlay (backend JWT
  * generation + the declared application attribute) and a backend (the header-reflecting /reflect-headers
  * route), so the attribute can be verified both stored on the application and surfaced in the X-JWT-Assertion
  * backend JWT claim.

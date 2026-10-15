@@ -10,11 +10,11 @@ Feature: Gateway Security Enforcement
   password-change and role-bound scope enforcement in gateway/credential_enforcement. Teardown via the
   per-scenario cleanup hook.
 
-  @cap:gateway @feat:security-enforcement @type:negative @rule:invalid-token @dep:publisher @legacy:APIMANAGERInvocationTestCase @legacy:InvalidTokenTestCase
+  @cap:gateway @feat:security-enforcement @type:negative @rule:invalid-token @dep:publisher @legacy:APIMANAGERInvocationTestCase @legacy:InvalidTokenTestCase @legacy:TokenAPITestCase
   Scenario Outline: Invoke a published API with an invalid token is rejected as <actor>
     Given The system is ready
     And I have valid access tokens as "<actor>"
-    And I have created an api from "artifacts/payloads/create_apim_test_api.json" as "createdApiId" and deployed it
+    And I have created an api from "artifacts/payloads/create_apim_token_test_api.json" as "createdApiId" and deployed it
     When I publish the "apis" resource with id "createdApiId"
     Then The lifecycle status of API "createdApiId" should be "Published"
     When I retrieve the "apis" resource with id "createdApiId"
@@ -29,11 +29,17 @@ Feature: Gateway Security Enforcement
     And I invoke the API at gateway context "{{apiContext}}/1.0.0/customers/123/" with method "GET" using access token "invalidAccessToken" and payload "" until response status code becomes 401 within 60 seconds
     Then The response status code should be 401
     And The error response field "description" should contain "Make sure you have provided the correct security credentials"
+    # Legacy also sends the same invalid token to /most_popular on this API and expects authentication to reject it.
+    And I invoke the API at gateway context "{{apiContext}}/1.0.0/most_popular" with method "GET" using access token "invalidAccessToken" and payload "" until response status code becomes 401 within 60 seconds
+    Then The response status code should be 401
+    And The value of error response field "code" should be "900901"
 
     Examples:
       | actor             |
       | admin             |
       | admin@tenant1.com |
+      | userKey1          |
+      | userKey1@tenant1.com |
 
   @cap:gateway @feat:security-enforcement @type:negative @rule:no-subscription @dep:publisher @legacy:APIMANAGERInvocationTestCase
   Scenario Outline: Invoke a published API with an unsubscribed application's token is refused as <actor>
@@ -241,7 +247,8 @@ Feature: Gateway Security Enforcement
     And The value of response field "name" should be "John"
 
     # Email-form usernames as a gateway Basic credential (legacy's users[] fan-out, apisecUser2@wso2.com /
-    # apisecUser2@abc.com) are COVERED in gateway/basic_auth_email_username.feature, not here: they need
+    # apisecUser2@abc.com) are covered in gateway/basic_auth_security.feature's email-shaped username cases,
+    # which run in both standard and email-user blocks; they need
     # enable_email_domain=true, which only the IntegrationV2-EmailUserName block sets. That block's
     # infrastructure landed with blocker B9 (CLOSED 2026-08-11), superseding the earlier note here that called
     # the dimension out of scope.
@@ -269,10 +276,10 @@ Feature: Gateway Security Enforcement
       | admin@tenant1.com | tenant1.com  |
 
   # A large request body does NOT bypass gateway authentication: a POST of a ~1 MB body with an INVALID bearer token
-  # is rejected, regardless of body size. Ports InvalidAuthTokenLargePayloadTestCase (uploads 1KB/100KB/1MB with a
-  # bad token and asserts the upload is rejected). The API exposes a POST /reflect-body resource so the request
-  # reaches the auth check — a POST to a GET-only resource returns 405 before auth (verified live); with a POST
-  # resource, the invalid token is rejected with 401 (the large body is captured cleanly, no connection drop needed).
+  # is rejected. A 1 MB body exercises the large-request case without duplicating smaller payload sizes. The API
+  # exposes a POST /reflect-body resource so the request reaches the auth check — a POST to a GET-only resource
+  # returns 405 before auth (verified live). The request must return 401 or produce a recognized peer-close error
+  # while uploading; unrelated I/O errors do not count as rejection.
   @cap:gateway @feat:security-enforcement @type:negative @rule:invalid-token @dep:publisher @legacy:InvalidAuthTokenLargePayloadTestCase
   Scenario Outline: A large payload with an invalid token is rejected at the gateway as <actor>
     Given The system is ready
@@ -291,7 +298,7 @@ Feature: Gateway Security Enforcement
     # Warm-up: confirm the POST resource is routable and a small invalid-token POST is rejected (401).
     And I invoke the API at gateway context "{{lpContext}}/1.0.0/reflect-body" with method "POST" using access token "lpInvalidToken" and payload "" until response status code becomes 401 within 60 seconds
     Then The response status code should be 401
-    # The large body must NOT bypass auth — single shot, expect rejection (401 response, or a connection drop).
+    # The large body must NOT bypass auth — single shot, expect 401 or an explicit peer-close while uploading.
     When I invoke the API at gateway context "{{lpContext}}/1.0.0/reflect-body" with method "POST" using access token "lpInvalidToken" and a 1024 KB payload expecting authentication rejection
 
     Examples:

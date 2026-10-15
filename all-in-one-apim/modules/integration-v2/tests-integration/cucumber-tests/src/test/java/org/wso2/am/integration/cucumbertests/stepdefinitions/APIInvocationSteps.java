@@ -384,8 +384,8 @@ public class APIInvocationSteps {
      * prove a throttle limit is at least {@code times} per minute (i.e. a burst of {@code times} calls does NOT
      * trip 429). Distinguishes one application-throttle tier from another: pick {@code times} above the LOW
      * tier's limit but at/below the HIGH tier's, so the burst succeeds only when the higher tier is in effect.
-     * Each individual call is retried briefly on a transient warmup IOException (the same connectivity guard as
-     * the until-status variants), so a still-warming gateway route does not falsely fail the burst.
+     * Every loop iteration sends exactly one HTTP attempt: replaying a GET after a lost response would consume
+     * another gateway quota unit while still looking like one invocation to this assertion.
      */
     @When("I invoke the API at gateway context {string} with method {string} using access token {string} and payload {string} {int} times expecting status 200")
     public void invokeApiByContextNTimesExpecting200(String context, String httpMethod, String accessToken,
@@ -425,10 +425,11 @@ public class APIInvocationSteps {
             if (spacingMillis > 0) {
                 Utils.pollPause(stepStart, spacingMillis);
             }
-            // Each call is retried only until it COMPLETES (any status); the assertion on its status is below.
-            HttpResponse response = Utils.retryUntil(Constants.RUNTIME_PROPAGATION_TIMEOUT,
-                    () -> invokeApiByContext(resolvedContext, httpMethod, accessToken, payload),
-                    completed -> true);
+            log.info("Fixed-count gateway invocation " + i + "/" + times + " sending one HTTP attempt");
+            SimpleHTTPClient client = SimpleHTTPClient.getInstance();
+            HttpResponse response = client.withoutAutomaticRetries(() ->
+                    client.withoutGeneralErrorRetry(() ->
+                            invokeApiByContext(resolvedContext, httpMethod, accessToken, payload)));
             Requests.publishPollResult(response);
             Assert.assertNotNull(response, "Invocation " + i + " of " + times + " never completed (gateway "
                     + "unreachable within the warmup window).");

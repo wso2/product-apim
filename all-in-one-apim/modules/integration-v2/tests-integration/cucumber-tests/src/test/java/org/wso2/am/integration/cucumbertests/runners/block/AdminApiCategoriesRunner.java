@@ -20,8 +20,8 @@ package org.wso2.am.integration.cucumbertests.runners.block;
 import io.cucumber.testng.CucumberOptions;
 
 /**
- * Runner for the admin API-category management API (the port of APICategoriesTestCase). Runs in the concurrent
- * IntegrationV2-Admin block; each scenario deletes the category it creates, and the ResourceCleanup hook sweeps
+ * Runner for the admin API-category management API (the port of APICategoriesTestCase). Runs in the
+ * IntegrationV2-DevPortal block; each scenario deletes the category it creates, and the ResourceCleanup hook sweeps
  * any that leak on a mid-scenario failure.
  */
 @CucumberOptions(

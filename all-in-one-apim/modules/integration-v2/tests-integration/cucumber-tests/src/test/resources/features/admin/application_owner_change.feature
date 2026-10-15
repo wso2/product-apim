@@ -31,6 +31,7 @@ Feature: Admin Application Owner Change
     And I create an application with payload "ownerChangeApp"
     Then The response status code should be 201
     And I extract response field "applicationId" and store it as "ownerChangeAppId"
+    And I extract response field "name" and store it as "ownerChangeAppName"
 
     # Transfer ownership to the subscriber (same domain as the acting admin, resolved by the actor's @domain).
     When I change the owner of application "ownerChangeAppId" to "<newOwner>"
@@ -40,6 +41,7 @@ Feature: Admin Application Owner Change
     When I retrieve the admin applications owned by "<newOwner>"
     Then The response status code should be 200
     And The response should contain "{{ownerChangeAppId}}"
+    And The searched applications should include "{{ownerChangeAppName}}" owned by "<newOwner>"
 
     Examples:
       | actor             | newOwner                   |

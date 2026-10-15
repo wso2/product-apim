@@ -43,6 +43,7 @@ import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.conn.ssl.TrustAllStrategy;
 import org.apache.http.entity.EntityTemplate;
 import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.DefaultHttpRequestRetryHandler;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.ssl.SSLContexts;
@@ -103,6 +104,9 @@ public class SimpleHTTPClient {
     /** Set while this thread runs inside {@link #withoutGeneralErrorRetry}. */
     private static final ThreadLocal<Boolean> GENERAL_ERROR_RETRY_SUSPENDED = new ThreadLocal<>();
 
+    /** Set while a request's exact network attempt count is part of the assertion. */
+    private static final ThreadLocal<Boolean> AUTOMATIC_RETRY_SUSPENDED = new ThreadLocal<>();
+
     private SimpleHTTPClient()  {
 
         try {
@@ -134,6 +138,10 @@ public class SimpleHTTPClient {
             this.client = HttpClients.custom()
                     .setConnectionManager(connManager)
                     .setDefaultRequestConfig(DEFAULT_REQUEST_CONFIG)
+                    .setRetryHandler((exception, executionCount, context) ->
+                            !Boolean.TRUE.equals(AUTOMATIC_RETRY_SUSPENDED.get())
+                                    && DefaultHttpRequestRetryHandler.INSTANCE.retryRequest(exception,
+                                    executionCount, context))
                     .evictExpiredConnections()
                     .disableCookieManagement() // Disable sending or storing cookies
                     .build();
@@ -197,6 +205,26 @@ public class SimpleHTTPClient {
                 GENERAL_ERROR_RETRY_SUSPENDED.remove();
             } else {
                 GENERAL_ERROR_RETRY_SUSPENDED.set(enclosing);
+            }
+        }
+    }
+
+    /**
+     * Runs {@code call} with Apache's automatic I/O retry disabled for requests sent on this thread. This is for
+     * measurements where each client attempt is an observable product event (for example, a gateway burst quota):
+     * a server may process a request and lose its response, so replaying an idempotent GET still changes the
+     * measured request count. Scopes nest and preserve the surrounding thread's retry behavior.
+     */
+    public <T> T withoutAutomaticRetries(ScopedCall<T> call) throws IOException {
+        Boolean enclosing = AUTOMATIC_RETRY_SUSPENDED.get();
+        AUTOMATIC_RETRY_SUSPENDED.set(Boolean.TRUE);
+        try {
+            return call.call();
+        } finally {
+            if (enclosing == null) {
+                AUTOMATIC_RETRY_SUSPENDED.remove();
+            } else {
+                AUTOMATIC_RETRY_SUSPENDED.set(enclosing);
             }
         }
     }

@@ -75,8 +75,10 @@ Feature: API Comment Threads — Edit, Cascade Delete and Moderation Across Both
 
     Examples:
       | actor                     | suffix       |
-      | admin                     |              |
+      | superTenantAdmin                     |              |
       | admin@tenant1.com         | @tenant1.com |
+      | SECONDARY.COM/publisherUser1 | SecondaryStore |
+      | SECONDARY.COM/publisherUser1@tenant1.com | SecondaryStoreTenant |
 
   # Ports testDevPortalEditCommentTest — the same contract entered through the devportal plane.
   @cap:devportal @feat:comments @type:regression @rule:edit @dep:publisher @legacy:DevPortalCommentTest
@@ -117,7 +119,7 @@ Feature: API Comment Threads — Edit, Cascade Delete and Moderation Across Both
 
     Examples:
       | actor                     | suffix       |
-      | admin                     |              |
+      | superTenantAdmin                     |              |
       | admin@tenant1.com         | @tenant1.com |
 
   # ---------------------------------------------------------------------------------------------------------
@@ -137,13 +139,20 @@ Feature: API Comment Threads — Edit, Cascade Delete and Moderation Across Both
 
     Examples:
       | actor                     | suffix       |
-      | admin                     |              |
+      | superTenantAdmin                     |              |
       | admin@tenant1.com         | @tenant1.com |
+      | publisherUser             |              |
+      | SECONDARY.COM/publisherUser1 |              |
+      | publisherUser@tenant1.com | @tenant1.com |
+      | SECONDARY.COM/publisherUser1@tenant1.com | @tenant1.com |
 
   # Ports testDevPortalAdminUserAddReplyToCommentFromPublisherTest.
   @cap:devportal @feat:comments @type:regression @rule:cross-plane @dep:publisher @legacy:PublisherCommentTest
   Scenario Outline: A devportal-plane reply can be added to a publisher-entered root comment as <actor>
-    Given The system is ready and I have valid publisher access tokens as "<actor>"
+    Given The system is ready
+    And I act as "<actor>"
+    And I have a valid DCR application for the current user
+    And I have a valid Devportal access token for the current user
     When I add a "devportal" reply "This is a reply from admin user from DevPortal" to comment "ptRoot2<suffix>" of API "ptApiId<suffix>" as "ptXplaneReply<suffix>"
     Then The response status code should be 201
     And The value of response field "content" should be "This is a reply from admin user from DevPortal"
@@ -152,8 +161,12 @@ Feature: API Comment Threads — Edit, Cascade Delete and Moderation Across Both
 
     Examples:
       | actor                     | suffix       |
-      | admin                     |              |
+      | superTenantAdmin                     |              |
       | admin@tenant1.com         | @tenant1.com |
+      | subscriberUser            |              |
+      | SECONDARY.COM/subscriberUser1 |              |
+      | subscriberUser@tenant1.com | @tenant1.com |
+      | SECONDARY.COM/subscriberUser1@tenant1.com | @tenant1.com |
 
   # ---------------------------------------------------------------------------------------------------------
   # Cascade deletion
@@ -179,10 +192,22 @@ Feature: API Comment Threads — Edit, Cascade Delete and Moderation Across Both
     When I delete the "publisher" comment "ptRoot1<suffix>" of API "ptApiId<suffix>"
     Then The response status code should be 404
 
+    # The legacy flow creates a fresh root and reply after deleting the earlier thread. Keep that sequence here so
+    # the cascade and repeated-delete checks also prove the same API's comment collection remains writable.
+    When I add a "publisher" comment "Post-delete root comment" with category "general" to API "ptApiId<suffix>" as "ptReaddedRoot<suffix>"
+    Then The response status code should be 201
+    And The value of response field "entryPoint" should be "PUBLISHER"
+    When I add a "publisher" reply "Post-delete reply" to comment "ptReaddedRoot<suffix>" of API "ptApiId<suffix>" as "ptReaddedReply<suffix>"
+    Then The response status code should be 201
+    And The value of response field "entryPoint" should be "PUBLISHER"
+    And The value of response field "parentCommentId" should be "{{ptReaddedRoot<suffix>}}"
+
     Examples:
       | actor                     | suffix       |
-      | admin                     |              |
+      | superTenantAdmin                     |              |
       | admin@tenant1.com         | @tenant1.com |
+      | SECONDARY.COM/publisherUser1 | SecondaryStore |
+      | SECONDARY.COM/publisherUser1@tenant1.com | SecondaryStoreTenant |
 
   # Ports testVerifyDevPortalAdminDeleteCommentTest — the delete is issued on the plane the comment did NOT come
   # from, and still cascades.
@@ -195,11 +220,12 @@ Feature: API Comment Threads — Edit, Cascade Delete and Moderation Across Both
     Then The response status code should be 404
     When I retrieve all "devportal" comments of API "ptApiId<suffix>" with limit 5 offset 0
     Then The response status code should be 200
-    And The value of response field "count" should be "0"
+    And The value of response field "count" should be "1"
+    And The value of response field "$.list[0].id" should be "{{ptReaddedRoot<suffix>}}"
 
     Examples:
       | actor                     | suffix       |
-      | admin                     |              |
+      | superTenantAdmin                     |              |
       | admin@tenant1.com         | @tenant1.com |
 
   # Ports testVerifyPublisherAdminDeleteCommentTest — the mirror direction.
@@ -214,10 +240,25 @@ Feature: API Comment Threads — Edit, Cascade Delete and Moderation Across Both
     Then The response status code should be 200
     And The value of response field "count" should be "1"
     And The value of response field "$.list[0].id" should be "{{dtRoot1<suffix>}}"
+    When I delete the "publisher" comment "dtRoot2<suffix>" of API "dtApiId<suffix>"
+    Then The response status code should be 404
+
+    # Also cover the DevPortal-origin three-reply root deleted through its own plane. This retains the CRUD
+    # feature's same-plane cascade and repeat-delete assertions alongside the cross-plane deletion above.
+    When I delete the "devportal" comment "dtRoot1<suffix>" of API "dtApiId<suffix>"
+    Then The response status code should be 200
+    When I retrieve the "devportal" comment "dtReply1<suffix>" of API "dtApiId<suffix>" with reply limit 3 offset 0
+    Then The response status code should be 404
+    When I retrieve the "devportal" comment "dtReply2<suffix>" of API "dtApiId<suffix>" with reply limit 3 offset 0
+    Then The response status code should be 404
+    When I retrieve the "devportal" comment "dtReply3<suffix>" of API "dtApiId<suffix>" with reply limit 3 offset 0
+    Then The response status code should be 404
+    When I delete the "devportal" comment "dtRoot1<suffix>" of API "dtApiId<suffix>"
+    Then The response status code should be 404
 
     Examples:
       | actor                     | suffix       |
-      | admin                     |              |
+      | superTenantAdmin                     |              |
       | admin@tenant1.com         | @tenant1.com |
 
   # ---------------------------------------------------------------------------------------------------------
@@ -235,8 +276,8 @@ Feature: API Comment Threads — Edit, Cascade Delete and Moderation Across Both
   # It also only reaches DELETE — the edit handlers gate on ownership alone. See the two moderator scenarios.
   # ---------------------------------------------------------------------------------------------------------
   # Ports testPublisherAddCommentByNonAdminUserTest + testPublisherAddReplyToNonAdminUserCommentByAdminUserTest.
-  # The first half is what proves an ordinary user can comment at all — the rest of the corpus only ever uses a
-  # non-admin as the REJECTED actor.
+  # Also exercise the author's own edit/delete path on the comment they created. The rest of the corpus uses a
+  # non-admin as the REJECTED actor for admin-owned comments, which is a different ownership case.
   #
   # An OUTLINE over the comment's author, whose SECOND row is a SECONDARY.COM user-store creator (CLAUDE.md §12) —
   # closing the legacy SUPER_TENANT_USER_STORE_USER mode for the comment-authorship facet. Authorship is the right
@@ -262,10 +303,25 @@ Feature: API Comment Threads — Edit, Cascade Delete and Moderation Across Both
     Then The response status code should be 201
     And The value of response field "parentCommentId" should be "{{nonAdminPubRoot<suffix>}}"
 
+    # The author can mutate their own comment; this is deliberately distinct from the 403 checks where the same
+    # actor attempts to mutate an admin-owned comment below.
+    Given I act as "<creator>"
+    When I edit the "publisher" comment "nonAdminPubRoot<suffix>" of API "mtApiId<suffix>" to content "Edited by its author" category "bug fix"
+    Then The response status code should be 200
+    And The value of response field "id" should be "{{nonAdminPubRoot<suffix>}}"
+    And The value of response field "content" should be "Edited by its author"
+    And The value of response field "category" should be "bug fix"
+    When I delete the "publisher" comment "nonAdminPubRoot<suffix>" of API "mtApiId<suffix>"
+    Then The response status code should be 200
+    When I retrieve the "publisher" comment "nonAdminPubRoot<suffix>" of API "mtApiId<suffix>" with reply limit 3 offset 0
+    Then The response status code should be 404
+    When I retrieve the "publisher" comment "adminReplyToNonAdmin" of API "mtApiId<suffix>" with reply limit 3 offset 0
+    Then The response status code should be 404
+
     Examples:
       | actor             | suffix       | creator                                      |
-      | admin             |              | publisherUser                                |
-      | admin             |              | SECONDARY.COM/publisherUser1                 |
+      | superTenantAdmin             |              | publisherUser                                |
+      | superTenantAdmin             |              | SECONDARY.COM/publisherUser1                 |
       | admin@tenant1.com | @tenant1.com | publisherUser@tenant1.com                    |
       | admin@tenant1.com | @tenant1.com | SECONDARY.COM/publisherUser1@tenant1.com     |
 
@@ -275,7 +331,7 @@ Feature: API Comment Threads — Edit, Cascade Delete and Moderation Across Both
     Given The system is ready and I have valid publisher access tokens as "<actor>"
     When I add a "publisher" comment "Admin root for a non admin reply" with category "general" to API "mtApiId<suffix>" as "adminPubRootForNonAdmin"
     Then The response status code should be 201
-    Given I act as "publisherUser<suffix>"
+    Given I act as "<replyActor>"
     And I have a valid DCR application for the current user
     When I add a "publisher" reply "This is a reply from non admin user" to comment "adminPubRootForNonAdmin" of API "mtApiId<suffix>" as "nonAdminReplyToAdmin<suffix>"
     Then The response status code should be 201
@@ -284,9 +340,11 @@ Feature: API Comment Threads — Edit, Cascade Delete and Moderation Across Both
     And The value of response field "parentCommentId" should be "{{adminPubRootForNonAdmin}}"
 
     Examples:
-      | actor                     | suffix       |
-      | admin                     |              |
-      | admin@tenant1.com         | @tenant1.com |
+      | actor             | suffix       | replyActor                                   |
+      | superTenantAdmin             |              | publisherUser                                |
+      | superTenantAdmin             |              | SECONDARY.COM/publisherUser1                 |
+      | admin@tenant1.com | @tenant1.com | publisherUser@tenant1.com                    |
+      | admin@tenant1.com | @tenant1.com | SECONDARY.COM/publisherUser1@tenant1.com     |
 
   # Ports testPublisherEditCommentByNonOwnerNonAdminUserTest + testPublisherDeleteCommentByNonOwnerNonAdminUserTest.
   @cap:devportal @feat:comments @type:negative @rule:moderation @dep:publisher @legacy:PublisherCommentTest
@@ -294,7 +352,7 @@ Feature: API Comment Threads — Edit, Cascade Delete and Moderation Across Both
     Given The system is ready and I have valid publisher access tokens as "<actor>"
     When I add a "publisher" comment "Admin owned publisher comment" with category "general" to API "mtApiId<suffix>" as "adminOwnedPubRoot<suffix>"
     Then The response status code should be 201
-    Given I act as "publisherUser<suffix>"
+    Given I act as "<nonOwner>"
     And I have a valid DCR application for the current user
     When I edit the "publisher" comment "adminOwnedPubRoot<suffix>" of API "mtApiId<suffix>" to content "Edited root comment by non owner non admin user" category "general"
     Then The response status code should be 403
@@ -307,9 +365,11 @@ Feature: API Comment Threads — Edit, Cascade Delete and Moderation Across Both
     And The value of response field "content" should be "Admin owned publisher comment"
 
     Examples:
-      | actor                     | suffix       |
-      | admin                     |              |
-      | admin@tenant1.com         | @tenant1.com |
+      | actor             | suffix       | nonOwner                                     |
+      | superTenantAdmin             |              | publisherUser                                |
+      | superTenantAdmin             |              | SECONDARY.COM/publisherUser1                 |
+      | admin@tenant1.com | @tenant1.com | publisherUser@tenant1.com                    |
+      | admin@tenant1.com | @tenant1.com | SECONDARY.COM/publisherUser1@tenant1.com     |
 
   # Ports testPublisherEditCommentByNonOwnerAdminUserTest + testPublisherDeleteCommentByNonOwnerAdminUserTest.
   # Legacy could not actually test either: its "non-owner admin" client was constructed from the SAME user as the
@@ -332,7 +392,7 @@ Feature: API Comment Threads — Edit, Cascade Delete and Moderation Across Both
   @cap:devportal @feat:comments @type:regression @rule:moderation @dep:publisher @legacy:PublisherCommentTest
   Scenario Outline: A comment moderator may delete but not edit another user's publisher-plane comment as <actor>
     Given The system is ready and I have valid publisher access tokens as "<actor>"
-    Given I act as "publisherUser<suffix>"
+    Given I act as "<commentOwner>"
     And I have a valid DCR application for the current user
     When I add a "publisher" comment "Non admin owned root" with category "general" to API "mtApiId<suffix>" as "moderatedPubRoot<suffix>"
     Then The response status code should be 201
@@ -357,31 +417,68 @@ Feature: API Comment Threads — Edit, Cascade Delete and Moderation Across Both
     Then The response status code should be 404
 
     Examples:
-      | actor                     | suffix       |
-      | admin                     |              |
-      | admin@tenant1.com         | @tenant1.com |
+      | actor             | suffix       | commentOwner                                 |
+      | superTenantAdmin             |              | publisherUser                                |
+      | superTenantAdmin             |              | SECONDARY.COM/publisherUser1                 |
+      | admin@tenant1.com | @tenant1.com | publisherUser@tenant1.com                    |
+      | admin@tenant1.com | @tenant1.com | SECONDARY.COM/publisherUser1@tenant1.com     |
 
-  # Ports testDevPortalAddCommentByNonAdminUserTest + testDevPortalAddReplyToNonAdminUserCommentByAdminUserTest.
+  # Ports testDevPortalAddCommentByNonAdminUserTest + testDevPortalAddReplyToNonAdminUserCommentByAdminUserTest,
+  # and extends the thread to mixed-author replies entered through BOTH planes.
   @cap:devportal @feat:comments @type:regression @rule:moderation @dep:publisher @legacy:DevPortalCommentTest
-  Scenario Outline: A subscriber can add a devportal-plane comment and the admin can reply to it as <actor>
+  Scenario Outline: A subscriber creates a devportal root and admin and publisher users add cross-plane replies as <actor>
     Given The system is ready and I have valid publisher access tokens as "<actor>"
-    Given I act as "subscriberUser<suffix>"
+    Given I act as "<subscriber>"
     And I have a valid DCR application for the current user
     And I have a valid Devportal access token for the current user
+    And I store the username of actor "<subscriber>" as "nonAdminDevAuthor<suffix>"
     When I add a "devportal" comment "This is root comment by non admin user" with category "general" to API "mtApiId<suffix>" as "nonAdminDevRoot<suffix>"
     Then The response status code should be 201
     And The value of response field "content" should be "This is root comment by non admin user"
+    And The value of response field "createdBy" should be "{{nonAdminDevAuthor<suffix>}}"
     And The value of response field "entryPoint" should be "DEVPORTAL"
     And The response field "parentCommentId" should be null
+
+    # The author may edit their own DevPortal comment. The subscriber's own-delete behavior is checked after the
+    # cross-plane replies are added, so deletion must cascade those replies too.
+    When I edit the "devportal" comment "nonAdminDevRoot<suffix>" of API "mtApiId<suffix>" to content "Edited by its author" category "bug fix"
+    Then The response status code should be 200
+    And The value of response field "id" should be "{{nonAdminDevRoot<suffix>}}"
+    And The value of response field "content" should be "Edited by its author"
+    And The value of response field "category" should be "bug fix"
+
     Given I act as "<actor>"
-    When I add a "devportal" reply "This is a reply from admin user" to comment "nonAdminDevRoot<suffix>" of API "mtApiId<suffix>" as "adminDevReplyToNonAdmin"
+    When I add a "devportal" reply "This is a reply from admin user" to comment "nonAdminDevRoot<suffix>" of API "mtApiId<suffix>" as "adminDevReplyToNonAdmin<suffix>"
     Then The response status code should be 201
+    And The value of response field "entryPoint" should be "DEVPORTAL"
+    And The value of response field "parentCommentId" should be "{{nonAdminDevRoot<suffix>}}"
+    Given I act as "publisherUser<suffix>"
+    And I have a valid DCR application for the current user
+    When I add a "publisher" reply "This is a publisher reply from a non-admin user" to comment "nonAdminDevRoot<suffix>" of API "mtApiId<suffix>" as "nonAdminPubReplyToNonAdmin<suffix>"
+    Then The response status code should be 201
+    And The value of response field "entryPoint" should be "PUBLISHER"
     And The value of response field "parentCommentId" should be "{{nonAdminDevRoot<suffix>}}"
 
+    # The subscriber who authored the root can delete it, and the deletion cascades across both entry planes.
+    Given I act as "<subscriber>"
+    When I delete the "devportal" comment "nonAdminDevRoot<suffix>" of API "mtApiId<suffix>"
+    Then The response status code should be 200
+    When I delete the "devportal" comment "nonAdminDevRoot<suffix>" of API "mtApiId<suffix>"
+    Then The response status code should be 404
+    When I retrieve the "devportal" comment "nonAdminDevRoot<suffix>" of API "mtApiId<suffix>" with reply limit 3 offset 0
+    Then The response status code should be 404
+    Given I act as "<actor>"
+    When I retrieve the "devportal" comment "adminDevReplyToNonAdmin<suffix>" of API "mtApiId<suffix>" with reply limit 3 offset 0
+    Then The response status code should be 404
+    When I retrieve the "publisher" comment "nonAdminPubReplyToNonAdmin<suffix>" of API "mtApiId<suffix>" with reply limit 3 offset 0
+    Then The response status code should be 404
+
     Examples:
-      | actor                     | suffix       |
-      | admin                     |              |
-      | admin@tenant1.com         | @tenant1.com |
+      | actor             | suffix       | subscriber                                   |
+      | superTenantAdmin             |              | subscriberUser                               |
+      | superTenantAdmin             |              | SECONDARY.COM/subscriberUser1                |
+      | admin@tenant1.com | @tenant1.com | subscriberUser@tenant1.com                   |
+      | admin@tenant1.com | @tenant1.com | SECONDARY.COM/subscriberUser1@tenant1.com    |
 
   # Ports testDevPortalAddReplyToAdminUserCommentByNonAdminUserTest.
   @cap:devportal @feat:comments @type:regression @rule:moderation @dep:publisher @legacy:DevPortalCommentTest
@@ -389,7 +486,7 @@ Feature: API Comment Threads — Edit, Cascade Delete and Moderation Across Both
     Given The system is ready and I have valid publisher access tokens as "<actor>"
     When I add a "devportal" comment "Admin root for a subscriber reply" with category "general" to API "mtApiId<suffix>" as "adminDevRootForNonAdmin"
     Then The response status code should be 201
-    Given I act as "subscriberUser<suffix>"
+    Given I act as "<subscriber>"
     And I have a valid DCR application for the current user
     And I have a valid Devportal access token for the current user
     When I add a "devportal" reply "This is a reply from non admin user" to comment "adminDevRootForNonAdmin" of API "mtApiId<suffix>" as "nonAdminDevReplyToAdmin<suffix>"
@@ -397,17 +494,42 @@ Feature: API Comment Threads — Edit, Cascade Delete and Moderation Across Both
     And The value of response field "entryPoint" should be "DEVPORTAL"
     And The value of response field "parentCommentId" should be "{{adminDevRootForNonAdmin}}"
 
+    # Preserve the direct DevPortal moderation contract: a non-owner non-admin cannot
+    # edit or delete the admin-owned root, while the owner can still edit and delete it.
+    When I edit the "devportal" comment "adminDevRootForNonAdmin" of API "mtApiId<suffix>" to content "Hijacked" category "general"
+    Then The response status code should be 403
+    When I delete the "devportal" comment "adminDevRootForNonAdmin" of API "mtApiId<suffix>"
+    Then The response status code should be 403
+    When I retrieve the "devportal" comment "adminDevRootForNonAdmin" of API "mtApiId<suffix>" with reply limit 3 offset 0
+    Then The response status code should be 200
+    And The value of response field "content" should be "Admin root for a subscriber reply"
+    And The value of response field "category" should be "general"
+
+    Given I act as "<actor>"
+    When I edit the "devportal" comment "adminDevRootForNonAdmin" of API "mtApiId<suffix>" to content "Owner edit" category "general"
+    Then The response status code should be 200
+    And The value of response field "content" should be "Owner edit"
+    And The value of response field "category" should be "general"
+    When I delete the "devportal" comment "adminDevRootForNonAdmin" of API "mtApiId<suffix>"
+    Then The response status code should be 200
+    When I retrieve the "devportal" comment "adminDevRootForNonAdmin" of API "mtApiId<suffix>" with reply limit 3 offset 0
+    Then The response status code should be 404
+    When I retrieve the "devportal" comment "nonAdminDevReplyToAdmin<suffix>" of API "mtApiId<suffix>" with reply limit 3 offset 0
+    Then The response status code should be 404
+
     Examples:
-      | actor                     | suffix       |
-      | admin                     |              |
-      | admin@tenant1.com         | @tenant1.com |
+      | actor             | suffix       | subscriber                                   |
+      | superTenantAdmin             |              | subscriberUser                               |
+      | superTenantAdmin             |              | SECONDARY.COM/subscriberUser1                |
+      | admin@tenant1.com | @tenant1.com | subscriberUser@tenant1.com                   |
+      | admin@tenant1.com | @tenant1.com | SECONDARY.COM/subscriberUser1@tenant1.com    |
 
   # Ports testDevPortalEditCommentByNonOwnerAdminUserTest + testDevPortalDeleteCommentByNonOwnerAdminUserTest.
   # Same asymmetry as on the publisher plane, and for the same reason — see that scenario's note.
   @cap:devportal @feat:comments @type:regression @rule:moderation @dep:publisher @legacy:DevPortalCommentTest
   Scenario Outline: A comment moderator may delete but not edit another user's devportal-plane comment as <actor>
     Given The system is ready and I have valid publisher access tokens as "<actor>"
-    Given I act as "subscriberUser<suffix>"
+    Given I act as "<subscriber>"
     And I have a valid DCR application for the current user
     And I have a valid Devportal access token for the current user
     When I add a "devportal" comment "Subscriber owned root" with category "general" to API "mtApiId<suffix>" as "moderatedDevRoot<suffix>"
@@ -431,9 +553,11 @@ Feature: API Comment Threads — Edit, Cascade Delete and Moderation Across Both
     Then The response status code should be 404
 
     Examples:
-      | actor                     | suffix       |
-      | admin                     |              |
-      | admin@tenant1.com         | @tenant1.com |
+      | actor             | suffix       | subscriber                                   |
+      | superTenantAdmin             |              | subscriberUser                               |
+      | superTenantAdmin             |              | SECONDARY.COM/subscriberUser1                |
+      | admin@tenant1.com | @tenant1.com | subscriberUser@tenant1.com                   |
+      | admin@tenant1.com | @tenant1.com | SECONDARY.COM/subscriberUser1@tenant1.com    |
 
   # Ports testDevPortalNonAdminUserAddReplyToCommentFromPublisherTest — a non-admin crossing planes inbound.
   @cap:devportal @feat:comments @type:regression @rule:cross-plane @dep:publisher @legacy:PublisherCommentTest
@@ -441,7 +565,7 @@ Feature: API Comment Threads — Edit, Cascade Delete and Moderation Across Both
     Given The system is ready and I have valid publisher access tokens as "<actor>"
     When I add a "publisher" comment "Publisher root for a subscriber reply" with category "general" to API "mtApiId<suffix>" as "pubRootForSubReply<suffix>"
     Then The response status code should be 201
-    Given I act as "subscriberUser<suffix>"
+    Given I act as "<subscriber>"
     And I have a valid DCR application for the current user
     And I have a valid Devportal access token for the current user
     When I add a "devportal" reply "This is a reply from non admin user from DevPortal" to comment "pubRootForSubReply<suffix>" of API "mtApiId<suffix>" as "subDevReplyOnPubRoot<suffix>"
@@ -450,9 +574,11 @@ Feature: API Comment Threads — Edit, Cascade Delete and Moderation Across Both
     And The value of response field "parentCommentId" should be "{{pubRootForSubReply<suffix>}}"
 
     Examples:
-      | actor                     | suffix       |
-      | admin                     |              |
-      | admin@tenant1.com         | @tenant1.com |
+      | actor             | suffix       | subscriber                                   |
+      | superTenantAdmin             |              | subscriberUser                               |
+      | superTenantAdmin             |              | SECONDARY.COM/subscriberUser1                |
+      | admin@tenant1.com | @tenant1.com | subscriberUser@tenant1.com                   |
+      | admin@tenant1.com | @tenant1.com | SECONDARY.COM/subscriberUser1@tenant1.com    |
 
   # Ports testPublisherNonAdminUserAddReplyToCommentFromDevPortalTest — the mirror direction.
   @cap:devportal @feat:comments @type:regression @rule:cross-plane @dep:publisher @legacy:DevPortalCommentTest
@@ -460,7 +586,7 @@ Feature: API Comment Threads — Edit, Cascade Delete and Moderation Across Both
     Given The system is ready and I have valid publisher access tokens as "<actor>"
     When I add a "devportal" comment "Devportal root for a creator reply" with category "general" to API "mtApiId<suffix>" as "devRootForPubReply<suffix>"
     Then The response status code should be 201
-    Given I act as "publisherUser<suffix>"
+    Given I act as "<creator>"
     And I have a valid DCR application for the current user
     When I add a "publisher" reply "This is a reply from non admin user from Publisher" to comment "devRootForPubReply<suffix>" of API "mtApiId<suffix>" as "pubReplyOnDevRoot<suffix>"
     Then The response status code should be 201
@@ -468,6 +594,8 @@ Feature: API Comment Threads — Edit, Cascade Delete and Moderation Across Both
     And The value of response field "parentCommentId" should be "{{devRootForPubReply<suffix>}}"
 
     Examples:
-      | actor                     | suffix       |
-      | admin                     |              |
-      | admin@tenant1.com         | @tenant1.com |
+      | actor             | suffix       | creator                                      |
+      | superTenantAdmin             |              | publisherUser                                |
+      | superTenantAdmin             |              | SECONDARY.COM/publisherUser1                 |
+      | admin@tenant1.com | @tenant1.com | publisherUser@tenant1.com                    |
+      | admin@tenant1.com | @tenant1.com | SECONDARY.COM/publisherUser1@tenant1.com     |

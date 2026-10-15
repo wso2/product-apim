@@ -33,7 +33,6 @@ Feature: Gateway WebSocket API — Anonymous Proxy Routing
   Scenario: proxy routes multiple WS connections — CONNECT count accumulates per connection
     Given The system is ready
     And I have valid access tokens as "admin"
-    And the proxy access logs are cleared
     And I have created an api from "artifacts/payloads/create_apim_ws_echo_api.json" as "wsApiId" and deployed it
     When I publish the "apis" resource with id "wsApiId"
     Then The lifecycle status of API "wsApiId" should be "Published"
@@ -41,8 +40,12 @@ Feature: Gateway WebSocket API — Anonymous Proxy Routing
     And I extract response field "context" and store it as "wsContext"
     When I have set up application with keys, subscribed to API "wsApiId" with plan "AsyncUnlimited", and obtained access token for "wsSubId"
     Then The response status code should be 200
+    # A 200 subscription response can precede gateway route installation. Establish readiness with a real echo,
+    # then clear its setup connection so only the two measured, one-shot invocations count toward CONNECT.
+    When I invoke the WebSocket API at gateway ws context "{{wsContext}}/1.0.0" with message "route-ready" using access token "generatedAccessToken" expecting echo "ROUTE-READY" within 60 seconds
+    And the proxy access logs are cleared
     # Each WebSocket connection establishes its own TCP tunnel through the proxy — the proxy cannot
     # reuse a tunnel across independent WS sessions. Two invocations must produce two CONNECT entries.
-    When I invoke the WebSocket API at gateway ws context "{{wsContext}}/1.0.0" with message "first-connection" using access token "generatedAccessToken" expecting echo "FIRST-CONNECTION" within 60 seconds
-    When I invoke the WebSocket API at gateway ws context "{{wsContext}}/1.0.0" with message "second-connection" using access token "generatedAccessToken" expecting echo "SECOND-CONNECTION" within 60 seconds
+    When I invoke the WebSocket API once at gateway ws context "{{wsContext}}/1.0.0" with message "first-connection" using access token "generatedAccessToken" expecting echo "FIRST-CONNECTION"
+    When I invoke the WebSocket API once at gateway ws context "{{wsContext}}/1.0.0" with message "second-connection" using access token "generatedAccessToken" expecting echo "SECOND-CONNECTION"
     Then the anonymous proxy should have received exactly 2 CONNECT request(s)

@@ -5,8 +5,8 @@ Feature: Publisher Network Access Control - allow-mode remote reference resoluti
   in-network fixtures host, a remote reference to that host is fetched and the definition validates - it is
   NOT blocked as "could not be resolved". And even under allow-mode, a nested reference from an allow-listed document
   to a non-allow-listed host is still rejected, because the resolver re-validates every crawled reference.
-  Ports SafeRefResolutionTestCase (allow-mode group). Runs in the network-access-control-allow container (needs the node
-  fixtures backend on nodebackend:3026).
+  Ports SafeRefResolutionTestCase (allow-mode group). Runs in the IntegrationV2-ApprovalWorkflow block, whose overlay carries the
+  allow-mode policy (needs the node fixtures backend on nodebackend:3026).
 
   # An allow-listed remote reference resolves (is fetched) and the definition validates - not blocked.
   @cap:publisher @feat:network-access-control @rule:allow-mode @type:regression @legacy:SafeRefResolutionTestCase

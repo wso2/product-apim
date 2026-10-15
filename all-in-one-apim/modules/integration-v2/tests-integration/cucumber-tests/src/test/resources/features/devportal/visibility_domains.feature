@@ -97,6 +97,7 @@ Feature: DevPortal Store-side API Visibility Across Domains
   Scenario: A public API is listed anonymously in its own domain but never in another domain
     Given The system is ready
     And I have valid access tokens as "admin"
+    And The system is ready and I have valid devportal access token as "subscriberUser"
     And The system is ready and I have valid devportal access token as "subscriberUser@tenant1.com"
     And I have valid access tokens as "admin@tenant1.com"
 
@@ -112,6 +113,12 @@ Feature: DevPortal Store-side API Visibility Across Domains
     When I search DevPortal APIs with content query "name:{{pubVisName}}" until the result count is 1 within 60 seconds
     Then The response status code should be 200
     When I act as "admin"
+    And I search DevPortal APIs with content query "name:{{pubVisName}}" until the result count is 1 within 60 seconds
+    Then The response status code should be 200
+
+    # PRESENT for an authenticated, non-admin peer in the same domain. The anonymous positive above is not a
+    # substitute for this authenticated Store identity path.
+    When I act as "subscriberUser"
     And I search DevPortal APIs with content query "name:{{pubVisName}}" until the result count is 1 within 60 seconds
     Then The response status code should be 200
 
@@ -132,46 +139,132 @@ Feature: DevPortal Store-side API Visibility Across Domains
     When I search DevPortal APIs anonymously in tenant "tenant1.com" with query "name:{{pubVisName}}" until the result count is 0 within 60 seconds
     Then The response status code should be 200
 
-  # RESTRICTED: only a role-bearing caller of the API's own domain sees it. The OWNER's own store view was
-  # unasserted anywhere in the corpus before this scenario. The other domain's admin is the sharp case — it holds
-  # an identically NAMED admin role in its own tenant, so a role check that ignored the tenant would leak the API.
-  # Closes the cross-domain and anonymous legs of APIVisibilityByRoleTestCase.
+  # RESTRICTED Store-list behavior for both roles used by APIVisibilityByRoleTestCase. The creator and a same-domain
+  # peer are distinct Store actors; a subscriber-only caller sees the Internal/subscriber API but not the admin API.
+  # Cross-domain same-named roles and anonymous listing must not leak either API. Repeats with APIs in both tenants.
   @cap:devportal @feat:visibility @rule:cross-domain @type:regression @dep:publisher @legacy:APIVisibilityByRoleTestCase
-  Scenario: A role-restricted API is listed in the store only for a role-bearing caller of its own domain
+  Scenario Outline: Store listing respects restricted roles and tenant identity for <tenant>
     Given The system is ready
-    And I have valid access tokens as "admin"
-    And The system is ready and I have valid devportal access token as "subscriberUser"
-    And The system is ready and I have valid devportal access token as "subscriberUser@tenant1.com"
-    And I have valid access tokens as "admin@tenant1.com"
+    And I have valid access tokens as "admin@<tenant>"
+    And I provision access-control user "rolVisCreator" with roles "Internal/publisher,Internal/creator,Internal/subscriber" in tenant "<tenant>"
+    And I provision access-control user "rolVisPeer" with roles "admin,Internal/subscriber" in tenant "<tenant>"
+    And I provision access-control user "rolVisSubscriber" with roles "Internal/subscriber" in tenant "<tenant>"
+    And The system is ready and I have valid devportal access token as "rolVisPeer@<tenant>"
+    And The system is ready and I have valid devportal access token as "rolVisSubscriber@<tenant>"
+    And The system is ready and I have valid devportal access token as "subscriberUser@<otherTenant>"
+    And I have valid access tokens as "admin@<otherTenant>"
 
-    # Owned by the carbon.super admin and restricted to the admin role, so the owner carries the visible role.
-    Given I act as "admin"
-    And I generate a unique value and store it as "rolVisName"
-    And I put JSON payload from file "artifacts/payloads/create_apim_test_api.json" in context as "rolVisPayload"
-    And I set the field "name" to "{{rolVisName}}" in the payload "rolVisPayload"
-    And I have created an api from context payload "rolVisPayload" with devportal visibility "RESTRICTED" for roles "admin" as "rolVisApiId" and deployed it
-    When I publish the "apis" resource with id "rolVisApiId"
-    Then The lifecycle status of API "rolVisApiId" should be "Published"
+    # A non-admin creator publishes a pair so Store role filtering can be compared against Internal/subscriber.
+    Given The system is ready and I have valid publisher access tokens as "rolVisCreator@<tenant>"
+    And I generate a unique value and store it as "rolAdminVisName"
+    And I put JSON payload from file "artifacts/payloads/create_apim_test_api.json" in context as "rolAdminVisPayload"
+    And I set the field "name" to "{{rolAdminVisName}}" in the payload "rolAdminVisPayload"
+    And I have created an api from context payload "rolAdminVisPayload" with devportal visibility "RESTRICTED" for roles "admin" as "rolAdminVisApiId" and deployed it
+    When I publish the "apis" resource with id "rolAdminVisApiId"
+    Then The lifecycle status of API "rolAdminVisApiId" should be "Published"
+    And I generate a unique value and store it as "rolSubscriberVisName"
+    And I put JSON payload from file "artifacts/payloads/create_apim_test_api.json" in context as "rolSubscriberVisPayload"
+    And I set the field "name" to "{{rolSubscriberVisName}}" in the payload "rolSubscriberVisPayload"
+    And I have created an api from context payload "rolSubscriberVisPayload" with devportal visibility "RESTRICTED" for roles "Internal/subscriber" as "rolSubscriberVisApiId" and deployed it
+    When I publish the "apis" resource with id "rolSubscriberVisApiId"
+    Then The lifecycle status of API "rolSubscriberVisApiId" should be "Published"
 
-    # PRESENT for the OWNER's own store view (it holds the visible role). Warm-index gate for the absences below.
-    When I search DevPortal APIs with content query "name:{{rolVisName}}" until the result count is 1 within 60 seconds
+    # Creator positive for both APIs; establish the indexed owner result before testing absences.
+    When I search DevPortal APIs with content query "name:{{rolAdminVisName}}" until the result count is 1 within 60 seconds
     Then The response status code should be 200
-
-    # ABSENT for a same-domain subscriber who lacks the visible role — RESTRICTED really restricts within the domain.
-    When I act as "subscriberUser"
-    And I search DevPortal APIs with content query "name:{{rolVisName}}" until the result count is 0 within 60 seconds
-    Then The response status code should be 200
-
-    # ABSENT for the other domain's admin (same role name, different tenant) and for the other domain's subscriber.
-    When I act as "admin@tenant1.com"
-    And I search DevPortal APIs with content query "name:{{rolVisName}}" until the result count is 0 within 60 seconds
-    Then The response status code should be 200
-    When I act as "subscriberUser@tenant1.com"
-    And I search DevPortal APIs with content query "name:{{rolVisName}}" until the result count is 0 within 60 seconds
+    When I search DevPortal APIs with content query "name:{{rolSubscriberVisName}}" until the result count is 1 within 60 seconds
     Then The response status code should be 200
 
-    # ABSENT from the anonymous listing of both domains.
-    When I search DevPortal APIs anonymously in tenant "carbon.super" with query "name:{{rolVisName}}" until the result count is 0 within 60 seconds
+    # A same-domain peer with admin + subscriber sees both; a subscriber-only peer sees only the subscriber API.
+    When I act as "rolVisPeer@<tenant>"
+    And I search DevPortal APIs with content query "name:{{rolAdminVisName}}" until the result count is 1 within 60 seconds
     Then The response status code should be 200
-    When I search DevPortal APIs anonymously in tenant "tenant1.com" with query "name:{{rolVisName}}" until the result count is 0 within 60 seconds
+    When I search DevPortal APIs with content query "name:{{rolSubscriberVisName}}" until the result count is 1 within 60 seconds
     Then The response status code should be 200
+    When I act as "rolVisSubscriber@<tenant>"
+    And I search DevPortal APIs with content query "name:{{rolAdminVisName}}" until the result count is 0 within 60 seconds
+    Then The response status code should be 200
+    When I search DevPortal APIs with content query "name:{{rolSubscriberVisName}}" until the result count is 1 within 60 seconds
+    Then The response status code should be 200
+
+    # Same-domain admin sees both; the other domain's identically-named roles see neither.
+    When I act as "admin@<tenant>"
+    And I search DevPortal APIs with content query "name:{{rolAdminVisName}}" until the result count is 1 within 60 seconds
+    Then The response status code should be 200
+    When I search DevPortal APIs with content query "name:{{rolSubscriberVisName}}" until the result count is 1 within 60 seconds
+    Then The response status code should be 200
+    When I act as "admin@<otherTenant>"
+    And I search DevPortal APIs with content query "name:{{rolAdminVisName}}" until the result count is 0 within 60 seconds
+    Then The response status code should be 200
+    When I search DevPortal APIs with content query "name:{{rolSubscriberVisName}}" until the result count is 0 within 60 seconds
+    Then The response status code should be 200
+    When I act as "subscriberUser@<otherTenant>"
+    And I search DevPortal APIs with content query "name:{{rolAdminVisName}}" until the result count is 0 within 60 seconds
+    Then The response status code should be 200
+    When I search DevPortal APIs with content query "name:{{rolSubscriberVisName}}" until the result count is 0 within 60 seconds
+    Then The response status code should be 200
+
+    # Neither API appears in anonymous listings for either tenant.
+    When I search DevPortal APIs anonymously in tenant "<tenant>" with query "name:{{rolAdminVisName}}" until the result count is 0 within 60 seconds
+    Then The response status code should be 200
+    When I search DevPortal APIs anonymously in tenant "<tenant>" with query "name:{{rolSubscriberVisName}}" until the result count is 0 within 60 seconds
+    Then The response status code should be 200
+    When I search DevPortal APIs anonymously in tenant "<otherTenant>" with query "name:{{rolAdminVisName}}" until the result count is 0 within 60 seconds
+    Then The response status code should be 200
+    When I search DevPortal APIs anonymously in tenant "<otherTenant>" with query "name:{{rolSubscriberVisName}}" until the result count is 0 within 60 seconds
+    Then The response status code should be 200
+
+    Examples:
+      | tenant       | otherTenant  |
+      | carbon.super | tenant1.com  |
+      | tenant1.com  | carbon.super |
+
+  # Additional actor-store parity, beyond legacy's primary-store matrix. Both standard and email-user DevPortal
+  # blocks initialize the secondary JDBC store, so the same full feature matrix runs in each mode.
+  @cap:devportal @feat:visibility @rule:cross-domain @type:regression @dep:publisher @legacy:APIVisibilityByRoleTestCase
+  Scenario Outline: Secondary-store creator and subscribers see only their tenant's subscriber-restricted APIs (<tenant>)
+    Given The system is ready
+    And I have valid access tokens as "admin@<tenant>"
+    And I have valid access tokens as "admin@<otherTenant>"
+    And I provision access-control user "SECONDARY.COM/rolSecCreator" with roles "Internal/publisher,Internal/creator,Internal/subscriber" in tenant "<tenant>"
+    And I provision access-control user "SECONDARY.COM/rolSecPeer" with roles "Internal/subscriber" in tenant "<tenant>"
+    And I provision access-control user "SECONDARY.COM/rolSecWrong" with roles "Internal/everyone" in tenant "<tenant>"
+    And I provision access-control user "SECONDARY.COM/rolSecCross" with roles "Internal/subscriber" in tenant "<otherTenant>"
+    And The system is ready and I have valid devportal access token as "subscriberUser@<tenant>"
+    And The system is ready and I have valid devportal access token as "SECONDARY.COM/rolSecPeer@<tenant>"
+    And The system is ready and I have valid devportal access token as "SECONDARY.COM/rolSecWrong@<tenant>"
+    And The system is ready and I have valid devportal access token as "SECONDARY.COM/rolSecCross@<otherTenant>"
+
+    # Create the API as a secondary-store Publisher/Creator that also has the built-in subscriber role.
+    Given The system is ready and I have valid publisher access tokens as "SECONDARY.COM/rolSecCreator@<tenant>"
+    And I generate a unique value and store it as "rolSecVisName"
+    And I put JSON payload from file "artifacts/payloads/create_apim_test_api.json" in context as "rolSecVisPayload"
+    And I set the field "name" to "{{rolSecVisName}}" in the payload "rolSecVisPayload"
+    And I have created an api from context payload "rolSecVisPayload" with devportal visibility "RESTRICTED" for roles "Internal/subscriber" as "rolSecVisApiId" and deployed it
+    When I publish the "apis" resource with id "rolSecVisApiId"
+    Then The lifecycle status of API "rolSecVisApiId" should be "Published"
+
+    # Creator, same-domain secondary peer, and same-domain primary subscriber all see it.
+    When I search DevPortal APIs with content query "name:{{rolSecVisName}}" until the result count is 1 within 60 seconds
+    Then The response status code should be 200
+    When I act as "SECONDARY.COM/rolSecPeer@<tenant>"
+    And I search DevPortal APIs with content query "name:{{rolSecVisName}}" until the result count is 1 within 60 seconds
+    Then The response status code should be 200
+    When I act as "subscriberUser@<tenant>"
+    And I search DevPortal APIs with content query "name:{{rolSecVisName}}" until the result count is 1 within 60 seconds
+    Then The response status code should be 200
+
+    # A same-domain secondary user without Internal/subscriber and a cross-domain secondary subscriber see nothing.
+    When I act as "SECONDARY.COM/rolSecWrong@<tenant>"
+    And I search DevPortal APIs with content query "name:{{rolSecVisName}}" until the result count is 0 within 60 seconds
+    Then The response status code should be 200
+    When I act as "SECONDARY.COM/rolSecCross@<otherTenant>"
+    And I search DevPortal APIs with content query "name:{{rolSecVisName}}" until the result count is 0 within 60 seconds
+    Then The response status code should be 200
+    When I search DevPortal APIs anonymously in tenant "<tenant>" with query "name:{{rolSecVisName}}" until the result count is 0 within 60 seconds
+    Then The response status code should be 200
+
+    Examples:
+      | tenant       | otherTenant  |
+      | carbon.super | tenant1.com  |
+      | tenant1.com  | carbon.super |

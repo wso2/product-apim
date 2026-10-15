@@ -6,7 +6,7 @@ Feature: Publisher API Definition Import
   imported API at the gateway is covered by gateway/rest-invocation. Each row is self-contained and torn
   down by the per-scenario cleanup hook.
 
-  @cap:publisher @feat:definitions @type:regression @legacy:OASTestCase
+  @cap:publisher @feat:definitions @type:regression @legacy:OASTestCase @legacy:APIMANAGER4877CreateAPIWithScopesAndUpdateTemplateTestCase
   Scenario Outline: Import the OpenAPI definition <apiDefinition> and publish it as <actor>
     Given The system is ready and I have valid publisher access tokens as "<actor>"
     And I put JSON payload from file "<expectedPublisherOperations>" in context as "expectedPublisherOps"
@@ -263,6 +263,7 @@ Feature: Publisher API Definition Import
     # Modify the resources via a swagger update.
     When I update the swagger of "apis" resource "resModApiId" from file "artifacts/payloads/OAS/oas_v3_update_definition.json"
     Then The response status code should be 200
+    And The response body should not be null
     When I retrieve the swagger of "apis" resource "resModApiId"
     Then The response status code should be 200
     # The new resources are present and the original /customers resource has been replaced.
@@ -270,10 +271,68 @@ Feature: Publisher API Definition Import
     And The response should contain "/oldpets"
     And The response should not contain "/customers/{id}"
 
-    Examples:
+    Examples: Primary and secondary-store actors in both tenants
       | actor                     |
       | publisherUser             |
       | publisherUser@tenant1.com |
+      | SECONDARY.COM/publisherUser1           |
+      | SECONDARY.COM/publisherUser1@tenant1.com |
+
+  # The legacy path updates Swagger after publishing a restricted API. Keep that state transition explicit: a
+  # generic CREATED API proves resource replacement, but does not prove a published restricted API remains intact.
+  @cap:publisher @feat:definitions @rule:resource-modification @type:regression @legacy:APIResourceModificationTestCase
+  Scenario Outline: Swagger <definitionFormat> resource replacement preserves a published restricted API as <actor>
+    Given The system is ready and I have valid publisher access tokens as "<actor>"
+    When I have created an api from "artifacts/payloads/create_apim_test_api.json" with restricted visibility for roles "admin" as "resModPublishedApiId" and deployed it
+    And I publish the "apis" resource with id "resModPublishedApiId"
+    Then The lifecycle status of API "resModPublishedApiId" should be "Published"
+
+    # Pin Publisher visibility and the API's identity/configuration before replacing its definition.
+    When I retrieve the "apis" resource with id "resModPublishedApiId"
+    Then The response status code should be 200
+    And The value of response field "id" should be "{{resModPublishedApiId}}"
+    And The value of response field "visibility" should be "RESTRICTED"
+    And The response field "visibleRoles" should be exactly the list "admin"
+    And I extract response field "provider" and store it as "resModPublishedProvider"
+    And I extract response field "name" and store it as "resModPublishedName"
+    And I extract response field "version" and store it as "resModPublishedVersion"
+
+    When I retrieve the swagger of "apis" resource "resModPublishedApiId"
+    Then The response status code should be 200
+    And The response should contain "/customers/{id}"
+    When I update the swagger of "apis" resource "resModPublishedApiId" from file "<definition>"
+    Then The response status code should be 200
+    And The response body should not be null
+
+    # Read the saved definition back, then prove the Swagger update preserved API identity and restricted state.
+    When I retrieve the swagger of "apis" resource "resModPublishedApiId"
+    Then The response status code should be 200
+    And The response should contain "<replacementPath>"
+    And The response should not contain "/customers/{id}"
+    And I put the response payload in context as "resModPublishedUpdatedDefinition"
+    And The definition stored as "resModPublishedUpdatedDefinition" should match the published replacement profile "<definitionFormat>"
+
+    When I retrieve the "apis" resource with id "resModPublishedApiId"
+    Then The response status code should be 200
+    And The value of response field "id" should be "{{resModPublishedApiId}}"
+    And The value of response field "provider" should be "{{resModPublishedProvider}}"
+    And The value of response field "name" should be "{{resModPublishedName}}"
+    And The value of response field "version" should be "{{resModPublishedVersion}}"
+    And The value of response field "visibility" should be "RESTRICTED"
+    And The response field "visibleRoles" should be exactly the list "admin"
+    Then The lifecycle status of API "resModPublishedApiId" should be "Published"
+
+    Examples: Primary and secondary-store actors in both tenants and definition formats
+      | actor                     | definitionFormat | definition                                               | replacementPath |
+      | publisherUser             | OAS 3.0.1        | artifacts/payloads/OAS/oas_v3_update_definition.json     | /pets           |
+      | publisherUser             | Swagger 2.0      | artifacts/payloads/OAS/oas_v2_resource_replacement.json  | /*              |
+      | publisherUser@tenant1.com | OAS 3.0.1        | artifacts/payloads/OAS/oas_v3_update_definition.json     | /pets           |
+      | publisherUser@tenant1.com | Swagger 2.0      | artifacts/payloads/OAS/oas_v2_resource_replacement.json  | /*              |
+
+      | SECONDARY.COM/publisherUser1             | OAS 3.0.1        | artifacts/payloads/OAS/oas_v3_update_definition.json     | /pets           |
+      | SECONDARY.COM/publisherUser1             | Swagger 2.0      | artifacts/payloads/OAS/oas_v2_resource_replacement.json  | /*              |
+      | SECONDARY.COM/publisherUser1@tenant1.com | OAS 3.0.1        | artifacts/payloads/OAS/oas_v3_update_definition.json     | /pets           |
+      | SECONDARY.COM/publisherUser1@tenant1.com | Swagger 2.0      | artifacts/payloads/OAS/oas_v2_resource_replacement.json  | /*              |
 
     # Advance endpoint configs survive a definition update (the OAS carries x-wso2 advance endpoint config). The
   # circuit-breaker VALUES and their per-environment split are what legacy
@@ -412,7 +471,7 @@ Feature: Publisher API Definition Import
   # Deletion is confirmed by a READ: legacy APIM18 testRemoveAnAPIThroughThePublisherRest asserted the DELETE's 200
   # AND that a following GET of the same id returns 404. Several v2 scenarios delete an API, but none confirmed the
   # effect — a delete that answers 200 while leaving the API retrievable would have gone unnoticed.
-  @cap:publisher @feat:definitions @type:regression @legacy:APIM18CreateAnAPIThroughThePublisherRestAPITestCase
+  @cap:publisher @feat:definitions @type:regression @legacy:APIM18CreateAnAPIThroughThePublisherRestAPITestCase @legacy:APITestCase
   Scenario Outline: A deleted API can no longer be retrieved as <actor>
     Given The system is ready and I have valid publisher access tokens as "<actor>"
     And I put JSON payload from file "artifacts/payloads/create_apim_test_api.json" in context as "delApiPayload"
@@ -440,6 +499,28 @@ Feature: Publisher API Definition Import
     When I retrieve the swagger of "apis" resource "archiveApiId"
     Then The response status code should be 200
     And The response should contain "dataSetList"
+    And I put the response payload in context as "archiveImportedSwagger"
+    And The imported OpenAPI definition in "archiveImportedSwagger" should have resolved schema "dataSetList" with properties "total,apis"
+
+    Examples:
+      | actor                     |
+      | publisherUser             |
+      | publisherUser@tenant1.com |
+
+  # The name stays unique while the second import reuses the first API's resolved context. This exercises the
+  # import/export route's context-collision validation (distinct from the plain POST /apis collision in api_lifecycle).
+  # Ports APIM18CreateAnAPIThroughThePublisherRestAPITestCase#testImportSwaggerAndCreateAPIWithSameContext.
+  @cap:publisher @feat:definitions @rule:archive-import @type:negative @legacy:APIM18CreateAnAPIThroughThePublisherRestAPITestCase
+  Scenario Outline: Importing an OpenAPI archive with an already-used context is rejected as <actor>
+    Given The system is ready and I have valid publisher access tokens as "<actor>"
+    When I import api from archive "artifacts/swagger/swagger-archive.zip" with additional properties "artifacts/payloads/archive_additional_properties.json" as "archiveCollisionApiId"
+    Then The response status code should be 201
+    When I retrieve the "apis" resource with id "archiveCollisionApiId"
+    Then The response status code should be 200
+    And I extract response field "context" and store it as "archiveCollisionContext"
+    When I import api from archive "artifacts/swagger/swagger-archive.zip" with additional properties "artifacts/payloads/archive_collision_additional_properties.json" as "duplicateArchiveApiId"
+    Then The response status code should be 409
+    And The response should contain "The API context already exists"
 
     Examples:
       | actor                     |
@@ -763,7 +844,7 @@ Feature: Publisher API Definition Import
   # resource-owner PASSWORD. That last one is assertable HERE — and only here — because these import properties
   # carry distinct literal credentials that collide with nothing else in the payload, whereas the gateway
   # password-grant scenario uses the acting actor's own carbon password (see the OAUTH password-grant scenario in
-  # gateway/security_enforcement.feature). Together with that scenario this pins the PASSWORD-grant config on BOTH
+  # gateway/endpoint_security.feature). Together with that scenario this pins the PASSWORD-grant config on BOTH
   # the create path (here) and the update path (there).
   # Ports the PASSWORD-grant half of AddEndPointSecurityPerTypeTestCase#testAPIDefinitionImportWithEndpointSecurity.
   @cap:publisher @feat:definitions @rule:import-export @type:regression @legacy:AddEndPointSecurityPerTypeTestCase
@@ -1173,6 +1254,16 @@ Feature: Publisher API Definition Import
     And The value of response field "corsConfiguration.corsConfigurationEnabled" should be "true"
 
     # The retrieved definition now carries the x-wso2-cors extension with the config enabled.
+    When I retrieve the swagger of "apis" resource "corsSwApiId"
+    Then The response status code should be 200
+    And The value of response field "$['x-wso2-cors']['corsConfigurationEnabled']" should be "true"
+
+    # Round-trip the retrieved Swagger unchanged through the Publisher update endpoint. Check the mutation response
+    # itself as well as the subsequent readback so an empty/stale PUT response cannot pass just because state persisted.
+    When I put the response payload in context as "corsEnabledSwagger"
+    And I update the swagger of "apis" resource "corsSwApiId" from context "corsEnabledSwagger"
+    Then The response status code should be 200
+    And The value of response field "$['x-wso2-cors']['corsConfigurationEnabled']" should be "true"
     When I retrieve the swagger of "apis" resource "corsSwApiId"
     Then The response status code should be 200
     And The value of response field "$['x-wso2-cors']['corsConfigurationEnabled']" should be "true"
