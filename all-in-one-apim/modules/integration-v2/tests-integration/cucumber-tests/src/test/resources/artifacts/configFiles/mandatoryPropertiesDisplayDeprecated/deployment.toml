@@ -1,0 +1,26 @@
+# Overlay for the IntegrationV2-MandatoryPropertiesAndDisplayDeprecated block: PublisherMandatoryPropertiesRunner and
+# DevPortalDeprecatedApiDiscoverabilityRunner, one runner at a time. Merged on top of the shared `basic` overlay.
+# The distributed suite keeps the two keys in separate blocks (mandatoryProperties/ and displayDeprecatedApis/).
+#
+# The two keys are mutually inert for these runners:
+#   - [apim.devportal] display_deprecated_apis only widens the lcState filter RegistrySearchUtil
+#     .getDevPortalSearchQuery appends to devportal searches and listings. The mandatory-properties runner makes
+#     publisher calls only (create, deploy, update, GET) and never queries the devportal.
+#   - The required custom property is checked on update (empty value -> 400) and on the lifecycle PUBLISH action
+#     (APIProviderImpl#changeLifeCycleStatus, 903015 for an API without it). The deprecated-discoverability
+#     feature creates its API from create_apim_test_api_with_mandatory_property.json, which carries a non-empty
+#     PropertyName, so its publish passes and its Deprecate action is not gated.
+# Any further runner that publishes a property-less API or asserts devportal search counts cannot join this block.
+
+# --- PublisherMandatoryPropertiesRunner (MandatoryPropertiesTestWithRestart): a required custom API property, so
+# updating an API with the property present-but-empty is rejected (400). ---
+[[apim.publisher.custom_properties]]
+required = true
+name = "PropertyName"
+description = "Property Description"
+
+# --- DevPortalDeprecatedApiDiscoverabilityRunner: renders <APIStore><DisplayAllAPIs>true</DisplayAllAPIs> into
+# api-manager.xml (api-manager.xml.j2 line 640), so DEPRECATED is included in the devportal lcState filter. The
+# distribution ships it false; the false direction is asserted in devportal/subscribe.feature. ---
+[apim.devportal]
+display_deprecated_apis = true

@@ -70,6 +70,9 @@ public interface ApimRuntime {
 
     ApimRuntime withCoverage();
 
+    /** Caps the runtime's CPU usage (Docker {@code --cpus}). Must be called before {@link #start()}. */
+    ApimRuntime withCpuLimit(CpuLimit limit);
+
     ApimRuntime withExternalKmTrust();
 
     ApimRuntime withExternalIsNotificationAlias();

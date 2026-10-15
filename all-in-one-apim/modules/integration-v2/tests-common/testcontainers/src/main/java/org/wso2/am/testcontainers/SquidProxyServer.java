@@ -61,6 +61,9 @@ public class SquidProxyServer {
     /** Proxy password baked into the image's htpasswd file. */
     public static final String PROXY_PASSWORD = "testproxypass";
 
+    /** Both Squid instances together use a few percent of one core at peak (measured), so half a CPU is ample. */
+    public static final CpuLimit CPU_LIMIT = CpuLimit.of(0.5);
+
     private final GenericContainer<?> container;
     private final String blockLabel;
 
@@ -71,6 +74,7 @@ public class SquidProxyServer {
                 .withExposedPorts(ANON_PORT, AUTH_PORT)
                 .withNetwork(network)
                 .withNetworkAliases("squid-proxy")
+                .withCreateContainerCmdModifier(CPU_LIMIT::applyTo)
                 .waitingFor(Wait.forListeningPort().withStartupTimeout(Duration.ofMinutes(2)));
 
         container.withLogConsumer(new JclLogConsumer(logger));
@@ -79,7 +83,7 @@ public class SquidProxyServer {
     public void start() {
         container.start();
         logger.info("SquidProxyServer for block '" + blockLabel + "' started — anon port " + ANON_PORT
-                + ", auth port " + AUTH_PORT);
+                + ", auth port " + AUTH_PORT + ", " + CPU_LIMIT);
     }
 
     public void stop() {

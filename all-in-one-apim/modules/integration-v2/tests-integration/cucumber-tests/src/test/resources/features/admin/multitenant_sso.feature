@@ -31,11 +31,11 @@ Feature: Multi-tenant console SSO via an external Identity Server
     And I authenticate at the identity server as the tenant's SSO user
     Then I should land authenticated in the "publisher" console as a tenant user
     And the "publisher" console session should belong to the tenant's SSO user
-    # Role-gated work is the proof that matters. Creating an API requires a creator role, so it only
-    # succeeds if the identity server groups reached API Manager as roles; and the provider recorded for
-    # it carries the tenant, which is what makes this multi-tenant rather than a federated login that
-    # happens to work.
-    And I report where the federated user landed and what roles it holds
+    # Creating an API needs an API Manager role that grants API creation, so it succeeds only if the identity
+    # server's groups reached API Manager as roles. This user also holds the admin group, whose tenant-admin
+    # role grants API creation by itself; the creator group's mapping is proven by the creator-only scenario
+    # at the end of this feature. The provider recorded for the API carries the tenant, which is what makes
+    # this multi-tenant rather than a federated login that happens to work.
     And I create a REST API via the publisher UI as the tenant user named "MT_SSO_API"
     Then the created API should be owned by the tenant's SSO user in tenant "abc.com"
     And I deploy and publish the created API through the publisher UI
@@ -147,3 +147,51 @@ Feature: Multi-tenant console SSO via an external Identity Server
       | tenant       |
       | carbon.super |
       | abc.com      |
+
+  # The creator group alone must be enough to create an API. This user holds no other group, so the create can
+  # only succeed through the identity server's creator group reaching API Manager as Internal/creator. After the
+  # journeys above: provisioning makes this user the tenant's SSO user for the steps that follow it.
+  @cap:admin @feat:sso @rule:multitenant-sso @type:regression
+  Scenario: A tenant user holding only the creator group creates an API through the multi-tenant broker
+
+    Given I provision the SSO user "ssocreator" with password "Test@12345" in groups "creator" in tenant "abc.com"
+    And a real browser session for the multi-tenant SSO journey
+    When I open the "publisher" console login page for multi-tenant SSO
+    Then the multi-tenant console login page must carry "multiOptionURI" and offer local plus broker authentication
+    When I select the multi-tenant broker federated authenticator
+    And I select the tenant "abc.com" on the broker's tenant-selection page
+    And I authenticate at the identity server as the tenant's SSO user
+    Then I should land authenticated in the "publisher" console as a tenant user
+    And the "publisher" console session should belong to the tenant's SSO user
+    And I create a REST API via the publisher UI as the tenant user named "MT_SSO_CREATOR_ONLY_API"
+    Then the created API should be owned by the tenant's SSO user in tenant "abc.com"
+    And the "publisher" console session token should carry the scopes "apim:api_create"
+    # The same create as a REST call with the session's own token: the request the next scenario's user is refused.
+    When I create a REST API named "MT_SSO_CREATOR_ONLY_REST_API" through the "publisher" console session
+    Then The response status code should be 201
+
+  # The negative of the scenario above. A user holding only the publisher group signs in to the Publisher with an
+  # active session that can read and publish APIs but carries no API-creation scope, and the create request that
+  # succeeds for the creator-only user is refused by the Publisher REST API's scope validation, which answers 401
+  # "Unauthenticated request" for a token that lacks the required scope. Last in the feature for the same reason as
+  # the scenario above.
+  @cap:admin @feat:sso @rule:multitenant-sso @type:negative
+  Scenario: A tenant user holding only the publisher group cannot create an API through the multi-tenant broker
+
+    Given I provision the SSO user "ssopublisher" with password "Test@12345" in groups "publisher" in tenant "abc.com"
+    And a real browser session for the multi-tenant SSO journey
+    When I open the "publisher" console login page for multi-tenant SSO
+    Then the multi-tenant console login page must carry "multiOptionURI" and offer local plus broker authentication
+    When I select the multi-tenant broker federated authenticator
+    And I select the tenant "abc.com" on the broker's tenant-selection page
+    And I authenticate at the identity server as the tenant's SSO user
+    Then I should land authenticated in the "publisher" console as a tenant user
+    And the "publisher" console session should belong to the tenant's SSO user
+    And the "publisher" console session token should carry the scopes "apim:api_view,apim:api_publish"
+    And the "publisher" console session token should carry none of the scopes "apim:api_create,apim:api_manage,apim:api_create_only"
+    When I retrieve the Publisher API list through the "publisher" console session
+    Then The response status code should be 200
+    When I create a REST API named "MT_SSO_PUBLISHER_ONLY_API" through the "publisher" console session
+    Then The response status code should be 401
+    And The value of error response field "code" should be "401"
+    And The value of error response field "description" should be "Unauthenticated request"

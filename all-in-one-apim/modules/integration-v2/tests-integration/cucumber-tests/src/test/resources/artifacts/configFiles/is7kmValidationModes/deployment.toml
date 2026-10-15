@@ -1,14 +1,17 @@
-# Combined overlay for the IntegrationV2-Is7KeyManagerValidationModes block — the INTROSPECTION and PEM
-# external-KM validation modes co-hosted at thread-count=1 (see testng-v2.xml; the KM mode itself is the
+# Overlay for the IntegrationV2-Is7KeyManager block (the CP overlay of the distributed Is7KeyManagerValidationModes
+# block) — its self-validate runners plus the INTROSPECTION and PEM
+# external-KM validation modes, at thread-count=1 (see testng-v2.xml; the KM mode itself is the
 # feature-registered payload, these keys are test-convergence pins). Merged on top of the shared `basic`
-# overlay. Verified mutually inert:
+# overlay. The self-validate revoke->401 is unaffected by the gateway_token pin: the gateway checks its
+# revoked-JWT map (filled only by the IS->APIM notify) whatever the token cache setting — mutation-verified,
+# cache off + notify off keeps the revoked token at 200. Verified mutually inert:
 #   - token_expiry_time (introspection's pin) never touches the PEM arc: PEM is gateway self-validation with
 #     the gateway token cache disabled below, so no token cache TTL participates.
 #   - gateway_token off (PEM's pin) never touches the introspection assertion: the revoke->401 walk converges
 #     via the separate IntrospectionCache's TTL eviction (diagnosed with gateway/km token caches OFF — this
 #     layer is independent), and removing the gateway cache can only avoid stale 200s, never add them.
 #   - the wso2am.p12 keystore (SAN dns:localhost,dns:wso2am) is pure KM plumbing, valid for both.
-# MUST stay thread-count=1: both runners register KMs with the SAME issuer (https://wso2is:9443) in
+# MUST stay thread-count=1: every runner registers KMs with the SAME issuer (https://wso2is:9443) in
 # carbon.super; concurrent runners would hold two same-issuer KMs at once, making the gateway's issuer->KM
 # resolution ambiguous between introspection-mode and PEM-pinned semantics. Sequential classes + per-scenario
 # cleanup keep at most one same-issuer KM per org live.
@@ -35,3 +38,58 @@ token_expiry_time = 15
 # observed (revocation has a cache override; a certificate change does not). ---
 [apim.cache.gateway_token]
 enable = false
+
+# --- TokenExchangeRunner: enforce the JWT type header at the gateway, so the at+jwt token the exchange issues is
+# accepted while an OIDC id_token (no at+jwt type header) is refused (900905). The check lives in the Resident Key
+# Manager's TypeEnforcedJWTValidatorImpl only; the WSO2-IS-7 connector (every IS7 and external-IdP key manager in
+# this block) validates with the plain JWTValidatorImpl, and the Resident-KM tokens the other runners present are
+# at+jwt, so no other runner's verdict changes. The shipped config already enables the token-exchange grant. ---
+[apim.token.validation]
+enforce_type_header_validation = true
+# --- Backend JWT and application attributes for FederatedBackendJwtRunner (FederatedUserJWTTestCase, last in the
+# block) and ExternalIdpJwtRunner (ExternalIDPJWTTestCase): the gateway injects X-JWT-Assertion, and the declared attributes surface in its
+# applicationAttributes claim. Every attribute has a default, so applications the IS7 runners create without
+# attributes are accepted. The External Reference Id default differs from the value the backend-JWT scenarios send,
+# so their exact applicationAttributes assertion proves the sent value, not the default, reaches the claim. ---
+[apim.jwt]
+enable = true
+encoding = "base64"
+claim_dialect = "http://wso2.org/claims"
+header = "X-JWT-Assertion"
+signing_algorithm = "SHA256withRSA"
+
+# --- ExternalIdpJwtRunner (ExternalIDPJWTTestCase): the gateway JWT generator copies every claim of a validated
+# external-IdP token into the backend JWT except a restricted set and this list, so this unmapped remote claim is
+# asserted ABSENT while another unmapped claim passes through. No other runner in the block uses the claim. ---
+[apim.jwt.gateway_generator]
+excluded_claims = ["http://idp.org/claims/mobileno"]
+
+[apim.devportal]
+enable_empty_values_in_application_attributes = true
+
+[[apim.devportal.application_attributes]]
+required = true
+hidden = false
+default = "unset-external-reference"
+name = "External Reference Id"
+description = "External Reference Id"
+
+[[apim.devportal.application_attributes]]
+required = false
+hidden = false
+name = "Optional attribute"
+description = "Description of Optional attribute"
+
+[[apim.devportal.application_attributes]]
+required = true
+hidden = false
+default = "Yes"
+name = "Sandbox access required"
+description = "Does this Application require access to APIs in the Sandbox environment ? (Yes or No)"
+
+[[apim.devportal.application_attributes]]
+required = true
+hidden = false
+default = "Yes"
+name = "Production access required"
+description = "Does this Application require access to APIs in the Production environment ? (Yes or No)"

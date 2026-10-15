@@ -18,10 +18,13 @@
 package org.wso2.am.integration.cucumbertests.stepdefinitions;
 
 import io.cucumber.core.options.CurlOption;
+import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.http.Header;
+import org.apache.http.message.BasicHeader;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.testng.Assert;
@@ -29,6 +32,7 @@ import org.wso2.am.integration.cucumbertests.utils.HealGate;
 import org.wso2.am.integration.cucumbertests.utils.Identity;
 import org.wso2.am.integration.cucumbertests.utils.Requests;
 import org.wso2.am.integration.cucumbertests.utils.TestContext;
+import org.wso2.am.integration.cucumbertests.utils.TenantUserProvisioner;
 import org.wso2.am.integration.cucumbertests.utils.Utils;
 import org.wso2.am.integration.cucumbertests.utils.clients.SimpleHTTPClient;
 import org.wso2.am.integration.test.utils.Constants;
@@ -36,6 +40,8 @@ import org.wso2.carbon.automation.engine.context.beans.User;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import java.io.IOException;
+import java.net.SocketException;
+import java.net.SocketTimeoutException;
 import java.nio.charset.StandardCharsets;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
@@ -86,6 +92,14 @@ public class APIInvocationSteps {
      * propagation window, which would read as "not throttled" for a timing reason rather than a product one.
      */
     private static final int THROTTLED_SSE_DELAY_MILLIS = 1000;
+    /**
+     * Read-stall bound for a gateway invocation made inside a {@link Utils#retryUntil} attempt. A request the
+     * gateway accepts but never answers then fails as a retriable {@link java.net.SocketTimeoutException} and the
+     * next attempt is sent, instead of the attempt holding until the gateway's own 180-second socket timeout closes
+     * the window. Twice the longest deliberate backend delay in the suite (a 30-second endpoint timeout); it bounds
+     * the gap between reads, so a progressing stream is unaffected.
+     */
+    private static final int RETRY_ATTEMPT_SOCKET_TIMEOUT_MILLIS = 60_000;
     /** Slack past a throttle window's expiry: covers the one-second, truncating resolution of the Date header. */
     private static final long THROTTLE_WINDOW_ROLLOVER_MARGIN_MILLIS = 2000L;
     private static final DateTimeFormatter THROTTLE_EXPIRY_FORMAT =
@@ -102,32 +116,142 @@ public class APIInvocationSteps {
     private HttpResponse execute(CurlOption.HttpMethod method, String endpointUrl, Map<String, String> headers,
                                  String payload, String contentType, boolean rawGet) throws IOException {
 
+        return execute(method, endpointUrl, headers, payload, contentType, rawGet, 0);
+    }
+
+    /** Same invocation funnel, with a request-local read timeout for a timeout that is itself under test. */
+    private HttpResponse execute(CurlOption.HttpMethod method, String endpointUrl, Map<String, String> headers,
+                                 String payload, String contentType, boolean rawGet, int socketTimeoutMillis)
+            throws IOException {
+
         return Requests.execute(() -> {
             SimpleHTTPClient client = SimpleHTTPClient.getInstance();
-            if (rawGet) {
-                // GET with the client's URI normalization DISABLED, so a percent-encoded path segment reaches the
-                // gateway verbatim; method/payload/contentType are unused on this path.
-                return client.doGetRaw(endpointUrl, headers);
+            if (Utils.inRetryAttempt()) {
+                return client.withSocketTimeout(RETRY_ATTEMPT_SOCKET_TIMEOUT_MILLIS, () -> dispatch(client, method,
+                        endpointUrl, headers, payload, contentType, rawGet, socketTimeoutMillis));
             }
-            switch (method) {
-                case GET:
-                    return client.doGet(endpointUrl, headers);
-                case DELETE:
-                    return client.doDelete(endpointUrl, headers);
-                case POST:
-                    return client.doPost(endpointUrl, headers, payload, contentType);
-                case PUT:
-                    return client.doPut(endpointUrl, headers, payload, contentType);
-                case PATCH:
-                    return client.doPatch(endpointUrl, headers, payload, contentType);
-                case HEAD:
-                    return client.doHead(endpointUrl, headers);
-                case OPTIONS:
-                    return client.doOptions(endpointUrl, headers);
-                default:
-                    throw new IllegalArgumentException("Unsupported HTTP method for invocation: " + method);
-            }
+            return dispatch(client, method, endpointUrl, headers, payload, contentType, rawGet, socketTimeoutMillis);
         });
+    }
+
+    private static HttpResponse dispatch(SimpleHTTPClient client, CurlOption.HttpMethod method, String endpointUrl,
+                                         Map<String, String> headers, String payload, String contentType,
+                                         boolean rawGet, int socketTimeoutMillis) throws IOException {
+        if (rawGet) {
+            // GET with the client's URI normalization DISABLED, so a percent-encoded path segment reaches the
+            // gateway verbatim; method/payload/contentType are unused on this path.
+            return client.doGetRaw(endpointUrl, headers);
+        }
+        if (socketTimeoutMillis > 0) {
+            if (method != CurlOption.HttpMethod.GET) {
+                throw new IllegalArgumentException("Per-request socket timeout currently supports GET only");
+            }
+            return client.doGetWithSocketTimeout(endpointUrl, headers, socketTimeoutMillis);
+        }
+        switch (method) {
+            case GET:
+                return client.doGet(endpointUrl, headers);
+            case DELETE:
+                return client.doDelete(endpointUrl, headers);
+            case POST:
+                return client.doPost(endpointUrl, headers, payload, contentType);
+            case PUT:
+                return client.doPut(endpointUrl, headers, payload, contentType);
+            case PATCH:
+                return client.doPatch(endpointUrl, headers, payload, contentType);
+            case HEAD:
+                return client.doHead(endpointUrl, headers);
+            case OPTIONS:
+                return client.doOptions(endpointUrl, headers);
+            default:
+                throw new IllegalArgumentException("Unsupported HTTP method for invocation: " + method);
+        }
+    }
+
+    /**
+     * Invokes a deployed API with no authentication and requires the caller's read timeout to expire. Only the
+     * expected SocketTimeoutException is accepted; a successful response, gateway error response, connection
+     * failure, or NullPointerException fails the scenario.
+     */
+    @When("I invoke the API at gateway context {string} without authentication and expect a socket timeout within {int} milliseconds")
+    public void invokeApiAndExpectSocketTimeout(String context, int socketTimeoutMillis) throws IOException {
+
+        String resolvedContext = Utils.resolveContextPlaceholders(context);
+        String endpointUrl = Utils.getBaseGatewayUrl() + (resolvedContext.startsWith("/") ? "" : "/")
+                + resolvedContext;
+        try {
+            HttpResponse response = execute(CurlOption.HttpMethod.GET, endpointUrl, new HashMap<>(), "", null, false,
+                    socketTimeoutMillis);
+            Assert.fail("Expected a socket read timeout after " + socketTimeoutMillis + "ms for " + endpointUrl
+                    + ", but the gateway returned HTTP " + response.getResponseCode() + " with body: "
+                    + response.getData());
+        } catch (SocketTimeoutException expectedTimeout) {
+            log.info("Expected client socket timeout while the API response was still pending: " + endpointUrl);
+        }
+    }
+
+    /** Waits for the delayed upstream to finish after the gateway caller has already timed out. */
+    @Then("the delayed backend should complete request {string} within {int} seconds")
+    public void delayedBackendShouldComplete(String requestIdRef, int timeoutSeconds)
+            throws IOException, InterruptedException {
+
+        String requestId = Utils.resolveContextPlaceholders(TestContext.resolve(requestIdRef).toString());
+        String statusUrl = Utils.getNodeBackendUrl(3001)
+                + "/jaxrs_basic/services/customers/customerservice/timeout-probe/"
+                + Utils.urlEncode(requestId) + "/status";
+        Boolean completed = Utils.retryUntilWithInterval(timeoutSeconds * 1000L, 250L, () -> {
+            HttpResponse response = SimpleHTTPClient.getInstance().doGet(statusUrl, Collections.emptyMap());
+            Assert.assertTrue(response != null && response.getResponseCode() == 200
+                            && response.getData() != null && !response.getData().isBlank(),
+                    "Unable to read delayed backend completion status for request '" + requestId + "': "
+                            + (response == null ? "null" : response.getResponseCode() + " / " + response.getData()));
+            return new JSONObject(response.getData()).optBoolean("completed", false);
+        }, Boolean.TRUE::equals);
+        Assert.assertEquals(completed, Boolean.TRUE,
+                "The backend did not finish the delayed response after the gateway caller timed out for request '"
+                        + requestId + "'");
+    }
+
+    /** Sends one GET with duplicate headers in the declared order, for backend-observed wire-order assertions. */
+    @When("I invoke the API at gateway context {string} once with access token {string} and repeated request header {string} values in order:")
+    public void invokeOnceWithRepeatedRequestHeaders(String context, String accessToken, String headerName,
+                                                     DataTable values) throws IOException {
+
+        String resolvedContext = Utils.resolveContextPlaceholders(context);
+        String endpointUrl = Utils.getBaseGatewayUrl() + (resolvedContext.startsWith("/") ? "" : "/")
+                + resolvedContext;
+        String token = TestContext.resolve(accessToken).toString();
+        Map<String, String> requestHeaders = new HashMap<>();
+        requestHeaders.put("Authorization", "Bearer " + token);
+        List<Header> repeatedHeaders = values.asList(String.class).stream()
+                .map(value -> (Header) new BasicHeader(headerName, Utils.resolveContextPlaceholders(value)))
+                .collect(Collectors.toList());
+        Assert.assertFalse(repeatedHeaders.isEmpty(), "At least one repeated header value is required");
+        Requests.execute(() -> SimpleHTTPClient.getInstance().doGet(endpointUrl, requestHeaders, repeatedHeaders));
+    }
+
+    /** Checks exact repeated-header values in the raw request metadata reflected by the backend. */
+    @Then("The backend request's repeated {string} header values should be in this order:")
+    public void backendRepeatedHeaderValuesShouldBeInOrder(String headerName, DataTable expectedValues) {
+
+        Object value = TestContext.get(HTTP_RESPONSE_KEY);
+        Assert.assertTrue(value instanceof HttpResponse, "Gateway invocation produced no HTTP response");
+        HttpResponse response = (HttpResponse) value;
+        Assert.assertEquals(response.getResponseCode(), 200,
+                "Expected the reflection backend to respond successfully: " + response.getData());
+        JSONObject body = new JSONObject(response.getData());
+        JSONArray rawHeaders = body.optJSONArray("rawHeaders");
+        Assert.assertNotNull(rawHeaders, "Reflection backend response omitted raw request headers");
+        Assert.assertEquals(rawHeaders.length() % 2, 0, "Backend rawHeaders must contain name/value pairs");
+        List<String> actualValues = new ArrayList<>();
+        for (int i = 0; i < rawHeaders.length(); i += 2) {
+            if (headerName.equalsIgnoreCase(rawHeaders.getString(i))) {
+                actualValues.add(rawHeaders.getString(i + 1));
+            }
+        }
+        List<String> expected = expectedValues.asList(String.class);
+        Assert.assertEquals(actualValues, expected,
+                "Backend did not receive the repeated " + headerName + " values in the expected order");
     }
 
     /** {@link #execute(CurlOption.HttpMethod, String, Map, String, String, boolean)} for a normalized request. */
@@ -145,11 +269,11 @@ public class APIInvocationSteps {
     /**
      * A large request body must NOT bypass gateway authentication: a POST of a {@code sizeKb}-KB body with an invalid
      * bearer token is rejected, regardless of size. Ports InvalidAuthTokenLargePayloadTestCase — which uploads 1KB /
-     * 100KB / 1MB files with a bad token and asserts the upload is rejected. Two outcomes both satisfy the security
-     * property (the request never reaches the backend): the client captures a 401 response, OR the gateway rejects
-     * auth and closes the connection before consuming the body (a reset/broken pipe, exactly what the legacy catches).
-     * Only "connection refused"/"no route" (gateway down) is a genuine failure. A single shot (no retry) so a
-     * connection reset is not masked as a timeout.
+     * 100KB / 1MB files with a bad token and asserts the upload is rejected. A 401 response proves rejection
+     * directly. The only accepted transport failure is a recognized socket close while the client is uploading
+     * (reset, broken pipe, or remote abort), which can occur when the gateway rejects before consuming the body.
+     * Timeouts, protocol errors, and unrelated I/O failures fail this step. A single shot (no retry) keeps a
+     * connection reset from being masked as a timeout.
      */
     @When("I invoke the API at gateway context {string} with method {string} using access token {string} and a {int} KB payload expecting authentication rejection")
     public void invokeLargePayloadExpectAuthRejection(String context, String httpMethod, String token, int sizeKb)
@@ -168,10 +292,39 @@ public class APIInvocationSteps {
                     "A " + sizeKb + "KB payload with an invalid token must be rejected with 401, got "
                             + response.getResponseCode() + ": " + response.getData());
         } catch (IOException e) {
-            String msg = String.valueOf(e.getMessage()).toLowerCase();
-            Assert.assertFalse(msg.contains("connection refused") || msg.contains("no route to host"),
-                    "Gateway unreachable — not an auth rejection: " + e.getMessage());
+            Assert.assertTrue(isExpectedUploadRejectionClose(e),
+                    "Large invalid-token request failed for a reason other than an authentication-related socket "
+                            + "close: " + describeIOExceptionChain(e));
         }
+    }
+
+    /**
+     * Only treats explicit peer-close errors during upload as the gateway rejecting the request before consuming
+     * its body. Other IOExceptions (including timeouts, refused connections, DNS/routing errors, and protocol
+     * failures) are not evidence of authentication enforcement.
+     */
+    private boolean isExpectedUploadRejectionClose(IOException exception) {
+        for (Throwable cause = exception; cause != null; cause = cause.getCause()) {
+            if (!(cause instanceof SocketException)) {
+                continue;
+            }
+            String message = String.valueOf(cause.getMessage()).toLowerCase(Locale.ROOT);
+            if (message.contains("connection reset") || message.contains("reset by peer")
+                    || message.contains("broken pipe") || message.contains("connection aborted")
+                    || message.contains("forcibly closed by remote host")
+                    || message.contains("connection closed by peer")) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private String describeIOExceptionChain(IOException exception) {
+        List<String> descriptions = new ArrayList<>();
+        for (Throwable cause = exception; cause != null; cause = cause.getCause()) {
+            descriptions.add(cause.getClass().getSimpleName() + ": " + cause.getMessage());
+        }
+        return String.join(" <- ", descriptions);
     }
 
     /**
@@ -505,6 +658,55 @@ public class APIInvocationSteps {
     }
 
     /**
+     * Exercises the request-shape matrix for the templated-context regression in one scenario. The table's
+     * optional Accept value is omitted when blank, so it can preserve both the current JSON request and the
+     * legacy XML-negotiated request without duplicating API setup. Each response is checked for the customer
+     * returned by the backend, rather than treating a successful status as sufficient.
+     */
+    @When("I invoke the API at gateway context {string} with access token {string} using these request variants:")
+    public void invokeApiUsingRequestVariants(String context, String accessToken, DataTable variants) throws Exception {
+
+        String resolvedContext = Utils.resolveContextPlaceholders(context);
+        String actualAccessToken = TestContext.resolve(accessToken).toString();
+        for (Map<String, String> variant : variants.asMaps(String.class, String.class)) {
+            String suffix = variant.get("pathSuffix");
+            String accept = variant.get("accept");
+            String responseFormat = variant.get("responseFormat");
+            String expectedId = variant.get("id");
+            String expectedName = variant.get("name");
+            String endpointUrl = Utils.getBaseGatewayUrl()
+                    + (resolvedContext.startsWith("/") ? "" : "/") + resolvedContext + suffix;
+            Map<String, String> headers = new HashMap<>();
+            headers.put("Authorization", "Bearer " + actualAccessToken);
+            if (accept != null && !accept.isBlank()) {
+                headers.put("Accept", accept);
+            }
+
+            HttpResponse response = Utils.retryUntil(60_000L,
+                    () -> execute(CurlOption.HttpMethod.GET, endpointUrl, headers, null),
+                    candidate -> candidate.getResponseCode() == 200);
+            assertReachedExpectedStatus(response, 200);
+            if ("json".equalsIgnoreCase(responseFormat)) {
+                JSONObject body = new JSONObject(response.getData());
+                Assert.assertEquals(String.valueOf(body.get("id")), expectedId,
+                        "Unexpected customer id for request variant " + variant);
+                Assert.assertEquals(body.getString("name"), expectedName,
+                        "Unexpected customer name for request variant " + variant);
+            } else if ("xml".equalsIgnoreCase(responseFormat)) {
+                String body = response.getData();
+                Assert.assertTrue(body.contains("<id>" + expectedId + "</id>"),
+                        "XML response did not contain the expected customer id for request variant " + variant
+                                + ": " + body);
+                Assert.assertTrue(body.contains("<name>" + expectedName + "</name>"),
+                        "XML response did not contain the expected customer name for request variant " + variant
+                                + ": " + body);
+            } else {
+                Assert.fail("Unsupported responseFormat in request variant table: " + responseFormat);
+            }
+        }
+    }
+
+    /**
      * Performs one invocation after the feature has established gateway readiness. Unlike the polling form, this
      * exposes the first response unchanged so an eventual retry cannot mask a regression in the behavior under test.
      */
@@ -514,6 +716,32 @@ public class APIInvocationSteps {
 
         String resolvedContext = Utils.resolveContextPlaceholders(context);
         invokeApiByContext(resolvedContext, httpMethod, accessToken, payload);
+    }
+
+    /**
+     * Asserts the exact outcome of a matrix invocation, pinning the backend dispatch whenever the expected outcome
+     * is successful. Negative scope cases intentionally assert only the exact denial status because the request must
+     * not reach the backend.
+     */
+    @Then("The gateway invocation should return HTTP {int} and, when successful, identify method {string} and path {string}")
+    public void gatewayInvocationShouldReturnStatusAndBackendDispatch(int expectedStatus, String expectedMethod,
+                                                                       String expectedPath) {
+
+        Object value = TestContext.get(HTTP_RESPONSE_KEY);
+        Assert.assertTrue(value instanceof HttpResponse,
+                "Gateway invocation produced no HTTP response for expected status " + expectedStatus);
+        HttpResponse response = (HttpResponse) value;
+        Assert.assertEquals(response.getResponseCode(), expectedStatus,
+                "Unexpected gateway response: " + response.getData());
+        if (expectedStatus >= 200 && expectedStatus < 300) {
+            Assert.assertTrue(response.getData() != null && !response.getData().isBlank(),
+                    "Successful gateway response had no backend dispatch body");
+            JSONObject body = new JSONObject(response.getData());
+            Assert.assertEquals(body.optString("method"), expectedMethod,
+                    "Gateway dispatched a different HTTP method than requested");
+            Assert.assertEquals(body.optString("path"), expectedPath,
+                    "Gateway dispatched to an unexpected backend path");
+        }
     }
 
     /** One-shot content-type variant for empty-body mediation assertions after an explicit readiness gate. */
@@ -887,6 +1115,54 @@ public class APIInvocationSteps {
         headers.put("Authorization", "Bearer " + actualAccessToken);
         headers.put(headerName, resolvedHeaderValue);
         execute(CurlOption.HttpMethod.valueOf(httpMethod.toUpperCase()), endpointUrl, headers, actualPayload);
+    }
+
+    /**
+     * Combines the {@code in header} and {@code with request header} variants: the bearer token goes in the given
+     * CUSTOM authorization header (the container's {@code [apim.oauth_config] auth_header}) and one additional
+     * request header is sent alongside it, retrying until the expected status. No standard {@code Authorization}
+     * header is sent.
+     */
+    @When("I invoke the API at gateway context {string} with method {string} using access token {string} in header {string} and payload {string} with request header {string} set to {string} until response status code becomes {int} within {int} seconds")
+    public void invokeApiByContextInHeaderWithHeaderUntilStatus(String context, String httpMethod, String accessToken,
+                                                                String tokenHeaderName, String payload,
+                                                                String headerName, String headerValue,
+                                                                int expectedStatus, int timeoutSeconds)
+            throws Exception {
+
+        String resolvedContext = Utils.resolveContextPlaceholders(context);
+        invokeUntilStatus(resolvedContext, accessToken, expectedStatus, timeoutSeconds,
+                () -> invokeApiByContextInHeaderWithHeader(resolvedContext, httpMethod, accessToken, tokenHeaderName,
+                        payload, headerName, headerValue));
+    }
+
+    /**
+     * Single-request form of the custom-token-header plus additional-header invocation; publishes the response for
+     * the ordinary status/body assertions without retrying.
+     */
+    @When("I invoke the API once at gateway context {string} with method {string} using access token {string} in header {string} and payload {string} with request header {string} set to {string}")
+    public void invokeApiByContextOnceInHeaderWithHeader(String context, String httpMethod, String accessToken,
+                                                         String tokenHeaderName, String payload, String headerName,
+                                                         String headerValue) throws Exception {
+
+        invokeApiByContextInHeaderWithHeader(Utils.resolveContextPlaceholders(context), httpMethod, accessToken,
+                tokenHeaderName, payload, headerName, headerValue);
+    }
+
+    private HttpResponse invokeApiByContextInHeaderWithHeader(String resolvedContext, String httpMethod,
+                                                              String accessToken, String tokenHeaderName,
+                                                              String payload, String headerName, String headerValue)
+            throws IOException {
+
+        String actualAccessToken = TestContext.resolve(accessToken).toString();
+        String resolvedHeaderValue = Utils.resolveContextPlaceholders(headerValue);
+        String actualPayload = payload == null || payload.isEmpty() ? null : TestContext.resolve(payload).toString();
+        String endpointUrl = Utils.getBaseGatewayUrl()
+                + (resolvedContext.startsWith("/") ? "" : "/") + resolvedContext;
+        Map<String, String> headers = new HashMap<>();
+        headers.put(tokenHeaderName, "Bearer " + actualAccessToken);
+        headers.put(headerName, resolvedHeaderValue);
+        return execute(CurlOption.HttpMethod.valueOf(httpMethod.toUpperCase()), endpointUrl, headers, actualPayload);
     }
 
     /**
@@ -1369,6 +1645,25 @@ public class APIInvocationSteps {
     }
 
     /**
+     * Basic-auth invocation whose expected outcome is explicitly mode-dependent. Email-shaped usernames are
+     * parsed differently when email-domain support is enabled, so the same email credential must be accepted in
+     * email-user mode and rejected in ordinary username mode rather than making either block skip the scenario.
+     */
+    @When("I invoke the API at gateway context {string} with method {string} using basic auth username {string} password {string} until response status code becomes {int} when email username mode is disabled or {int} when enabled within {int} seconds")
+    public void invokeApiByContextUsingBasicAuthCredsForUsernameMode(String context, String httpMethod,
+            String username, String password, int standardModeStatus, int emailModeStatus, int timeoutSeconds)
+            throws Exception {
+        String creds = Base64.getEncoder().encodeToString(
+                (Utils.resolveContextPlaceholders(username) + ":" + Utils.resolveContextPlaceholders(password))
+                        .getBytes(StandardCharsets.UTF_8));
+        Object emailUserMode = TestContext.get(TenantUserProvisioner.EMAIL_USER_MODE_KEY);
+        Assert.assertTrue(emailUserMode instanceof Boolean,
+                "Block did not publish the emailUserMode setting; cannot select the expected Basic-auth result");
+        int expectedStatus = (Boolean) emailUserMode ? emailModeStatus : standardModeStatus;
+        invokeWithBasicAuthUntilStatus(context, httpMethod, "Basic " + creds, expectedStatus, timeoutSeconds);
+    }
+
+    /**
      * Basic-auth invocation using a VALID actor's username with an OVERRIDDEN (wrong) password — the faithful
      * wrong-credentials negative (a valid user + bad password → 401, consistently across tenants; a made-up
      * domainless username instead resolves against the super tenant and yields 403 on a tenant API).
@@ -1503,6 +1798,30 @@ public class APIInvocationSteps {
         // super-tenant one (ports the legacy OpenIDTokenAPITestCase tenant branch).
         execute(CurlOption.HttpMethod.GET,
                 Utils.getUserInfoEndpointURL(baseUrl, Identity.actingTenantDomain()), headers, null);
+    }
+
+    /** Invokes userinfo with an explicit route and optional query, for legacy endpoint-shape parity checks. */
+    @When("I invoke the OpenID userinfo endpoint using access token {string} at route {string} with query {string}")
+    public void invokeUserInfoEndpoint(String accessToken, String route, String query) throws Exception {
+
+        String actualAccessToken = TestContext.resolve(accessToken).toString();
+        String baseUrl = TestContext.get("baseUrl").toString();
+        String endpoint;
+        if ("unqualified".equals(route)) {
+            endpoint = Utils.getUserInfoEndpointURL(baseUrl);
+        } else if ("tenant-qualified".equals(route)) {
+            endpoint = Utils.getUserInfoEndpointURL(baseUrl, Identity.actingTenantDomain());
+        } else {
+            throw new IllegalArgumentException("Unsupported userinfo route: " + route);
+        }
+        if (!query.isBlank() && !"none".equals(query)) {
+            endpoint += "?" + query;
+        }
+
+        Map<String, String> headers = new HashMap<>();
+        headers.put("Authorization", "Bearer " + actualAccessToken);
+        headers.put("accept", "application/json");
+        execute(CurlOption.HttpMethod.GET, endpoint, headers, null);
     }
 
     /**

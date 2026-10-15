@@ -13,10 +13,13 @@
 #   - config.toml, listener-certs, the aesgcm key and api-platform.env are materialized next to this file by
 #     DynamicPlatformGatewayContainer under a $HOME-shared path (Colima does NOT share /tmp into its VM, so
 #     file bind-mounts from /tmp silently become empty directories).
+#   - the two services share a 1-CPU budget: gateway-runtime (request path) 0.75, gateway-controller (config
+#     push on deploy) 0.25.
 services:
   gateway-controller:
     image: ghcr.io/wso2/api-platform/gateway-controller:${PG_GATEWAY_VERSION:-1.2.0}
     command: ["-config", "/etc/gateway-controller/config.toml"]
+    cpus: 0.25
     env_file:
       - api-platform.env
     volumes:
@@ -34,6 +37,7 @@ services:
   gateway-runtime:
     image: ghcr.io/wso2/api-platform/gateway-runtime:${PG_GATEWAY_VERSION:-1.2.0}
     command: ["--pol.config", "/etc/policy-engine/config.toml"]
+    cpus: 0.75
     env_file:
       - api-platform.env
     environment:

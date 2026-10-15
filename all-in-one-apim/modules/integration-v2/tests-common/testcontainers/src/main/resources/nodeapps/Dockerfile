@@ -76,13 +76,15 @@ COPY tenant1-tls-backend ./tenant1-tls-backend
 COPY custom-status-backend ./custom-status-backend
 # network-access-control-fixtures is dependency-free (pure Node http), so it needs no package.json COPY / npm install above.
 COPY network-access-control-fixtures ./network-access-control-fixtures
+# oauth-token-stub is dependency-free (pure Node http) as well.
+COPY oauth-token-stub ./oauth-token-stub
 
 # 6. Copy PM2 ecosystem config file
 COPY ecosystem.config.js .
 
 # 7. Expose ports used by the apps
 EXPOSE 3000 3001 3002 3003 3004 3005 3006 3007 3008 3009 3010 3011 3012 3013 3014 3015 3016 3017 3018 3019 \
-       3021 3022 3023 3024 3026 3027
+       3021 3022 3023 3024 3026 3027 3028
 
 # 8. Start  apps using pm2-runtime
 CMD ["pm2-runtime", "ecosystem.config.js"]

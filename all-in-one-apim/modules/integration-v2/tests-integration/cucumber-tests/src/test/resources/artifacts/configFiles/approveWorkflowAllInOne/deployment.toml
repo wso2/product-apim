@@ -1,0 +1,66 @@
+# All-in-one overlay for the IntegrationV2-ApprovalWorkflow block: the approveWorkflow/ keys plus the
+# wsProxyAuthRouting WebSocket proxy profile and the networkAccessControlAllow allow-mode policy. The distributed
+# suite keeps using approveWorkflow/ and wsProxyAuthRouting/ separately.
+#
+# Extra TOML overlay for the approval-workflow block (merged on top of the shared `basic` overlay).
+# Declares the three custom devportal application attributes the legacy WorkflowApprovalExecutorTest
+# sets on its applications. The Approval executors' `applicationAttributesVisibility=true` Property
+# (in workflow-extensions.xml, written to the registry by the _setup_ feature) then surfaces these
+# attributes inside the pending workflow's `properties.applicationAttributes`, which the
+# application-creation / update / deletion scenarios assert on.
+[[apim.devportal.application_attributes]]
+name = "External Reference ID"
+description = "Used for internal billing tracking"
+required = false
+hidden = false
+
+[[apim.devportal.application_attributes]]
+name = "Technical Contact"
+description = "Email address of the primary developer or lead"
+required = false
+hidden = false
+
+[[apim.devportal.application_attributes]]
+name = "Department Name"
+description = "The department owning this app"
+required = false
+hidden = false
+
+# ---------------------------------------------------------------------------------------------
+# GatewayWebSocketProxyAuthRoutingRunner (WebSocketProxyProfileTestCase), from wsProxyAuthRouting/deployment.toml. [[transport.ws.proxy_profile]] only
+# routes the gateway's OUTBOUND WebSocket connections; no other runner in this block invokes a WebSocket API,
+# so the proxy sees only this runner's traffic and its exact Squid CONNECT counts stay valid.
+# ---------------------------------------------------------------------------------------------
+# Tests end-to-end WS routing through the Basic-auth Squid proxy. A single profile matches
+# "nodebackend" WITHOUT bypass_hosts, pointing at squid-proxy:3129 (the authenticated instance).
+# The gateway attaches a Proxy-Authorization header carrying the credentials baked into the
+# Squid htpasswd file. Squid validates the credentials, resolves "nodebackend" on the shared
+# Docker network, and relays the tunnel.
+#
+# A passing echo + exactly one CONNECT entry in the Squid authenticated access log (asserted via
+# SquidProxyServer.getAuthConnectCount()) proves the gateway sent valid credentials and the
+# proxy accepted the connection.
+
+[[transport.ws.proxy_profile]]
+target_hosts = ["nodebackend"]
+proxy_host = "squid-proxy"
+proxy_port = 3129
+proxy_username = "testproxyuser"
+proxy_password = "testproxypass"
+
+# ---------------------------------------------------------------------------------------------
+# NetworkAccessControlAllowRunner + NetworkAccessControlUrlAllowRunner (SafeRefResolutionTestCase allow-mode group,
+# HostValidationAllowModeTestCase). The policy gates every publisher/admin operation that takes a remote URL: API
+# create and update (the endpoint URLs), definition import and validation, swagger update, validate-endpoint, the
+# API-endpoints resource, archive import, MCP servers, and key-manager creation and discovery. Publish, subscribe,
+# key generation and gateway traffic are not gated. Every API the block's runners create points at nodebackend,
+# the one allow-listed host, so they pass; a runner whose API backend, definition reference or key-manager URL
+# names any other host is rejected in this block and must not be added to it.
+# ---------------------------------------------------------------------------------------------
+# mode="allow" with the in-network fixtures host allow-listed: a remote reference to
+# http://nodebackend:3026/... is permitted and actually fetched (the positive control), while any other
+# host - including a nested reference from that allow-listed document to a loopback address - stays blocked.
+# Ports the old safeRefResolutionAllow overlay (SafeRefResolutionAllowTestSuite; there hosts=["127.0.0.1"]).
+[server.network_security.access_control]
+mode = "allow"
+hosts = ["nodebackend"]

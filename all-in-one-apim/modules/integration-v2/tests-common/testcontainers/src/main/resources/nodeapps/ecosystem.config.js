@@ -218,6 +218,14 @@ module.exports = {
     env: {
       PORT: 3026
     }
+  },
+  {
+    name: "oauth-token-stub",
+    script: "./oauth-token-stub/server.js",
+    cwd: "./",
+    env: {
+      PORT: 3028
+    }
   }
   ]
 };

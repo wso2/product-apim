@@ -179,7 +179,9 @@ public class OrganizationSteps {
     public void iDeleteOrganization(String idKey) throws IOException {
 
         String orgId = TestContext.resolve(idKey).toString();
-        Requests.delete(Utils.getOrganizationByIdURL(Utils.getBaseUrl(), orgId), Identity.adminHeaders());
+        HttpResponse response = Requests.delete(Utils.getOrganizationByIdURL(Utils.getBaseUrl(), orgId),
+                Identity.adminHeaders());
+        ResourceCleanup.deregisterIfDeleted(Constants.CREATED_ORGANIZATION_IDS, orgId, response);
     }
 
     /**

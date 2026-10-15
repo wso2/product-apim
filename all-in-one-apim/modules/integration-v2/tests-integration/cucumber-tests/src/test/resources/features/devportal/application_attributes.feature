@@ -55,7 +55,7 @@ Feature: DevPortal Custom Application Attributes
 
     # Invoke through the gateway; the reflecting backend returns the headers it received, including the
     # gateway-injected X-JWT-Assertion carrying the applicationAttributes claim.
-    When I invoke the API at gateway context "{{apiContext}}/1.0.0/reflect-headers" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
+    When I invoke the API at gateway context "{{apiContext}}/1.0.0/reflect-headers" with method "GET" using access token "generatedAccessToken" in header "Test-Custom-Header" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
     And The reflected backend JWT should contain application attribute "External Reference Id" with value "c1237890"
 

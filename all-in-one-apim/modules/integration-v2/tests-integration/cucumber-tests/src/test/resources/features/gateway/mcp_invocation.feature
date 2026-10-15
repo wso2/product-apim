@@ -65,8 +65,8 @@ Feature: MCP tool invocation through the gateway
     When I invoke MCP tools in one session at gateway context "{{mcpContext}}" version "1.0.0" using access token "generatedAccessToken" with calls "echo|{\"message\":\"multi\"}|multi ; add|{\"a\":10,\"b\":20}|30" within 90 seconds
     # Value-add 3 — JSON-RPC error passthrough: a non-exposed tool yields an MCP error through the gateway.
     When I invoke the MCP tool "nosuchtool" with arguments "{}" at gateway context "{{mcpContext}}" version "1.0.0" using access token "generatedAccessToken" expecting an error within 90 seconds
-    # Value-add 4 — negative auth at the gateway: an invalid token is rejected (401).
-    When I invoke the MCP server at gateway context "{{mcpContext}}" version "1.0.0" with an invalid token expecting status 401 within 60 seconds
+    # Value-add 4 — negative auth at the gateway: an invalid token is rejected as invalid credentials (401/900901).
+    When I invoke the MCP tool "echo" at gateway context "{{mcpContext}}" version "1.0.0" with an invalid token expecting status 401 with error code "900901" and message "Invalid Credentials" within 60 seconds
     # Tool DELETE → redeploy → GATEWAY propagation for the PROXY subtype (the DirectBackend equivalent is below):
     # narrowing the exposed set drops the removed tool from what clients discover, the rest stay, and the removed
     # tool no longer resolves. Asserted as a SET, not an order: unlike the DirectBackend/ExistingApi subtypes (whose
@@ -76,9 +76,17 @@ Feature: MCP tool invocation through the gateway
     When I update the MCP server "mcpId" to expose tools "echo,add"
     Then The response status code should be 200
     When I deploy the "mcp-servers" resource with id "mcpId"
+    And the "mcp-servers" resource "mcpId" should be live on the gateway, redeploying if propagation is lost
     When I list MCP tools at gateway context "{{mcpContext}}" version "1.0.0" using access token "generatedAccessToken" expecting tools "echo,add" and not "get_pets" within 90 seconds
     When I invoke the MCP tool "get_pets" with arguments "{}" at gateway context "{{mcpContext}}" version "1.0.0" using access token "generatedAccessToken" expecting an error within 90 seconds
+    # An MCP server with an active subscription cannot be deleted; once the subscription is removed it can.
     When I delete the MCP server "mcpId"
+    Then The response status code should be 409
+    And The response should contain "active subscriptions exist"
+    When I delete the subscription with id "mcpSubId"
+    Then The response status code should be 200
+    When I delete the MCP server "mcpId"
+    Then The response status code should be 200
 
     Examples:
       | actor             |
@@ -105,7 +113,14 @@ Feature: MCP tool invocation through the gateway
     Then The response status code should be 200
     # Gateway-side: tools/list advertises get_weather with the metadata intact.
     Then the MCP tools list at gateway context "{{mcpContext}}" version "1.0.0" using access token "generatedAccessToken" advertises tool "get_weather" with preserved metadata within 90 seconds
+    # An MCP server with an active subscription cannot be deleted; once the subscription is removed it can.
     When I delete the MCP server "mcpId"
+    Then The response status code should be 409
+    And The response should contain "active subscriptions exist"
+    When I delete the subscription with id "mcpSubId"
+    Then The response status code should be 200
+    When I delete the MCP server "mcpId"
+    Then The response status code should be 200
 
     Examples:
       | actor             |
@@ -154,7 +169,14 @@ Feature: MCP tool invocation through the gateway
       {"jsonrpc":"2.0","id":1,"result":{"tools":[{"name":"echo","description":"Returns the input as output","inputSchema":{"type":"object","properties":{"message":{"type":"string","description":"Message to echo"}},"required":["message"]}},{"name":"orderPizza","description":"Order a pizza from the menu. This tool allows you to place an order for a pizza.","inputSchema":{"type":"object","properties":{"pizzaType":{"type":"string"},"quantity":{"type":"integer","minimum":1},"customerName":{"type":"string"},"deliveryAddress":{"type":"string"},"creditCardNumber":{"type":"string"}},"required":["pizzaType","quantity","customerName","deliveryAddress","creditCardNumber"]}}]}}
       """
     When I list MCP tools at gateway context "{{mcpContext}}" version "1.0.0" using access token "generatedAccessToken" expecting tools "echo,orderPizza" and not "add" within 90 seconds
+    # An MCP server with an active subscription cannot be deleted; once the subscription is removed it can.
     When I delete the MCP server "mcpId"
+    Then The response status code should be 409
+    And The response should contain "active subscriptions exist"
+    When I delete the subscription with id "mcpSubId"
+    Then The response status code should be 200
+    When I delete the MCP server "mcpId"
+    Then The response status code should be 200
 
     Examples:
       | actor             |
@@ -214,7 +236,14 @@ Feature: MCP tool invocation through the gateway
     When I request an OAuth access token for the current user using password grant with scope "openid"
     Then The response status code should be 200
     When I invoke the MCP tool "echo" with arguments "{\"message\":\"scoped\"}" at gateway context "{{mcpContext}}" version "1.0.0" using access token "generatedAccessToken" expecting status 403 within 90 seconds
+    # An MCP server with an active subscription cannot be deleted; once the subscription is removed it can.
     When I delete the MCP server "mcpId"
+    Then The response status code should be 409
+    And The response should contain "active subscriptions exist"
+    When I delete the subscription with id "mcpScopeSubId"
+    Then The response status code should be 200
+    When I delete the MCP server "mcpId"
+    Then The response status code should be 200
 
     Examples:
       | actor             |
@@ -263,7 +292,14 @@ Feature: MCP tool invocation through the gateway
     Then The response status code should be 200
     # Drive past the 10/min subscription limit — the gateway must eventually refuse with 429 (cumulative retry).
     When I invoke the MCP tool "echo" with arguments "{\"message\":\"t\"}" at gateway context "{{mcpContext}}" version "1.0.0" using access token "generatedAccessToken" expecting status 429 within 90 seconds
+    # An MCP server with an active subscription cannot be deleted; once the subscription is removed it can.
     When I delete the MCP server "mcpId"
+    Then The response status code should be 409
+    And The response should contain "active subscriptions exist"
+    When I delete the subscription with id "mcpThrottleSubId"
+    Then The response status code should be 200
+    When I delete the MCP server "mcpId"
+    Then The response status code should be 200
 
     Examples:
       | actor             |
@@ -291,6 +327,7 @@ Feature: MCP tool invocation through the gateway
     Then The response status code should be 200
     And The value of response field "throttlingPolicy" should be "{{advThrottlePolicyName}}"
     When I deploy the "mcp-servers" resource with id "mcpId"
+    And the "mcp-servers" resource "mcpId" should be live on the gateway, redeploying if propagation is lost
     When I publish the "mcp-servers" resource with id "mcpId"
     Then The response status code should be 200
     When I retrieve the "mcp-servers" resource with id "mcpId"
@@ -303,6 +340,7 @@ Feature: MCP tool invocation through the gateway
     Then The response status code should be 200
     And The value of response field "throttlingPolicy" should be "Unlimited"
     When I deploy the "mcp-servers" resource with id "mcpId"
+    And the "mcp-servers" resource "mcpId" should be live on the gateway, redeploying if propagation is lost
     Then the MCP tool "echo" with arguments "{\"message\":\"t\"}" at gateway context "{{mcpContext}}" version "1.0.0" using access token "generatedAccessToken" should return status 200 for 8 consecutive calls within 180 seconds
     # OPERATION (tool) LEVEL — the same policy bound to the echo tool alone, with the server level CLEARED, so a
     # 429 here can only be the operation's own policy. The server level must be null rather than "Unlimited":
@@ -313,8 +351,16 @@ Feature: MCP tool invocation through the gateway
     And The response should contain "\"throttlingPolicy\":null"
     And The value of response field "operations[0].throttlingPolicy" should be "{{advThrottlePolicyName}}"
     When I deploy the "mcp-servers" resource with id "mcpId"
+    And the "mcp-servers" resource "mcpId" should be live on the gateway, redeploying if propagation is lost
     When I invoke the MCP tool "echo" with arguments "{\"message\":\"t\"}" at gateway context "{{mcpContext}}" version "1.0.0" using access token "generatedAccessToken" expecting status 429 within 120 seconds
+    # An MCP server with an active subscription cannot be deleted; once the subscription is removed it can.
     When I delete the MCP server "mcpId"
+    Then The response status code should be 409
+    And The response should contain "active subscriptions exist"
+    When I delete the subscription with id "mcpSubId"
+    Then The response status code should be 200
+    When I delete the MCP server "mcpId"
+    Then The response status code should be 200
 
     Examples:
       | actor             |
@@ -386,9 +432,8 @@ Feature: MCP tool invocation through the gateway
       """
     # Value-add — error passthrough + negative auth.
     When I invoke the MCP tool "nosuchtool" with arguments "{}" at gateway context "{{mcpContext}}" version "1.0.0" using access token "generatedAccessToken" expecting an error within 90 seconds
-    # The DirectBackend (OpenAPI) subtype rejects an invalid token at tools/call with 403 (the proxy subtype
-    # returns 401 — a verified per-subtype difference); asserted strictly so a future code change is caught.
-    When I invoke the MCP server at gateway context "{{mcpContext}}" version "1.0.0" with an invalid token expecting status 403 within 60 seconds
+    # An invalid token is rejected as invalid credentials (401/900901), the same as for the proxy subtype.
+    When I invoke the MCP tool "get_pets" at gateway context "{{mcpContext}}" version "1.0.0" with an invalid token expecting status 401 with error code "900901" and message "Invalid Credentials" within 60 seconds
     # Tool-update → redeploy → GATEWAY propagation (ports the legacy tool-operations arc; assertions hardened
     # per upstream PR #14237: tools/list names parsed and compared as a SET, order-independent): removing a
     # tool and deploying a new revision drops it from the gateway's advertised list (the rest stay), and
@@ -396,6 +441,7 @@ Feature: MCP tool invocation through the gateway
     When I update the MCP server "mcpId" removing tool "get_pets_by_petId"
     Then The response status code should be 200
     When I deploy the "mcp-servers" resource with id "mcpId"
+    And the "mcp-servers" resource "mcpId" should be live on the gateway, redeploying if propagation is lost
     When I list MCP tools at gateway context "{{mcpContext}}" version "1.0.0" using access token "generatedAccessToken" expecting tools "get_pets" and not "get_pets_by_petId" within 90 seconds
     When I invoke the MCP tool "get_pets_by_petId" with arguments "{\"petId\":\"123\"}" at gateway context "{{mcpContext}}" version "1.0.0" using access token "generatedAccessToken" expecting an error within 90 seconds
     # Tool ORDER as clients discover it, for the DirectBackend subtype too (it was pinned only for ExistingApi):
@@ -407,6 +453,7 @@ Feature: MCP tool invocation through the gateway
     Then The response status code should be 200
     And the MCP server operations should be exactly "delete_oldpets,get_pets" in that order
     When I deploy the "mcp-servers" resource with id "mcpId"
+    And the "mcp-servers" resource "mcpId" should be live on the gateway, redeploying if propagation is lost
     Then the MCP server should advertise tools in order "delete_oldpets,get_pets" at gateway context "{{mcpContext}}" version "1.0.0" using access token "generatedAccessToken" within 90 seconds
     And the MCP tools list at gateway context "{{mcpContext}}" version "1.0.0" using access token "generatedAccessToken" should advertise tool "delete_oldpets" with exact description "Delete all old pets" and input schema within 90 seconds:
       """
@@ -420,7 +467,14 @@ Feature: MCP tool invocation through the gateway
       """
       {"jsonrpc":"2.0","id":1,"result":{"tools":[{"name":"delete_oldpets","description":"Delete all old pets","inputSchema":{"type":"object","properties":{},"required":[]}},{"name":"get_pets","description":"Return a list of pets","inputSchema":{"type":"object","properties":{},"required":[]}}]}}
       """
+    # An MCP server with an active subscription cannot be deleted; once the subscription is removed it can.
     When I delete the MCP server "mcpId"
+    Then The response status code should be 409
+    And The response should contain "active subscriptions exist"
+    When I delete the subscription with id "mcpSubId"
+    Then The response status code should be 200
+    When I delete the MCP server "mcpId"
+    Then The response status code should be 200
 
     Examples:
       | actor             |
@@ -464,7 +518,14 @@ Feature: MCP tool invocation through the gateway
     When I request an OAuth access token for the current user using password grant with scope "openid"
     Then The response status code should be 200
     When I invoke the MCP tool "get_pets" with arguments "{}" at gateway context "{{mcpContext}}" version "1.0.0" using access token "generatedAccessToken" expecting status 403 within 90 seconds
+    # An MCP server with an active subscription cannot be deleted; once the subscription is removed it can.
     When I delete the MCP server "mcpId"
+    Then The response status code should be 409
+    And The response should contain "active subscriptions exist"
+    When I delete the subscription with id "mcpOasSubId"
+    Then The response status code should be 200
+    When I delete the MCP server "mcpId"
+    Then The response status code should be 200
 
     Examples:
       | actor             |
@@ -506,7 +567,14 @@ Feature: MCP tool invocation through the gateway
     When I request an OAuth access token for the current user using password grant with scope "PRODUCTION"
     Then The response status code should be 200
     When I invoke the MCP tool "get_pets" with arguments "{}" at gateway context "{{mcpContext}}" version "1.0.0" using access token "generatedAccessToken" expecting status 429 within 90 seconds
+    # An MCP server with an active subscription cannot be deleted; once the subscription is removed it can.
     When I delete the MCP server "mcpId"
+    Then The response status code should be 409
+    And The response should contain "active subscriptions exist"
+    When I delete the subscription with id "mcpOasThrSubId"
+    Then The response status code should be 200
+    When I delete the MCP server "mcpId"
+    Then The response status code should be 200
 
     Examples:
       | actor             |
@@ -560,13 +628,14 @@ Feature: MCP tool invocation through the gateway
     When I invoke the MCP tool "get_pets_by_petId" with arguments "{\"petId\":\"123\"}" at gateway context "{{mcpContext}}" version "1.0.0" using access token "generatedAccessToken" expecting exact result text "{\"name\":\"max\"}" within 90 seconds
     # Value-add — error passthrough + negative auth.
     When I invoke the MCP tool "nosuchtool" with arguments "{}" at gateway context "{{mcpContext}}" version "1.0.0" using access token "generatedAccessToken" expecting an error within 90 seconds
-    When I invoke the MCP server at gateway context "{{mcpContext}}" version "1.0.0" with an invalid token expecting status 403 within 60 seconds
+    When I invoke the MCP tool "get_pets" at gateway context "{{mcpContext}}" version "1.0.0" with an invalid token expecting status 401 with error code "900901" and message "Invalid Credentials" within 60 seconds
     # Tool ORDER as clients discover it, for the ExistingApi subtype (see the OpenAPI scenario above): the new tool
     # references the backing API's DELETE /oldpets resource, and tools/list must advertise the submitted order.
     When I update the MCP server "mcpId" replacing its tools with "DELETE /oldpets" then "get_pets" re-described as "Return a list of pets"
     Then The response status code should be 200
     And the MCP server operations should be exactly "delete_oldpets,get_pets" in that order
     When I deploy the "mcp-servers" resource with id "mcpId"
+    And the "mcp-servers" resource "mcpId" should be live on the gateway, redeploying if propagation is lost
     Then the MCP server should advertise tools in order "delete_oldpets,get_pets" at gateway context "{{mcpContext}}" version "1.0.0" using access token "generatedAccessToken" within 90 seconds
     And the MCP tools list at gateway context "{{mcpContext}}" version "1.0.0" using access token "generatedAccessToken" should advertise tool "delete_oldpets" with exact description "Delete all old pets" and input schema within 90 seconds:
       """
@@ -580,7 +649,14 @@ Feature: MCP tool invocation through the gateway
       """
       {"jsonrpc":"2.0","id":1,"result":{"tools":[{"name":"delete_oldpets","description":"Delete all old pets","inputSchema":{"type":"object","properties":{},"required":[]}},{"name":"get_pets","description":"Return a list of pets","inputSchema":{"type":"object","properties":{},"required":[]}}]}}
       """
+    # An MCP server with an active subscription cannot be deleted; once the subscription is removed it can.
     When I delete the MCP server "mcpId"
+    Then The response status code should be 409
+    And The response should contain "active subscriptions exist"
+    When I delete the subscription with id "mcpSubId"
+    Then The response status code should be 200
+    When I delete the MCP server "mcpId"
+    Then The response status code should be 200
 
     Examples:
       | actor             |
@@ -638,7 +714,14 @@ Feature: MCP tool invocation through the gateway
     When I request an OAuth access token for the current user using password grant with scope "openid"
     Then The response status code should be 200
     When I invoke the MCP tool "get_pets" with arguments "{}" at gateway context "{{mcpContext}}" version "1.0.0" using access token "generatedAccessToken" expecting status 403 within 90 seconds
+    # An MCP server with an active subscription cannot be deleted; once the subscription is removed it can.
     When I delete the MCP server "mcpId"
+    Then The response status code should be 409
+    And The response should contain "active subscriptions exist"
+    When I delete the subscription with id "mcpApiSubId"
+    Then The response status code should be 200
+    When I delete the MCP server "mcpId"
+    Then The response status code should be 200
 
     Examples:
       | actor             |
@@ -684,7 +767,14 @@ Feature: MCP tool invocation through the gateway
     When I request an OAuth access token for the current user using password grant with scope "PRODUCTION"
     Then The response status code should be 200
     When I invoke the MCP tool "get_pets" with arguments "{}" at gateway context "{{mcpContext}}" version "1.0.0" using access token "generatedAccessToken" expecting status 429 within 90 seconds
+    # An MCP server with an active subscription cannot be deleted; once the subscription is removed it can.
     When I delete the MCP server "mcpId"
+    Then The response status code should be 409
+    And The response should contain "active subscriptions exist"
+    When I delete the subscription with id "mcpApiThrSubId"
+    Then The response status code should be 200
+    When I delete the MCP server "mcpId"
+    Then The response status code should be 200
 
     Examples:
       | actor             |

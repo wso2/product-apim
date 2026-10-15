@@ -1,0 +1,57 @@
+# Overlay for the IntegrationV2-LoggingAndElkAnalytics block: AnalyticsElkMetricsRunner, AnalyticsCorrelationLoggingRunner,
+# AnalyticsPerApiLoggingRunner and GatewayWebSocketProxyAnonRoutingRunner, one runner at a time. Merged on top of the shared `basic` overlay. The logging/
+# and elkAnalytics/ overlays stay for the other blocks and suites that use them.
+#
+# The tables are mutually inert for these runners:
+#   - [apim.analytics] (ELK reporter) writes one event per gateway request to apim_metrics.log through a log4j
+#     logger and makes no HTTP calls, so it adds nothing to correlation.log or api.log, which are the only files the
+#     logging runners read, and it does not touch the devops correlation or per-API log-level configuration.
+#   - [server] enable_restart_from_api only permits the correlation-persistence scenario's graceful restart; the
+#     analytics keys come from this file and survive it.
+#   - Correlation components and per-API log levels left set by the logging runners write only to correlation.log and
+#     api.log; the ELK assertions read only the apim_metrics.log text appended after their own mark.
+#
+# ---------------------------------------------------------------------------------------------
+# AnalyticsElkMetricsRunner (APIMAnalyticsTest, ELKAnalyticsWithRespondMediatorTestCase)
+# ---------------------------------------------------------------------------------------------
+# APIM analytics, publishing through the ELK (log-file) reporter.
+# These two keys are the WHOLE analytics change: with analytics enabled and type "elk" the
+# gateway hands every request/response event to org.wso2.am.analytics.publisher.reporter.elk.ELKCounterMetric,
+# which logs it on the `org.wso2.am.analytics.publisher.reporter.elk` logger. That logger and the
+# APIM_METRICS_APPENDER that writes repository/logs/apim_metrics.log ALREADY exist in the 4.7.0 distribution's
+# log4j2.properties, so — unlike legacy, which had to copy a whole log4j2.properties in and restart — no
+# logging configuration is needed here.
+[apim.analytics]
+enable = true
+type = "elk"
+
+# ---------------------------------------------------------------------------------------------
+# AnalyticsCorrelationLoggingRunner and AnalyticsPerApiLoggingRunner (devops logging plane)
+# ---------------------------------------------------------------------------------------------
+# Neither logging API needs configuration of its own — correlation components are
+# toggled at runtime through /api/am/devops/v0/config/correlation and persisted in AM_CORRELATION_CONFIGS,
+# per-API log levels through /api/am/devops/v0/tenant-logs, and both the CORRELATION and API_LOGFILE
+# appenders are already in the distribution's log4j2.properties. The single key below exists only because
+# the correlation-persistence scenario has to bounce the server to prove the config survives a restart, and
+# the ServerAdmin restartGracefully API refuses unless it is enabled.
+[server]
+enable_restart_from_api = true
+
+# ---------------------------------------------------------------------------------------------
+# GatewayWebSocketProxyAnonRoutingRunner (WebSocketProxyProfileTestCase), from wsProxyAnonRouting/deployment.toml. [[transport.ws.proxy_profile]] only
+# routes the gateway's OUTBOUND WebSocket connections; no other runner in this block invokes a WebSocket API,
+# so the proxy sees only this runner's traffic and its exact Squid CONNECT counts stay valid.
+# ---------------------------------------------------------------------------------------------
+# Tests end-to-end WS routing through the anonymous Squid proxy. A single profile matches
+# "nodebackend" WITHOUT bypass_hosts — the gateway sends CONNECT nodebackend:3001 to
+# squid-proxy:3128. Squid resolves "nodebackend" on the shared Docker network and relays the
+# tunnel, and the echo arrives end-to-end through the proxy.
+#
+# A passing echo + exactly one CONNECT entry in the Squid anonymous access log (asserted via
+# SquidProxyServer.getAnonConnectCount()) proves the gateway correctly routed the connection
+# through the proxy rather than connecting directly.
+
+[[transport.ws.proxy_profile]]
+target_hosts = ["nodebackend"]
+proxy_host = "squid-proxy"
+proxy_port = 3128
