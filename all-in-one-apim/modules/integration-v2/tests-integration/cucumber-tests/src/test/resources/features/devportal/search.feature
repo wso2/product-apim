@@ -195,21 +195,21 @@ Feature: DevPortal Search & Discovery
   # Ports APITagVisibilityByRoleTestCase: a public API's tag is always visible; a restricted API's tag appears in
   # the tag cloud only for a user carrying the visibility role. Provisions the role + user inline per scenario.
   @cap:devportal @feat:discovery @rule:tag-visibility @type:regression @dep:publisher @legacy:APITagVisibilityByRoleTestCase
-  Scenario Outline: A restricted API's tag is hidden from unauthorised users' tag cloud in <tenant>
+  Scenario Outline: A restricted API's tag is hidden from unauthorised users' tag cloud in <tenant> via <storeDomain>
     Given The system is ready
     And I have valid access tokens as "admin<suffix>"
     And I generate a unique value and store it as "tvrole"
     And I generate a unique value and store it as "tvPublicTag"
     And I generate a unique value and store it as "tvRestrictedTag"
-    And I provision store-visibility role "{{tvrole}}" in tenant "<tenant>"
-    And I provision user "tvUser" with roles "Internal/subscriber,{{tvrole}}" in tenant "<tenant>"
-    And The system is ready and I have valid devportal access token as "tvUser<suffix>"
+    And I provision tag-visibility role "{{tvrole}}" and subscriber "tvUser" in user store "<storeDomain>" in tenant "<tenant>"
+    And I provision a tag-visibility publisher in user store "<storeDomain>" in tenant "<tenant>" and store its reference as "tvPublisher"
+    And The system is ready and I have valid publisher access tokens as "{{tvPublisher}}<suffix>"
 
-    Given I act as "admin<suffix>"
+    Given I act as "{{tvPublisher}}<suffix>"
     And I have created an api from "artifacts/payloads/create_apim_test_api.json" with tags "{{tvPublicTag}}" as "tvPublicApi" and deployed it
     When I publish the "apis" resource with id "tvPublicApi"
     Then The lifecycle status of API "tvPublicApi" should be "Published"
-    When I have created an api from "artifacts/payloads/create_apim_test_api.json" with restricted visibility for roles "{{tvrole}}" as "tvRestrictedApi" and deployed it
+    When I have created an api from "artifacts/payloads/create_apim_test_api.json" with restricted visibility for roles "<storePrefix>{{tvrole}}" as "tvRestrictedApi" and deployed it
     And I set the tags of API "tvRestrictedApi" to "{{tvRestrictedTag}}"
     And I publish the "apis" resource with id "tvRestrictedApi"
     Then The lifecycle status of API "tvRestrictedApi" should be "Published"
@@ -219,7 +219,8 @@ Feature: DevPortal Search & Discovery
     # unauthorised check on the PUBLIC tag alone raced: the public API indexes first, so that gate passes while the
     # restricted API's visibility filter is still converging, and its tag transiently leaks into every viewer's
     # cloud (observed under CI load).
-    When I act as "tvUser<suffix>"
+    And The system is ready and I have valid devportal access token as "<storePrefix>tvUser<suffix>"
+    When I act as "<storePrefix>tvUser<suffix>"
     # Both tags must be indexed before the counts are asserted. Waiting only on the restricted tag assumes the
     # public API (published first) is already indexed -- the same order assumption that is not safe here.
     And I retrieve the DevPortal tag cloud until it contains "{{tvPublicTag}}" within 60 seconds
@@ -228,20 +229,22 @@ Feature: DevPortal Search & Discovery
     And the DevPortal tag cloud should contain tag "{{tvPublicTag}}" with count 1
     And the DevPortal tag cloud should contain tag "{{tvRestrictedTag}}" with count 1
 
-    # Unauthorised tag cloud: a roleless SUBSCRIBER (not admin — the legacy test's unauthorised viewer was
-    # role-less; admin is the API's creator/administrator and DOES see the restricted tag, verified live). With
-    # the restricted doc known-indexed, poll until the tag disappears for this viewer — a persistent leak (the
-    # real regression) times out and fails with the cloud body. The public tag in the same settled response
-    # proves the check is not vacuous.
-    Given The system is ready and I have valid devportal access token as "subscriberUser<suffix>"
-    When I retrieve the DevPortal tag cloud until it does not contain "{{tvRestrictedTag}}" within 60 seconds
+    # Anonymous tag cloud: this request carries no bearer token. The public tag proves the response is scoped to
+    # the expected tenant and contains indexed content; the restricted tag must remain hidden once indexing settles.
+    When I retrieve the anonymous DevPortal tag cloud in tenant "<tenant>" until it contains "{{tvPublicTag}}" within 60 seconds
+    And I retrieve the anonymous DevPortal tag cloud in tenant "<tenant>" until it does not contain "{{tvRestrictedTag}}" within 60 seconds
     Then the DevPortal tag cloud should contain tag "{{tvPublicTag}}" with count 1
     And the DevPortal tag cloud should not contain tag "{{tvRestrictedTag}}"
 
-    Examples:
-      | tenant       | suffix       |
-      | carbon.super |              |
-      | tenant1.com  | @tenant1.com |
+    Examples: Primary-store actors, including email-user mode
+      | tenant       | suffix       | storeDomain | storePrefix |
+      | carbon.super |              |             |             |
+      | tenant1.com  | @tenant1.com |             |             |
+
+    Examples: Secondary-store publisher, role, and subscriber in both tenants
+      | tenant       | suffix       | storeDomain  | storePrefix     |
+      | carbon.super |              | SECONDARY.COM | SECONDARY.COM/  |
+      | tenant1.com  | @tenant1.com | SECONDARY.COM | SECONDARY.COM/  |
 
   # Content search by description — a unique word planted in the API's description surfaces the API in both the
   # publisher and the store content search, and a DEMOTE to CREATED withdraws it from the store. Ports all three
@@ -254,15 +257,10 @@ Feature: DevPortal Search & Discovery
   # ~20ms. (A bare query for an API's full NAME does match: see the search-exactness scenario below.) The earlier
   # note here claiming a bare word query matches the description was wrong.
   #
-  # Document-content search (legacy testDocumentContentSearch) is NOT ported, because that observable has no
-  # working query form on this build — measured on a published API carrying an INLINE document whose content held a
-  # unique lowercase separator-free token (legacy's own github4156 shape):
-  #   bare <docToken>    -> count 0 on publisher and store after 195s, legacy's own full retry budget
-  #   content:<docToken> -> count 0 on both planes
-  #   doc:<docToken>     -> HTTP 500 "Error while retrieving APIs" on both planes (filed as a product defect)
-  # A same-scenario control proved the fixture was sound: description:<descToken> on the same API returned 1. So
-  # this is a broken/absent surface, not a slow one — the earlier note blaming minutes-slow, unreliable indexing
-  # was wrong. Asserting it would mean asserting a defect.
+  # Document-content search is intentionally covered through unified_search.feature's GET /search scenarios, not
+  # this API-list endpoint: /apis?query= indexes API fields and cannot return document-content matches. Keep the
+  # description/demotion assertions here scoped to the API-list contract; the separate unified-search feature owns
+  # document-content indexing, result shape, and visibility filtering.
   @cap:devportal @feat:discovery @rule:content-search @type:regression @dep:publisher @legacy:ContentSearchTestCase
   Scenario Outline: An API is found by its description in content search and withdrawn when demoted as <actor>
     Given The system is ready and I have valid publisher access tokens as "<actor>"
@@ -278,6 +276,10 @@ Feature: DevPortal Search & Discovery
     # Search by description in the publisher and the store: the description: field query matches the unique word.
     When I search Publisher APIs with content query "description:{{csDesc}}" until the result count is 1 within 60 seconds
     When I search DevPortal APIs with content query "description:{{csDesc}}" until the result count is 1 within 60 seconds
+    # Keep the API-list contract above and exercise the separate unified-search endpoint too. One API description
+    # is represented by its API and definition entries in /search on this product version.
+    When I unified-search the "publisher" plane for "{{csDesc}}" until the result count is 2 within 60 seconds
+    And I unified-search the "devportal" plane for "{{csDesc}}" until the result count is 2 within 60 seconds
 
     # Third leg: demoting to CREATED withdraws the API from the STORE, so the same store query settles to 0
     # (measured: ~3s). Asserted only AFTER the count-1 legs above, so the zero cannot pass against an index that
@@ -288,11 +290,50 @@ Feature: DevPortal Search & Discovery
     And The lifecycle status of API "csApiId" should be "Created"
     When I search DevPortal APIs with content query "description:{{csDesc}}" until the result count is 0 within 60 seconds
     And I search Publisher APIs with content query "description:{{csDesc}}" until the result count is 1 within 60 seconds
+    # Demotion must also withdraw the API and definition from Store unified search, without withdrawing Publisher results.
+    And I unified-search the "devportal" plane for "{{csDesc}}" until the result count is 0 within 60 seconds
+    And I unified-search the "publisher" plane for "{{csDesc}}" until the result count is 2 within 60 seconds
 
     Examples:
       | actor                     |
       | publisherUser             |
       | publisherUser@tenant1.com |
+
+  # The regular content-search outline above covers the primary publisher actors. In this isolated secondary-store
+  # row, the secondary actor itself creates and publishes the API, performs the Publisher and Store searches, then
+  # demotes it and proves the Store result disappears while Publisher still finds it.
+  @cap:devportal @feat:discovery @rule:content-search @type:regression @dep:publisher @legacy:ContentSearchTestCase
+  Scenario Outline: A secondary-store API owner retains the full description-search and demotion flow in <tenant>
+    Given The system is ready and I have valid access tokens as "admin<suffix>"
+    And I generate a unique value and store it as "csu"
+    When I provision secondary user-store user "SECONDARY.COM/{{csu}}" with password "Secondary@123" and roles "Internal/creator,Internal/publisher,Internal/subscriber" as an actor in tenant "<tenant>"
+    And The system is ready and I have valid publisher access tokens as "SECONDARY.COM/{{csu}}<suffix>"
+    Given I act as "SECONDARY.COM/{{csu}}<suffix>"
+    And I generate a unique value and store it as "csSecondaryDesc"
+    And I put JSON payload from file "artifacts/payloads/create_apim_test_api.json" in context as "csSecondaryPayload"
+    And I set the description of context payload "csSecondaryPayload" to "Secondary description search {{csSecondaryDesc}}"
+    When I have created an api from context payload "csSecondaryPayload" as "csSecondaryApiId" and deployed it
+    And the "apis" resource "csSecondaryApiId" should be live on the gateway, redeploying if propagation is lost
+    And I publish the "apis" resource with id "csSecondaryApiId"
+    Then The lifecycle status of API "csSecondaryApiId" should be "Published"
+
+    When I search Publisher APIs with content query "description:{{csSecondaryDesc}}" until the result count is 1 within 60 seconds
+    And I search DevPortal APIs with content query "description:{{csSecondaryDesc}}" until the result count is 1 within 60 seconds
+    And I unified-search the "publisher" plane for "{{csSecondaryDesc}}" until the result count is 2 within 60 seconds
+    And I unified-search the "devportal" plane for "{{csSecondaryDesc}}" until the result count is 2 within 60 seconds
+
+    When I change the lifecycle of API "csSecondaryApiId" with action "Demote to Created"
+    Then The response status code should be 200
+    And The lifecycle status of API "csSecondaryApiId" should be "Created"
+    When I search DevPortal APIs with content query "description:{{csSecondaryDesc}}" until the result count is 0 within 60 seconds
+    And I search Publisher APIs with content query "description:{{csSecondaryDesc}}" until the result count is 1 within 60 seconds
+    And I unified-search the "devportal" plane for "{{csSecondaryDesc}}" until the result count is 0 within 60 seconds
+    And I unified-search the "publisher" plane for "{{csSecondaryDesc}}" until the result count is 2 within 60 seconds
+
+    Examples:
+      | tenant       | suffix       |
+      | carbon.super |              |
+      | tenant1.com  | @tenant1.com |
 
   # Content search respects store visibility: a restricted-visibility API is found (count 1) by a store searcher
   # carrying the visibility role and NOT found (count 0) by one who does not. Ports ContentSearchTestCase
@@ -321,6 +362,71 @@ Feature: DevPortal Search & Discovery
     And I search DevPortal APIs with content query "description:{{csvDesc}}" until the result count is 1 within 60 seconds
     When I act as "csvOut<suffix>"
     And I search DevPortal APIs with content query "description:{{csvDesc}}" until the result count is 0 within 60 seconds
+
+    Examples:
+      | tenant       | suffix       |
+      | carbon.super |              |
+      | tenant1.com  | @tenant1.com |
+
+  # The direct-create scenario above protects visibility filtering at creation. This second path protects the
+  # legacy update transition: publish an initially visible API, change its Store visibility to RESTRICTED and
+  # Publisher access control to NONE, then verify /search reflects the updated visibility for each tenant.
+  @cap:devportal @feat:discovery @rule:content-search @type:regression @dep:publisher @legacy:ContentSearchTestCase
+  Scenario Outline: Unified Store search applies visibility updated after publish in <tenant>
+    Given The system is ready and I have valid access tokens as "admin<suffix>"
+    And I generate a unique value and store it as "csvUpdateRole"
+    # Carbon internal role names are limited to 30 characters; keep this generated role's base short enough
+    # for the unique suffix as well.
+    And I generate a unique value and store it as "csvAclRole"
+    And I generate a unique value and store it as "csvUpdateDesc"
+    And I provision store-visibility role "{{csvUpdateRole}}" in tenant "<tenant>"
+    And I provision role "{{csvAclRole}}" in tenant "<tenant>"
+    And I provision user "csvUpdateIn" with roles "Internal/subscriber,{{csvUpdateRole}}" in tenant "<tenant>"
+    And I provision user "csvUpdateOut" with roles "Internal/subscriber" in tenant "<tenant>"
+    And I provision user "csvPublisherIn" with roles "Internal/creator,Internal/publisher,{{csvAclRole}}" in tenant "<tenant>"
+    And I provision user "csvPublisherOut" with roles "Internal/creator,Internal/publisher" in tenant "<tenant>"
+    And The system is ready and I have valid devportal access token as "csvUpdateIn<suffix>"
+    And The system is ready and I have valid devportal access token as "csvUpdateOut<suffix>"
+    And The system is ready and I have valid publisher access tokens as "csvPublisherIn<suffix>"
+    And The system is ready and I have valid publisher access tokens as "csvPublisherOut<suffix>"
+
+    Given I act as "admin<suffix>"
+    And I put JSON payload from file "artifacts/payloads/create_apim_test_api.json" in context as "csvUpdatePayload"
+    And I set the description of context payload "csvUpdatePayload" to "Visibility update search {{csvUpdateDesc}}"
+    And I have created an api from context payload "csvUpdatePayload" as "csvUpdateApiId" and deployed it
+    When I publish the "apis" resource with id "csvUpdateApiId"
+    Then The lifecycle status of API "csvUpdateApiId" should be "Published"
+
+    # Publisher ACL is the first mutation in the legacy sequence. Prove Publisher filtering while Store visibility
+    # remains public, so the same API's two independent access planes are both observed.
+    When I act as "csvPublisherIn<suffix>"
+    And I unified-search the "publisher" plane for "{{csvUpdateDesc}}" until the result count is 2 within 60 seconds
+    When I act as "csvPublisherOut<suffix>"
+    And I unified-search the "publisher" plane for "{{csvUpdateDesc}}" until the result count is 2 within 60 seconds
+
+    Given I act as "admin<suffix>"
+    When I update the Publisher access-control roles of API "csvUpdateApiId" to "{{csvAclRole}}"
+    Then The response status code should be 200
+    When I publish the "apis" resource with id "csvUpdateApiId"
+    Then The lifecycle status of API "csvUpdateApiId" should be "Published"
+    When I act as "csvPublisherIn<suffix>"
+    And I unified-search the "publisher" plane for "{{csvUpdateDesc}}" until the result count is 2 within 60 seconds
+    When I act as "csvPublisherOut<suffix>"
+    And I unified-search the "publisher" plane for "{{csvUpdateDesc}}" until the result count is 0 within 60 seconds
+
+    # Publisher access control must not hide a public Store API.
+    When I act as "csvUpdateOut<suffix>"
+    And I unified-search the "devportal" plane for "{{csvUpdateDesc}}" until the result count is 2 within 60 seconds
+
+    # Change Store visibility on that same published API and clear Publisher ACL, matching the legacy sequence.
+    When I act as "admin<suffix>"
+    And I update API "csvUpdateApiId" to restricted Store visibility for role "{{csvUpdateRole}}" and no Publisher access restriction
+
+    # The authorized user remains visible; the same previously-authorized user without the role is now excluded.
+    When I act as "csvUpdateIn<suffix>"
+    And I unified-search the "devportal" plane for "{{csvUpdateDesc}}" until the result count is 2 within 60 seconds
+    When I act as "csvUpdateOut<suffix>"
+    And I unified-search the "devportal" plane for "{{csvUpdateDesc}}" until the result count is 0 within 60 seconds
 
     Examples:
       | tenant       | suffix       |
@@ -357,27 +463,25 @@ Feature: DevPortal Search & Discovery
     # Both tags are ${UNIQUE}, so exactly 2 can ever match. limit 25 is the store default, not a new constraint.
     When I search DevPortal APIs with query "tags:{{ssTagA}} tags:{{ssTagB}}" and limit 25 until the result count is 2 within 60 seconds
     Then The response status code should be 200
-    And The response should contain "{{ssApi1Name}}"
-    And The response should contain "{{ssApi2Name}}"
+    And The response field "$.list[*].name" should be exactly the list "{{ssApi1Name}},{{ssApi2Name}}"
+    And The response array field "list" should have exactly 2 entries
 
     # Multi-name OR returns both named APIs.
     # Multi-name OR returns both named APIs, and only those two. Same count-based wait, same reason as above.
     When I search DevPortal APIs with query "name:{{ssApi1Name}} name:{{ssApi2Name}}" and limit 25 until the result count is 2 within 60 seconds
     Then The response status code should be 200
-    And The response should contain "{{ssApi1Name}}"
-    And The response should contain "{{ssApi2Name}}"
+    And The response field "$.list[*].name" should be exactly the list "{{ssApi1Name}},{{ssApi2Name}}"
+    And The response array field "list" should have exactly 2 entries
 
     # Combined name + tag: name of api1 AND tag of api1 returns api1, not api2.
-    When I search DevPortal APIs with query "name:{{ssApi1Name}} tags:{{ssTagA}}" until it contains "{{ssApi1Name}}" within 60 seconds
+    When I search DevPortal APIs with content query "name:{{ssApi1Name}} tags:{{ssTagA}}" until the result count is 1 within 60 seconds
     Then The response status code should be 200
-    And The response should contain "{{ssApi1Name}}"
-    And The response should not contain "{{ssApi2Name}}"
+    And The value of response field "$.list[0].name" should be "{{ssApi1Name}}"
 
     # The singular tag: alias is equivalent to tags:.
-    When I search DevPortal APIs with query "tag:{{ssTagA}}" until it contains "{{ssApi1Name}}" within 60 seconds
+    When I search DevPortal APIs with content query "tag:{{ssTagA}}" until the result count is 1 within 60 seconds
     Then The response status code should be 200
-    And The response should contain "{{ssApi1Name}}"
-    And The response should not contain "{{ssApi2Name}}"
+    And The value of response field "$.list[0].name" should be "{{ssApi1Name}}"
 
     Examples:
       | actor                     |
@@ -444,6 +548,15 @@ Feature: DevPortal Search & Discovery
     And I have created an api from "artifacts/payloads/create_apim_test_api.json" with tags "Sample APIs - New {{sxu}}" as "sxApiA" and deployed it
     When I publish the "apis" resource with id "sxApiA"
     Then The lifecycle status of API "sxApiA" should be "Published"
+    # Give one API a mixed-case name so the lowercase query below reproduces the legacy Google/google assertion.
+    And I put JSON payload from file "artifacts/payloads/create_apim_test_api.json" in context as "sxCaseApiPayload"
+    And I set the field "name" to "CaseFold{{sxu}}" in the payload "sxCaseApiPayload"
+    And I set the field "tags" to the JSON value "[\"casefold{{sxu}}\"]" in the payload "sxCaseApiPayload"
+    And I create an "apis" resource with payload "sxCaseApiPayload" as "sxCaseApi"
+    And I deploy the API with id "sxCaseApi"
+    Then The response status code should be 201
+    When I publish the "apis" resource with id "sxCaseApi"
+    Then The lifecycle status of API "sxCaseApi" should be "Published"
     And I have created an api from "artifacts/payloads/create_apim_test_api.json" with tags "pizza{{sxu}}" as "sxApiB" and deployed it
     When I publish the "apis" resource with id "sxApiB"
     Then The lifecycle status of API "sxApiB" should be "Published"
@@ -459,15 +572,36 @@ Feature: DevPortal Search & Discovery
 
     # Index gate + tag OR: the three distinct tags in one query return all three APIs.
     When I search DevPortal APIs with content query "tags:Sample APIs - New {{sxu}} tags:pizza{{sxu}} tags:other{{sxu}}" until the result count is 3 within 120 seconds
+    Then The response field "$.list[*].name" should be exactly the list "{{sxNameA}},{{sxNameB}},{{sxNameC}}"
+    And The response array field "list" should have exactly 3 entries
+
+    # The query table polls until each exact result count and unordered DTO-name set are both correct. Every name
+    # and tag is scenario-unique, so concurrently indexed APIs from other scenarios cannot affect these counts.
+    And I lowercase the context value "sxNameA" and store it as "sxLowerNameA"
+    And I lowercase the context value "sxNameB" and store it as "sxLowerNameB"
+    And I lowercase the context value "sxNameC" and store it as "sxLowerNameC"
+    When I search DevPortal APIs for these exact name sets:
+      | query                                                                                                      | expectedNames                               | expectedCount | timeoutSeconds |
+      | name:casefold{{sxu}}                                                                                       | CaseFold{{sxu}}                             | 1             | 60             |
+      | casefold{{sxu}} tags:casefold{{sxu}}                                                                        | CaseFold{{sxu}}                             | 1             | 60             |
+      | name:{{sxNameA}} name:{{sxNameB}} name:{{sxNameC}} tags:Sample APIs - New {{sxu}} tags:other{{sxu}}         | {{sxNameA}},{{sxNameC}}                     | 2             | 60             |
+      | name:{{sxLowerNameA}} name:{{sxLowerNameB}} name:{{sxLowerNameC}} tags:Sample APIs - New {{sxu}} tags:pizza{{sxu}} tags:other{{sxu}} | {{sxNameA}},{{sxNameB}},{{sxNameC}} | 3 | 60 |
+      | name:{{sxLowerNameA}} tags:Sample APIs - New {{sxu}} tags:pizza{{sxu}} name:{{sxLowerNameB}} name:nosuchapi{{sxu}} | {{sxNameA}},{{sxNameB}} | 2 | 60 |
+      | tag:Sample APIs - New {{sxu}} name:{{sxNameA}}                                                             | {{sxNameA}}                                 | 1             | 60             |
+      | casefold{{sxu}} tag:casefold{{sxu}}                                                                        | CaseFold{{sxu}}                             | 1             | 60             |
 
     # A multi-word tag carrying BOTH a space and a hyphen matches exactly its one API.
     When I search DevPortal APIs with content query "tags:Sample APIs - New {{sxu}}" until the result count is 1 within 60 seconds
+    Then The value of response field "$.list[0].name" should be "{{sxNameA}}"
     # Tag AND name, both of api A.
     When I search DevPortal APIs with content query "tags:Sample APIs - New {{sxu}} name:{{sxNameA}}" until the result count is 1 within 60 seconds
+    Then The value of response field "$.list[0].name" should be "{{sxNameA}}"
     # A BARE term matches api A by name, ANDed with api A's tag.
     When I search DevPortal APIs with content query "{{sxNameA}} tags:Sample APIs - New {{sxu}}" until the result count is 1 within 60 seconds
+    Then The value of response field "$.list[0].name" should be "{{sxNameA}}"
     # The bare name ANDed with a two-tag OR still yields only api A (api B carries pizza but not the name).
     When I search DevPortal APIs with content query "{{sxNameA}} tags:Sample APIs - New {{sxu}} tags:pizza{{sxu}}" until the result count is 1 within 60 seconds
+    Then The value of response field "$.list[0].name" should be "{{sxNameA}}"
 
     # Tag case sensitivity — the discriminating negative. The exact-case tag matches (1); the same tag with one
     # letter upper-cased matches nothing (0). Without the pair, a case-insensitivity regression is invisible.
@@ -480,7 +614,11 @@ Feature: DevPortal Search & Discovery
 
     # Name OR: all three names return all three APIs; an unmatched name among them still returns the matching two.
     When I search DevPortal APIs with content query "name:{{sxNameA}} name:{{sxNameB}} name:{{sxNameC}}" until the result count is 3 within 90 seconds
+    Then The response field "$.list[*].name" should be exactly the list "{{sxNameA}},{{sxNameB}},{{sxNameC}}"
+    And The response array field "list" should have exactly 3 entries
     When I search DevPortal APIs with content query "name:{{sxNameA}} name:{{sxNameB}} name:nosuchapi{{sxu}}" until the result count is 2 within 60 seconds
+    Then The response field "$.list[*].name" should be exactly the list "{{sxNameA}},{{sxNameB}}"
+    And The response array field "list" should have exactly 2 entries
 
     Examples:
       | actor                     |

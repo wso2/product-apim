@@ -17,6 +17,7 @@
 
 package org.wso2.am.integration.cucumbertests.stepdefinitions;
 
+import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
@@ -55,6 +56,7 @@ import org.wso2.am.integration.test.utils.Constants;
 import org.wso2.carbon.automation.engine.context.beans.User;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -67,12 +69,16 @@ import java.util.Base64;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.stream.IntStream;
+import java.util.zip.ZipFile;
 
 public class ApplicationBaseSteps {
 
@@ -127,7 +133,49 @@ public class ApplicationBaseSteps {
         String apiId = TestContext.resolve(apiIdKey).toString();
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
-        Requests.get(Utils.getApiSdkURL(Utils.getBaseUrl(), apiId, lang), headers);
+        SimpleHTTPClient.DownloadResult result = Requests.getToFile(
+                Utils.getApiSdkURL(Utils.getBaseUrl(), apiId, lang), headers, ".zip");
+        TestContext.set("sdkDownloadResult", result);
+    }
+
+    /**
+     * Asserts the observed DevPortal SDK response contract: HTTP 200 with a non-empty ZIP archive served as
+     * application/octet-stream. Also checks Content-Disposition is present, preserving the legacy
+     * downloadable-attachment assertion.
+     */
+    @Then("The generated SDK should be a non-empty ZIP attachment")
+    public void theGeneratedSdkShouldBeANonEmptyZipAttachment() throws IOException {
+        Object stored = TestContext.get("sdkDownloadResult");
+        Assert.assertTrue(stored instanceof SimpleHTTPClient.DownloadResult,
+                "No SDK download result is available for assertion");
+        SimpleHTTPClient.DownloadResult result = (SimpleHTTPClient.DownloadResult) stored;
+        Assert.assertEquals(result.getStatusCode(), 200, "SDK generation did not return HTTP 200");
+
+        String contentType = result.getContentType();
+        Assert.assertNotNull(contentType, "SDK response has no Content-Type header");
+        String mediaType = contentType.split(";", 2)[0].trim();
+        Assert.assertEquals(mediaType.toLowerCase(Locale.ROOT), "application/octet-stream",
+                "SDK response is not the observed application/octet-stream media type");
+
+        String contentDisposition = result.getContentDisposition();
+        Assert.assertTrue(contentDisposition != null && !contentDisposition.isBlank(),
+                "SDK response has no Content-Disposition attachment header");
+
+        File archive = result.getFile();
+        Assert.assertTrue(archive != null && archive.isFile() && archive.length() > 0,
+                "SDK response archive is empty or missing");
+        try (ZipFile zipFile = new ZipFile(archive)) {
+            Assert.assertTrue(zipFile.size() > 0, "SDK ZIP archive contains no entries");
+        }
+    }
+
+    @Then("The SDK generation response status should be {int}")
+    public void theSdkGenerationResponseStatusShouldBe(int expectedStatus) {
+        Object stored = TestContext.get("sdkDownloadResult");
+        Assert.assertTrue(stored instanceof SimpleHTTPClient.DownloadResult,
+                "No SDK download result is available for assertion");
+        SimpleHTTPClient.DownloadResult result = (SimpleHTTPClient.DownloadResult) stored;
+        Assert.assertEquals(result.getStatusCode(), expectedStatus, "SDK generation response status mismatch");
     }
 
     /**
@@ -1362,6 +1410,56 @@ public class ApplicationBaseSteps {
     }
 
     /**
+     * Asserts that a name search returns exactly the scenario's expected applications, each owned by the expected
+     * actor. This pins both partial-name fan-out and exact-name selectivity without relying on list ordering or
+     * allowing unrelated results to satisfy a containment check.
+     *
+     * @param expectedNamesCsv comma-separated application names, with {@code {{contextKey}}} placeholders resolved
+     * @param ownerRef actor expected to own every returned application
+     */
+    @Then("The searched applications should contain exactly {string} owned by {string}")
+    public void searchedApplicationsShouldContainExactlyOwnedBy(String expectedNamesCsv, String ownerRef) {
+
+        Set<String> expectedNames = new HashSet<>();
+        String resolvedExpectedNames = Utils.resolveContextPlaceholders(expectedNamesCsv);
+        for (String expectedName : resolvedExpectedNames.split(",")) {
+            if (!expectedName.isBlank()) {
+                expectedNames.add(expectedName.trim());
+            }
+        }
+        Assert.assertFalse(expectedNames.isEmpty(), "Expected application-name list must not be empty");
+        String expectedOwner = Identity.apiUsername(Identity.resolveActor(ownerRef));
+        HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
+        Assert.assertTrue(response != null && response.getResponseCode() >= 200 && response.getResponseCode() < 300
+                        && response.getData() != null && !response.getData().isBlank(),
+                "Expected a successful application-search response with a body, got: "
+                        + (response == null ? "null" : response.getResponseCode() + " / " + response.getData()));
+
+        JSONArray applications = new JSONObject(response.getData()).optJSONArray("list");
+        Assert.assertNotNull(applications, "Application-search response carries no 'list' array: "
+                + response.getData());
+        Set<String> actualNames = new HashSet<>();
+        for (int i = 0; i < applications.length(); i++) {
+            JSONObject application = applications.getJSONObject(i);
+            String actualName = application.optString("name", null);
+            String actualOwner = application.optString("owner", null);
+            Assert.assertTrue(expectedNames.contains(actualName), "Unexpected application '" + actualName
+                    + "' returned for the name search; expected exactly " + expectedNames + ". Body: "
+                    + response.getData());
+            Assert.assertEquals(actualOwner, expectedOwner, "Application '" + actualName + "' was returned with "
+                    + "owner [" + actualOwner + "] but expected [" + expectedOwner + "]. Body: "
+                    + response.getData());
+            Assert.assertTrue(actualNames.add(actualName), "Application search returned duplicate entry '"
+                    + actualName + "'. Body: " + response.getData());
+        }
+        Assert.assertEquals(actualNames, expectedNames, "Application name search returned " + actualNames
+                + " but expected exactly " + expectedNames + ". Body: " + response.getData());
+        Assert.assertEquals(applications.length(), expectedNames.size(), "Application name search returned "
+                + applications.length() + " entries for expected names " + expectedNames + ". Body: "
+                + response.getData());
+    }
+
+    /**
      * Searches applications via the ADMIN API filtered by name (the {@code name} query param). Ports the
      * by-name search of ApplicationsSearchByNameOrOwnerTestCase. Non-asserting.
      *
@@ -1465,6 +1563,49 @@ public class ApplicationBaseSteps {
         HttpResponse response = Requests.post(Utils.getCustomThrottlingPoliciesURL(Utils.getBaseUrl()), headers, payload,
                         Constants.CONTENT_TYPES.APPLICATION_JSON);
         TestContext.set("customThrottlePolicyName", policyName);
+
+        if (response.getResponseCode() >= 200 && response.getResponseCode() < 300) {
+            Object policyId = Utils.extractValueFromPayload(response.getData(), "policyId");
+            if (policyId != null) {
+                TestContext.set("customThrottlePolicyId", policyId);
+                ResourceCleanup.register(Constants.CREATED_CUSTOM_POLICY_IDS, policyId);
+            }
+        }
+    }
+
+    /**
+     * Creates a custom (Siddhi) throttling rule keyed by the authenticated user ID. Kept separate from the
+     * API-context keyed helper because {@code $userId} and {@code $apiContext} exercise different key resolution
+     * paths. The unique user ID in the query keeps the rule isolated if it is ever attached to an API.
+     */
+    @When("I create a custom throttling policy {string} throttling user id {string} after {int} requests per minute")
+    public void iCreateCustomThrottlingPolicyForUserId(String policyBaseName, String userIdValue,
+                                                       int requestsPerMinute) throws IOException {
+
+        String policyName = Utils.resolveContextPlaceholders(Utils.resolvePayloadPlaceholders(policyBaseName));
+        String userId = Utils.resolveContextPlaceholders(userIdValue);
+        String siddhiQuery = "FROM RequestStream\n"
+                + "SELECT userId, ( userId == '" + userId + "' ) AS isEligible, userId as throttleKey\n"
+                + "INSERT INTO EligibilityStream;\n\n"
+                + "FROM EligibilityStream[isEligible==true]#throttler:timeBatch(1 min)\n"
+                + "SELECT throttleKey, (count(userId) >= " + requestsPerMinute + ") as isThrottled, expiryTimeStamp "
+                + "group by throttleKey\n"
+                + "INSERT ALL EVENTS into ResultStream;";
+
+        String payload = new JSONObject()
+                .put("policyName", policyName)
+                .put("description", "Custom throttle-enforcement test: user " + userId + " @ "
+                        + requestsPerMinute + "/min")
+                .put("siddhiQuery", siddhiQuery)
+                .put("keyTemplate", "$userId")
+                .toString();
+
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.adminToken());
+        HttpResponse response = Requests.post(Utils.getCustomThrottlingPoliciesURL(Utils.getBaseUrl()), headers,
+                payload, Constants.CONTENT_TYPES.APPLICATION_JSON);
+        TestContext.set("customThrottlePolicyName", policyName);
+        TestContext.set("customThrottleUserId", userId);
 
         if (response.getResponseCode() >= 200 && response.getResponseCode() < 300) {
             Object policyId = Utils.extractValueFromPayload(response.getData(), "policyId");
@@ -2096,7 +2237,9 @@ public class ApplicationBaseSteps {
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
 
-        Requests.delete(Utils.getOAuthKeyURL(Utils.getBaseUrl(), actualAppId, keyMappingId), headers);
+        HttpResponse response = Requests.delete(Utils.getOAuthKeyURL(Utils.getBaseUrl(), actualAppId, keyMappingId),
+                headers);
+        ResourceCleanup.deregisterIfDeleted(ResourceCleanup.CREATED_APPLICATION_KEY_MAPPINGS, keyMappingId, response);
     }
 
     /**
@@ -2417,7 +2560,9 @@ public class ApplicationBaseSteps {
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
 
-        Requests.delete(Utils.getOAuthKeyURL(Utils.getBaseUrl(), actualAppId, keyMappingId), headers);
+        HttpResponse response = Requests.delete(Utils.getOAuthKeyURL(Utils.getBaseUrl(), actualAppId, keyMappingId),
+                headers);
+        ResourceCleanup.deregisterIfDeleted(ResourceCleanup.CREATED_APPLICATION_KEY_MAPPINGS, keyMappingId, response);
     }
 
     /**
@@ -2437,9 +2582,10 @@ public class ApplicationBaseSteps {
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
 
-        Requests.post(
+        HttpResponse response = Requests.post(
                 Utils.getCleanupRegistrationURL(Utils.getBaseUrl(), actualAppId, keyMappingId), headers, "",
                 Constants.CONTENT_TYPES.APPLICATION_JSON);
+        ResourceCleanup.deregisterIfDeleted(ResourceCleanup.CREATED_APPLICATION_KEY_MAPPINGS, keyMappingId, response);
     }
 
     /** The WSO2 claim dialect the gateway JWT generator prefixes onto local claim names. */
@@ -2468,6 +2614,38 @@ public class ApplicationBaseSteps {
                 "Decoded backend JWT applicationAttributes claim has no attribute '" + name + "': " + attrs);
         Assert.assertEquals(attrs.optString(name), value,
                 "applicationAttributes['" + name + "'] does not carry '" + value + "': " + attrs);
+    }
+
+    /**
+     * Asserts the backend JWT's complete applicationAttributes object equals the expected JSON object. Comparing
+     * both key count and each exact key/value pair catches unexpected attributes as well as missing or changed
+     * defaults, while remaining independent of JSON property order.
+     */
+    @Then("The reflected backend JWT applicationAttributes claim should exactly equal")
+    public void theReflectedBackendJwtApplicationAttributesShouldExactlyEqual(String expectedJson) {
+        String resolvedJson = Utils.resolveContextPlaceholders(expectedJson);
+        JSONObject expected = new JSONObject(resolvedJson);
+        JSONObject actual = reflectedApplicationAttributes();
+        Assert.assertEquals(actual.length(), expected.length(),
+                "Decoded backend JWT applicationAttributes claim has unexpected keys: " + actual);
+        Iterator<String> expectedKeys = expected.keys();
+        while (expectedKeys.hasNext()) {
+            String key = expectedKeys.next();
+            Assert.assertTrue(actual.has(key),
+                    "Decoded backend JWT applicationAttributes claim has no attribute '" + key + "': " + actual);
+            Assert.assertEquals(actual.optString(key), expected.optString(key),
+                    "Decoded backend JWT applicationAttributes['" + key + "'] differs: " + actual);
+        }
+    }
+
+    /** Asserts that a named attribute is absent from the decoded applicationAttributes claim. */
+    @Then("The reflected backend JWT applicationAttributes claim should not contain attribute {string}")
+    public void theReflectedBackendJwtApplicationAttributesShouldNotContain(String attributeName) {
+        JSONObject attrs = reflectedApplicationAttributes();
+        String name = Utils.resolveContextPlaceholders(attributeName);
+        Assert.assertFalse(attrs.has(name),
+                "Decoded backend JWT applicationAttributes claim unexpectedly contains attribute '" + name
+                        + "': " + attrs);
     }
 
     /**
@@ -3711,12 +3889,28 @@ public class ApplicationBaseSteps {
     @When("I request a new OAuth access token using refresh token {string}")
     public void iRequestTokenUsingRefreshToken(String refreshTokenKey) throws Exception {
 
+        // Never let a prior token satisfy a later refresh flow if the refresh response omits access_token.
+        TestContext.remove("refreshedAccessToken");
         String refreshToken = TestContext.resolve(refreshTokenKey).toString();
 
         String body = "grant_type=refresh_token&refresh_token=" + Utils.urlEncode(refreshToken);
 
         HttpResponse response = Requests.post(Utils.getAPIMTokenEndpointURL(Utils.getBaseUrl()),
                 clientCredentialsHeader(), body, Constants.CONTENT_TYPES.APPLICATION_X_WWW_FORM_URLENCODED);
+        if (response.getResponseCode() == 200) {
+            JSONObject json;
+            try {
+                json = new JSONObject(response.getData());
+            } catch (Exception e) {
+                Assert.fail("Refresh-token grant returned HTTP 200 with an invalid JSON response; no usable access_token "
+                        + "was returned.");
+                return;
+            }
+            Object accessToken = json.opt("access_token");
+            Assert.assertTrue(accessToken instanceof String && !((String) accessToken).isBlank(),
+                    "Refresh-token grant returned HTTP 200 without a nonblank access_token.");
+            TestContext.set("refreshedAccessToken", accessToken);
+        }
         captureTokens(response);
     }
 
@@ -3732,6 +3926,8 @@ public class ApplicationBaseSteps {
 
     /** Resident-KM redirect URI — matches the keygen callbackUrl registered in the token-issuance feature. */
     private static final String RESIDENT_AUTHZ_REDIRECT_URI = "http://localhost:8490/callback";
+    /** Redirect URI registered by the resident PKCE key-generation case; every OAuth leg must use this exact URI. */
+    private static final String RESIDENT_PKCE_REDIRECT_URI = "https://localhost:9443/store/";
 
     /**
      * Authorization_code grant against the RESIDENT key manager (APIM's own OAuth endpoints) as the acting
@@ -3742,6 +3938,122 @@ public class ApplicationBaseSteps {
         User actor = Identity.actingActor();
         authorizationCodeToken(Utils.getBaseUrl(), Utils.getAPIMTokenEndpointURL(Utils.getBaseUrl()),
                 RESIDENT_AUTHZ_REDIRECT_URI, actor.getUserName(), actor.getPassword(), scope, null);
+    }
+
+    /**
+     * Completes a resident-key-manager authorization-code flow using the PKCE settings under test. The browser
+     * leg performs the real authorize -> login -> consent redirects; the callback is captured rather than
+     * navigated, and the authorization code is exchanged with the matching verifier. Public-client mode omits
+     * HTTP Basic authentication and identifies the client with the OAuth-required {@code client_id} form field.
+     */
+    @When("I complete the resident authorization-code flow with PKCE method {string} and client authentication {string}")
+    public void iCompleteResidentAuthorizationCodeFlowWithPkce(String method, String clientAuthentication)
+            throws Exception {
+
+        String requestedMethod = method.trim().toLowerCase(Locale.ROOT);
+        Assert.assertTrue("s256".equals(requestedMethod) || "plain".equals(requestedMethod),
+                "Unsupported PKCE challenge method: " + method);
+        // OAuth's registered method token is case-sensitive: the standard name is exactly "S256".
+        String normalizedMethod = "s256".equals(requestedMethod) ? "S256" : "plain";
+        String normalizedClientAuthentication = clientAuthentication.trim().toLowerCase(Locale.ROOT);
+        Assert.assertTrue("secret".equals(normalizedClientAuthentication)
+                        || "public".equals(normalizedClientAuthentication),
+                "Unsupported client authentication mode: " + clientAuthentication);
+
+        String verifier = newPkceCodeVerifier();
+        String challenge = "plain".equals(normalizedMethod) ? verifier : pkceS256Challenge(verifier);
+        String key = TestContext.resolve("consumerKey").toString();
+        String base = Utils.getBaseUrl();
+        String authorizeUrl = base + "oauth2/authorize?response_type=code&client_id="
+                + Utils.urlEncode(key) + "&redirect_uri=" + Utils.urlEncode(RESIDENT_PKCE_REDIRECT_URI)
+                + "&code_challenge=" + Utils.urlEncode(challenge)
+                + "&code_challenge_method=" + Utils.urlEncode(normalizedMethod);
+
+        User actor = Identity.actingActor();
+        String granted;
+        try (CloseableHttpClient http = trustAllHttpClientWithCookies()) {
+            granted = authorizeThroughLoginAndConsent(http, base, authorizeUrl,
+                    actor.getUserName(), actor.getPassword());
+        }
+        String code = Utils.queryParam(granted, "code");
+        Assert.assertNotNull(code, "No authorization code in the resident PKCE redirect: " + granted);
+
+        String tokenForm = "grant_type=authorization_code&code=" + Utils.urlEncode(code)
+                + "&redirect_uri=" + Utils.urlEncode(RESIDENT_PKCE_REDIRECT_URI)
+                + "&code_verifier=" + Utils.urlEncode(verifier);
+        Map<String, String> headers;
+        if ("secret".equals(normalizedClientAuthentication)) {
+            headers = clientCredentialsHeader();
+        } else {
+            headers = new HashMap<>();
+            tokenForm += "&client_id=" + Utils.urlEncode(key);
+        }
+        HttpResponse response = Requests.post(Utils.getAPIMTokenEndpointURL(base), headers, tokenForm,
+                Constants.CONTENT_TYPES.APPLICATION_X_WWW_FORM_URLENCODED);
+        captureTokens(response);
+    }
+
+    /** A missing PKCE challenge must be rejected for an application whose generated key makes PKCE mandatory. */
+    @When("I send a resident authorization request without a PKCE challenge")
+    public void iSendResidentAuthorizationRequestWithoutPkce() throws Exception {
+
+        String key = TestContext.resolve("consumerKey").toString();
+        String authorizeUrl = Utils.getBaseUrl() + "oauth2/authorize?response_type=code&client_id="
+                + Utils.urlEncode(key) + "&redirect_uri=" + Utils.urlEncode(RESIDENT_PKCE_REDIRECT_URI);
+        recordResidentAuthorizationError(authorizeUrl, "mandatory-PKCE request without a challenge");
+    }
+
+    /**
+     * Probes whether a PKCE challenge method is accepted by the generated resident OAuth client. Used to prove
+     * that {@code pkceSupportPlain=false} rejects plain while the configured positive flow exercises supported
+     * methods.
+     */
+    @When("I send a resident authorization request with PKCE method {string}")
+    public void iSendResidentAuthorizationRequestWithPkceMethod(String method) throws Exception {
+
+        String requestedMethod = method.trim().toLowerCase(Locale.ROOT);
+        Assert.assertTrue("s256".equals(requestedMethod) || "plain".equals(requestedMethod),
+                "Unsupported PKCE challenge method: " + method);
+        String normalizedMethod = "s256".equals(requestedMethod) ? "S256" : "plain";
+        String verifier = newPkceCodeVerifier();
+        String challenge = "plain".equals(normalizedMethod) ? verifier : pkceS256Challenge(verifier);
+        String key = TestContext.resolve("consumerKey").toString();
+        String authorizeUrl = Utils.getBaseUrl() + "oauth2/authorize?response_type=code&client_id="
+                + Utils.urlEncode(key) + "&redirect_uri=" + Utils.urlEncode(RESIDENT_PKCE_REDIRECT_URI)
+                + "&code_challenge=" + Utils.urlEncode(challenge)
+                + "&code_challenge_method=" + Utils.urlEncode(normalizedMethod);
+        recordResidentAuthorizationError(authorizeUrl, "PKCE method '" + normalizedMethod + "'");
+    }
+
+    private void recordResidentAuthorizationError(String authorizeUrl, String description) throws Exception {
+
+        try (CloseableHttpClient http = trustAllHttpClientWithCookies()) {
+            BrowserResponse response = sendNoRedirect(http, "GET", authorizeUrl, null);
+            String location = response.firstValue("Location").orElse(null);
+            String errorCode = location == null ? null : Utils.queryParam(location, "oauthErrorCode");
+            if (errorCode == null && location != null) {
+                errorCode = Utils.queryParam(location, "error");
+            }
+            if (errorCode == null) {
+                try {
+                    errorCode = new JSONObject(response.body()).optString("error", null);
+                } catch (Exception ignored) {
+                    // A non-JSON response is still reported in the assertion below with its status and body.
+                }
+            }
+            Assert.assertNotNull(errorCode, "Expected OAuth rejection for " + description + ", but got HTTP "
+                    + response.statusCode() + ", Location=" + location + ", body=" + response.body());
+            TestContext.set("authorizeErrorCode", errorCode);
+            String errorMessage = location == null ? null : Utils.queryParam(location, "oauthErrorMsg");
+            TestContext.set("authorizeErrorMessage", errorMessage == null ? "" : errorMessage);
+        }
+    }
+
+    private static String newPkceCodeVerifier() {
+
+        byte[] verifierBytes = new byte[32];
+        new java.security.SecureRandom().nextBytes(verifierBytes);
+        return Base64.getUrlEncoder().withoutPadding().encodeToString(verifierBytes);
     }
 
     /**
@@ -4024,17 +4336,18 @@ public class ApplicationBaseSteps {
         JSONArray internalApplications = new JSONObject(internalResponse.getData()).optJSONArray("list");
         Assert.assertNotNull(internalApplications,
                 "APIM internal application lookup omitted its list: " + internalResponse.getData());
-        int matchedId = -1;
-        int matches = 0;
+        // The internal list returns one row per declared application attribute, so an application carrying
+        // attributes appears several times; every row for the UUID must name the same numeric application id.
+        Set<Integer> matchedIds = new TreeSet<>();
         for (int i = 0; i < internalApplications.length(); i++) {
             JSONObject internalApp = internalApplications.getJSONObject(i);
             if (appUuid.equals(internalApp.optString("uuid"))) {
-                matchedId = internalApp.optInt("id", -1);
-                matches++;
+                matchedIds.add(internalApp.optInt("id", -1));
             }
         }
-        Assert.assertEquals(matches, 1,
-                "Expected exactly one internal application row for UUID " + appUuid + ", found " + matches);
+        Assert.assertEquals(matchedIds.size(), 1,
+                "Expected exactly one numeric application id for UUID " + appUuid + ", found " + matchedIds);
+        int matchedId = matchedIds.iterator().next();
         Assert.assertTrue(matchedId > 0, "Internal application row has invalid numeric id " + matchedId);
 
         String signedKey = JwtTestUtils.buildLegacyJwtApiKey(Identity.actingActor().getUserName(),
@@ -4614,6 +4927,76 @@ public class ApplicationBaseSteps {
         TestContext.set("httpResponse", response);
     }
 
+    @And("I lowercase the context value {string} and store it as {string}")
+    public void iLowercaseContextValueAndStoreItAs(String sourceKey, String targetKey) {
+        TestContext.set(targetKey, TestContext.resolve(sourceKey).toString().toLowerCase(Locale.ROOT));
+    }
+
+    /**
+     * Runs a compact table of DevPortal query forms and pins the exact single API DTO returned by each form.
+     * This is useful for comparing two syntaxes (for example, a bare lowercase term and a fielded name query)
+     * without duplicating the setup and assertion steps in the feature.
+    */
+    @When("I search DevPortal APIs for these exact name sets:")
+    public void iSearchDevPortalAPIsForExactNameSets(DataTable queryCases)
+            throws IOException, InterruptedException {
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
+
+        for (Map<String, String> queryCase : queryCases.asMaps(String.class, String.class)) {
+            String query = Utils.resolveContextPlaceholders(queryCase.get("query"));
+            String expectedNamesCsv = Utils.resolveContextPlaceholders(queryCase.get("expectedNames"));
+            Set<String> expectedNames = new HashSet<>();
+            for (String expectedName : expectedNamesCsv.split(",")) {
+                if (!expectedName.isBlank()) {
+                    expectedNames.add(expectedName.trim());
+                }
+            }
+            int expectedCount = Integer.parseInt(queryCase.get("expectedCount"));
+            int timeoutSeconds = Integer.parseInt(queryCase.get("timeoutSeconds"));
+            Assert.assertEquals(expectedNames.size(), expectedCount,
+                    "Expected DTO-name set cardinality must match the expected result count for query '"
+                            + query + "'");
+            String url = Utils.getApiSearchURL(Utils.getBaseUrl(), query);
+            HttpResponse response = Utils.retryUntil(timeoutSeconds * 1000L,
+                    () -> Requests.get(url, headers),
+                    result -> hasExactDevportalNameSet(result, expectedNames, expectedCount));
+            Requests.publishPollResult(response);
+            Assert.assertTrue(hasExactDevportalNameSet(response, expectedNames, expectedCount),
+                    "DevPortal search '" + query + "' did not return exactly " + expectedCount
+                            + " API DTOs with names " + expectedNames
+                            + "' within " + timeoutSeconds + " seconds; last response: "
+                            + (response == null ? "null" : response.getResponseCode() + " / " + response.getData()));
+        }
+    }
+
+    private static boolean hasExactDevportalNameSet(HttpResponse response, Set<String> expectedNames,
+                                                     int expectedCount) {
+        if (response == null || response.getResponseCode() != 200 || response.getData() == null
+                || response.getData().isBlank()) {
+            return false;
+        }
+        try {
+            JSONObject body = new JSONObject(response.getData());
+            JSONArray results = body.optJSONArray("list");
+            if (body.optInt("count", -1) != expectedCount || results == null
+                    || results.length() != expectedCount) {
+                return false;
+            }
+            Set<String> actualNames = new HashSet<>();
+            for (int i = 0; i < results.length(); i++) {
+                JSONObject result = results.optJSONObject(i);
+                if (result == null) {
+                    return false;
+                }
+                actualNames.add(result.optString("name", ""));
+            }
+            return actualNames.size() == results.length() && actualNames.equals(expectedNames);
+        } catch (JSONException malformedResponse) {
+            return false;
+        }
+    }
+
     /**
      * Retrieves all documents available for an API in the Developer Portal.
      *
@@ -4815,12 +5198,16 @@ public class ApplicationBaseSteps {
     @When("I create a key manager from payload {string} as {string}")
     public void iCreateKeyManager(String resourcePath, String idKey) throws IOException {
 
-        HttpResponse response = postKeyManager(loadKeyManagerPayload(resourcePath));
+        JSONObject payload = loadKeyManagerPayload(resourcePath);
+        String expectedName = payload.getString("name");
+        HttpResponse response = postKeyManager(payload);
         Assert.assertEquals(response.getResponseCode(), 201, response.getData());
         Object kmId = Utils.extractValueFromPayload(response.getData(), "id");
-        Object kmName = Utils.extractValueFromPayload(response.getData(), "name");
+        Object actualName = Utils.extractValueFromPayload(response.getData(), "name");
+        Assert.assertEquals(actualName, expectedName,
+                "Key-manager create response name differs from the unique name in the request payload");
         TestContext.set(idKey, kmId);
-        TestContext.set(idKey + "Name", kmName);
+        TestContext.set(idKey + "Name", expectedName);
         ResourceCleanup.register(Constants.CREATED_KEY_MANAGER_IDS, kmId);
     }
 
@@ -5053,6 +5440,91 @@ public class ApplicationBaseSteps {
         Requests.get(Utils.getKeyManagerByIdURL(Utils.getBaseUrl(), kmId), Identity.adminHeaders());
     }
 
+    /**
+     * Asserts that every field supplied in a key-manager fixture is returned unchanged, including nested connector
+     * configuration and exact grant/certificate lists. Write-only secret values are expected as {@code *****};
+     * the additional-properties and certificate objects must not acquire or lose fields. Server-owned root fields
+     * outside the request fixture are allowed.
+     */
+    @Then("The key manager response should match payload {string} with id {string} and write-only secrets masked")
+    public void theKeyManagerResponseShouldMatchPayloadWithSecretsMasked(String payloadPath, String idKey)
+            throws IOException {
+
+        assertKeyManagerResponseMatchesPayload(payloadPath, idKey, null);
+    }
+
+    /** Same full fixture comparison, with the expected description changed after an update. */
+    @Then("The key manager response should match payload {string} with id {string}, description {string}, and write-only secrets masked")
+    public void theKeyManagerResponseShouldMatchPayloadWithDescriptionAndSecretsMasked(String payloadPath,
+            String idKey, String description) throws IOException {
+
+        assertKeyManagerResponseMatchesPayload(payloadPath, idKey, description);
+    }
+
+    private void assertKeyManagerResponseMatchesPayload(String payloadPath, String idKey, String description)
+            throws IOException {
+
+        HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
+        Assert.assertTrue(response != null && response.getResponseCode() >= 200 && response.getResponseCode() < 300
+                        && response.getData() != null && !response.getData().isBlank(),
+                "No successful key-manager response to compare: "
+                        + (response == null ? "null" : response.getResponseCode() + " / " + response.getData()));
+
+        JSONObject expected = loadKeyManagerPayload(payloadPath);
+        expected.put("id", TestContext.resolve(idKey).toString());
+        expected.put("name", TestContext.resolve(idKey + "Name").toString());
+        if (description != null) {
+            expected.put("description", Utils.resolveContextPlaceholders(description));
+        }
+        maskKeyManagerWriteOnlySecrets(expected);
+
+        JSONObject actual = new JSONObject(response.getData());
+        assertKeyManagerJsonValue("keyManager", expected, actual, true);
+    }
+
+    private void maskKeyManagerWriteOnlySecrets(JSONObject expected) {
+
+        JSONObject properties = expected.optJSONObject("additionalProperties");
+        if (properties == null) {
+            return;
+        }
+        for (String key : properties.keySet()) {
+            String normalized = key.toLowerCase(Locale.ROOT).replace("_", "");
+            if (normalized.contains("secret") || normalized.contains("password") || normalized.equals("apikey")) {
+                properties.put(key, "*****");
+            }
+        }
+    }
+
+    private void assertKeyManagerJsonValue(String path, Object expected, Object actual, boolean allowExtraObjectFields) {
+
+        if (expected instanceof JSONObject) {
+            Assert.assertTrue(actual instanceof JSONObject, path + " should be a JSON object; got " + actual);
+            JSONObject expectedObject = (JSONObject) expected;
+            JSONObject actualObject = (JSONObject) actual;
+            if (!allowExtraObjectFields) {
+                Assert.assertEquals(actualObject.length(), expectedObject.length(),
+                        path + " has unexpected/missing fields: " + actualObject);
+            }
+            for (String key : expectedObject.keySet()) {
+                Assert.assertTrue(actualObject.has(key), path + " is missing field '" + key + "': " + actualObject);
+                assertKeyManagerJsonValue(path + "." + key, expectedObject.get(key), actualObject.get(key), false);
+            }
+            return;
+        }
+        if (expected instanceof JSONArray) {
+            Assert.assertTrue(actual instanceof JSONArray, path + " should be a JSON array; got " + actual);
+            JSONArray expectedArray = (JSONArray) expected;
+            JSONArray actualArray = (JSONArray) actual;
+            Assert.assertEquals(actualArray.length(), expectedArray.length(), path + " array length mismatch");
+            for (int i = 0; i < expectedArray.length(); i++) {
+                assertKeyManagerJsonValue(path + "[" + i + "]", expectedArray.get(i), actualArray.get(i), false);
+            }
+            return;
+        }
+        Assert.assertEquals(actual, expected, path + " mismatch");
+    }
+
     /** Lists all key managers. */
     @When("I retrieve all key managers")
     public void iRetrieveAllKeyManagers() throws IOException {
@@ -5083,6 +5555,19 @@ public class ApplicationBaseSteps {
 
         Requests.put(
                 Utils.getKeyManagerByIdURL(Utils.getBaseUrl(), kmId), Identity.adminHeaders(), km.toString(),
+                Constants.CONTENT_TYPES.APPLICATION_JSON);
+    }
+
+    /** Updates from the original fixture so write-only connector secrets are sent as configured, not as masks. */
+    @When("I update the key manager {string} from payload {string} setting its description to {string}")
+    public void iUpdateKeyManagerFromPayload(String idKey, String payloadPath, String newDescription) throws IOException {
+
+        String kmId = TestContext.resolve(idKey).toString();
+        JSONObject payload = loadKeyManagerPayload(payloadPath);
+        payload.put("id", kmId);
+        payload.put("name", TestContext.resolve(idKey + "Name").toString());
+        payload.put("description", Utils.resolveContextPlaceholders(newDescription));
+        Requests.put(Utils.getKeyManagerByIdURL(Utils.getBaseUrl(), kmId), Identity.adminHeaders(), payload.toString(),
                 Constants.CONTENT_TYPES.APPLICATION_JSON);
     }
 
@@ -5968,6 +6453,127 @@ public class ApplicationBaseSteps {
     }
 
     /**
+     * Polls for a specific document-search entry linked to one API. This intentionally avoids asserting the
+     * endpoint's global result count: unrelated APIs may be created concurrently by other V2 blocks.
+     */
+    @When("I unified-search the {string} plane for {string} until the document linked to API {string} is present within {int} seconds")
+    public void iUnifiedSearchUntilDocumentPresent(String plane, String query, String apiIdKey, int seconds)
+            throws InterruptedException {
+
+        assertUnifiedSearchDocument(plane, query, apiIdKey, seconds, true);
+    }
+
+    /**
+     * Polls until a specific document-search entry is absent. Callers should first establish that the document is
+     * indexed for an authorized actor, so an initially cold index cannot make this negative check pass vacuously.
+     */
+    @When("I unified-search the {string} plane for {string} until the document linked to API {string} is absent within {int} seconds")
+    public void iUnifiedSearchUntilDocumentAbsent(String plane, String query, String apiIdKey, int seconds)
+            throws InterruptedException {
+
+        assertUnifiedSearchDocument(plane, query, apiIdKey, seconds, false);
+    }
+
+    /** Waits until the Publisher search index exposes this specific API before document indexing begins. */
+    @When("I unified-search the {string} plane for {string} until API {string} is present within {int} seconds")
+    public void iUnifiedSearchUntilApiPresent(String plane, String query, String apiIdKey, int seconds)
+            throws InterruptedException {
+
+        String resolvedQuery = Utils.resolveContextPlaceholders(query);
+        Object apiIdValue = TestContext.get(Utils.normalizeContextKey(apiIdKey));
+        Assert.assertNotNull(apiIdValue, "No API id found in context for key '" + apiIdKey + "'");
+        String apiId = apiIdValue.toString();
+        String url = Utils.getUnifiedSearchURL(Utils.getBaseUrl(), plane, resolvedQuery);
+        Map<String, String> headers = "publisher".equals(plane)
+                ? Identity.publisherHeaders() : Identity.devportalHeaders();
+        HttpResponse response = Utils.retryUntil(seconds * 1000L,
+                () -> Requests.get(url, headers),
+                result -> result != null && result.getResponseCode() == 200
+                        && hasUnifiedSearchApi(result, apiId));
+        Requests.publishPollResult(response);
+        Assert.assertNotNull(response, "No unified-search response from the " + plane + " plane");
+        Assert.assertEquals(response.getResponseCode(), 200,
+                "Unified search on the " + plane + " plane did not return HTTP 200; last body: "
+                        + response.getData());
+        Assert.assertTrue(hasUnifiedSearchApi(response, apiId),
+                "API " + apiId + " did not appear in " + plane + " unified-search results for query '"
+                        + resolvedQuery + "'; last body: " + response.getData());
+    }
+
+    private void assertUnifiedSearchDocument(String plane, String query, String apiIdKey, int seconds,
+                                             boolean expectedPresent) throws InterruptedException {
+
+        String resolvedQuery = Utils.resolveContextPlaceholders(query);
+        Object apiIdValue = TestContext.get(Utils.normalizeContextKey(apiIdKey));
+        Assert.assertNotNull(apiIdValue, "No API id found in context for key '" + apiIdKey + "'");
+        String apiId = apiIdValue.toString();
+        Assert.assertFalse(apiId.isBlank(), "API id in context for key '" + apiIdKey + "' is blank");
+        String url = Utils.getUnifiedSearchURL(Utils.getBaseUrl(), plane, resolvedQuery);
+        Map<String, String> headers = "publisher".equals(plane)
+                ? Identity.publisherHeaders() : Identity.devportalHeaders();
+        HttpResponse response = Utils.retryUntil(seconds * 1000L,
+                () -> Requests.get(url, headers),
+                result -> result != null && result.getResponseCode() == 200
+                        && hasUnifiedSearchDocument(result, apiId) == expectedPresent);
+        Requests.publishPollResult(response);
+        Assert.assertNotNull(response, "No unified-search response from the " + plane + " plane");
+        Assert.assertEquals(response.getResponseCode(), 200,
+                "Unified search on the " + plane + " plane did not return HTTP 200; last body: "
+                        + response.getData());
+        Assert.assertEquals(hasUnifiedSearchDocument(response, apiId), expectedPresent,
+                "Expected document linked to API " + apiId + " to be "
+                        + (expectedPresent ? "present" : "absent") + " in " + plane
+                        + " unified-search results for query '" + resolvedQuery + "'; last body: "
+                        + response.getData());
+    }
+
+    private boolean hasUnifiedSearchDocument(HttpResponse response, String apiId) {
+
+        if (response == null || response.getData() == null || response.getData().isBlank()) {
+            return false;
+        }
+        try {
+            JSONArray results = new JSONObject(response.getData()).optJSONArray("list");
+            if (results == null) {
+                return false;
+            }
+            for (int i = 0; i < results.length(); i++) {
+                JSONObject result = results.optJSONObject(i);
+                if (result != null && "DOC".equals(result.optString("type"))
+                        && apiId.equals(result.optString("apiUUID"))) {
+                    return true;
+                }
+            }
+            return false;
+        } catch (JSONException malformedDuringIndexWarmup) {
+            return false;
+        }
+    }
+
+    private boolean hasUnifiedSearchApi(HttpResponse response, String apiId) {
+
+        if (response == null || response.getData() == null || response.getData().isBlank()) {
+            return false;
+        }
+        try {
+            JSONArray results = new JSONObject(response.getData()).optJSONArray("list");
+            if (results == null) {
+                return false;
+            }
+            for (int i = 0; i < results.length(); i++) {
+                JSONObject result = results.optJSONObject(i);
+                if (result != null && "API".equals(result.optString("type"))
+                        && apiId.equals(result.optString("id"))) {
+                    return true;
+                }
+            }
+            return false;
+        } catch (JSONException malformedDuringIndexWarmup) {
+            return false;
+        }
+    }
+
+    /**
      * The {@code count} of a DevPortal search page, or {@code -1} when the response has no usable body — so a
      * non-2xx or empty answer can never be mistaken for a real count (in particular never for an expected 0,
      * which would let a failed request satisfy a count-0 assertion). Guards before parsing, per §7.
@@ -6007,13 +6613,14 @@ public class ApplicationBaseSteps {
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
         String resolvedName = Utils.resolveContextPlaceholders(apiName);
         String resolvedVersion = Utils.resolveContextPlaceholders(expectedVersion);
-        // Funnelled through Utils.retryUntil rather than a hand-rolled deadline loop (§7/§15): the envelope owns
-        // the max(timeout, RUNTIME_PROPAGATION_TIMEOUT) ceiling so this call site cannot silently cap itself, and
-        // retries ONLY IOException. versionsListedForName returns null for an unreadable/malformed page, so the
-        // accept predicate treats null as not-ready and an exhausted window defaults to an empty listing.
+        // Wait for the complete semantic condition, not just the row count: a stale index can already contain the
+        // previous version (one matching row) immediately after the new version is published. The exact expected
+        // version must appear before the poll succeeds, otherwise an old version can cause a false failure at the
+        // assertion below. Funnelled through Utils.retryUntil rather than a hand-rolled loop (§7/§15).
         List<String> lastSweep = Utils.retryUntil(seconds * 1000L,
                 () -> versionsListedForName(headers, resolvedName),
-                sweep -> sweep != null && sweep.size() == expectedOccurrences);
+                sweep -> sweep != null && sweep.size() == expectedOccurrences
+                        && (expectedOccurrences == 0 || resolvedVersion.equals(sweep.get(0))));
         List<String> matchedVersions = lastSweep == null ? new ArrayList<>() : lastSweep;
         Assert.assertEquals(matchedVersions.size(), expectedOccurrences,
                 "The unfiltered devportal listing carried " + matchedVersions.size() + " entr(ies) for API '"
@@ -6131,6 +6738,40 @@ public class ApplicationBaseSteps {
                         && !response.getData().contains(resolved),
                 "DevPortal tag cloud still contained '" + resolved + "' after the deadline (a restricted tag "
                         + "leaking persistently, not a transient index window); last response: "
+                + response.getResponseCode() + " / " + response.getData());
+    }
+
+    /** Retrieves the tag cloud without an Authorization header, routing the request to the requested tenant. */
+    @When("I retrieve the anonymous DevPortal tag cloud in tenant {string} until it contains {string} within {int} seconds")
+    public void iRetrieveAnonymousDevPortalTagCloudUntilContains(String tenantDomain, String expected, int seconds)
+            throws InterruptedException {
+        retrieveAnonymousDevPortalTagCloud(tenantDomain, expected, seconds, true);
+    }
+
+    /** Anonymous absence counterpart; still requires a successful response with a body. */
+    @When("I retrieve the anonymous DevPortal tag cloud in tenant {string} until it does not contain {string} within {int} seconds")
+    public void iRetrieveAnonymousDevPortalTagCloudUntilAbsent(String tenantDomain, String unexpected, int seconds)
+            throws InterruptedException {
+        retrieveAnonymousDevPortalTagCloud(tenantDomain, unexpected, seconds, false);
+    }
+
+    private void retrieveAnonymousDevPortalTagCloud(String tenantDomain, String tagValue, int seconds,
+                                                     boolean shouldContain) throws InterruptedException {
+        Map<String, String> headers = new HashMap<>();
+        headers.put("X-WSO2-Tenant", Utils.resolveContextPlaceholders(tenantDomain));
+        String resolvedTag = Utils.resolveContextPlaceholders(tagValue);
+        String url = Utils.getTagsURL(Utils.getBaseUrl());
+        HttpResponse response = Utils.retryUntil(seconds * 1000L,
+                () -> Requests.get(url, headers),
+                r -> r != null && r.getResponseCode() == 200 && r.getData() != null
+                        && (shouldContain ? r.getData().contains(resolvedTag) : !r.getData().contains(resolvedTag)));
+        Requests.publishPollResult(response);
+        Assert.assertNotNull(response, "Anonymous DevPortal tag cloud returned no response");
+        Assert.assertTrue(response.getResponseCode() == 200 && response.getData() != null
+                        && (shouldContain ? response.getData().contains(resolvedTag)
+                        : !response.getData().contains(resolvedTag)),
+                "Anonymous DevPortal tag cloud did not " + (shouldContain ? "contain '" : "exclude '")
+                        + resolvedTag + "' within " + seconds + " seconds; last response: "
                         + response.getResponseCode() + " / " + response.getData());
     }
 

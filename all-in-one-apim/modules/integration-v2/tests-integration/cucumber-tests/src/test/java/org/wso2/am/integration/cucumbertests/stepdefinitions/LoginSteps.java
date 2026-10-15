@@ -45,8 +45,8 @@ import java.util.Map;
  * password-grant re-authentication that proves it. The observable in each case is what the resulting credential
  * can do — whether a password-grant token is issued for it, and which planes that token then reaches.
  *
- * <p>The EMAIL-FORM-USERNAME login flow ({@code key-manager/email_username_login.feature}) needs no step of its
- * own and adds none: an email-form username is a block MODE, not a per-scenario operation — the
+ * <p>The email-form-username login flow needs no step of its own: an email-form username is a block MODE, not a
+ * per-scenario operation — the
  * {@code emailUserMode} block parameter makes the framework provision every user with an email-form physical
  * username (see {@code BlockLifecycleListener.PARAM_EMAIL_USER_MODE}), after which the standard auth composites
  * and {@link #aPasswordGrantReturnsStatus} below are exactly the right observables for it.

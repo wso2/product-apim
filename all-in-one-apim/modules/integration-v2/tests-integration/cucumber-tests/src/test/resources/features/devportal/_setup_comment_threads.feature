@@ -24,7 +24,7 @@ Feature: Setup comment threads for the plane-parity suite
   AfterClass sweep (NOT per-scenario cleanup — the consumer features run off this fixture); comments are
   sub-resources of the API and cascade away with it.
 
-  Scenario Outline: Publish three APIs and build a publisher-plane and a devportal-plane comment thread as <actor>
+  Scenario Outline: Publish three APIs and build publisher-plane and devportal-plane comment threads as <actor>
     Given The system is ready
     And I have valid access tokens as "<actor>"
 
@@ -34,6 +34,7 @@ Feature: Setup comment threads for the plane-parity suite
     Then The lifecycle status of API "ptApiId<suffix>" should be "Published"
     When I add a "publisher" comment "This is root comment 1" with category "general" to API "ptApiId<suffix>" as "ptRoot1<suffix>"
     Then The response status code should be 201
+    And The value of response field "entryPoint" should be "PUBLISHER"
     And I wait for timestamp precision after the "publisher" comment "ptRoot1<suffix>" of API "ptApiId<suffix>"
     When I add a "publisher" comment "This is root comment 2" with category "general" to API "ptApiId<suffix>" as "ptRoot2<suffix>"
     Then The response status code should be 201
@@ -52,8 +53,12 @@ Feature: Setup comment threads for the plane-parity suite
     When I have created an api from "artifacts/payloads/create_apim_test_api.json" as "dtApiId<suffix>" and deployed it
     And I publish the "apis" resource with id "dtApiId<suffix>"
     Then The lifecycle status of API "dtApiId<suffix>" should be "Published"
+    And I act as "<devportalActor>"
+    And I have a valid DCR application for the current user
+    And I have a valid Devportal access token for the current user
     When I add a "devportal" comment "This is root comment 1" with category "general" to API "dtApiId<suffix>" as "dtRoot1<suffix>"
     Then The response status code should be 201
+    And The value of response field "entryPoint" should be "DEVPORTAL"
     And I wait for timestamp precision after the "devportal" comment "dtRoot1<suffix>" of API "dtApiId<suffix>"
     When I add a "devportal" comment "This is root comment 2" with category "general" to API "dtApiId<suffix>" as "dtRoot2<suffix>"
     Then The response status code should be 201
@@ -69,11 +74,14 @@ Feature: Setup comment threads for the plane-parity suite
     Then The response status code should be 201
 
     # --- The moderation API: published, deliberately comment-free.
+    And I act as "<actor>"
     When I have created an api from "artifacts/payloads/create_apim_test_api.json" as "mtApiId<suffix>" and deployed it
     And I publish the "apis" resource with id "mtApiId<suffix>"
     Then The lifecycle status of API "mtApiId<suffix>" should be "Published"
 
     Examples:
-      | actor             | suffix       |
-      | admin             |              |
-      | admin@tenant1.com | @tenant1.com |
+      | actor                                      | devportalActor                              | suffix              |
+      | superTenantAdmin                          | superTenantAdmin                            |                     |
+      | admin@tenant1.com                         | admin@tenant1.com                           | @tenant1.com        |
+      | SECONDARY.COM/publisherUser1               | SECONDARY.COM/subscriberUser1                | SecondaryStore      |
+      | SECONDARY.COM/publisherUser1@tenant1.com   | SECONDARY.COM/subscriberUser1@tenant1.com    | SecondaryStoreTenant |

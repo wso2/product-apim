@@ -21,7 +21,8 @@ import io.cucumber.testng.CucumberOptions;
 
 /**
  * Runner for server-global remote logging — ports RemoteLoggingAppenderTest. Mutates the shared server's
- * log4j2.properties via the RemoteLoggingConfig admin service, so it runs in its own thread-count=1 block.
+ * log4j2.properties via the RemoteLoggingConfig admin service, so it runs last in a sequential (thread-count=1)
+ * block.
  */
 @CucumberOptions(
         features = {

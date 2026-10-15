@@ -2353,6 +2353,22 @@ public class Utils {
     }
 
     /**
+     * Decodes the five predefined XML entities in text read out of an XML/SOAP response, the inverse of
+     * {@link #escapeXml}. {@code &amp;} is decoded last so an escaped entity ({@code &amp;lt;}) decodes to its
+     * literal text ({@code &lt;}) rather than to the character. A {@code null} value is returned unchanged.
+     */
+    public static String unescapeXml(String value) {
+        if (value == null) {
+            return null;
+        }
+        return value.replace("&lt;", "<")
+                .replace("&gt;", ">")
+                .replace("&quot;", "\"")
+                .replace("&apos;", "'")
+                .replace("&amp;", "&");
+    }
+
+    /**
      * Returns the first JSON object in the given array that matches all provided key-value pairs.
      *
      * @param list     the JSON array containing objects to search

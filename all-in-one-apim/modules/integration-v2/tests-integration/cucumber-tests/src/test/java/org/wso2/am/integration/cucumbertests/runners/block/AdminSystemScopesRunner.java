@@ -21,7 +21,7 @@ import io.cucumber.testng.CucumberOptions;
 
 /**
  * Runner for the admin system-scope role-alias mapping API (the port of APISystemScopesTestCase). Runs in the
- * concurrent IntegrationV2-Admin block; each scenario clears the mappings it adds, leaving the config unchanged.
+ * IntegrationV2-DevPortal block; each scenario clears the mappings it adds, leaving the config unchanged.
  */
 @CucumberOptions(
         features = {

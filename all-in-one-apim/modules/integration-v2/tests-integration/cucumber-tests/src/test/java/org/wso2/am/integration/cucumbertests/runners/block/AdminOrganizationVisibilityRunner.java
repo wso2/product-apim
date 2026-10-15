@@ -21,8 +21,8 @@ import io.cucumber.testng.CucumberOptions;
 
 /**
  * Runner for B2B organization visibility (the port of the core of ConsumerOrganizationVisibilityTestCase). Runs
- * in its own IntegrationV2-OrganizationVisibility block because it registers a local claim and provisions
- * org-scoped users at scenario time.
+ * last in a sequential (thread-count=1) block because it registers a local claim, tags the tenant admins with an
+ * organization and provisions org-scoped users at scenario time.
  */
 @CucumberOptions(
         features = {

@@ -21,7 +21,7 @@ import io.cucumber.testng.CucumberOptions;
 
 /**
  * Runner for admin-plane key-manager configuration CRUD (the port of the legacy KeyManagersTestCase,
- * consolidated over the six connector types). Runs in the concurrent IntegrationV2-Admin block; each scenario
+ * consolidated over the six connector types). Runs in the IntegrationV2-DevPortal block; each scenario
  * uses uniquely-named key managers, so it is parallel-safe.
  */
 @CucumberOptions(

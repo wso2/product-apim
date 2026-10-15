@@ -20,6 +20,7 @@ package org.wso2.am.integration.cucumbertests.stepdefinitions;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.testng.Assert;
 import org.wso2.am.integration.cucumbertests.utils.Identity;
@@ -198,6 +199,9 @@ public class OrganizationSteps {
     public void iProvisionOrganizationUser(String userKey, String roles, String orgId) throws Exception {
 
         TenantUserProvisioner.addUser(Constants.SUPER_TENANT_DOMAIN, userKey, userKey, userKey, roles);
+        ResourceCleanup.registerFor(ResourceCleanup.CREATED_USER_NAMES,
+                TenantUserProvisioner.physicalUserName(userKey),
+                Identity.tenantAdminActorRef(Constants.SUPER_TENANT_DOMAIN));
         iSetOrganizationClaim(userKey, Utils.resolveContextPlaceholders(orgId));
     }
 
@@ -207,6 +211,8 @@ public class OrganizationSteps {
             throws Exception {
 
         TenantUserProvisioner.addUser(tenantDomain, userKey, userKey, userKey, roles);
+        ResourceCleanup.registerFor(ResourceCleanup.CREATED_USER_NAMES,
+                TenantUserProvisioner.physicalUserName(userKey), Identity.tenantAdminActorRef(tenantDomain));
         iSetOrganizationClaimInTenant(userKey, tenantDomain, Utils.resolveContextPlaceholders(orgId));
     }
 
@@ -224,6 +230,9 @@ public class OrganizationSteps {
 
         TenantUserProvisioner.addUser(Constants.SUPER_TENANT_DOMAIN, userKey, userKey, userKey,
                 Utils.resolveContextPlaceholders(roles));
+        ResourceCleanup.registerFor(ResourceCleanup.CREATED_USER_NAMES,
+                TenantUserProvisioner.physicalUserName(userKey),
+                Identity.tenantAdminActorRef(Constants.SUPER_TENANT_DOMAIN));
     }
 
     /** Tenant variant of {@link #iProvisionUser}. */
@@ -232,6 +241,64 @@ public class OrganizationSteps {
 
         TenantUserProvisioner.addUser(tenantDomain, userKey, userKey, userKey,
                 Utils.resolveContextPlaceholders(roles));
+        ResourceCleanup.registerFor(ResourceCleanup.CREATED_USER_NAMES,
+                TenantUserProvisioner.physicalUserName(userKey), Identity.tenantAdminActorRef(tenantDomain));
+    }
+
+    /**
+     * Stores the username a user that was never provisioned would have in this block's user store: the
+     * {@link TenantUserProvisioner#physicalUserName} form of the base name, which is email-form only in an
+     * email-username block. A negative that needs a missing principal, or an arbitrary provider, then has the shape
+     * the server parses for this mode; the scenario still appends its own {@code @tenant} qualifier.
+     */
+    @When("I store the physical username of unprovisioned user {string} as {string}")
+    public void iStorePhysicalUsernameOfUnprovisionedUser(String baseName, String contextKey) {
+
+        TestContext.set(contextKey,
+                TenantUserProvisioner.physicalUserName(Utils.resolveContextPlaceholders(baseName)));
+    }
+
+    /** Provisions an actor whose lookup key differs from the username stored in the user store. */
+    @When("I provision user {string} as actor {string} with roles {string} in tenant {string}")
+    public void iProvisionUserAsActor(String username, String actorKey, String roles, String tenantDomain)
+            throws Exception {
+
+        TenantUserProvisioner.addUser(tenantDomain, actorKey, username, username,
+                Utils.resolveContextPlaceholders(roles));
+        ResourceCleanup.registerFor(ResourceCleanup.CREATED_USER_NAMES,
+                TenantUserProvisioner.physicalUserName(username), Identity.tenantAdminActorRef(tenantDomain));
+    }
+
+    /**
+     * Provisions an access-control scenario actor in either the primary or SECONDARY.COM user store. The
+     * store-qualified form is also the actor reference used later to obtain Publisher/DevPortal tokens.
+     */
+    @When("I provision access-control user {string} with roles {string} in tenant {string}")
+    public void iProvisionAccessControlUser(String actorRef, String roles, String tenantDomain) throws Exception {
+
+        String resolvedRoles = Utils.resolveContextPlaceholders(roles);
+        if (actorRef.startsWith("SECONDARY.COM/")) {
+            TenantUserProvisioner.addStoreUserAsActor(tenantDomain, actorRef, actorRef, "AccessControlPass123!",
+                    resolvedRoles);
+            ResourceCleanup.registerFor(ResourceCleanup.CREATED_USER_NAMES,
+                    TenantUserProvisioner.physicalUserName(actorRef), Identity.tenantAdminActorRef(tenantDomain));
+        } else {
+            TenantUserProvisioner.addUser(tenantDomain, actorRef, actorRef, "AccessControlPass123!", resolvedRoles);
+            ResourceCleanup.registerFor(ResourceCleanup.CREATED_USER_NAMES,
+                    TenantUserProvisioner.physicalUserName(actorRef), Identity.tenantAdminActorRef(tenantDomain));
+        }
+    }
+
+    /** Provisions a visibility role in the requested store, giving it Store login permission when requested. */
+    @When("I provision access-control visibility role {string} in tenant {string} for store {string}")
+    public void iProvisionAccessControlVisibilityRole(String roleName, String tenantDomain, String storeDomain)
+            throws Exception {
+
+        String resolvedRoleName = Utils.resolveContextPlaceholders(roleName);
+        String qualifiedRole = storeDomain.isEmpty() ? resolvedRoleName : storeDomain + "/" + resolvedRoleName;
+        TenantUserProvisioner.addRole(tenantDomain, qualifiedRole, true);
+        ResourceCleanup.registerFor(ResourceCleanup.CREATED_ROLE_NAMES, qualifiedRole,
+                Identity.tenantAdminActorRef(tenantDomain));
     }
 
     /**
@@ -244,7 +311,6 @@ public class OrganizationSteps {
     public void provisionApiCreatorRoleFixture(String actorContextKey) throws Exception {
 
         String tenantDomain = Identity.actingTenantDomain();
-        String provisioningActor = Identity.actingActorRef();
         String unique = Names.unique("apiCreator").replaceAll("[^A-Za-z0-9]", "");
         String actorKey = unique;
         String username = actorKey;
@@ -255,8 +321,10 @@ public class OrganizationSteps {
 
         TenantUserProvisioner.addUser(tenantDomain, actorKey, username, password,
                 "Internal/publisher,Internal/everyone");
-        ResourceCleanup.registerFor(ResourceCleanup.CREATED_USER_NAMES, username, provisioningActor);
-        ResourceCleanup.registerFor(ResourceCleanup.CREATED_ROLE_NAMES, roleName, provisioningActor);
+        ResourceCleanup.registerFor(ResourceCleanup.CREATED_USER_NAMES,
+                TenantUserProvisioner.physicalUserName(username), Identity.tenantAdminActorRef(tenantDomain));
+        ResourceCleanup.registerFor(ResourceCleanup.CREATED_ROLE_NAMES, roleName,
+                Identity.tenantAdminActorRef(tenantDomain));
         TenantUserProvisioner.createRoleAndAssign(tenantDomain, roleName, username,
                 Arrays.asList("/permission/admin/login", "/permission/admin/manage/api/create"));
         TenantUserProvisioner.setRoleUIPermissions(tenantDomain, roleName,
@@ -276,7 +344,10 @@ public class OrganizationSteps {
     public void iProvisionRole(String roleName) throws Exception {
 
         String tenantDomain = Identity.actingActor().getUserDomain();
-        TenantUserProvisioner.addRole(tenantDomain, Utils.resolveContextPlaceholders(roleName));
+        String resolvedRole = Utils.resolveContextPlaceholders(roleName);
+        TenantUserProvisioner.addRole(tenantDomain, resolvedRole);
+        ResourceCleanup.registerFor(ResourceCleanup.CREATED_ROLE_NAMES, resolvedRole,
+                Identity.tenantAdminActorRef(tenantDomain));
     }
 
     /**
@@ -287,7 +358,10 @@ public class OrganizationSteps {
     @When("I provision role {string} in tenant {string}")
     public void iProvisionRoleInTenant(String roleName, String tenantDomain) throws Exception {
 
-        TenantUserProvisioner.addRole(tenantDomain, Utils.resolveContextPlaceholders(roleName));
+        String resolvedRole = Utils.resolveContextPlaceholders(roleName);
+        TenantUserProvisioner.addRole(tenantDomain, resolvedRole);
+        ResourceCleanup.registerFor(ResourceCleanup.CREATED_ROLE_NAMES, resolvedRole,
+                Identity.tenantAdminActorRef(tenantDomain));
     }
 
     /**
@@ -300,7 +374,60 @@ public class OrganizationSteps {
     @When("I provision store-visibility role {string} in tenant {string}")
     public void iProvisionStoreVisibilityRoleInTenant(String roleName, String tenantDomain) throws Exception {
 
-        TenantUserProvisioner.addRole(tenantDomain, Utils.resolveContextPlaceholders(roleName), true);
+        String resolvedRole = Utils.resolveContextPlaceholders(roleName);
+        TenantUserProvisioner.addRole(tenantDomain, resolvedRole, true);
+        ResourceCleanup.registerFor(ResourceCleanup.CREATED_ROLE_NAMES, resolvedRole,
+                Identity.tenantAdminActorRef(tenantDomain));
+    }
+
+    /** Provisions a tag-visibility role and subscriber in the primary or a named user store. */
+    @When("I provision tag-visibility role {string} and subscriber {string} in user store {string} in tenant {string}")
+    public void iProvisionTagVisibilityRoleAndSubscriber(String roleName, String subscriberName, String storeDomain,
+                                                         String tenantDomain) throws Exception {
+
+        String resolvedRole = Utils.resolveContextPlaceholders(roleName);
+        String resolvedSubscriber = Utils.resolveContextPlaceholders(subscriberName);
+        String resolvedStore = Utils.resolveContextPlaceholders(storeDomain).trim();
+        String qualifiedRole = resolvedStore.isEmpty() ? resolvedRole : resolvedStore + "/" + resolvedRole;
+        String actorKey = resolvedStore.isEmpty() ? resolvedSubscriber : resolvedStore + "/" + resolvedSubscriber;
+        String password = "TagVisibilityPass123!";
+
+        TenantUserProvisioner.addRole(tenantDomain, qualifiedRole, true);
+        TenantUserProvisioner.awaitRoleExists(tenantDomain, qualifiedRole);
+        ResourceCleanup.registerFor(ResourceCleanup.CREATED_ROLE_NAMES, qualifiedRole,
+                Identity.tenantAdminActorRef(tenantDomain));
+
+        String roles = "Internal/subscriber," + qualifiedRole;
+        if (resolvedStore.isEmpty()) {
+            TenantUserProvisioner.addUser(tenantDomain, actorKey, resolvedSubscriber, password, roles);
+        } else {
+            TenantUserProvisioner.addStoreUserAsActor(tenantDomain, actorKey, actorKey, password, roles);
+        }
+        ResourceCleanup.registerFor(ResourceCleanup.CREATED_USER_NAMES,
+                TenantUserProvisioner.physicalUserName(actorKey), Identity.tenantAdminActorRef(tenantDomain));
+    }
+
+    /** Creates a least-privilege publisher actor and stores its stable reference for Scenario Outline token steps. */
+    @When("I provision a tag-visibility publisher in user store {string} in tenant {string} and store its reference as {string}")
+    public void iProvisionTagVisibilityPublisher(String storeDomain, String tenantDomain, String actorContextKey)
+            throws Exception {
+
+        String resolvedStore = Utils.resolveContextPlaceholders(storeDomain).trim();
+        // Names.unique appends a 9+ character suffix. Keep this base short enough that the email-mode transform
+        // (adding @email.com) stays within the product's default 30-character user-name limit.
+        String localName = Names.unique("tagPub").replaceAll("[^A-Za-z0-9]", "");
+        String actorKey = resolvedStore.isEmpty() ? localName : resolvedStore + "/" + localName;
+        String password = "TagPublisherPass123!";
+        String roles = "Internal/publisher,Internal/creator,Internal/subscriber";
+
+        if (resolvedStore.isEmpty()) {
+            TenantUserProvisioner.addUser(tenantDomain, actorKey, localName, password, roles);
+        } else {
+            TenantUserProvisioner.addStoreUserAsActor(tenantDomain, actorKey, actorKey, password, roles);
+        }
+        ResourceCleanup.registerFor(ResourceCleanup.CREATED_USER_NAMES,
+                TenantUserProvisioner.physicalUserName(actorKey), Identity.tenantAdminActorRef(tenantDomain));
+        TestContext.set(actorContextKey, actorKey);
     }
 
     /**
@@ -433,6 +560,70 @@ public class OrganizationSteps {
     }
 
     /**
+     * Polls the DevPortal API detail until its offered subscription tiers equal the expected set. This is used
+     * after an API update removes a deleted tier: the Publisher DTO may reflect the update before the Store's
+     * read model does. The result is still asserted by the feature using the published response and the exact-tier
+     * step below.
+     */
+    @When("I retrieve the devportal API {string} until its tiers are exactly {string} within {int} seconds")
+    public void iRetrieveDevportalApiUntilTiersExactly(String apiIdKey, String expectedTiers, int timeoutSeconds)
+            throws InterruptedException {
+
+        String apiId = TestContext.resolve(apiIdKey).toString();
+        List<String> expected = tierNames(expectedTiers);
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
+        TestContext.remove("httpResponse");
+        HttpResponse last = Utils.retryUntil(timeoutSeconds * 1000L,
+                () -> Requests.get(Utils.getDevportalApiDetailURL(Utils.getBaseUrl(), apiId), headers),
+                response -> hasExactlyDevportalTiers(response, expected));
+        Requests.publishPollResult(last);
+        Assert.assertNotNull(last, "No DevPortal response received for API " + apiId);
+        Assert.assertEquals(last.getResponseCode(), 200,
+                "DevPortal API " + apiId + " did not become readable with its expected tier set within "
+                        + timeoutSeconds + "s: " + last.getData());
+        Assert.assertTrue(hasExactlyDevportalTiers(last, expected),
+                "DevPortal API " + apiId + " did not expose exactly tiers " + expected + " within "
+                        + timeoutSeconds + "s; last: " + last.getData());
+    }
+
+    /**
+     * True when the response is a 200 whose tiers are exactly {@code expected}. A body or tier entry that does not
+     * parse reads as not settled, so retryUntil keeps polling and the caller's assertion reports the last body.
+     */
+    private boolean hasExactlyDevportalTiers(HttpResponse response, List<String> expected) {
+
+        if (response == null || response.getResponseCode() != 200 || response.getData() == null
+                || response.getData().isBlank()) {
+            return false;
+        }
+        try {
+            JSONArray tiers = new JSONObject(response.getData()).optJSONArray("tiers");
+            if (tiers == null) {
+                return false;
+            }
+            List<String> actual = new ArrayList<>();
+            for (int i = 0; i < tiers.length(); i++) {
+                actual.add(tiers.getJSONObject(i).getString("tierName"));
+            }
+            Collections.sort(actual);
+            return actual.equals(expected);
+        } catch (JSONException malformed) {
+            return false;
+        }
+    }
+
+    private List<String> tierNames(String tiersCsv) {
+
+        List<String> names = new ArrayList<>();
+        for (String tier : Utils.resolveContextPlaceholders(tiersCsv).split(",")) {
+            names.add(tier.trim());
+        }
+        Collections.sort(names);
+        return names;
+    }
+
+    /**
      * Asserts the EXACT set of subscription tiers the DevPortal offers for the API, read off the response the
      * preceding devportal API-get published as {@code httpResponse}. The plain "should contain" check cannot
      * distinguish "the org's policy was applied" from "the org's policy was added alongside the API's own
@@ -459,12 +650,8 @@ public class OrganizationSteps {
         for (int i = 0; i < tiers.length(); i++) {
             actual.add(tiers.getJSONObject(i).getString("tierName"));
         }
-        List<String> expected = new ArrayList<>();
-        for (String tier : expectedTiers.split(",")) {
-            expected.add(tier.trim());
-        }
+        List<String> expected = tierNames(expectedTiers);
         Collections.sort(actual);
-        Collections.sort(expected);
         Assert.assertEquals(actual, expected,
                 "DevPortal subscription tiers mismatch. Body: " + response.getData());
     }

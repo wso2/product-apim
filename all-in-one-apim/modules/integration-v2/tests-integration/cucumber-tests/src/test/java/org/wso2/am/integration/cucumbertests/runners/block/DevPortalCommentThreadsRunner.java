@@ -28,10 +28,8 @@ import io.cucumber.testng.CucumberOptions;
  * fixture first, {@code comments_1_thread_reads} asserts against it while pristine, and
  * {@code comments_2_thread_mutations} edits and deletes it last.
  * <p>
- * Kept SEPARATE from {@link DevPortalCommentsRunner} on purpose: that runner's feature is tagged {@code @cleanup},
- * whose per-scenario hook sweeps every registered resource in scope — sharing a runner would delete this suite's
- * shared fixture mid-run. Teardown here is {@link BaseBlockRunner}'s AfterClass sweep, so none of the three
- * features is {@code @cleanup}.
+ * Teardown is {@link BaseBlockRunner}'s AfterClass sweep, so none of the three features is tagged {@code @cleanup};
+ * a per-scenario sweep would delete the shared fixture before the later read/mutation features consume it.
  */
 @CucumberOptions(
         features = {

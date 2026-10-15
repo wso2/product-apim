@@ -113,6 +113,38 @@ public class ApiSecurityParitySteps {
     }
 
     /**
+     * Obtains either an opaque DevPortal API key or a locally signed JWT-format key, storing both under the same
+     * context key so gateway scenarios can exercise the same invocation steps for both credential formats.
+     */
+    @When("I obtain a {string} API key for application id {string} using payload {string}")
+    public void iObtainApiKeyInFormat(String keyFormat, String appIdKey, String payloadKey) throws IOException {
+
+        String normalizedFormat = keyFormat.trim().toLowerCase(java.util.Locale.ROOT);
+        if ("opaque".equals(normalizedFormat)) {
+            String applicationId = TestContext.resolve(appIdKey).toString();
+            String payload = TestContext.resolve(payloadKey).toString();
+            Map<String, String> headers = new HashMap<>();
+            headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
+            HttpResponse response = Requests.post(
+                    Utils.getGenerateAPIKeyURL(Utils.getBaseUrl(), applicationId, "PRODUCTION"), headers, payload,
+                    Constants.CONTENT_TYPES.APPLICATION_JSON);
+            Assert.assertNotNull(response, "DevPortal returned no response while generating an opaque API key");
+            Assert.assertEquals(response.getResponseCode(), 200,
+                    "Opaque API key generation failed: " + response.getData());
+            Object apiKey = Utils.extractValueFromPayload(response.getData(), "apikey");
+            Assert.assertNotNull(apiKey, "Opaque API key generation response omitted 'apikey': " + response.getData());
+            Assert.assertFalse(apiKey.toString().isBlank(), "Opaque API key generation returned a blank key");
+            TestContext.set("apiKey", apiKey.toString());
+            return;
+        }
+        if ("locally signed jwt".equals(normalizedFormat)) {
+            iGenerateTypedLocallySignedJwtApiKey("PRODUCTION", appIdKey, "", "", "apiKey");
+            return;
+        }
+        Assert.fail("Unsupported API-key format '" + keyFormat + "'. Expected 'opaque' or 'locally signed JWT'.");
+    }
+
+    /**
      * Revokes an API key BY VALUE through the DevPortal revoke endpoint
      * ({@code applications/{id}/api-keys/{keyType}/revoke}, body {@code {"apikey":"<key>"}}). This is the
      * revocation path for a JWT-format key: the product verifies the key's signature, matches its application

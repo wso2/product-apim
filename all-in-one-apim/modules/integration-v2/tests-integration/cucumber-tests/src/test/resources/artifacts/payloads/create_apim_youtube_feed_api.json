@@ -1,0 +1,34 @@
+{
+  "name": "${UNIQUE:APIMYouTubeFeed}",
+  "context": "${UNIQUE:apiYouTubeFeedContext}",
+  "version": "1.0.0",
+  "endpointConfig": {
+    "endpoint_type": "http",
+    "production_endpoints": {
+      "template_not_supported": false,
+      "config": null,
+      "url": "http://nodebackend:3001/feeds/api/standardfeeds"
+    },
+    "sandbox_endpoints": {
+      "url": "http://nodebackend:3001/feeds/api/standardfeeds",
+      "config": null,
+      "template_not_supported": false
+    }
+  },
+  "description": "API testing Atom feed invocation through the gateway",
+  "policies": [
+    "Gold",
+    "Bronze",
+    "Unlimited"
+  ],
+  "operations": [
+    {
+      "verb": "GET",
+      "target": "/*",
+      "scopes": []
+    }
+  ],
+  "isDefaultVersion": true,
+  "additionalProperties": [],
+  "additionalPropertiesMap": {}
+}

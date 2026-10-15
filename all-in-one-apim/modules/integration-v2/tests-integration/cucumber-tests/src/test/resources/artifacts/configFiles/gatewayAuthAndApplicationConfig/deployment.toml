@@ -3,7 +3,7 @@
 # custom auth header, devportal application sharing, application attributes and backend JWT claims.
 
 # --- Custom gateway handler: the shipped deny-list minus ConfigServiceAdmin, which the custom-handler feature uses to
-# attach the handler to a live API. Every other denied service stays disabled.
+# attach the handler to a live API and to install static Synapse routes. Every other denied service stays disabled.
 [admin_service]
 deny_list = [
     "ClassMediatorAdmin",

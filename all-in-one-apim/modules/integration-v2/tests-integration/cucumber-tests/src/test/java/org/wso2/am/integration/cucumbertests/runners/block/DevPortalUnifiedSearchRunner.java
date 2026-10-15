@@ -20,10 +20,10 @@ package org.wso2.am.integration.cucumbertests.runners.block;
 import io.cucumber.testng.CucumberOptions;
 
 /**
- * Runner for devportal/unified_search — the {@code GET /search} endpoint on both planes: document-content search
- * (the ContentSearchTestCase parity), the mixed API/DEFINITION/DOC result shape, and index withdrawal on document
- * delete. Self-contained {@code @cleanup} scenarios. Extends {@link BaseBlockRunner} for the block boot-failure
- * guard and runner-scoped cleanup safety net.
+ * Runner for devportal/unified_search — the {@code GET /search} endpoint on both planes: templated-context API
+ * search (the DynamicAPIContextTestCase parity), document-content search (the ContentSearchTestCase parity), the
+ * mixed API/DEFINITION/DOC result shape, and index withdrawal on document delete. Self-contained {@code @cleanup}
+ * scenarios. Extends {@link BaseBlockRunner} for the block boot-failure guard and runner-scoped cleanup safety net.
  */
 @CucumberOptions(
         features = "src/test/resources/features/devportal/unified_search.feature",

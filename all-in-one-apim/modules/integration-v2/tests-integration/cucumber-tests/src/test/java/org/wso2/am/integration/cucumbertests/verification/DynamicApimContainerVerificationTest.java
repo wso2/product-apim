@@ -56,6 +56,7 @@ public class DynamicApimContainerVerificationTest {
         String tomlContent = Utils.resolveDefaultToml(moduleDir);
 
         DynamicApimContainer container = new DynamicApimContainer("verify-1.1", tomlContent);
+        Utils.applyDefaultTemplates(container, moduleDir);
         container.withLabel(VERIFY_LABEL_KEY, VERIFY_LABEL_VALUE);
 
         String host;

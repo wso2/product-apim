@@ -67,6 +67,7 @@ public class DynamicApimContainerParallelVerificationTest {
         List<DynamicApimContainer> containers = new ArrayList<>();
         for (int i = 0; i < CONTAINER_COUNT; i++) {
             DynamicApimContainer c = new DynamicApimContainer("verify-1.2-" + i, tomlContent);
+            Utils.applyDefaultTemplates(c, moduleDir);
             c.withLabel(VERIFY_LABEL_KEY, VERIFY_LABEL_VALUE);
             containers.add(c);
         }

@@ -17,6 +17,7 @@
 
 package org.wso2.am.integration.cucumbertests.stepdefinitions;
 
+import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
@@ -484,6 +485,7 @@ public class PublisherBaseSteps {
 
         HttpResponse response = Requests.delete(Utils.getResourceEndpointURL(Utils.getBaseUrl(), resourceType,
                 actualResourceId), headers);
+        TestContext.set("httpResponse", response);
         // A resource the scenario deletes ITSELF must be dropped from the teardown sweep: otherwise
         // ResourceCleanup later chases the already-gone id and logs a spurious "resource NOT deleted; may leak"
         // that misdirects triage (e.g. an export/delete/import scenario whose import then fails). Deregister only
@@ -1037,6 +1039,7 @@ public class PublisherBaseSteps {
      * published {@code httpResponse} is never clobbered.
      */
     @Then("the {string} resource {string} should be live on the gateway, redeploying if propagation is lost")
+    @Then("The {string} resource {string} should be live on the gateway, redeploying if propagation is lost")
     public void resourceShouldBeLiveOnGateway(String resourceType, String resourceId) throws Exception {
         resourceShouldBeLiveOnGateway(resourceType, resourceId, null);
     }
@@ -1632,6 +1635,7 @@ public class PublisherBaseSteps {
                 "Bearer " + Identity.publisherToken());
 
         HttpResponse apiNewVersionResponse = Requests.post(Utils.getNewAPIVersionURL(Utils.getBaseUrl(), resourceType, newVersion, defaultVersion, actualResourceID), headers, null, null);
+        TestContext.set("httpResponse", apiNewVersionResponse);
         Object newVersionId = Utils.extractValueFromPayload(apiNewVersionResponse.getData(), "id");
         TestContext.set(newVersionID, newVersionId);
         // Register for scenario teardown so the version copy is cleaned up alongside the base API.
@@ -2198,6 +2202,36 @@ public class PublisherBaseSteps {
             ResourceCleanup.register(Constants.CREATED_SHARED_SCOPE_IDS, scopeId);
         }
       }
+
+    /** Creates a shared scope with a display name independent of its unique name. */
+    @When("I create a new shared scope as {string} with display name {string}")
+    public void iCreateANewSharedScopeWithDisplayName(String scopeName, String displayName) throws IOException {
+
+        String uniqueName = Names.unique(Utils.resolveContextPlaceholders(scopeName));
+        String uniqueDisplayName = Names.unique(Utils.resolveContextPlaceholders(displayName));
+        TestContext.set("distinctScopeName", uniqueName);
+        TestContext.set("distinctScopeDisplayName", uniqueDisplayName);
+        JSONObject payload = new JSONObject()
+                .put("name", uniqueName)
+                .put("displayName", uniqueDisplayName)
+                .put("description", "Shared scope with an independent display name")
+                .put("bindings", new JSONArray().put("admin"));
+
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
+        HttpResponse response = Requests.post(Utils.getAPIScopes(Utils.getBaseUrl()), headers, payload.toString(),
+                Constants.CONTENT_TYPES.APPLICATION_JSON);
+        Assert.assertTrue(response != null && response.getResponseCode() == 201 && response.getData() != null
+                        && !response.getData().isBlank(),
+                "Failed to create shared scope '" + uniqueName + "': expected 201 with a body, got "
+                        + (response == null ? "no response"
+                        : response.getResponseCode() + " / body=" + response.getData()));
+        Object scopeId = Utils.extractValueFromPayload(response.getData(), "id");
+        TestContext.set("scopeID", scopeId);
+        if (scopeId != null) {
+            ResourceCleanup.register(Constants.CREATED_SHARED_SCOPE_IDS, scopeId);
+        }
+    }
 
     /**
      * Creates a shared scope bound to a freshly-generated, unique role name and stores the IS7 role name that
@@ -3481,36 +3515,39 @@ public class PublisherBaseSteps {
     }
 
     /**
-     * Updates the single in-sequence resource policy of a SOAP-to-REST API by PREPENDING a unique marker property
-     * mediator, then PUTs it back ({@code PUT /apis/{apiId}/resource-policies/{id}}) and publishes the PUT
+     * Updates the single in- or out-sequence resource policy of a SOAP-to-REST API by PREPENDING a unique marker
+     * property mediator, then PUTs it back ({@code PUT /apis/{apiId}/resource-policies/{id}}) and publishes the PUT
      * response. A following re-retrieve asserts the marker persisted. Ports the INTENT of
      * SoapToRestTestCase#testUpdateInOutSequence, whose forEach swallowed update failures so it never verified
      * the update actually took.
      *
      * <p>Prepended rather than spliced in after the first tag: the policy {@code content} is a FRAGMENT of sibling
-     * mediators, not a rooted document (it opens with a self-closing {@code <header/>} followed by sibling
-     * {@code <property/>} / {@code <filter>} elements), so a leading property is a valid sibling and needs no
-     * scanning. Locating an insertion point with {@code indexOf('>')} would be a raw-text scan with no notion of
+     * mediators, not a rooted document, so a leading property is a valid sibling and needs no scanning. Locating an
+     * insertion point with {@code indexOf('>')} would be a raw-text scan with no notion of
      * markup — {@code >} is legal unescaped inside an XML attribute value, and synapse {@code regex}/
      * {@code expression} attributes can carry one — so it could split a tag and produce content the PUT rejects,
      * which would surface as a product fault rather than a test bug. Position is irrelevant here: the scenario
      * re-retrieves and asserts the marker persisted, it never invokes the sequence.
      */
-    @When("I update the in-sequence resource policy of API {string} inserting marker {string}")
-    public void iUpdateInSequenceResourcePolicy(String apiId, String marker) throws IOException {
+    @When("I update the {string}-sequence resource policy of API {string} inserting marker {string}")
+    public void iUpdateSequenceResourcePolicy(String sequenceType, String apiId, String marker) throws IOException {
+
+        Assert.assertTrue("in".equals(sequenceType) || "out".equals(sequenceType),
+                "Sequence type must be 'in' or 'out', got: " + sequenceType);
         String actualApiId = TestContext.resolve(apiId).toString();
         String markerValue = TestContext.resolve(marker).toString();
         Map<String, String> headers = Identity.publisherHeaders();
         // Intermediate read consumed locally (not the asserted response) — raw client per §7.
         HttpResponse list = SimpleHTTPClient.getInstance().doGet(
-                Utils.getApiResourcePoliciesURL(Utils.getBaseUrl(), actualApiId, "in"), headers);
+                Utils.getApiResourcePoliciesURL(Utils.getBaseUrl(), actualApiId, sequenceType), headers);
         Assert.assertTrue(list != null && list.getResponseCode() >= 200 && list.getResponseCode() < 300
                         && list.getData() != null && !list.getData().isBlank(),
-                "Could not read in-sequence resource policy of " + actualApiId + " before update: got="
+                "Could not read " + sequenceType + "-sequence resource policy of " + actualApiId
+                        + " before update: got="
                         + (list == null ? "null" : list.getResponseCode() + "/" + list.getData()));
         JSONArray policies = new JSONObject(list.getData()).getJSONArray("list");
         Assert.assertEquals(policies.length(), 1,
-                "Expected exactly one in-sequence resource policy, got: " + list.getData());
+                "Expected exactly one " + sequenceType + "-sequence resource policy, got: " + list.getData());
         JSONObject policy = policies.getJSONObject(0);
         String content = policy.getString("content");
         String markerElement = "<property name=\"" + markerValue + "\" value=\"" + markerValue + "\" scope=\"default\"/>";
@@ -4166,8 +4203,8 @@ public class PublisherBaseSteps {
             if (inputStream == null) {
                 throw new FileNotFoundException("Additional properties file not found: " + additionalData);
             }
-            additionalProperties = Utils.resolvePayloadPlaceholders(
-                    IOUtils.toString(inputStream, StandardCharsets.UTF_8));
+            additionalProperties = Utils.resolveContextPlaceholders(Utils.resolvePayloadPlaceholders(
+                    IOUtils.toString(inputStream, StandardCharsets.UTF_8)));
         }
         File additionalPropertiesFile = File.createTempFile("data", ".json");
         additionalPropertiesFile.deleteOnExit();
@@ -4341,6 +4378,24 @@ public class PublisherBaseSteps {
     }
 
     /**
+     * Updates an API's OpenAPI definition (PUT /apis/{id}/swagger) with a definition captured from a prior response.
+     * This supports a read-and-write-back round trip without replacing the retrieved definition with a fixture.
+     */
+    @When("I update the swagger of {string} resource {string} from context {string}")
+    public void iUpdateSwaggerFromContext(String resourceType, String resourceId, String definitionKey) throws IOException {
+
+        String actualId = TestContext.resolve(resourceId).toString();
+        String definition = TestContext.resolve(definitionKey).toString();
+        Assert.assertFalse(definition.isBlank(), "OpenAPI definition in context '" + definitionKey + "' is empty");
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
+        Map<String, String> formFields = new HashMap<>();
+        formFields.put("apiDefinition", definition);
+        Requests.putMultipart(
+                Utils.getSwaggerURL(Utils.getBaseUrl(), resourceType, actualId), headers, new HashMap<>(), formFields);
+    }
+
+    /**
      * Flips one operation's {@code x-auth-type} IN THE OPENAPI DEFINITION and PUTs the definition back
      * (PUT /apis/{id}/swagger) — the SWAGGER route to changing a resource's authentication type, as opposed to
      * setting {@code authType} on the API's {@code operations} array.
@@ -4439,6 +4494,43 @@ public class PublisherBaseSteps {
                     "Operation " + operation.optString("verb") + " " + operation.optString("target")
                             + " carries the wrong throttling policy; all operations: " + operations);
         }
+    }
+
+    /**
+     * Asserts that the API in the last (2xx) response has EXACTLY the operations of the table — no more, no fewer —
+     * and that each carries its listed throttling policy. For APIs whose operations legitimately carry different
+     * tiers (an explicitly declared tier next to a substituted default), where the all-operations form cannot apply.
+     * Reads back the shared {@code httpResponse}, so it follows a retrieve step.
+     *
+     * @param expected rows of {@code verb | target | throttlingPolicy}, header row included
+     */
+    @Then("The operations in the response should have exactly these throttling policies:")
+    public void operationsShouldHaveExactlyTheseThrottlingPolicies(DataTable expected) {
+
+        HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
+        Assert.assertTrue(response != null && response.getResponseCode() >= 200 && response.getResponseCode() < 300
+                        && response.getData() != null && !response.getData().isBlank(),
+                "Expected a 2xx API response with a body to read operations from, but got: "
+                        + (response == null ? "null" : response.getResponseCode() + " / " + response.getData()));
+
+        JSONArray operations = new JSONObject(response.getData()).optJSONArray("operations");
+        Assert.assertNotNull(operations, "The API response carries no operations: " + response.getData());
+
+        Map<String, String> actualPolicies = new HashMap<>();
+        for (int i = 0; i < operations.length(); i++) {
+            JSONObject operation = operations.getJSONObject(i);
+            String key = operation.optString("verb") + " " + operation.optString("target");
+            Assert.assertNull(actualPolicies.put(key, operation.optString("throttlingPolicy", null)),
+                    "Operation " + key + " appears more than once; all operations: " + operations);
+        }
+        Map<String, String> expectedPolicies = new HashMap<>();
+        for (Map<String, String> row : expected.asMaps()) {
+            expectedPolicies.put(row.get("verb") + " " + row.get("target"),
+                    Utils.resolveContextPlaceholders(row.get("throttlingPolicy")));
+        }
+        Assert.assertEquals(actualPolicies, expectedPolicies,
+                "The API's operations or their throttling policies differ from the expected set; all operations: "
+                        + operations);
     }
 
     /** Retrieves the available publisher throttling policies for a policy level (subscription / api / application). */
@@ -4582,7 +4674,8 @@ public class PublisherBaseSteps {
             if (inputStream == null) {
                 throw new FileNotFoundException("Additional properties file not found: " + additionalData);
             }
-            return Utils.resolvePayloadPlaceholders(IOUtils.toString(inputStream, StandardCharsets.UTF_8));
+            return Utils.resolveContextPlaceholders(
+                    Utils.resolvePayloadPlaceholders(IOUtils.toString(inputStream, StandardCharsets.UTF_8)));
         }
     }
 
@@ -4840,7 +4933,7 @@ public class PublisherBaseSteps {
     @When("I create an API product {string} with context {string} and provider {string} from APIs {string} as {string}")
     public void iCreateApiProductWithExplicitProvider(String nameBase, String contextBase, String providerValue,
                                                       String apiIdKeysCsv, String productIdKey) throws IOException {
-        String provider = Utils.resolvePayloadPlaceholders(providerValue);
+        String provider = Utils.resolveContextPlaceholders(Utils.resolvePayloadPlaceholders(providerValue));
         createApiProduct(nameBase, contextBase, provider, apiIdKeysCsv, productIdKey);
         TestContext.set(productIdKey + PRODUCT_REQUESTED_PROVIDER_SUFFIX, provider);
     }

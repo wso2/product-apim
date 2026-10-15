@@ -1,0 +1,104 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "APIResourceTestAPI",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/*": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "x-auth-type": "None",
+        "x-throttling-tier": "Unlimited"
+      },
+      "post": {
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "parameters": [
+          {
+            "name": "Payload",
+            "description": "Request Body",
+            "required": false,
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "payload": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        ],
+        "x-auth-type": "None",
+        "x-throttling-tier": "Unlimited"
+      },
+      "put": {
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "parameters": [
+          {
+            "name": "Payload",
+            "description": "Request Body",
+            "required": false,
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "payload": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        ],
+        "x-auth-type": "None",
+        "x-throttling-tier": "Unlimited"
+      },
+      "delete": {
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "x-auth-type": "None",
+        "x-throttling-tier": "Unlimited"
+      },
+      "patch": {
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "parameters": [
+          {
+            "name": "Payload",
+            "description": "Request Body",
+            "required": false,
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "payload": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        ],
+        "x-auth-type": "None",
+        "x-throttling-tier": "Unlimited"
+      }
+    }
+  }
+}
