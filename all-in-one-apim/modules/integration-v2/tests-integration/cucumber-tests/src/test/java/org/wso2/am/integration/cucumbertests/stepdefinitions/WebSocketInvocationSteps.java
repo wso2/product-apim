@@ -21,6 +21,8 @@ import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.skyscreamer.jsonassert.JSONAssert;
+import org.skyscreamer.jsonassert.JSONCompareMode;
 import org.testng.Assert;
 import org.wso2.am.integration.cucumbertests.utils.TestContext;
 import org.wso2.am.integration.cucumbertests.utils.Utils;
@@ -582,43 +584,16 @@ public class WebSocketInvocationSteps {
     /**
      * Connects to a deployed GraphQL API's subscription endpoint through the gateway WS inbound (subprotocol
      * {@code graphql-ws}), performs the graphql-ws handshake (connection_init → connection_ack), sends a
-     * {@code start} message carrying the subscription query, and asserts the first {@code data} message contains
-     * {@code expectedData}. Retries the whole flow until it succeeds or the deadline elapses. Ports the core
+     * {@code start} message carrying the subscription query, and asserts the exact {@code data} frame against a
+     * JSON fixture. Retries connection/warm-up failures until the deadline elapses. Ports the core
      * subscription invocation of GraphqlSubscriptionTestCase (liftStatusChange → {"name":"Astra Express"}).
      */
-    @When("I invoke the GraphQL subscription at gateway ws context {string} with query {string} using access token {string} expecting data containing {string} within {int} seconds")
-    public void invokeGraphqlSubscription(String context, String query, String accessToken, String expectedData,
-                                          int timeoutSeconds) throws Exception {
+    @When("I invoke the GraphQL subscription at gateway ws context {string} with query {string} using access token {string} expecting exact data frame from JSON file {string} within {int} seconds")
+    public void invokeGraphqlSubscription(String context, String query, String accessToken,
+                                          String expectedDataFrameFile, int timeoutSeconds) throws Exception {
 
-        String resolvedContext = Utils.resolveContextPlaceholders(context);
-        String token = TestContext.resolve(accessToken).toString();
-        String base = Utils.getBaseGatewayWsUrl();
-        if (base.endsWith("/")) {
-            base = base.substring(0, base.length() - 1);
-        }
-        String wsUrl = base + (resolvedContext.startsWith("/") ? "" : "/") + resolvedContext;
-
-        long startedMillis = System.currentTimeMillis();
-        AtomicReference<Throwable> lastFailure = new AtomicReference<>();
-        String data = Utils.retryUntil(timeoutSeconds * 1000L, () -> {
-            try {
-                return subscribeAndReceive(wsUrl, token, query, lastFailure);
-            } catch (InterruptedException interrupted) {
-                // Cancellation is not a transient/expected outcome — restore the flag so the envelope's next
-                // pause rethrows it instead of reading this as a retryable attempt.
-                Thread.currentThread().interrupt();
-                return null;
-            } catch (Exception connectingWhileWarmup) {
-                lastFailure.set(connectingWhileWarmup);
-                return null;
-            }
-        }, message -> message != null && message.contains(expectedData));
-        String authDetail = data != null ? ""
-                : authRejectionDetail(wsUrl, accessToken, token, lastFailure, startedMillis);
-        Assert.assertNotNull(data, "GraphQL subscription returned no data message within the deadline; last error: "
-                + lastErrorOf(lastFailure) + authDetail);
-        Assert.assertTrue(data.contains(expectedData),
-                "GraphQL subscription data did not contain '" + expectedData + "'; last message: " + data);
+        graphqlSubscriptionExpectDataFrame(context, query, accessToken, expectedDataFrameFile, timeoutSeconds,
+                false);
     }
 
 /**
@@ -629,10 +604,12 @@ public class WebSocketInvocationSteps {
      * WS inbound must pull the credential off the handshake's query string before any header is available.
      * Mirrors the plain-WebSocket {@code using access token query param} step for the same reason.
      */
-    @When("I invoke the GraphQL subscription at gateway ws context {string} with query {string} using access token query param {string} expecting data containing {string} within {int} seconds")
+    @When("I invoke the GraphQL subscription at gateway ws context {string} with query {string} using access token query param {string} expecting exact data frame from JSON file {string} within {int} seconds")
     public void invokeGraphqlSubscriptionTokenQueryParam(String context, String query, String accessToken,
-                                                        String expectedData, int timeoutSeconds) throws Exception {
-        graphqlSubscriptionExpectData(context, query, accessToken, expectedData, timeoutSeconds, true);
+                                                        String expectedDataFrameFile, int timeoutSeconds)
+            throws Exception {
+        graphqlSubscriptionExpectDataFrame(context, query, accessToken, expectedDataFrameFile, timeoutSeconds,
+                true);
     }
 
     /**
@@ -1225,7 +1202,7 @@ public class WebSocketInvocationSteps {
     private String subscribeAndReceive(String wsUrl, String token, String query,
                                        AtomicReference<Throwable> lastFailure) throws Exception {
         HttpClient client = HttpClient.newBuilder().sslContext(trustAllSslContext()).build();
-        CompletableFuture<Void> ack = new CompletableFuture<>();
+        CompletableFuture<String> ack = new CompletableFuture<>();
         CompletableFuture<String> data = new CompletableFuture<>();
         WebSocket ws;
         try {
@@ -1249,7 +1226,7 @@ public class WebSocketInvocationSteps {
                             String msg = parts.toString();
                             parts.setLength(0);
                             if (msg.contains("connection_ack")) {
-                                ack.complete(null);
+                                ack.complete(msg);
                             } else if (msg.contains("\"data\"")) {
                                 data.complete(msg);
                             }
@@ -1276,7 +1253,9 @@ public class WebSocketInvocationSteps {
             // here for the same reason — give the backend leg time to come up before the graphql-ws handshake.
             Thread.sleep(15000);
             ws.sendText("{\"type\":\"connection_init\",\"payload\":{}}", true);
-            ack.get(30, TimeUnit.SECONDS);
+            String ackFrame = ack.get(30, TimeUnit.SECONDS);
+            Assert.assertEquals(ackFrame, "{\"type\":\"connection_ack\"}",
+                    "GraphQL subscription connection acknowledgement frame differed");
             String start = "{\"id\":\"1\",\"type\":\"start\",\"payload\":{\"variables\":{},\"extensions\":{},"
                     + "\"operationName\":null,\"query\":\"" + query.replace("\"", "\\\"") + "\"}}";
             ws.sendText(start, true);
@@ -1374,8 +1353,11 @@ public class WebSocketInvocationSteps {
      * Shared body of the two graphql-ws data-subscription steps above; {@code tokenInQueryParam} selects whether
      * the credential is presented as {@code ?access_token=} on the URL or as an {@code Authorization} header.
      */
-    private void graphqlSubscriptionExpectData(String context, String query, String accessToken, String expectedData,
-                                               int timeoutSeconds, boolean tokenInQueryParam) throws Exception {
+    private void graphqlSubscriptionExpectDataFrame(String context, String query, String accessToken,
+                                                    String expectedDataFrameFile, int timeoutSeconds,
+                                                    boolean tokenInQueryParam) throws Exception {
+
+        String expectedDataFrame = Utils.readClasspathResource(expectedDataFrameFile);
 
         String resolvedContext = Utils.resolveContextPlaceholders(context);
         String token = TestContext.resolve(accessToken).toString();
@@ -1406,12 +1388,12 @@ public class WebSocketInvocationSteps {
                 lastFailure.set(connectingWhileWarmup);
                 return null;
             }
-        }, message -> message != null && message.contains(expectedData));
+        }, message -> message != null);
         String authDetail = data != null ? ""
                 : authRejectionDetail(finalWsUrl, accessToken, token, lastFailure, startedMillis);
         Assert.assertNotNull(data, "GraphQL subscription returned no data message within the deadline; last error: "
                 + lastErrorOf(lastFailure) + authDetail);
-        Assert.assertTrue(data.contains(expectedData),
-                "GraphQL subscription data did not contain '" + expectedData + "'; last message: " + data);
+        JSONAssert.assertEquals("GraphQL subscription data frame did not match " + expectedDataFrameFile,
+                expectedDataFrame, data, JSONCompareMode.STRICT);
     }
 }

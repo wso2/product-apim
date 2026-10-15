@@ -115,10 +115,11 @@ Feature: Key Manager OAuth Application Keys
   # Here each owner generates a PRODUCTION key with its OWN distinct callbackUrl on a SAME-NAMED application;
   # owner1's value is asserted BEFORE owner2's update (the baseline, without which the after-value proves
   # nothing), then re-asserted after, and the two owners' final values must differ.
-  # NOTE the application-level callbackUrl of ApplicationCallbackURLTestCase is NOT portable — ApplicationDTO has
-  # no callbackUrl field on this build (see the report); callbackUrl exists only on the KEY, which is what this
-  # scenario pins.
-  @cap:key-manager @feat:oauth-keys @rule:owner-isolation @type:regression @dep:devportal @legacy:CAPIMGT12CallBackURLOverwriteTestCase
+  # In the current DevPortal v3 contract, callbackUrl is part of ApplicationKey and its generate/update request
+  # objects (the Application object itself has no callbackUrl property). This scenario therefore verifies the
+  # supported application-key callback lifecycle: set it during key creation, update it, and read back the persisted
+  # value while proving another owner's same-named application remains isolated.
+  @cap:key-manager @feat:oauth-keys @rule:owner-isolation @type:regression @dep:devportal @legacy:CAPIMGT12CallBackURLOverwriteTestCase @legacy:ApplicationCallbackURLTestCase
   Scenario Outline: One owner's key callbackUrl update does not overwrite another owner's same-named application as <owner>
     Given The system is ready
     And I have valid access tokens as "<owner>"
@@ -136,6 +137,7 @@ Feature: Key Manager OAuth Application Keys
     """
     And I generate client credentials for application id "cbOwner1AppId" with payload "cbOwner1KeysPayload"
     Then The response status code should be 200
+    And The value of response field "callbackUrl" should be "https://owner1.callback.example.com/cb"
     And I extract response field "keyMappingId" and store it as "cbOwner1KeyMappingId"
 
     # Owner 2 (a different user in the same tenant): an application with the SAME name and its own key/callbackUrl.
@@ -153,6 +155,7 @@ Feature: Key Manager OAuth Application Keys
     """
     And I generate client credentials for application id "cbOwner2AppId" with payload "cbOwner2KeysPayload"
     Then The response status code should be 200
+    And The value of response field "callbackUrl" should be "https://owner2.callback.example.com/cb"
     And I extract response field "keyMappingId" and store it as "cbOwner2KeyMappingId"
 
     # BASELINE — owner 1's key callbackUrl, read as owner 1, BEFORE owner 2 updates anything.
@@ -171,6 +174,11 @@ Feature: Key Manager OAuth Application Keys
     Then The response status code should be 200
     And The value of response field "callbackUrl" should be "https://owner2-updated.callback.example.com/cb"
 
+    # Re-read owner 2's key so the assertion proves the callbackUrl persisted beyond the update response.
+    When I fetch the oauth key details for application "cbOwner2AppId" with key mapping "cbOwner2KeyMappingId"
+    Then The response status code should be 200
+    And The value of response field "callbackUrl" should be "https://owner2-updated.callback.example.com/cb"
+
     # Owner 1's key callbackUrl is UNCHANGED — the CAPIMGT-12 regression assertion.
     Given I act as "<owner>"
     When I fetch the oauth key details for application "cbOwner1AppId" with key mapping "cbOwner1KeyMappingId"
@@ -184,6 +192,32 @@ Feature: Key Manager OAuth Application Keys
     Then The response status code should be 200
     And I extract response field "callbackUrl" and store it as "cbOwner2FinalCallback"
     And The stored value "cbOwner1FinalCallback" should not equal "cbOwner2FinalCallback"
+
+    # A numeric IP host is a valid callback URL form and must survive an update and a subsequent read.
+    Given I put the following JSON payload in context as "cbOwner2IpUpdatePayload"
+    """
+    {"keyType": "PRODUCTION", "callbackUrl": "https://10.100.7.74:9443/store/", "supportedGrantTypes": ["client_credentials", "authorization_code"]}
+    """
+    When I update the keys for application "cbOwner2AppId" with key mapping "cbOwner2KeyMappingId" using payload "cbOwner2IpUpdatePayload"
+    Then The response status code should be 200
+    And The value of response field "callbackUrl" should be "https://10.100.7.74:9443/store/"
+    When I fetch the oauth key details for application "cbOwner2AppId" with key mapping "cbOwner2KeyMappingId"
+    Then The response status code should be 200
+    And The value of response field "callbackUrl" should be "https://10.100.7.74:9443/store/"
+
+    # The DevPortal v3 schema declares callbackUrl as a string without a URI format constraint. The legacy
+    # malformed-URL rejection checks are disabled because validation was removed, so pin the current behavior:
+    # the key API accepts the string and returns it unchanged on update and readback.
+    Given I put the following JSON payload in context as "cbOwner2MalformedUpdatePayload"
+    """
+    {"keyType": "PRODUCTION", "callbackUrl": "not-a-valid-url", "supportedGrantTypes": ["client_credentials", "authorization_code"]}
+    """
+    When I update the keys for application "cbOwner2AppId" with key mapping "cbOwner2KeyMappingId" using payload "cbOwner2MalformedUpdatePayload"
+    Then The response status code should be 200
+    And The value of response field "callbackUrl" should be "not-a-valid-url"
+    When I fetch the oauth key details for application "cbOwner2AppId" with key mapping "cbOwner2KeyMappingId"
+    Then The response status code should be 200
+    And The value of response field "callbackUrl" should be "not-a-valid-url"
 
     Examples:
       | owner             | otherOwner                 |

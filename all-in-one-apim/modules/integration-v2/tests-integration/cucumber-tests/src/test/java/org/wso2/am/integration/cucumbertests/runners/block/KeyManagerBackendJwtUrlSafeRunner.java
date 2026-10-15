@@ -21,7 +21,8 @@ import io.cucumber.testng.CucumberOptions;
 
 /**
  * Runner for backend-JWT URL-safe encoding (port of URLSafeJWTTestCase). Runs in the
- * IntegrationV2-BackendJwtUrlSafe block, whose overlay sets [apim.jwt] encoding = base64url.
+ * IntegrationV2-BackendJwtUrlSafeAndMtlsChain block (IntegrationV2-Distributed-BackendJwtUrlSafe in the distributed
+ * suite), whose overlay sets [apim.jwt] encoding = base64url.
  */
 @CucumberOptions(
         features = {

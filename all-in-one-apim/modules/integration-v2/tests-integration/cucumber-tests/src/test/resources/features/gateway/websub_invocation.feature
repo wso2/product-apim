@@ -244,7 +244,9 @@ Feature: Gateway WebSub API Invocation
     When I publish the WebSub event "websubEventBody" to the event receiver at gateway context "{{websubContext}}/1.0.0" topic "_default" signed with secret "{{websubApiSecret}}" 5 times expecting status 200 one second apart and wait for receiver "websubReceiver"
     Then The WebSub receiver "websubReceiver" should have received 5 events within 60 seconds
     And The last WebSub event delivered to receiver "websubReceiver" should carry a "link" header containing "{{websubContext}}"
-    When I send a WebSub "unsubscribe" request as form data to gateway context "{{websubContext}}/1.0.0" with callback "{{websubReceiverCallback}}" topic "_default" secret "{{websubSubscriberSecret}}" lease seconds "50000000" using access token "generatedAccessToken" until response status code becomes 202 within 60 seconds
+    # Follow the documented WebSub sequence: form-urlencoded subscribe, event delivery, then query-parameter unsubscribe.
+    When I send a WebSub "unsubscribe" request as query parameters to gateway context "{{websubContext}}/1.0.0" with callback "{{websubReceiverCallback}}" topic "_default" secret "{{websubSubscriberSecret}}" lease seconds "50000000" using access token "generatedAccessToken" until response status code becomes 200 within 60 seconds
+    Then The internal webhooks subscription list should hold exactly 0 subscriptions for API "websubApiId" within 60 seconds
     Examples:
       | actor             |
       | admin             |
@@ -296,17 +298,13 @@ Feature: Gateway WebSub API Invocation
       | admin             |
       | admin@tenant1.com |
 
-  # Encoding parity: the hub accepts the SAME registration with the hub.* parameters in the QUERY STRING and an
-  # empty body (legacy testInvokeWebSubApiWithQueryParameters), not only as a form-urlencoded body. Runs in both
-  # tenants, which is not cosmetic: it pins that the tenant-prefixed context is addressable on this branch too.
-  # NO CALLBACK ASSERTION IS MADE HERE, and that is a product asymmetry rather than an omission. MEASURED: after a
-  # query-parameter subscribe the callback's introspection reads back
-  # `{"verificationCount":0,"count":0,"verifications":[],"events":[]}` — unlike the form-urlencoded branch, which
-  # reliably lands a GET verification handshake at the callback (asserted in the smoke scenario above), the
-  # query-parameter branch does not touch the callback at all. The template's second <clone> target does set
-  # To=hub.callback and <call> the subscribe at it, and the legacy encoded that as "received == sent + 1 subscribe
-  # event" for its query-parameter helper, so this branch is expected to challenge the callback once at registration
-  # time and does not. Report upstream; asserting the registration and its removal is what is sound here.
+  # Encoding parity: the hub accepts the same registration with hub.* parameters in the QUERY STRING and an empty
+  # body (legacy testInvokeWebSubApiWithQueryParameters), not only as a form-urlencoded body. Runs in both tenants.
+  # This and the form-urlencoded callback-delivery scenario above are separate scenarios in this SAME FEATURE FILE:
+  # query encoding and delivery are each exercised, without duplicating the whole event-delivery arc. Persisted-row
+  # readback below proves the query request registers a subscriber before it is removed. This scenario does not
+  # currently assert callback delivery from a query-created row; an older note reported a zero-callback observation,
+  # but that absence is not pinned by an active assertion here.
   # The accepted STATUS differs from the form-urlencoded arc above (200 here, 202 there) and the difference is
   # CONTENT-TYPE-driven, not parameter-placement-driven: the hub resource in websub_api_template.xml branches on
   # fn:contains(fn:lower-case($trp:Content-Type), 'application/x-www-form-urlencoded'), and only that branch sets
@@ -334,17 +332,20 @@ Feature: Gateway WebSub API Invocation
     And I generate a unique alphanumeric value and store it as "websubSubscriberSecret"
     And I have a "silent" WebSub callback receiver stored as "websubReceiver"
     When I send a WebSub "subscribe" request as query parameters to gateway context "{{websubContext}}/1.0.0" with callback "{{websubReceiverCallback}}" topic "_default" secret "{{websubSubscriberSecret}}" lease seconds "50000000" using access token "generatedAccessToken" until response status code becomes 200 within 60 seconds
+    Then The internal webhooks subscription list should hold exactly 1 subscription for API "websubApiId" within 60 seconds
     # Same encoding, so the same content-type-driven status as the subscribe above — 200, not the form arc's 202.
     When I send a WebSub "unsubscribe" request as query parameters to gateway context "{{websubContext}}/1.0.0" with callback "{{websubReceiverCallback}}" topic "_default" secret "{{websubSubscriberSecret}}" lease seconds "50000000" using access token "generatedAccessToken" until response status code becomes 200 within 60 seconds
+    Then The internal webhooks subscription list should hold exactly 0 subscriptions for API "websubApiId" within 60 seconds
 
     Examples:
       | actor             |
       | admin             |
       | admin@tenant1.com |
 
-  # Multi-subscriber fan-out AND unsubscribe, in one arc because they are the same observation from two sides: the
-  # hub delivers every event to EVERY registered callback (legacy MultipleWebSubSubcriptionTestCase, which could
-  # only see this through a database count), and after one callback unsubscribes the hub delivers only to the rest.
+  # Multi-subscriber fan-out AND unsubscribe, in one arc because they are the same observation from two sides. The
+  # legacy MultipleWebSubSubcriptionTestCase uses two applications and access tokens, each registering a distinct
+  # callback, then checks that both callbacks receive the published events. This extends that scenario: after one
+  # callback unsubscribes, the remaining callback receives the next event and the leaver receives no extra event.
   # The remaining callback is the BARRIER — waiting for IT to observe the next event proves that event's fan-out
   # completed, so the unsubscribed callback's unchanged count is a real absence and not a race. The measured burst
   # uses a one-second cadence, matching the legacy test's pacing while retaining a delivery-side barrier per event.
@@ -511,21 +512,16 @@ Feature: Gateway WebSub API Invocation
       | admin             |
       | admin@tenant1.com |
 
-  # Lease expiry (LeaseTimeSubscriptionTestCase): a registration carrying hub.lease_seconds must STOP being a
-  # subscription once that many seconds have elapsed. The product computes an ABSOLUTE expiry
-  # (WebhooksSubscriptionEventHandler: expireAt = now + leaseSeconds) and the subscription query is
-  # "WHERE (EXPIRY_AT >= now OR EXPIRY_AT = 0)", so an expired lease drops the row out of the subscription set by
-  # construction — which is what stops deliveries, and is observable without racing a fan-out.
-  # 15 seconds is the legacy's lease. The legacy proved the same thing by counting deliveries either side of a
-  # Thread.sleep; here the expiry is awaited by polling the subscription set, which is both sleep-free (§4) and not
-  # dependent on the timing of an event publish landing inside the remaining lease.
+  # Lease expiry (LeaseTimeSubscriptionTestCase): a registration carrying hub.lease_seconds must stop receiving
+  # events after its lease expires. This checks both observable parts of that behavior: its persisted row disappears,
+  # and a later event reaches a still-subscribed barrier callback but not the expired callback. The barrier proves
+  # fan-out for that event completed, so the unchanged expired-receiver count is a reliable absence assertion.
   #
   # This is ALSO the whole of the docs' TIME-BASED streaming limit: hub.lease_seconds is supplied at registration and
   # is the only duration lever the product has (a subscription plan carries no duration field at all — see the DTO
-  # field list in admin/throttling_policy). What this asserts is the PERSISTED half: an expired lease drops the
-  # subscription out of the subscription set. The DELIVERY half — "an event published after expiry reaches nobody" —
-  # is a real gap rather than a deliberate exclusion, and it is now assertable: it needs a still-subscribed barrier
-  # receiver observing the same event, so that the expired callback's zero is an absence and not a race.
+  # field list in admin/throttling_policy). A long-lived barrier subscription stays active throughout the expiry
+  # window; the post-expiry event is expected at that receiver and explicitly absent at the expired receiver. This
+  # avoids asserting a global absence that could also mean the event source or gateway was broken.
   @cap:gateway @feat:streaming-invocation @rule:lease-expiry @type:regression @dep:publisher @legacy:LeaseTimeSubscriptionTestCase
   Scenario Outline: A WebSub subscription stops being a subscription once its lease expires as <actor>
     Given The system is ready
@@ -543,29 +539,32 @@ Feature: Gateway WebSub API Invocation
     When I have set up application with keys, subscribed to API "websubApiId" with plan "AsyncWHUnlimited", and obtained access token for "websubSubId"
     Then The response status code should be 200
     And I generate a unique alphanumeric value and store it as "websubSubscriberSecret"
-    And I have a "silent" WebSub callback receiver stored as "websubReceiver"
-    # A 15-second lease, so the registration exists and then expires within one scenario.
-    #
-    # WHY THE "hold exactly 1" CHECK BELOW CANNOT BE MUTATION-PROVEN BY CHANGING THE COUNT (measured twice,
-    # round B and round D; a 120s lease was tried and did NOT help, so do not try that again):
-    #   Utils.retryUntil FLOORS its deadline at Constants.RUNTIME_PROPAGATION_TIMEOUT (180s, CLAUDE.md 15),
-    #   so the declared "within 30 seconds" is a fiction. A mutated count is UNREACHABLE (only one
-    #   registration exists), so the loop cannot accept early and polls the full 180s. retryUntil returns
-    #   the LAST result, and by t=180s the lease has expired - getSubscribers prunes at READ time - so the
-    #   last probe and the settle both read 0. The failure then reports settled=0 against a green value of
-    #   1, i.e. it would fail unmutated too, and proves nothing.
-    #   The two halves of this scenario have CONTRADICTORY lease requirements under mutation: a sound count
-    #   mutant needs lease > 180s (row must outlive the futile poll) while the expiry check below needs
-    #   lease < 180s (expiry must be observable inside its own floored deadline). No value satisfies both.
-    #   UNMUTATED both halves are correct: expecting 1 accepts on the first probe in ~1s, nowhere near
-    #   expiry. To mutation-prove this step, mutate something that stays REACHABLE (e.g. assert against a
-    #   different API id, answered 0 immediately) rather than making the count unreachable.
-    When I send a WebSub "subscribe" request as form data to gateway context "{{websubContext}}/1.0.0" with callback "{{websubReceiverCallback}}" topic "_default" secret "{{websubSubscriberSecret}}" lease seconds "15" using access token "generatedAccessToken" until response status code becomes 202 within 60 seconds
-    # It IS a subscription while the lease runs — without this the disappearance below would also be satisfied by a
-    # registration that was never recorded at all
-    Then The internal webhooks subscription list should hold exactly 1 subscription for API "websubApiId" within 30 seconds
-    # ...and stops being one once the lease has elapsed
-    Then The internal webhooks subscription list should hold exactly 0 subscriptions for API "websubApiId" within 90 seconds
+    And I have a "silent" WebSub callback receiver stored as "websubExpiringReceiver"
+    And I have a "silent" WebSub callback receiver stored as "websubLeaseBarrier"
+    # Register the long-lived barrier first so it remains active while the short lease expires.
+    When I send a WebSub "subscribe" request as form data to gateway context "{{websubContext}}/1.0.0" with callback "{{websubLeaseBarrierCallback}}" topic "_default" secret "{{websubSubscriberSecret}}" lease seconds "50000000" using access token "generatedAccessToken" until response status code becomes 202 within 60 seconds
+    And I send a WebSub "subscribe" request as form data to gateway context "{{websubContext}}/1.0.0" with callback "{{websubExpiringReceiverCallback}}" topic "_default" secret "{{websubSubscriberSecret}}" lease seconds "60" using access token "generatedAccessToken" until response status code becomes 202 within 60 seconds
+    Then The internal webhooks subscription list should hold exactly 2 subscriptions for API "websubApiId" within 30 seconds
+    When I put the following JSON payload in context as "websubLeasePreExpiryEvent"
+    """
+    {"event":"before-expiry"}
+    """
+    # Positive control: both callbacks work while both subscriptions are active.
+    When I publish the WebSub event "websubLeasePreExpiryEvent" to the event receiver at gateway context "{{websubContext}}/1.0.0" topic "_default" signed with secret "{{websubApiSecret}}" until response status code becomes 200 within 60 seconds
+    Then The WebSub receiver "websubExpiringReceiver" should have received 1 event within 60 seconds
+    And The WebSub receiver "websubLeaseBarrier" should have received 1 event within 60 seconds
+    # The count changes from two to one only after the short lease expires; the barrier remains subscribed.
+    Then The internal webhooks subscription list should hold exactly 1 subscription for API "websubApiId" within 90 seconds
+    When I put the following JSON payload in context as "websubLeasePostExpiryEvent"
+    """
+    {"event":"after-expiry"}
+    """
+    When I publish the WebSub event "websubLeasePostExpiryEvent" to the event receiver at gateway context "{{websubContext}}/1.0.0" topic "_default" signed with secret "{{websubApiSecret}}" until response status code becomes 200 within 60 seconds
+    # The barrier's second delivery proves this event completed fan-out; the expired callback must remain at one.
+    Then The WebSub receiver "websubLeaseBarrier" should have received 2 events within 60 seconds
+    And The WebSub receiver "websubExpiringReceiver" should have received exactly 1 event
+    When I send a WebSub "unsubscribe" request as form data to gateway context "{{websubContext}}/1.0.0" with callback "{{websubLeaseBarrierCallback}}" topic "_default" secret "{{websubSubscriberSecret}}" lease seconds "50000000" using access token "generatedAccessToken" until response status code becomes 202 within 60 seconds
+    Then The internal webhooks subscription list should hold exactly 0 subscriptions for API "websubApiId" within 60 seconds
 
     Examples:
       | actor             |
@@ -633,12 +632,18 @@ Feature: Gateway WebSub API Invocation
 
     And I generate a unique alphanumeric value and store it as "websubSubscriberSecret"
     And I have a "silent" WebSub callback receiver stored as "websubReceiver"
-    # Routable control: a well-formed registration is accepted, then withdrawn
+    # Routable control: a well-formed registration is accepted and persisted, then withdrawn and removed. The hub
+    # answers 202 before it persists, so each leg is gated on the persisted count before the next request is sent.
     When I send a WebSub "subscribe" request as form data to gateway context "{{websubContext}}/1.0.0" with callback "{{websubReceiverCallback}}" topic "_default" secret "{{websubSubscriberSecret}}" lease seconds "50000000" using access token "generatedAccessToken" until response status code becomes 202 within 60 seconds
-    And I send a WebSub "unsubscribe" request as form data to gateway context "{{websubContext}}/1.0.0" with callback "{{websubReceiverCallback}}" topic "_default" secret "{{websubSubscriberSecret}}" lease seconds "50000000" using access token "generatedAccessToken" until response status code becomes 202 within 60 seconds
+    Then The internal webhooks subscription list should hold exactly 1 subscription for API "websubApiId" within 60 seconds
+    When I send a WebSub "unsubscribe" request as form data to gateway context "{{websubContext}}/1.0.0" with callback "{{websubReceiverCallback}}" topic "_default" secret "{{websubSubscriberSecret}}" lease seconds "50000000" using access token "generatedAccessToken" until response status code becomes 202 within 60 seconds
+    Then The internal webhooks subscription list should hold exactly 0 subscriptions for API "websubApiId" within 60 seconds
     # The same registration with one mandatory parameter blank is rejected
     When I send a WebSub "<hubMode>" request as form data to gateway context "{{websubContext}}/1.0.0" with callback "<callback>" topic "<topic>" secret "{{websubSubscriberSecret}}" lease seconds "50000000" using access token "generatedAccessToken" until response status code becomes 500 within 30 seconds
     Then The response should contain "One or more mandatory parameters were not found in web hook subscription request"
+    # A rejected malformed registration must not leave a persisted subscriber row. The valid control above was
+    # already unsubscribed, so this unique API should have no active rows at this point.
+    And The internal webhooks subscription list should hold exactly 0 subscriptions for API "websubApiId" within 30 seconds
 
     Examples:
       | actor             | missing      | hubMode   | callback                      | topic    |
@@ -684,6 +689,7 @@ Feature: Gateway WebSub API Invocation
     this-is-an-invalid-websub-token
     """
     When I send a WebSub "subscribe" request as form data to gateway context "{{websubContext}}/1.0.0" with callback "{{websubReceiverCallback}}" topic "_default" secret "{{websubSubscriberSecret}}" lease seconds "50000000" using access token "websubBadToken" until response status code becomes 401 within 30 seconds
+    Then The response should not contain "invalid_access_token"
 
     Examples:
       | actor             |

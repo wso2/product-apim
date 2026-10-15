@@ -1,0 +1,11 @@
+{
+  "type": "data",
+  "id": "1",
+  "payload": {
+    "data": {
+      "liftStatusChange": {
+        "name": "Astra Express"
+      }
+    }
+  }
+}

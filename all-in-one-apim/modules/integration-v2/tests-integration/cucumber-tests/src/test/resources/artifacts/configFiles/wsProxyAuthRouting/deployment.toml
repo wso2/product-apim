@@ -1,4 +1,5 @@
-# Extra overlay for the IntegrationV2-WsProxyAuthRouting block.
+# Extra overlay for the IntegrationV2-Distributed-Gateway-WsProxyAuthRouting block (Gateway overlay). The all-in-one suite
+# carries this profile in the IntegrationV2-ApprovalWorkflow overlay.
 #
 # Tests end-to-end WS routing through the Basic-auth Squid proxy. A single profile matches
 # "nodebackend" WITHOUT bypass_hosts, pointing at squid-proxy:3129 (the authenticated instance).

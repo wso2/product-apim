@@ -372,6 +372,10 @@ Feature: Gateway Backend Endpoint Security
     # runner). This re-fires the deploy if the artifact never lands (utils/HealGate awaitOrHeal).
     And the "apis" resource "epsApiId" should be live on the gateway, redeploying if propagation is lost
     When I retrieve the "apis" resource with id "epsApiId"
+    Then The value of response field "endpointConfig.endpoint_security.production.enabled" should be "true"
+    And The value of response field "endpointConfig.endpoint_security.production.type" should be "BASIC"
+    And The value of response field "endpointConfig.endpoint_security.production.username" should be "admin1"
+    And The value of response field "endpointConfig.endpoint_security.production.password" should be ""
     Then The response should not contain "admin123"
     And I extract response field "context" and store it as "epsCtx"
     # The API is genuinely authored by <creator> (see the per-type scenario above).
@@ -428,6 +432,10 @@ Feature: Gateway Backend Endpoint Security
     # runner). This re-fires the deploy if the artifact never lands (utils/HealGate awaitOrHeal).
     And the "apis" resource "epsApiId" should be live on the gateway, redeploying if propagation is lost
     When I retrieve the "apis" resource with id "epsApiId"
+    Then The value of response field "endpointConfig.endpoint_security.sandbox.enabled" should be "true"
+    And The value of response field "endpointConfig.endpoint_security.sandbox.type" should be "BASIC"
+    And The value of response field "endpointConfig.endpoint_security.sandbox.username" should be "admin1"
+    And The value of response field "endpointConfig.endpoint_security.sandbox.password" should be ""
     Then The response should not contain "admin123"
     And I extract response field "context" and store it as "epsCtx"
     # The API is genuinely authored by <creator> (see the per-type scenario above).

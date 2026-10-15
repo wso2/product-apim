@@ -41,7 +41,7 @@ Feature: Key Manager JWT (jwt-bearer) grant with an external trusted IdP
     When I mint a signed JWT from keystore "artifacts/certs/jwtgrant/extidpjwt.jks" pass "extidpjwt" alias "extidpjwt" with issuer "{{jwtIssuer}}" audience "{{jwtAud}}" subject "ext-user" notBeforeOffsetMillis -60000 extraClaims "" as "validJwt"
     And I exchange the JWT assertion "validJwt" for a token using consumer key "consumerKey" secret "consumerSecret" scope ""
     Then The response status code should be 200
-    And The response should contain "access_token"
+    And The response field "access_token" should be non-blank
 
     Examples:
       | actor             |
@@ -242,8 +242,8 @@ Feature: Key Manager JWT (jwt-bearer) grant with an external trusted IdP
     When I mint a signed JWT from keystore "artifacts/certs/jwtgrant/extidpjwt.jks" pass "extidpjwt" alias "extidpjwt" with issuer "{{jwtIssuer}}" audience "{{jwtAud}}" subject "ext-user" notBeforeOffsetMillis -60000 extraClaims "{\"http://extidp.org/claims/role\":[\"idp_admin\"]}" as "roleJwtBefore"
     And I exchange the JWT assertion "roleJwtBefore" for a token using consumer key "consumerKey" secret "consumerSecret" scope "{{restrictedScope}}"
     Then The response status code should be 200
-    And The response should contain "access_token"
-    And The response should not contain "{{restrictedScope}}"
+    And The response field "access_token" should be non-blank
+    And The response field "scope" should not contain token "{{restrictedScope}}"
 
     # Add the role mapping to the IdP: claim mapping (external role claim -> local role claim) and role
     # mapping (idp_admin -> admin).
@@ -255,8 +255,8 @@ Feature: Key Manager JWT (jwt-bearer) grant with an external trusted IdP
     When I mint a signed JWT from keystore "artifacts/certs/jwtgrant/extidpjwt.jks" pass "extidpjwt" alias "extidpjwt" with issuer "{{jwtIssuer}}" audience "{{jwtAud}}" subject "ext-user" notBeforeOffsetMillis -60000 extraClaims "{\"http://extidp.org/claims/role\":[\"idp_admin\"]}" as "roleJwtAfter"
     And I exchange the JWT assertion "roleJwtAfter" for a token using consumer key "consumerKey" secret "consumerSecret" scope "{{restrictedScope}}"
     Then The response status code should be 200
-    And The response should contain "access_token"
-    And The response should contain "{{restrictedScope}}"
+    And The response field "access_token" should be non-blank
+    And The response field "scope" should contain token "{{restrictedScope}}"
 
     Examples:
       | actor             |
