@@ -56,13 +56,13 @@ Feature: Admin System Scope Role-Alias Mapping
   Scenario Outline: The subscribe scope lookup for a non-existent user is not found as <actor>
     Given The system is ready
     And I have valid access tokens as "<actor>"
-    When I retrieve the system scope "apim:subscribe" for the raw user "noSuchUser${UNIQUE:NoUser}"
+    When I retrieve the system scope "apim:subscribe" for the raw user "noSuchUser${UNIQUE:NoUser}<tenantSuffix>"
     Then The response status code should be 404
 
     Examples:
-      | actor             |
-      | admin             |
-      | admin@tenant1.com |
+      | actor             | tenantSuffix |
+      | admin             |              |
+      | admin@tenant1.com | @tenant1.com |
 
   # Ports OAuthApplicationOwnerUpdateTestCase#updateApplicationOwnerWhenHavingCustomRoles — a subscriber whose
   # subscriber-ness comes ONLY from a role ALIAS (not from carrying Internal/subscriber) is a valid application owner.

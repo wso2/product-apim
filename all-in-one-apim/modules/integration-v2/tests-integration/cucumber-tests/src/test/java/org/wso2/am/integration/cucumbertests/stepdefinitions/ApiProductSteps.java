@@ -22,6 +22,8 @@ import io.cucumber.java.en.When;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.testng.Assert;
+import org.wso2.am.integration.cucumbertests.utils.GatewaySynapseLog;
+import org.wso2.am.integration.cucumbertests.utils.HealGate;
 import org.wso2.am.integration.cucumbertests.utils.Identity;
 import org.wso2.am.integration.cucumbertests.utils.Requests;
 import org.wso2.am.integration.cucumbertests.utils.TestContext;
@@ -891,5 +893,18 @@ public class ApiProductSteps {
             names.put(tiers.getJSONObject(i).optString("tierName"));
         }
         return names;
+    }
+
+    /** Records the gateway log ahead of deploying the API product {@code apiProductId}. */
+    static void markGatewayLogForApiProductDeploy(String apiProductId) {
+        GatewaySynapseLog.mark(apiProductId);
+    }
+
+    /**
+     * Whether synapse has added the API product's artifact since its deploy was marked. Synapse deploys an API product
+     * as an API artifact named {@code prod--<name>:v<version>}, the same form as an API's.
+     */
+    static HealGate.Verdict apiProductSwappedInSinceDeploy(String apiProductId, String name, String version) {
+        return GatewaySynapseLog.artifactAddedSinceMark(apiProductId, "prod--" + name + ":v" + version);
     }
 }

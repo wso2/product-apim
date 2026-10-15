@@ -45,6 +45,13 @@ public class DynamicApimContainer extends GenericContainer<DynamicApimContainer>
     private static final String APIM_IMAGE_PROPERTY = "apim.docker.image.name";
     /** Fixed shared-network alias for the IS→APIM reverse channel; see {@link #withExternalIsNotificationAlias}. */
     private static final String APIM_NETWORK_ALIAS = "wso2am";
+    /**
+     * Server JVM heap. {@code api-manager.sh} uses {@code JVM_MEM_OPTS} in place of its own
+     * {@code -Xms256m -Xmx1024m} default; 1.5 GB keeps four concurrent APIM blocks plus their peers inside a
+     * 16 GB host, since each container carries roughly 1.2-1.5 GB of non-heap memory on top of the heap.
+     */
+    static final String SERVER_HEAP_OPTS = "-Xms1g -Xmx1536m";
+    private static final String JVM_MEM_OPTS = "JVM_MEM_OPTS";
 
     public DynamicApimContainer(String containerLabel, String deploymentTomlContent) {
 
@@ -84,6 +91,8 @@ public class DynamicApimContainer extends GenericContainer<DynamicApimContainer>
         withEnv(Constants.SHARED_DATABASE_PASSWORD, System.getenv(Constants.SHARED_DATABASE_PASSWORD));
         withEnv(Constants.SHARED_DATABASE_VALIDATION_QUERY, System.getenv(Constants.
                 SHARED_DATABASE_VALIDATION_QUERY));
+
+        withEnv(JVM_MEM_OPTS, SERVER_HEAP_OPTS);
 
         // Add host.docker.internal mapping for Linux compatibility (needed for accessing host services)
         withExtraHost("host.docker.internal", "host-gateway");
@@ -161,15 +170,24 @@ public class DynamicApimContainer extends GenericContainer<DynamicApimContainer>
         } catch (IOException e) {
             throw new RuntimeException("Failed to stage JaCoCo agent jar", e);
         }
-        // Attach the agent to the SERVER JVM ONLY via JVM_MEM_OPTS. Preserve api-manager.sh's own default heap
-        // (-Xms256m -Xmx1024m) and append the agent, so behaviour is unchanged except for the added agent. The
-        // background diagnostics-tool JVM overwrites JVM_MEM_OPTS with its own value, so it never sees the agent
-        // → no tcpserver port-6300 race (the cause of the intermittent block-boot failures).
-        withEnv("JVM_MEM_OPTS", "-Xms256m -Xmx1024m " + JacocoCoverage.containerAgentVmArg());
+        // Attach the agent to the SERVER JVM ONLY via JVM_MEM_OPTS, appended to the server heap so behaviour is
+        // unchanged except for the added agent. The background diagnostics-tool JVM overwrites JVM_MEM_OPTS with
+        // its own value, so it never sees the agent → no tcpserver port-6300 race.
+        withEnv(JVM_MEM_OPTS, SERVER_HEAP_OPTS + " " + JacocoCoverage.containerAgentVmArg());
         // addExposedPort (not withExposedPorts) so the canonical APIM ports set in the constructor are kept.
         addExposedPort(JacocoCoverage.TCP_PORT);
         logger.info("JaCoCo coverage enabled (server-JVM-only via JVM_MEM_OPTS): agent at {}, tcpserver port {}",
                 JacocoCoverage.CONTAINER_AGENT_PATH, JacocoCoverage.TCP_PORT);
+        return this;
+    }
+
+    /**
+     * Caps the container at {@code limit} CPUs (Docker {@code --cpus}, applied as {@code HostConfig.NanoCpus} on
+     * container creation). Without this call the container is uncapped. Must be called before {@link #start()}.
+     */
+    @Override
+    public DynamicApimContainer withCpuLimit(CpuLimit limit) {
+        withCreateContainerCmdModifier(limit::applyTo);
         return this;
     }
 

@@ -76,6 +76,8 @@ Feature: Gateway Lifecycle-Stage Invocation
     # RETIRED: undeployed from the gateway → 404.
     When I change the lifecycle of API "revApiId" with action "Retire"
     Then The response status code should be 200
+    # Retiring removes the API's subscriptions.
+    And The subscription "revSub" should no longer exist
     When I invoke the API at gateway context "{{revContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 404 within 60 seconds
     Then The response status code should be 404
     And The fault response should have code "404" type "Status report" and description "The requested resource is not available."
@@ -115,6 +117,8 @@ Feature: Gateway Lifecycle-Stage Invocation
     Then The response status code should be 200
     And The value of response field "lifecycleState.state" should be "Retired"
     And The lifecycle status of API "retApiId" should be "Retired"
+    # Retiring removes the API's subscriptions.
+    And The subscription "retSub" should no longer exist
     When I invoke the API at gateway context "{{retContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 404 within 60 seconds
     Then The response status code should be 404
     And The fault response should have code "404" type "Status report" and description "The requested resource is not available."

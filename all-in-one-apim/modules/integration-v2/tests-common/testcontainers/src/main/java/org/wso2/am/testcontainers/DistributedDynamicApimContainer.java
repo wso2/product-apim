@@ -311,6 +311,12 @@ public class DistributedDynamicApimContainer implements ApimRuntime {
     }
 
     @Override
+    public DistributedDynamicApimContainer withCpuLimit(CpuLimit limit) {
+        throw new UnsupportedOperationException(
+                "Distributed CPU limits are not available; remove the CPU limit from the distributed block");
+    }
+
+    @Override
     public DistributedDynamicApimContainer withExternalKmTrust() {
         externalKmTrust = true;
         return this;

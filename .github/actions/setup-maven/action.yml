@@ -3,12 +3,12 @@ description: >-
   Installs a pinned Apache Maven release and puts it ahead of the runner image's Maven on PATH.
   The runner image's newer Maven rejects the product POMs (e.g. the duplicate replacer plugin in
   all-in-one-apim/modules/distribution/product/pom.xml) and cannot load the carbon-p2-plugin build
-  extension, so the build pins the last 3.9 release.
+  extension, so the build pins Maven 3.6.3.
 inputs:
   version:
     description: Apache Maven version to install.
     required: false
-    default: '3.9.16'
+    default: '3.6.3'
 runs:
   using: composite
   steps:

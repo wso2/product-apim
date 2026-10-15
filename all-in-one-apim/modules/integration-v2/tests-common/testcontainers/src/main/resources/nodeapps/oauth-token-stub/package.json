@@ -1,0 +1,10 @@
+{
+  "name": "oauth-token-stub",
+  "version": "1.0.0",
+  "description": "Local OAuth token endpoint for key manager connector fixtures.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {}
+}

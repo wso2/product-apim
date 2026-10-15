@@ -89,6 +89,11 @@ public class DynamicISContainer extends GenericContainer<DynamicISContainer> {
     private static final String NOTIFICATION_JAR_NAME = "wso2is.notification.event.handlers-2.1.3.jar";
     private static final String CONTAINER_TRUSTSTORE_PATH =
             IS_HOME + "/repository/resources/security/client-truststore.p12";
+    /**
+     * Server JVM heap, matching {@link DynamicApimContainer#SERVER_HEAP_OPTS}. IS's {@code wso2server.sh} uses
+     * {@code JVM_MEM_OPTS} in place of its own {@code -Xms256m -Xmx1024m} default.
+     */
+    static final String SERVER_HEAP_OPTS = "-Xms1g -Xmx1536m";
 
     /**
      * @param blockLabel          the owning block's label — log prefix and diagnostics only; instances are NOT
@@ -121,9 +126,19 @@ public class DynamicISContainer extends GenericContainer<DynamicISContainer> {
         // SAN includes 'wso2am' (see DynamicApimContainer#withExternalKmTrust + the is7km toml overlay),
         // so verification passes without the -Dhttpclient.hostnameVerifier=AllowAll workaround.
         withCopyToContainer(MountableFile.forHostPath(augmentedTruststorePath()), CONTAINER_TRUSTSTORE_PATH);
+        withEnv("JVM_MEM_OPTS", SERVER_HEAP_OPTS);
         withLogConsumer(new JclLogConsumer(logger));
         // IS 7.3.0 is multi-arch and boots natively (well under a minute); allow margin for CI/load.
         waitingFor(Wait.forListeningPort().withStartupTimeout(Duration.ofMinutes(4)));
+    }
+
+    /**
+     * Caps the container at {@code limit} CPUs (Docker {@code --cpus}, applied as {@code HostConfig.NanoCpus} on
+     * container creation). Without this call the container is uncapped. Must be called before {@link #start()}.
+     */
+    public DynamicISContainer withCpuLimit(CpuLimit limit) {
+        withCreateContainerCmdModifier(limit::applyTo);
+        return this;
     }
 
     /** Host-mapped IS management HTTPS base URL (valid after start), e.g. {@code https://localhost:32771/}. */

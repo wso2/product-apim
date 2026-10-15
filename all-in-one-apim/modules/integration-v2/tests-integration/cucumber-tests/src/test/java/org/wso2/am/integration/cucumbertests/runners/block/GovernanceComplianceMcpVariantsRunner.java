@@ -20,18 +20,18 @@ package org.wso2.am.integration.cucumbertests.runners.block;
 import io.cucumber.testng.CucumberOptions;
 
 /**
- * Runner for API Governance policy CRUD (the port of the legacy PolicyMgtTestCase, plus the ruleset-attached
- * integrity rule). Runs in the concurrent IntegrationV2-Governance block; each scenario uses uniquely-named
- * rulesets/policies, so it is parallel-safe.
+ * Runner for API Governance compliance of proxy and API-generated MCP servers, evaluated against the default
+ * policy. It only reads governance configuration and each scenario uses uniquely-named artifacts, so it runs beside
+ * other runners in an IntegrationV2-Gateway-* block.
  */
 @CucumberOptions(
         features = {
-                "src/test/resources/features/governance/policies.feature"
+                "src/test/resources/features/governance/compliance_mcp_variants.feature"
         },
         glue = {
                 "org.wso2.am.integration.cucumbertests.stepdefinitions"
         },
-        plugin = {"pretty", "html:target/cucumber-report/governance-policies.html"}
+        plugin = {"pretty", "html:target/cucumber-report/governance-compliance-mcp-variants.html"}
 )
-public class GovernancePoliciesRunner extends BaseBlockRunner {
+public class GovernanceComplianceMcpVariantsRunner extends BaseBlockRunner {
 }

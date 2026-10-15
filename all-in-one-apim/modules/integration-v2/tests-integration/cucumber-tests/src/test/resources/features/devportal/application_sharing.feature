@@ -29,7 +29,7 @@ Feature: DevPortal Application Group Sharing
     Given The system is ready and I have valid devportal access token as "<actor>"
 
     # Create the application
-    When I put JSON payload from file "artifacts/payloads/create_apim_test_app.json" in context as "createAppPayload"
+    When I put JSON payload from file "artifacts/payloads/create_apim_test_app_with_external_ref.json" in context as "createAppPayload"
     And I create an application with payload "createAppPayload"
     Then The response status code should be 201
     And I extract response field "name" and store it as "shareAppName"
@@ -40,7 +40,7 @@ Feature: DevPortal Application Group Sharing
     # description ("Test application for scenarios") and the create tier (Unlimited), so it passed whether or
     # not the update was applied at all. Ports the real edit of
     # ApplicationSharingTestCase#testEditApplicationByApplicationOwner, which changes both.
-    When I put JSON payload from file "artifacts/payloads/update_apim_test_app.json" in context as "appUpdatePayload"
+    When I put JSON payload from file "artifacts/payloads/update_apim_test_app_with_external_ref.json" in context as "appUpdatePayload"
     And I set the field "name" to "{{shareAppName}}" in the payload "appUpdatePayload"
     And I set the field "description" to "This app has been edited" in the payload "appUpdatePayload"
     And I set the field "throttlingPolicy" to "10PerMin" in the payload "appUpdatePayload"
@@ -67,7 +67,7 @@ Feature: DevPortal Application Group Sharing
   Scenario Outline: A groupId supplied at application creation is echoed back as <actor>
     Given The system is ready and I have valid devportal access token as "<actor>"
     And I generate a unique value and store it as "createGroup"
-    When I create an application "${UNIQUE:GroupIdApp}" shared with group "{{createGroup}}" as "groupIdAppId"
+    When I create an application "${UNIQUE:GroupIdApp}" shared with group "{{createGroup}}" from payload file "artifacts/payloads/create_apim_test_app_with_external_ref.json" as "groupIdAppId"
     Then The response status code should be 201
     And The response should contain "{{createGroup}}"
     # Persisted, not just echoed by the create response.
@@ -113,7 +113,7 @@ Feature: DevPortal Application Group Sharing
 
     # The owner creates an application shared with the group.
     When I act as "shareOwner<suffix>"
-    And I create an application "${UNIQUE:SharedApp}" shared with group "{{shareGroup}}" as "sharedAppId"
+    And I create an application "${UNIQUE:SharedApp}" shared with group "{{shareGroup}}" from payload file "artifacts/payloads/create_apim_test_app_with_external_ref.json" as "sharedAppId"
     Then The response status code should be 201
     And I extract response field "name" and store it as "sharedAppName"
 
@@ -124,7 +124,7 @@ Feature: DevPortal Application Group Sharing
     And The response should contain "{{sharedAppName}}"
 
     # ...but may NOT update it: update is owner-only, so the member is refused 403.
-    When I put JSON payload from file "artifacts/payloads/create_apim_test_app.json" in context as "memberEditPayload"
+    When I put JSON payload from file "artifacts/payloads/create_apim_test_app_with_external_ref.json" in context as "memberEditPayload"
     And I set the field "name" to "{{sharedAppName}}" in the payload "memberEditPayload"
     And I set the field "description" to "This app has been edited by the group member" in the payload "memberEditPayload"
     And I update the application "sharedAppId" with payload "memberEditPayload"

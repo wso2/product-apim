@@ -605,60 +605,6 @@ public final class MultiTenantSsoProvisioner {
                 + "</m:permissionAndRoleConfig>";
     }
 
-    /**
-     * Whether a user exists in a tenant.
-     *
-     * <p>This is the only sound existence check: {@code getRoleListOfUser} answers {@code Internal/everyone} for
-     * ANY username, present or not, so a non-empty role list proves nothing.
-     */
-    public static boolean userExists(String tenantDomain, String userName) throws IOException {
-        String payload = "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" "
-                + "xmlns:ser=\"http://service.ws.um.carbon.wso2.org\"><soapenv:Body>"
-                + "<ser:isExistingUser><ser:userName>" + Utils.escapeXml(qualify(tenantDomain, userName))
-                + "</ser:userName></ser:isExistingUser></soapenv:Body></soapenv:Envelope>";
-        HttpResponse resp = SimpleHTTPClient.getInstance().sendSoapRequest(
-                apimBase() + "services/RemoteUserStoreManagerService", payload, "urn:isExistingUser",
-                tenantAdminName(tenantDomain), tenantAdminPassword(tenantDomain));
-        String body = requireUsableSoapResponse(resp, "checking whether user '" + userName + "' exists");
-        if (body.contains(">true<")) {
-            return true;
-        }
-        if (body.contains(">false<")) {
-            return false;
-        }
-        throw new IOException("The isExistingUser SOAP response did not contain an explicit true/false result: "
-                + body);
-    }
-
-    private static String qualify(String tenantDomain, String userName) {
-        return Constants.SUPER_TENANT_DOMAIN.equals(tenantDomain) ? userName : userName + "@" + tenantDomain;
-    }
-
-    private static String tenantAdminName(String tenantDomain) {
-        return Constants.SUPER_TENANT_DOMAIN.equals(tenantDomain)
-                ? Constants.SUPER_TENANT_ADMIN_USERNAME : qualify(tenantDomain,
-                        TestContext.resolve("mtTenantAdmin").toString());
-    }
-
-    private static String tenantAdminPassword(String tenantDomain) {
-        return Constants.SUPER_TENANT_DOMAIN.equals(tenantDomain)
-                ? Constants.SUPER_TENANT_ADMIN_PASSWORD : TestContext.resolve("mtTenantAdminPassword").toString();
-    }
-
-    /** The roles a user holds in a tenant, read from API Manager's user-store admin service. */
-    public static String rolesOfUser(String tenantDomain, String userName) throws IOException {
-        String payload = "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" "
-                + "xmlns:ser=\"http://service.ws.um.carbon.wso2.org\"><soapenv:Body>"
-                + "<ser:getRoleListOfUser><ser:userName>"
-                + Utils.escapeXml(qualify(tenantDomain, userName)) + "</ser:userName>"
-                + "</ser:getRoleListOfUser></soapenv:Body></soapenv:Envelope>";
-        HttpResponse resp = SimpleHTTPClient.getInstance().sendSoapRequest(
-                apimBase() + "services/RemoteUserStoreManagerService", payload, "urn:getRoleListOfUser",
-                tenantAdminName(tenantDomain), tenantAdminPassword(tenantDomain));
-        return requireUsableSoapResponse(resp, "reading roles for user '" + userName + "'")
-                .replaceAll("\\s+", " ");
-    }
-
     /** Maps an identity server group onto an API Manager role. */
     private static String roleMapping(String remoteGroup, String localRole) {
         return "<m:roleMappings><m:localRole><m:localRoleName>" + localRole + "</m:localRoleName></m:localRole>"
@@ -1012,18 +958,6 @@ public final class MultiTenantSsoProvisioner {
 
     private static boolean isSoapFault(String body) {
         return body != null && body.matches("(?s).*<[^>]*:?Fault(?:\\s[^>]*)?>.*");
-    }
-
-    private static String requireUsableSoapResponse(HttpResponse response, String operation) throws IOException {
-        String body = response == null ? null : response.getData();
-        boolean valid = response != null && response.getResponseCode() >= 200 && response.getResponseCode() < 300
-                && body != null && !body.isBlank() && !isSoapFault(body);
-        if (!valid) {
-            throw new IOException("Failed while " + operation + ": expected a successful non-blank SOAP response "
-                    + "without a fault, got " + (response == null ? "no response"
-                    : "HTTP " + response.getResponseCode() + " / body=" + body));
-        }
-        return body;
     }
 
     private static String federatedOutbound(String idpName, String authenticatorName) {

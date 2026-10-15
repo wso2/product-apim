@@ -133,14 +133,16 @@ public class KeyManagerAdminSteps {
 
     /**
      * Admin change-owner to a RAW username string (not an actor reference) — for the negative "non-existent owner"
-     * case where the target user does not exist as a provisioned actor. Non-asserting.
+     * case where the target user does not exist as a provisioned actor. {@code ${UNIQUE:...}} and {@code {{...}}}
+     * placeholders are resolved so a uniquified name can be passed. Non-asserting.
      */
     @When("I change the owner of application {string} to the raw user {string}")
     public void iChangeTheOwnerOfApplicationRaw(String appIdRef, String rawOwner) throws IOException {
         String appId = TestContext.resolve(appIdRef).toString();
+        String owner = Utils.resolveContextPlaceholders(Utils.resolvePayloadPlaceholders(rawOwner));
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.adminToken());
-        Requests.post(Utils.getChangeApplicationOwnerURL(Utils.getBaseUrl(), appId, rawOwner), headers, "", null);
+        Requests.post(Utils.getChangeApplicationOwnerURL(Utils.getBaseUrl(), appId, owner), headers, "", null);
     }
 
     /**
@@ -222,12 +224,13 @@ public class KeyManagerAdminSteps {
      * Admin: the scope settings of {@code apim:subscribe} (or any scope) FOR A PARTICULAR USER
      * ({@code GET system-scopes/{base64(scope)}?username=…}) — the lookup change-owner performs to decide whether a
      * candidate owner is a valid subscriber. {@code username} is a RAW username (not an actor reference) so the
-     * non-existent-user negative can address a name that was never provisioned; {@code {{...}}} placeholders are
-     * resolved so a uniquified name can be passed. Non-asserting — the feature asserts the exact status.
+     * non-existent-user negative can address a name that was never provisioned; {@code ${UNIQUE:...}} and
+     * {@code {{...}}} placeholders are resolved so a uniquified name can be passed. Non-asserting — the feature
+     * asserts the exact status.
      */
     @When("I retrieve the system scope {string} for the raw user {string}")
     public void iRetrieveSystemScopeForUser(String scopeName, String rawUsername) throws IOException {
-        String username = Utils.resolveContextPlaceholders(rawUsername);
+        String username = Utils.resolveContextPlaceholders(Utils.resolvePayloadPlaceholders(rawUsername));
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.adminToken());
         Requests.get(Utils.getSystemScopeForUserURL(Utils.getBaseUrl(), scopeName, username), headers);

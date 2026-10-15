@@ -860,7 +860,38 @@ public class ApplicationBaseSteps {
         String policyId = TestContext.resolve(idKey).toString();
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.adminToken());
-        Requests.delete(Utils.getThrottlingPolicyByTypeURL(Utils.getBaseUrl(), policyType, policyId), headers);
+        HttpResponse response = Requests.delete(
+                Utils.getThrottlingPolicyByTypeURL(Utils.getBaseUrl(), policyType, policyId), headers);
+        ResourceCleanup.deregisterIfDeleted(throttlingPolicyCleanupList(policyType), policyId, response);
+    }
+
+    /**
+     * As {@link #iDeleteThrottlingPolicyByType}, for a delete the product is expected to refuse: the request is sent
+     * exactly once, without the client's transient 900967 retry, because the product answers some refusals (deleting
+     * a policy configured as a tenant default) with that same generic 500 envelope. Non-asserting.
+     */
+    @When("I attempt to delete the {string} throttling policy with id {string}")
+    public void iAttemptToDeleteThrottlingPolicyByType(String policyType, String idKey) throws IOException {
+        SimpleHTTPClient.getInstance().withoutGeneralErrorRetry(() -> {
+            iDeleteThrottlingPolicyByType(policyType, idKey);
+            return null;
+        });
+    }
+
+    /** The teardown list holding throttling policies of the admin REST API's {@code policyType} path segment. */
+    private static String throttlingPolicyCleanupList(String policyType) {
+        switch (policyType) {
+            case "application":
+                return Constants.CREATED_APPLICATION_POLICY_IDS;
+            case "subscription":
+                return Constants.CREATED_SUBSCRIPTION_POLICY_IDS;
+            case "advanced":
+                return Constants.CREATED_ADVANCED_POLICY_IDS;
+            case "custom":
+                return Constants.CREATED_CUSTOM_POLICY_IDS;
+            default:
+                throw new IllegalArgumentException("Unknown throttling policy type: " + policyType);
+        }
     }
 
     /** Generic update: retrieve the policy, set a new description, and PUT it back. */
@@ -1144,7 +1175,8 @@ public class ApplicationBaseSteps {
         String id = TestContext.contains(idKey) ? TestContext.get(idKey).toString() : idKey;
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.adminToken());
-        Requests.delete(Utils.getEnvironmentByIdURL(Utils.getBaseUrl(), id), headers);
+        HttpResponse response = Requests.delete(Utils.getEnvironmentByIdURL(Utils.getBaseUrl(), id), headers);
+        ResourceCleanup.deregisterIfDeleted(Constants.CREATED_ENVIRONMENT_IDS, id, response);
     }
 
     /** Retrieve the gateway instances of an environment (admin API). The id may be a context key
@@ -1462,7 +1494,9 @@ public class ApplicationBaseSteps {
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.adminToken());
 
-        Requests.delete(Utils.getApplicationThrottlingPolicyByIdURL(Utils.getBaseUrl(), policyId), headers);
+        HttpResponse response = Requests.delete(
+                Utils.getApplicationThrottlingPolicyByIdURL(Utils.getBaseUrl(), policyId), headers);
+        ResourceCleanup.deregisterIfDeleted(Constants.CREATED_APPLICATION_POLICY_IDS, policyId, response);
     }
 
     /** Retrieves a custom (Siddhi) throttling rule by id (admin API), storing the raw response for assertions. */
@@ -1484,7 +1518,9 @@ public class ApplicationBaseSteps {
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.adminToken());
 
-        Requests.delete(Utils.getCustomThrottlingPolicyByIdURL(Utils.getBaseUrl(), policyId), headers);
+        HttpResponse response = Requests.delete(
+                Utils.getCustomThrottlingPolicyByIdURL(Utils.getBaseUrl(), policyId), headers);
+        ResourceCleanup.deregisterIfDeleted(Constants.CREATED_CUSTOM_POLICY_IDS, policyId, response);
     }
 
     /**
@@ -1555,7 +1591,9 @@ public class ApplicationBaseSteps {
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
 
-        Requests.delete(Utils.getApplicationEndpointURL(Utils.getBaseUrl(), actualAppId), headers);
+        HttpResponse response = Requests.delete(Utils.getApplicationEndpointURL(Utils.getBaseUrl(), actualAppId),
+                headers);
+        ResourceCleanup.deregisterIfDeleted(Constants.CREATED_APPLICATION_IDS, actualAppId, response);
     }
 
     /**
@@ -1694,6 +1732,10 @@ public class ApplicationBaseSteps {
      * {@code httpResponse} for the feature to assert. For negative / access-control scenarios where the
      * subscribe is expected to be rejected (e.g. an actor lacking the apim:subscribe scope): unlike the
      * positive step it neither asserts a status nor records a subscription id.
+     *
+     * <p>The request is sent exactly once, without the client's transient 900967 retry: the product answers some
+     * refusals (a subscribe to a DEPRECATED API) with that same generic 500 envelope, and a subscribe is not
+     * idempotent.</p>
      */
     @When("I attempt to subscribe to API {string} using application {string} with payload {string}")
     public void iAttemptToSubscribeToApi(String apiId, String appId, String payload) throws Exception {
@@ -1713,8 +1755,10 @@ public class ApplicationBaseSteps {
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
 
-        HttpResponse response = Requests.post(Utils.getCreateSubscriptionURL(Utils.getBaseUrl()),
-                headers, jsonPayload, Constants.CONTENT_TYPES.APPLICATION_JSON);
+        String subscribePayload = jsonPayload;
+        HttpResponse response = SimpleHTTPClient.getInstance().withoutGeneralErrorRetry(() -> Requests.post(
+                Utils.getCreateSubscriptionURL(Utils.getBaseUrl()), headers, subscribePayload,
+                Constants.CONTENT_TYPES.APPLICATION_JSON));
         if (response.getResponseCode() >= 200 && response.getResponseCode() < 300) {
             ResourceCleanup.registerSubscription(
                     Utils.extractValueFromPayload(response.getData(), "subscriptionId"), null);
@@ -4101,8 +4145,25 @@ public class ApplicationBaseSteps {
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
 
-        Requests.delete(Utils.getSubscriptionURL(Utils.getBaseUrl(),
+        HttpResponse response = Requests.delete(Utils.getSubscriptionURL(Utils.getBaseUrl(),
                 actualSubscriptionId), headers);
+        ResourceCleanup.deregisterIfDeleted(ResourceCleanup.CREATED_SUBSCRIPTION_IDS, actualSubscriptionId,
+                response);
+    }
+
+    /**
+     * Asserts that the subscription held under {@code subscriptionId} no longer exists (DevPortal GET by its owner
+     * answers 404) and drops it from the teardown sweep. For a subscription the product removes itself, e.g. when its API or API
+     * product is retired; without this the sweep would delete it again and the server would log a not-found error.
+     */
+    @Then("The subscription {string} should no longer exist")
+    public void theSubscriptionShouldNoLongerExist(String subscriptionId) throws IOException {
+        String actualSubscriptionId = TestContext.resolve(subscriptionId).toString();
+        HttpResponse response = Requests.get(Utils.getSubscriptionURL(Utils.getBaseUrl(), actualSubscriptionId),
+                ResourceCleanup.subscriptionOwnerHeaders(actualSubscriptionId));
+        Assert.assertEquals(response.getResponseCode(), 404,
+                "Subscription " + actualSubscriptionId + " still exists: " + response.getData());
+        ResourceCleanup.deregister(ResourceCleanup.CREATED_SUBSCRIPTION_IDS, actualSubscriptionId);
     }
 
     /**
@@ -4305,8 +4366,32 @@ public class ApplicationBaseSteps {
     public void iSetupApplicationSubscribeAndGetTokenWithPlan(String apiId, String plan, String subscriptionID)
             throws Exception {
 
+        setupApplicationSubscribeAndGetToken("artifacts/payloads/create_apim_test_app.json", apiId, plan,
+                subscriptionID);
+    }
+
+    /**
+     * Payload-file variant of the application-setup composite: creates the application from the given payload file
+     * instead of the default test application, then generates keys, subscribes on {@code Bronze}, and obtains an
+     * access token. Needed where the container declares a required application attribute that every application
+     * must carry.
+     *
+     * @param appPayloadFile application creation payload file (relative to the test resources)
+     * @param apiId          context key holding the API id
+     * @param subscriptionID context key to store the created subscription id under
+     */
+    @When("I have set up application from payload file {string} with keys, subscribed to API {string}, and obtained access token for {string}")
+    public void iSetupApplicationFromPayloadFileSubscribeAndGetToken(String appPayloadFile, String apiId,
+                                                                     String subscriptionID) throws Exception {
+
+        setupApplicationSubscribeAndGetToken(appPayloadFile, apiId, "Bronze", subscriptionID);
+    }
+
+    private void setupApplicationSubscribeAndGetToken(String appPayloadFile, String apiId, String plan,
+                                                      String subscriptionID) throws Exception {
+
         // create an application
-        baseSteps.putJsonPayloadFromFile("artifacts/payloads/create_apim_test_app.json", "<createAppPayload>");
+        baseSteps.putJsonPayloadFromFile(appPayloadFile, "<createAppPayload>");
         iCreateAnApplicationWithJsonPayload("<createAppPayload>");
         baseSteps.theResponseStatusCodeShouldBe(201);
 
@@ -4662,8 +4747,46 @@ public class ApplicationBaseSteps {
 
         Map<String, java.io.File> files = new HashMap<>();
         files.put("file", temp);
-        Requests.postMultipart(
+        HttpResponse response = Requests.postMultipart(
                 Utils.getThrottlePolicyImportURL(Utils.getBaseUrl(), overwrite), Identity.adminHeaders(), files, new HashMap<>());
+        if (response.getResponseCode() >= 200 && response.getResponseCode() < 300) {
+            registerImportedThrottlePolicy(new JSONObject(body));
+        }
+    }
+
+    /**
+     * Registers the policy an import created for teardown. An import of an absent policy creates it under a new id
+     * that the import response does not carry, so the id is read back from the policy type's listing by the
+     * exported policy name. An import that updated an existing policy finds the already-registered id, which is
+     * not queued twice.
+     */
+    private void registerImportedThrottlePolicy(JSONObject exported) throws IOException {
+        String subtype = exported.getString("subtype");
+        String policyName = exported.getJSONObject("data").getString("policyName");
+        String policyType;
+        switch (subtype) {
+            case "subscription policy": policyType = "subscription"; break;
+            case "application policy":  policyType = "application"; break;
+            case "advanced policy":     policyType = "advanced"; break;
+            case "custom rule":         policyType = "custom"; break;
+            default: throw new IllegalArgumentException("Unknown exported throttling policy subtype: " + subtype);
+        }
+        HttpResponse list = SimpleHTTPClient.getInstance().doGet(
+                Utils.getThrottlingPoliciesByTypeURL(Utils.getBaseUrl(), policyType), Identity.adminHeaders());
+        Assert.assertTrue(list != null && list.getResponseCode() == 200 && list.getData() != null
+                        && !list.getData().isBlank(),
+                "Could not list " + policyType + " throttling policies to register imported policy " + policyName
+                        + ": " + (list == null ? "null" : list.getResponseCode() + "/" + list.getData()));
+        JSONArray policies = new JSONObject(list.getData()).getJSONArray("list");
+        for (int i = 0; i < policies.length(); i++) {
+            JSONObject policy = policies.getJSONObject(i);
+            if (policyName.equals(policy.optString("policyName"))) {
+                ResourceCleanup.register(throttlingPolicyCleanupList(policyType), policy.getString("policyId"));
+                return;
+            }
+        }
+        Assert.fail("Imported " + policyType + " throttling policy " + policyName + " is not in the listing: "
+                + list.getData());
     }
 
     /** Loads a key-manager JSON payload off the classpath, resolving {@code ${UNIQUE:...}} name placeholders. */
@@ -4837,9 +4960,13 @@ public class ApplicationBaseSteps {
         try {
             String keygenPayload = "{\"keyType\":\"PRODUCTION\",\"keyManager\":\"" + kmId
                     + "\",\"grantTypesToBeSupported\":[\"client_credentials\"]}";
-            HttpResponse keyResp = SimpleHTTPClient.getInstance().doPost(
-                    Utils.getGenerateApplicationKeysURL(Utils.getBaseUrl(), probeAppId), headers, keygenPayload,
-                    Constants.CONTENT_TYPES.APPLICATION_JSON);
+            // Sent once: until the key manager reaches the holder this keygen answers 500/900967 by design, and a
+            // re-POST would only collide with the key-mapping row the failed attempt left (409). The next probe
+            // uses a fresh application.
+            HttpResponse keyResp = SimpleHTTPClient.getInstance().withoutGeneralErrorRetry(
+                    () -> SimpleHTTPClient.getInstance().doPost(
+                            Utils.getGenerateApplicationKeysURL(Utils.getBaseUrl(), probeAppId), headers,
+                            keygenPayload, Constants.CONTENT_TYPES.APPLICATION_JSON));
             int code = keyResp == null ? -1 : keyResp.getResponseCode();
             if (code >= 200 && code < 300) {
                 ResourceCleanup.registerApplicationKeyMapping(probeAppId,
@@ -5091,7 +5218,9 @@ public class ApplicationBaseSteps {
     public void iDeleteKeyManager(String idKey) throws IOException {
 
         String kmId = TestContext.resolve(idKey).toString();
-        Requests.delete(Utils.getKeyManagerByIdURL(Utils.getBaseUrl(), kmId), Identity.adminHeaders());
+        HttpResponse response = Requests.delete(Utils.getKeyManagerByIdURL(Utils.getBaseUrl(), kmId),
+                Identity.adminHeaders());
+        ResourceCleanup.deregisterIfDeleted(Constants.CREATED_KEY_MANAGER_IDS, kmId, response);
     }
 
     /**
@@ -5332,7 +5461,9 @@ public class ApplicationBaseSteps {
     public void iDeleteDenyPolicy(String idKey) throws IOException {
 
         String id = TestContext.resolve(idKey).toString();
-        Requests.delete(Utils.getDenyPolicyByIdURL(Utils.getBaseUrl(), id), Identity.adminHeaders());
+        HttpResponse response = Requests.delete(Utils.getDenyPolicyByIdURL(Utils.getBaseUrl(), id),
+                Identity.adminHeaders());
+        ResourceCleanup.deregisterIfDeleted(Constants.CREATED_DENY_POLICY_IDS, id, response);
     }
 
     /**
@@ -5509,9 +5640,34 @@ public class ApplicationBaseSteps {
     public void iCreateApplicationSharedWithGroup(String name, String group, String idKey) throws IOException {
 
         JSONObject app = new JSONObject();
-        app.put("name", Utils.resolvePayloadPlaceholders(name));
         app.put("throttlingPolicy", "Unlimited");
         app.put("description", "Group-shared test application");
+        createApplicationSharedWithGroup(app, name, group, idKey);
+    }
+
+    /**
+     * Payload-file variant of {@link #iCreateApplicationSharedWithGroup}: the given file supplies the base
+     * application (e.g. a required application attribute), and the step sets its name, {@code tokenType} and
+     * {@code groups} exactly as the plain form does.
+     *
+     * @param name        application name (resolves {@code ${UNIQUE:...}})
+     * @param group       the group to share with (resolves {@code {{...}}})
+     * @param payloadFile base application payload file (relative to the test resources)
+     * @param idKey       context key to store the created application id under
+     */
+    @When("I create an application {string} shared with group {string} from payload file {string} as {string}")
+    public void iCreateApplicationSharedWithGroupFromPayloadFile(String name, String group, String payloadFile,
+                                                                 String idKey) throws IOException {
+
+        baseSteps.putJsonPayloadFromFile(payloadFile, "<groupSharedAppPayload>");
+        JSONObject app = new JSONObject(TestContext.resolve("<groupSharedAppPayload>").toString());
+        createApplicationSharedWithGroup(app, name, group, idKey);
+    }
+
+    private void createApplicationSharedWithGroup(JSONObject app, String name, String group, String idKey)
+            throws IOException {
+
+        app.put("name", Utils.resolvePayloadPlaceholders(name));
         app.put("tokenType", "JWT");
         app.put("groups", new JSONArray().put(Utils.resolveContextPlaceholders(group)));
 

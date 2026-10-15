@@ -50,6 +50,8 @@ import java.util.HashSet;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Step definitions for endpoint-certificate management (ports of APIEndpointCertificateTestCase management surface
@@ -83,6 +85,8 @@ public class EndpointCertificateSteps {
             "The certificate with Alias '%s' is successfully added to the Gateway Trust Store.";
     private static final String GATEWAY_CERTIFICATE_REMOVED_LOG =
             "The certificate with Alias '%s' is successfully removed from the Gateway Trust Store.";
+    private static final String GATEWAY_CERTIFICATE_REMOVE_FAILED_LOG =
+            "Error removing the certificate with Alias '%s' from the Gateway Trust Store.";
     private static final String SSL_PROFILE_RELOAD_LOG = "PassThroughHttpSender reloading SSL Config";
     private static final String CERT_REMOVAL_RELOAD_BASELINE_PREFIX = "endpointCertRemovalReloadBaseline::";
     private static final String CERT_REMOVAL_LOG_BASELINE_PREFIX = "endpointCertRemovalLogBaseline::";
@@ -233,9 +237,11 @@ public class EndpointCertificateSteps {
      * Re-fires {@code ENDPOINT_CERTIFICATE_ADD} for an alias by deleting and re-uploading it.
      *
      * <p>Delete-then-upload rather than upload-only because re-posting an existing alias is rejected with 409 and
-     * would emit no event at all. The pair emits {@code REMOVE} then {@code ADD}; a JMS topic delivers to a given
-     * subscriber in order, so the {@code ADD} is always the last of the two applied and the heal can never leave
-     * the gateway less trusting than it found it.
+     * would emit no event at all. The upload waits until the gateway has applied the delete's {@code REMOVE}
+     * event: the gateway applies events asynchronously, so a {@code REMOVE} still in flight when the upload lands
+     * is applied after it and drops the re-added alias. In all-in-one the gateway and the control plane also
+     * rewrite the same trust-store file, so that late {@code REMOVE} additionally deletes the control plane's
+     * fresh entry and leaves its database record pointing at nothing (a later delete then answers 500).
      *
      * <p>Both calls use the raw client deliberately: a heal is not the step's response under test, and publishing
      * {@code httpResponse} here would leave the following assertion reading the gate's own traffic (§7).
@@ -254,12 +260,15 @@ public class EndpointCertificateSteps {
         // emitting a fresh event. In distributed topology this targets only the Gateway; in all-in-one it is the
         // unified APIM node, both through the topology-provided management URL.
         GracefulServerRestart.gateway();
-        int reloadCountBeforeRetrigger = countOccurrences(readGatewayLog(), SSL_PROFILE_RELOAD_LOG);
+        String gatewayLogBeforeRetrigger = readGatewayLog();
+        int reloadCountBeforeRetrigger = countOccurrences(gatewayLogBeforeRetrigger, SSL_PROFILE_RELOAD_LOG);
+        int addedCountBeforeRetrigger =
+                countGatewayMarker(gatewayLogBeforeRetrigger, GATEWAY_CERTIFICATE_ADDED_LOG, alias);
         HealGate.Verdict retrigger = reUploadCertificate(alias);
         if (retrigger instanceof HealGate.Fatal || retrigger instanceof HealGate.NotReady) {
             return retrigger;
         }
-        return awaitGatewayCertificateReload(alias, reloadCountBeforeRetrigger);
+        return awaitGatewayCertificateReload(alias, reloadCountBeforeRetrigger, addedCountBeforeRetrigger);
     }
 
     private HealGate.Verdict reUploadCertificate(String alias) {
@@ -270,12 +279,19 @@ public class EndpointCertificateSteps {
                     + " the upload step, so its source file and endpoint are unknown");
         }
         try {
+            int removalsBeforeDelete = countGatewayRemovals(readGatewayLog(), alias);
             HttpResponse deleted = SimpleHTTPClient.getInstance().doDelete(
                     Utils.getEndpointCertificateByAliasURL(Utils.getBaseUrl(), alias), publisherAuthHeaders());
             int deleteCode = deleted == null ? -1 : deleted.getResponseCode();
             // 404 is fine: the alias already being absent is a valid starting point for the re-upload.
             if (deleteCode != 200 && deleteCode != 404) {
                 return classifyHealFailure("delete of certificate '" + alias + "'", deleteCode, deleted);
+            }
+            if (deleteCode == 200) {
+                HealGate.Verdict removalApplied = awaitGatewayRemovalApplied(alias, removalsBeforeDelete);
+                if (!(removalApplied instanceof HealGate.Ready)) {
+                    return removalApplied;
+                }
             }
             Map<String, File> files = new HashMap<>();
             files.put("certificate", certFile(source.toString()));
@@ -305,16 +321,16 @@ public class EndpointCertificateSteps {
      * its profile. The functional gateway probe remains the gate's pass condition; these markers prevent the retry
      * window from racing ahead of the product's own reload path and make a future failure actionable.
      */
-    private HealGate.Verdict awaitGatewayCertificateReload(String alias, int reloadCountBeforeRetrigger)
-            throws InterruptedException {
-        String certificateAddedMarker = String.format(GATEWAY_CERTIFICATE_ADDED_LOG, alias);
+    private HealGate.Verdict awaitGatewayCertificateReload(String alias, int reloadCountBeforeRetrigger,
+                                                           int addedCountBeforeRetrigger) throws InterruptedException {
         long start = System.currentTimeMillis();
         long deadline = start + Constants.RUNTIME_PROPAGATION_TIMEOUT;
         String lastObserved = "no Gateway certificate/reload log markers observed";
         while (System.currentTimeMillis() < deadline) {
             String gatewayLog = readGatewayLog();
             if (gatewayLog != null) {
-                boolean certificateAdded = gatewayLog.contains(certificateAddedMarker);
+                boolean certificateAdded = countGatewayMarker(gatewayLog, GATEWAY_CERTIFICATE_ADDED_LOG, alias)
+                        > addedCountBeforeRetrigger;
                 boolean senderReloaded = countOccurrences(gatewayLog, SSL_PROFILE_RELOAD_LOG)
                         > reloadCountBeforeRetrigger;
                 if (certificateAdded && senderReloaded) {
@@ -367,8 +383,8 @@ public class EndpointCertificateSteps {
                     () -> {
                         String gatewayLog = readGatewayLog();
                         int reloadCount = countOccurrences(gatewayLog, SSL_PROFILE_RELOAD_LOG);
-                        String removalMarker = String.format(GATEWAY_CERTIFICATE_REMOVED_LOG, resolvedAlias);
-                        int removalLogCount = countOccurrences(gatewayLog, removalMarker);
+                        int removalLogCount =
+                                countGatewayMarker(gatewayLog, GATEWAY_CERTIFICATE_REMOVED_LOG, resolvedAlias);
                         HttpResponse response = SimpleHTTPClient.getInstance().doGet(url, auth);
                         if (response == null) {
                             return new HealGate.NotReady("no response from the gateway");
@@ -409,6 +425,51 @@ public class EndpointCertificateSteps {
             throw new AssertionError(gateFailed.getMessage()
                     + ContainerLogDiagnostics.explainTrustStoreRace(what), gateFailed);
         }
+    }
+
+    /**
+     * Waits until the gateway has applied the {@code REMOVE} event of a certificate delete: a new removal marker,
+     * successful or failed, past {@code removalsBeforeDelete}. The gateway logs the successful marker even when the
+     * alias was absent from its trust store, so an applied event always leaves one of the two.
+     */
+    private HealGate.Verdict awaitGatewayRemovalApplied(String alias, int removalsBeforeDelete)
+            throws InterruptedException {
+        long start = System.currentTimeMillis();
+        long deadline = start + Constants.RUNTIME_PROPAGATION_TIMEOUT;
+        while (System.currentTimeMillis() < deadline) {
+            if (countGatewayRemovals(readGatewayLog(), alias) > removalsBeforeDelete) {
+                return new HealGate.Ready();
+            }
+            Utils.pollPause(start, Constants.RETRY_INTERVAL_TIME);
+        }
+        return new HealGate.NotReady("the Gateway did not apply the REMOVE event of certificate '" + alias
+                + "' before the re-upload; uploading now would let that event drop the re-added alias");
+    }
+
+    private int countGatewayRemovals(String gatewayLog, String alias) {
+        return countGatewayMarker(gatewayLog, GATEWAY_CERTIFICATE_REMOVED_LOG, alias)
+                + countGatewayMarker(gatewayLog, GATEWAY_CERTIFICATE_REMOVE_FAILED_LOG, alias);
+    }
+
+    /**
+     * Counts a Gateway trust-store marker for an endpoint-certificate alias. The Gateway stores a tenant's
+     * certificate as {@code <alias>_<tenantId>} and a super-tenant certificate as {@code <alias>}, so the marker is
+     * matched against the acting tenant's form.
+     */
+    private static int countGatewayMarker(String gatewayLog, String markerTemplate, String alias) {
+        if (gatewayLog == null) {
+            return 0;
+        }
+        String gatewayAlias = Constants.SUPER_TENANT_DOMAIN.equals(Identity.actingTenantDomain())
+                ? Pattern.quote(alias) : Pattern.quote(alias) + "_\\d+";
+        String[] around = markerTemplate.split("%s", -1);
+        Matcher matcher = Pattern.compile(Pattern.quote(around[0]) + gatewayAlias + Pattern.quote(around[1]))
+                .matcher(gatewayLog);
+        int count = 0;
+        while (matcher.find()) {
+            count++;
+        }
+        return count;
     }
 
     private String readGatewayLog() {
@@ -490,8 +551,7 @@ public class EndpointCertificateSteps {
         TestContext.set(CERT_REMOVAL_RELOAD_BASELINE_PREFIX + resolvedAlias,
                 countOccurrences(gatewayLogBeforeDelete, SSL_PROFILE_RELOAD_LOG));
         TestContext.set(CERT_REMOVAL_LOG_BASELINE_PREFIX + resolvedAlias,
-                countOccurrences(gatewayLogBeforeDelete,
-                        String.format(GATEWAY_CERTIFICATE_REMOVED_LOG, resolvedAlias)));
+                countGatewayMarker(gatewayLogBeforeDelete, GATEWAY_CERTIFICATE_REMOVED_LOG, resolvedAlias));
         HttpResponse response = Requests.delete(Utils.getEndpointCertificateByAliasURL(Utils.getBaseUrl(),
                 resolvedAlias), publisherAuthHeaders());
         if (response != null && response.getResponseCode() == 200) {

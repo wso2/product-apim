@@ -35,9 +35,11 @@ import com.microsoft.playwright.options.WaitUntilState;
 
 import java.net.InetSocketAddress;
 import java.net.URI;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * Drives the APIM console single-sign-on journey through APIM's resident IS to an external federated Identity
@@ -71,6 +73,15 @@ public final class PlaywrightSsoClient implements AutoCloseable {
     /** Path of the authentication endpoint's credential page; being served one means a login was demanded. */
     private static final String LOGIN_PAGE_PATH = "/authenticationendpoint/login";
 
+    /** Attempts to unload the current console when a page-initiated navigation keeps cancelling it. */
+    private static final int LEAVE_CONSOLE_ATTEMPTS = 3;
+
+    /**
+     * How long a console page may take to render the control a step enters it for. The control appears only once
+     * the page has loaded its bundle and its data.
+     */
+    private static final int PAGE_READY_TIMEOUT_MS = 30000;
+
     /** {@code docTrail} size when the current SSO console open began; later hops belong to that open. */
     private int trailMarkAtConsoleOpen;
     private java.util.List<String> lastLogoutHops = java.util.Collections.emptyList();
@@ -82,6 +93,7 @@ public final class PlaywrightSsoClient implements AutoCloseable {
     private String firstIsSessionId;
 
     private final ConnectProxy proxy;
+    private final BrowserProxyRelay browserProxyRelay;
     private final Playwright playwright;
     private final Browser browser;
     private final BrowserContext context;
@@ -94,6 +106,9 @@ public final class PlaywrightSsoClient implements AutoCloseable {
     private final java.util.List<String> apiCalls = java.util.Collections.synchronizedList(new java.util.ArrayList<>());
     /** Browser console errors/warnings — a JS error can wedge a React form's async validation. */
     private final java.util.List<String> consoleMsgs = java.util.Collections.synchronizedList(new java.util.ArrayList<>());
+    /** Requests the browser aborted with {@code ERR_NETWORK_CHANGED}; logged at close, 0 with network isolation. */
+    private final java.util.concurrent.atomic.AtomicInteger networkChangedFailures =
+            new java.util.concurrent.atomic.AtomicInteger();
 
     /**
      * @param apimMappedBase    the APIM host-mapped base URL (e.g. {@code https://localhost:32912/})
@@ -113,10 +128,17 @@ public final class PlaywrightSsoClient implements AutoCloseable {
         routes.put("wso2am:9443", apim);       // APIM network alias (if ever emitted)
         routes.put("apim-cp:9443", apim);      // Distributed CP hostname emitted by console redirects
         routes.put("wso2is:9443", is);         // federated IdP authorize/token host
+        // Testcontainers normally returns localhost for host-mapped URLs. Some Docker hosts (for example Colima)
+        // require TESTCONTAINERS_HOST_OVERRIDE, which changes those URLs to the host IP. The browser can start at
+        // that mapped authority before APIM redirects it to the stable internal hostname above, so route both.
+        addMappedAuthorityRoute(routes, apimMappedBase, apim);
+        addMappedAuthorityRoute(routes, isMappedBase, is);
         if (gatewayMappedBase != null && !gatewayMappedBase.isBlank()) {
             // The API's deployed gateway URL is https://localhost:8243/<context> (VHost "localhost"); tunnel it to
             // the mapped gateway port so the browser can invoke the API end to end.
-            routes.put("localhost:8243", addressOf(gatewayMappedBase));
+            InetSocketAddress gateway = addressOf(gatewayMappedBase);
+            routes.put("localhost:8243", gateway);
+            addMappedAuthorityRoute(routes, gatewayMappedBase, gateway);
             gatewayRouted = true;
         }
         ConnectProxy createdProxy = new ConnectProxy(routes);
@@ -124,27 +146,44 @@ public final class PlaywrightSsoClient implements AutoCloseable {
         Browser createdBrowser = null;
         BrowserContext createdContext = null;
         Page createdPage = null;
+        BrowserProxyRelay createdRelay = null;
         try {
             // Only Chromium is installed (via `playwright install chromium`); tell the driver NOT to download any
             // browser at runtime, so create() never blocks on a slow Firefox/WebKit fetch from the CDN.
             createdPlaywright = Playwright.create(new Playwright.CreateOptions()
                     .setEnv(Map.of("PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD", "1")));
-            createdBrowser = createdPlaywright.chromium().launch(new BrowserType.LaunchOptions()
+            BrowserType.LaunchOptions launchOptions = new BrowserType.LaunchOptions()
                     .setHeadless(true)
                     .setProxy(new Proxy("http://127.0.0.1:" + createdProxy.getPort()))
                     // Chromium bypasses the proxy for loopback by default; force localhost through it so the
                     // servers' localhost:9443 URLs are tunnelled to the mapped ports.
-                    .setArgs(List.of("--proxy-bypass-list=<-loopback>")));
+                    .setArgs(List.of("--proxy-bypass-list=<-loopback>"));
+            Optional<Path> cgroup = BrowserCgroup.active();
+            boolean networkIsolated = BrowserCgroup.networkIsolated(cgroup);
+            if (networkIsolated) {
+                createdRelay = new BrowserProxyRelay(createdProxy.getPort());
+                BrowserCgroup.applyTo(launchOptions, createdPlaywright.chromium(), cgroup, createdRelay,
+                        createdProxy.getPort());
+            }
+            createdBrowser = createdPlaywright.chromium().launch(launchOptions);
+            log.info(cgroup.map(c -> "Browser launched capped: " + BrowserCgroup.describe(c))
+                    .orElse("Browser launched uncapped: no browser cgroup on this host (os.name="
+                            + System.getProperty("os.name") + ")"));
+            log.info(networkIsolated
+                    ? "Browser network: private namespace, loopback CONNECT proxy via Unix socket"
+                    : "Browser network: host namespace (no setup-browser-network.sh on this host)");
             createdContext = createdBrowser.newContext(new Browser.NewContextOptions().setIgnoreHTTPSErrors(true));
             createdPage = createdContext.newPage();
         } catch (RuntimeException | Error startupFailure) {
             closeQuietly(createdContext);
             closeQuietly(createdBrowser);
             closeQuietly(createdPlaywright);
+            closeQuietly(createdRelay);
             closeQuietly(createdProxy);
             throw startupFailure;
         }
         this.proxy = createdProxy;
+        this.browserProxyRelay = createdRelay;
         this.playwright = createdPlaywright;
         this.browser = createdBrowser;
         this.context = createdContext;
@@ -165,9 +204,13 @@ public final class PlaywrightSsoClient implements AutoCloseable {
         });
         page.onRequestFailed(req -> {
             try {
+                String failure = req.failure();
+                if (failure != null && failure.contains("ERR_NETWORK_CHANGED")) {
+                    networkChangedFailures.incrementAndGet();
+                }
                 String rt = req.resourceType();
                 if ("xhr".equals(rt) || "fetch".equals(rt)) {
-                    apiCalls.add("FAILED " + req.method() + " " + shortUrl(req.url()) + " (" + req.failure() + ")");
+                    apiCalls.add("FAILED " + req.method() + " " + shortUrl(req.url()) + " (" + failure + ")");
                 }
             } catch (RuntimeException ignored) {
                 // request object may be gone; ignore
@@ -191,6 +234,18 @@ public final class PlaywrightSsoClient implements AutoCloseable {
                 // response object may be gone; ignore
             }
         });
+    }
+
+    /** Adds the exact host:port a browser sees in a Testcontainers mapped URL as an alternate proxy route. */
+    private static void addMappedAuthorityRoute(Map<String, InetSocketAddress> routes, String mappedBase,
+            InetSocketAddress mappedAddress) {
+        if (mappedBase == null || mappedBase.isBlank()) {
+            return;
+        }
+        URI uri = URI.create(mappedBase);
+        if (uri.getHost() != null && uri.getPort() > 0) {
+            routes.put(uri.getHost() + ":" + uri.getPort(), mappedAddress);
+        }
     }
 
     private static InetSocketAddress addressOf(String url) {
@@ -358,6 +413,44 @@ public final class PlaywrightSsoClient implements AutoCloseable {
                     + "introspect response: " + body);
         }
         return user;
+    }
+
+    /** The console's own introspection of its session token: status and body, for the caller to assert. */
+    public org.wso2.carbon.automation.test.utils.http.client.HttpResponse sessionIntrospection(String consoleContext) {
+        APIResponse resp = page.request().get(apimInternal + "/" + consoleContext + "/services/auth/introspect");
+        return new org.wso2.carbon.automation.test.utils.http.client.HttpResponse(resp.text(), resp.status());
+    }
+
+    /**
+     * Sends a management REST request authenticated with a console session's own access token (the split-token
+     * cookie the console uses), so the request is authorized exactly as the console session is.
+     *
+     * @param pathHint     which console's split-token cookie to use ({@code /publisher}, {@code /devportal})
+     * @param method       {@code GET} or {@code POST}
+     * @param resourcePath path under the APIM base, e.g. {@code /api/am/publisher/v4/apis}
+     * @param jsonBody     request body for a POST, or {@code null}
+     */
+    public org.wso2.carbon.automation.test.utils.http.client.HttpResponse sessionRequest(String pathHint,
+            String method, String resourcePath, String jsonBody) {
+        String part1 = consoleTokenPart1(pathHint);
+        if (part1 == null) {
+            throw new AssertionError("no " + pathHint + " split-token cookie, so no request can be sent as the "
+                    + "console session. cookies=" + cookieNames());
+        }
+        RequestOptions options = RequestOptions.create().setHeader("Authorization", "Bearer " + part1);
+        if (jsonBody != null) {
+            options.setHeader("Content-Type", "application/json").setData(jsonBody);
+        }
+        String url = apimInternal + resourcePath;
+        APIResponse resp;
+        if ("GET".equals(method)) {
+            resp = page.request().get(url, options);
+        } else if ("POST".equals(method)) {
+            resp = page.request().post(url, options);
+        } else {
+            throw new IllegalArgumentException("Unsupported console-session request method: " + method);
+        }
+        return new org.wso2.carbon.automation.test.utils.http.client.HttpResponse(resp.text(), resp.status());
     }
 
     private static String firstJson(String body, String field) {
@@ -529,6 +622,7 @@ public final class PlaywrightSsoClient implements AutoCloseable {
      * {@link #assertNotPromptedToLoginAgain()} can tell which hops belong to this open.
      */
     public void openConsoleExpectingSso(String consoleContext) {
+        leaveCurrentConsole();
         trailMarkAtConsoleOpen = docTrail.size();
         try {
             page.navigate(consoleEntryUrl(consoleContext),
@@ -564,6 +658,7 @@ public final class PlaywrightSsoClient implements AutoCloseable {
             log.info("[SSO] Admin navigation ended in the stale DevPortal prompt=none path; "
                     + "attempting one fresh same-context navigation");
             settle();
+            leaveCurrentConsole();
             trailMarkAtConsoleOpen = docTrail.size();
             try {
                 page.navigate(consoleEntryUrl("admin"),
@@ -582,6 +677,33 @@ public final class PlaywrightSsoClient implements AutoCloseable {
             if (consoleTokenPart1("/admin") == null && !navigationServedLoginPage()) {
                 throw adminNavigationRecoveryFailure(firstAttempt,
                         new AssertionError("the recovery navigation ended without an Admin token or login page"));
+            }
+        }
+    }
+
+    /**
+     * Unloads the current document before a console's entry navigation. A console SPA left on the page keeps its
+     * OIDC session check running while the next console's login redirects are still in flight; when that check
+     * sees the session state change, it starts its own silent re-login and replaces the pending navigation, so the
+     * browser ends on the previous console. Cookies and the identity-provider session are unaffected.
+     *
+     * <p>The departing console can itself start a navigation at the same moment (after a logout, the DevPortal SPA
+     * navigates to its own {@code /devportal/logout}), which cancels the {@code about:blank} navigation. That
+     * navigation is allowed to finish loading and {@code about:blank} is then requested again, a bounded number of
+     * times; any other navigation failure is rethrown.
+     */
+    private void leaveCurrentConsole() {
+        for (int attempt = 1; ; attempt++) {
+            try {
+                page.navigate("about:blank");
+                return;
+            } catch (PlaywrightException e) {
+                if (attempt >= LEAVE_CONSOLE_ATTEMPTS || !isNavigationInterrupted(e)) {
+                    throw e;
+                }
+                log.info("[SSO] leaving the current console was interrupted by a page-initiated navigation "
+                        + "(attempt " + attempt + "/" + LEAVE_CONSOLE_ATTEMPTS + "); waiting for it to load");
+                settle();
             }
         }
     }
@@ -1024,7 +1146,7 @@ public final class PlaywrightSsoClient implements AutoCloseable {
         page.navigate(apimInternal + "/publisher/apis/" + currentApiId + "/deployments",
                 new Page.NavigateOptions().setWaitUntil(WaitUntilState.DOMCONTENTLOADED));
         Locator deploy = page.locator("#deploy-btn");
-        deploy.waitFor(new Locator.WaitForOptions().setTimeout(30000));
+        awaitPageElement(deploy, "the Deploy button", "deploy-btn-missing");
         if (!waitForEnabled(deploy, 30000)) {
             snap("deploy-btn-disabled");
             dumpDiagnostics("deploy-btn-disabled");
@@ -1060,7 +1182,7 @@ public final class PlaywrightSsoClient implements AutoCloseable {
         page.navigate(apimInternal + "/publisher/apis/" + currentApiId + "/lifecycle",
                 new Page.NavigateOptions().setWaitUntil(WaitUntilState.DOMCONTENTLOADED));
         Locator publish = page.locator("[data-testid=Publish-btn]");
-        publish.waitFor(new Locator.WaitForOptions().setTimeout(30000));
+        awaitPageElement(publish, "the Publish button", "publish-btn-missing");
         if (!waitForEnabled(publish, 20000)) {
             snap("publish-btn-disabled");
             throw new AssertionError("the Publish button never enabled. " + pageDiagnostic());
@@ -1096,7 +1218,7 @@ public final class PlaywrightSsoClient implements AutoCloseable {
         Locator dnr = page.getByRole(AriaRole.BUTTON,
                 new Page.GetByRoleOptions().setName("Deploy New Revision"));
         try {
-            dnr.waitFor(new Locator.WaitForOptions().setTimeout(30000));
+            dnr.waitFor(new Locator.WaitForOptions().setTimeout(PAGE_READY_TIMEOUT_MS));
         } catch (RuntimeException e) {
             snap("redeploy-no-button");
             throw new AssertionError("'Deploy New Revision' not found on the deployments page (did the admin→"
@@ -1303,6 +1425,25 @@ public final class PlaywrightSsoClient implements AutoCloseable {
 
     // ─────────────────────────── devportal SPA work ───────────────────────────
 
+    /** Records the text of every toast (react-hot-toast renders role=status) added to the page into a window list. */
+    private static final String TOAST_RECORDER_SCRIPT = "() => {"
+            + " window.__ssoToasts = [];"
+            + " new MutationObserver(() => {"
+            + "   document.querySelectorAll('[role=status],[role=alert]').forEach((el) => {"
+            + "     const text = (el.textContent || '').trim();"
+            + "     if (text && !window.__ssoToasts.includes(text)) { window.__ssoToasts.push(text); }"
+            + "   });"
+            + " }).observe(document.body, { childList: true, subtree: true, characterData: true });"
+            + "}";
+
+    private String recordedToasts() {
+        try {
+            return String.valueOf(page.evaluate("() => window.__ssoToasts || []"));
+        } catch (RuntimeException unavailable) {
+            return "<unavailable: " + unavailable.getMessage() + ">";
+        }
+    }
+
     /** The application id of the last app created through the devportal UI (captured from the overview URL). */
     private String currentAppId;
     private String devportalTenant = "carbon.super";
@@ -1323,7 +1464,19 @@ public final class PlaywrightSsoClient implements AutoCloseable {
     public String createDevportalApp(String appName) {
         page.navigate(apimInternal + "/devportal/applications/create?tenant=" + devportalTenant,
                 new Page.NavigateOptions().setWaitUntil(WaitUntilState.DOMCONTENTLOADED));
-        page.waitForSelector("input[name=name]", new Page.WaitForSelectorOptions().setTimeout(30000));
+        awaitPageElement(page.locator("input[name=name]"), "the application name field", "dp-app-form-missing");
+        // The form enables SAVE before it has loaded its application tiers and attributes, and its save handler
+        // reads the attribute list without a null check, so a SAVE in that window fails client-side and sends
+        // nothing. Both values arrive in one state update that also selects the first tier, so a selected tier
+        // means the form is ready.
+        try {
+            page.waitForFunction("() => { const tier = document.querySelector('input[name=throttlingPolicy]');"
+                    + " return !!(tier && tier.value); }", null, new Page.WaitForFunctionOptions().setTimeout(30000));
+        } catch (RuntimeException e) {
+            snap("dp-app-form-not-ready");
+            throw new AssertionError("the DevPortal application form never loaded its application tiers. "
+                    + pageDiagnostic(), e);
+        }
         fillAndBlur("input[name=name]", appName);
         Locator save = page.getByRole(AriaRole.BUTTON,
                 new Page.GetByRoleOptions().setName("SAVE").setExact(true));
@@ -1332,6 +1485,9 @@ public final class PlaywrightSsoClient implements AutoCloseable {
             snap("dp-app-save-disabled");
             throw new AssertionError("the DevPortal application SAVE button never enabled. " + pageDiagnostic());
         }
+        // The form reports a client-side rejection only through a transient toast; record every toast text so a
+        // SAVE that never reaches the server can name its reason.
+        page.evaluate(TOAST_RECORDER_SCRIPT);
         // The SAVE POSTs /api/am/devportal/v3/applications; wait for that as the success signal and read the id.
         com.microsoft.playwright.Response resp;
         try {
@@ -1342,7 +1498,8 @@ public final class PlaywrightSsoClient implements AutoCloseable {
         } catch (RuntimeException e) {
             snap("dp-app-no-call");
             dumpDiagnostics("dp-app-no-call");
-            throw new AssertionError("the DevPortal application create call was never made. " + pageDiagnostic(), e);
+            throw new AssertionError("the DevPortal application create call was never made. Toasts shown: "
+                    + recordedToasts() + ". " + pageDiagnostic(), e);
         }
         if (resp.status() >= 300) {
             snap("dp-app-http-fail");
@@ -1385,7 +1542,7 @@ public final class PlaywrightSsoClient implements AutoCloseable {
     public void subscribeAppToApi(String apiId, String appName) {
         page.navigate(apimInternal + "/devportal/apis/" + apiId + "/credentials?tenant=" + devportalTenant,
                 new Page.NavigateOptions().setWaitUntil(WaitUntilState.DOMCONTENTLOADED));
-        page.waitForSelector("#subscribe-to-api-btn", new Page.WaitForSelectorOptions().setTimeout(30000));
+        awaitPageElement(page.locator("#subscribe-to-api-btn"), "the Subscribe button", "dp-subscribe-btn-missing");
         // The "Application" select defaults to DefaultApplication — switch it to OUR app. (The "Business Plan"
         // select already defaults to a valid tier, e.g. Unlimited, so we leave it.) MUI Select is opened by
         // clicking the label-associated combobox, then the matching option is clicked in the popup listbox.
@@ -1432,7 +1589,7 @@ public final class PlaywrightSsoClient implements AutoCloseable {
                         + "/productionkeys/oauth?tenant=" + devportalTenant,
                 new Page.NavigateOptions().setWaitUntil(WaitUntilState.DOMCONTENTLOADED));
         Locator gen = page.locator("#generate-keys");
-        gen.waitFor(new Locator.WaitForOptions().setTimeout(30000));
+        awaitPageElement(gen, "the Generate Keys button", "dp-generate-keys-missing");
         waitForEnabled(gen, 20000);
         com.microsoft.playwright.Response resp;
         try {
@@ -1548,6 +1705,21 @@ public final class PlaywrightSsoClient implements AutoCloseable {
     }
 
     /** Best-effort debug screenshot to {@code /tmp/snap-<label>.png} (never throws). */
+    /**
+     * Waits for the control a step entered a console page for, recording a screenshot and the page state when it
+     * never appears so the failure shows what the page rendered instead.
+     */
+    private void awaitPageElement(Locator element, String what, String label) {
+        try {
+            element.waitFor(new Locator.WaitForOptions().setTimeout(PAGE_READY_TIMEOUT_MS));
+        } catch (RuntimeException e) {
+            snap(label);
+            dumpDiagnostics(label);
+            throw new AssertionError(what + " did not appear within " + PAGE_READY_TIMEOUT_MS + " ms. "
+                    + pageDiagnostic(), e);
+        }
+    }
+
     private void snap(String label) {
         try {
             page.screenshot(new Page.ScreenshotOptions()
@@ -1681,6 +1853,8 @@ public final class PlaywrightSsoClient implements AutoCloseable {
             }
         } catch (RuntimeException ignored) {
         }
+        log.info("Browser network-change request failures: " + networkChangedFailures.get());
+        closeQuietly(browserProxyRelay);
         proxy.close();
     }
 }

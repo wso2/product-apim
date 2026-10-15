@@ -57,13 +57,13 @@ Feature: Admin Application Owner Change
     And I create an application with payload "noOwnerApp"
     Then The response status code should be 201
     And I extract response field "applicationId" and store it as "noOwnerAppId"
-    When I change the owner of application "noOwnerAppId" to the raw user "nonExistentOwner${UNIQUE:X}"
+    When I change the owner of application "noOwnerAppId" to the raw user "nonExistentOwner${UNIQUE:X}<tenantSuffix>"
     Then The response status code should be 500
 
     Examples:
-      | actor             |
-      | admin             |
-      | admin@tenant1.com |
+      | actor             | tenantSuffix |
+      | admin             |              |
+      | admin@tenant1.com | @tenant1.com |
 
   # Negative: transferring to a user in a DIFFERENT tenant is rejected. The legacy pinned 500; pinned again live on
   # 4.7 (see report). NOTE: a 500 for a cross-tenant transfer is a server-error smell rather than a designed 4xx
