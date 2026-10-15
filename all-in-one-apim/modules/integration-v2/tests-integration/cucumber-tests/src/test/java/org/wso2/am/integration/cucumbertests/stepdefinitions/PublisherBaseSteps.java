@@ -2221,6 +2221,11 @@ public class PublisherBaseSteps {
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
         HttpResponse response = Requests.post(Utils.getAPIScopes(Utils.getBaseUrl()), headers, payload.toString(),
                 Constants.CONTENT_TYPES.APPLICATION_JSON);
+        Assert.assertTrue(response != null && response.getResponseCode() == 201 && response.getData() != null
+                        && !response.getData().isBlank(),
+                "Failed to create shared scope '" + uniqueName + "': expected 201 with a body, got "
+                        + (response == null ? "no response"
+                        : response.getResponseCode() + " / body=" + response.getData()));
         Object scopeId = Utils.extractValueFromPayload(response.getData(), "id");
         TestContext.set("scopeID", scopeId);
         if (scopeId != null) {

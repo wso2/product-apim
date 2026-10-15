@@ -1193,20 +1193,13 @@ public class BaseSteps {
         for (String field : new String[] {"code", "type", "message", "description"}) {
             Matcher m = Pattern.compile(String.format(FAULT_ELEMENT, field), Pattern.DOTALL).matcher(body);
             if (m.find()) {
-                fault.put(field, unescapeXml(m.group(1).trim()));
+                fault.put(field, Utils.unescapeXml(m.group(1).trim()));
             }
         }
         Assert.assertTrue(fault.has("code"),
                 "Response body carries no fault envelope in either form (no embedded JSON object with a "
                         + "'code', no <code> element), got=" + response.getResponseCode() + "/" + body);
         return fault;
-    }
-
-    /** The five predefined XML entities, so a description carrying markup compares as its literal text. */
-    private static String unescapeXml(String value) {
-
-        return value.replace("&lt;", "<").replace("&gt;", ">").replace("&quot;", "\"")
-                .replace("&apos;", "'").replace("&amp;", "&");
     }
 
     /**

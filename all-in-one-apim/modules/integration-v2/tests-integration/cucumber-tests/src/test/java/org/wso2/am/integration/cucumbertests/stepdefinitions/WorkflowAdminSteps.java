@@ -748,11 +748,6 @@ public class WorkflowAdminSteps {
         if (end < 0) {
             return null;
         }
-        return unescapeXml(soapBody.substring(start, end));
-    }
-
-    private static String unescapeXml(String value) {
-        return value.replace("&lt;", "<").replace("&gt;", ">").replace("&quot;", "\"")
-                .replace("&apos;", "'").replace("&amp;", "&");
+        return Utils.unescapeXml(soapBody.substring(start, end));
     }
 }

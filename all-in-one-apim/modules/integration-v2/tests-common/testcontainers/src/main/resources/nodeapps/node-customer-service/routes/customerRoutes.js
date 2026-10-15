@@ -47,7 +47,11 @@ router.get('/timeout-probe/:requestId', (req, res) => {
   timeoutProbeCompletions.set(requestId, false);
   setTimeout(() => {
     timeoutProbeCompletions.set(requestId, true);
-    res.status(200).json({ requestId, completed: true });
+    // The caller normally times out first and closes the connection; res.destroyed (not res.writable, which stays
+    // true) is what tells a disconnected client apart.
+    if (!res.destroyed && !res.writableEnded) {
+      res.status(200).json({ requestId, completed: true });
+    }
     // Drop abandoned probes too, so a failed scenario cannot grow the shared fixture's state indefinitely.
     setTimeout(() => timeoutProbeCompletions.delete(requestId), 60000).unref();
   }, 5000);

@@ -274,10 +274,14 @@ public class KeyManagerAdminSteps {
                         + ", responseBodyPresent=" + (body != null && !body.isBlank()));
     }
 
+    /**
+     * The decoded text of the first {@code localName} element in a SOAP response, or {@code null} when none
+     * matches. Decoded so {@link #soapDtoField} can escape it exactly once when the value is sent back.
+     */
     private static String soapFieldValue(String body, String localName) {
         java.util.regex.Matcher matcher = java.util.regex.Pattern.compile("<[^>]*" + localName
                 + ">(.*?)</[^>]*" + localName + ">", java.util.regex.Pattern.DOTALL).matcher(body);
-        return matcher.find() ? matcher.group(1) : null;
+        return matcher.find() ? Utils.unescapeXml(matcher.group(1)) : null;
     }
 
     private static String soapDtoField(String localName, String value) {

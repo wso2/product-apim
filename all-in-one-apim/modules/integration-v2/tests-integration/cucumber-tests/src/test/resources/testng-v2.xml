@@ -6,6 +6,33 @@
         <listener class-name="org.wso2.am.integration.cucumbertests.utils.listeners.BlockScopeListener"/>
         <listener class-name="org.wso2.am.integration.cucumbertests.utils.listeners.CoverageAggregationListener"/>
     </listeners>
+    <!-- Blocks are listed longest first (by CI duration): TestNG starts them in this order, each on the first of
+         the 4 threads to free up, so the longest blocks start first and the short ones fill the gaps. The two
+         blocks sharing the browser-sso lifecycle lock are placed so that their runs do not overlap. -->
+    <!-- Keep UnifiedSearch first and throttling enforcement last to isolate their runtime state. -->
+    <test name="IntegrationV2-EmailUserName-DevPortal" parallel="classes" thread-count="1">
+        <parameter name="blockLabel" value="email-username-devportal"/>
+        <parameter name="apimCpuLimit" value="1"/>
+        <parameter name="initTenantUsers" value="true"/>
+        <parameter name="emailUserMode" value="true"/>
+        <parameter name="initSecondaryUserStore" value="true"/>
+        <parameter name="initBackend" value="true"/>
+        <parameter name="tomlExtraOverlayPath" value="src/test/resources/artifacts/configFiles/logging/deployment.toml"/>
+        <parameter name="bootstrapThrottleData" value="true"/>
+        <parameter name="throttleDataReadinessSeconds" value="180"/>
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.DevPortalUnifiedSearchRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.DevPortalApplicationsRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.DevPortalSearchRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.DevPortalVisibilityRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.DevPortalVisibilityDomainsRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.DevPortalCommentThreadsRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.DevPortalRatingsRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayDenyEnforcementRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayThrottlingEnforcementRunner"/>
+        </classes>
+    </test>
+
     <!-- Keep GovernanceComplianceBlockingRunner last and sequential: its temporary global BLOCK policy can reject
          sibling API deployments if cleanup fails. -->
     <test name="IntegrationV2-Publisher" parallel="classes" thread-count="1">
@@ -35,6 +62,94 @@
             <class name="org.wso2.am.integration.cucumbertests.runners.block.GovernanceComplianceBlockingRunner"/>
         </classes>
     </test>
+
+    <!-- Gateway throttling runtime: request-count, bandwidth and application-tier limits enforced on live throttle
+         counters, one runner at a time. -->
+    <test name="IntegrationV2-GatewayIsolatedRuntime-Throttling" parallel="classes" thread-count="1">
+        <parameter name="blockLabel" value="gateway-isolated-throttling"/>
+        <parameter name="apimCpuLimit" value="1"/>
+        <parameter name="initTenantUsers" value="true"/>
+        <parameter name="initBackend" value="true"/>
+        <parameter name="tomlExtraOverlayPath" value="src/test/resources/artifacts/configFiles/logging/deployment.toml"/>
+        <parameter name="bootstrapThrottleData" value="true"/>
+        <parameter name="throttleDataReadinessSeconds" value="180"/>
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayThrottlingEnforcementRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayApplicationTierChangeRunner"/>
+        </classes>
+    </test>
+
+    <test name="IntegrationV2-EmailUserName-Publisher" parallel="classes" thread-count="1">
+        <parameter name="blockLabel" value="email-username-publisher"/>
+        <parameter name="apimCpuLimit" value="1"/>
+        <parameter name="initTenantUsers" value="true"/>
+        <parameter name="emailUserMode" value="true"/>
+        <parameter name="initSecondaryUserStore" value="true"/>
+        <parameter name="initBackend" value="true"/>
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.PublisherDefinitionsRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.PublisherAccessControlRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.PublisherApiVisibilityDomainsRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.PublisherServiceCatalogRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.PublisherVersioningRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.PublisherApiProductsRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.KeyManagerTokenIssuanceRunner"/>
+        </classes>
+    </test>
+
+    <test name="IntegrationV2-Gateway-A" parallel="classes" thread-count="2">
+        <parameter name="blockLabel" value="gateway-a"/>
+        <parameter name="apimCpuLimit" value="1"/>
+        <parameter name="initTenantUsers" value="true"/>
+        <parameter name="initSecondaryUserStore" value="true"/>
+        <parameter name="initBackend" value="true"/>
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayEndpointSecurityRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayApiProductInvocationRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GovernanceComplianceRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayRestEndpointRoutingRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayCorsRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayLifecycleStageInvocationRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayDefaultVersionRoutingRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayGraphQLSubscriptionRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayGraphqlSubscriptionThrottlingRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.PublisherGraphqlFromUrlRunner"/>
+        </classes>
+    </test>
+
+    <!-- SSO blocks share a lifecycle lock to prevent concurrent use of the external IS. -->
+    <test name="IntegrationV2-ExternalIdpConsoleSso" parallel="classes" thread-count="1">
+        <parameter name="blockLabel" value="external-idp-sso"/>
+        <parameter name="apimCpuLimit" value="1"/>
+        <parameter name="lifecycleLock" value="browser-sso"/>
+        <parameter name="initTenantUsers" value="true"/>
+        <parameter name="initBackend" value="true"/>
+        <parameter name="bootExternalIdentityServer" value="true"/>
+        <parameter name="isCpuLimit" value="1"/>
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.ExternalIdpConsoleSsoRunner"/>
+        </classes>
+    </test>
+
+    <!-- Gateway eventing and key runtime, one runner at a time. KeyManagerApiKeyRunner mutates the tenant-global
+         AllowSubscriptionValidationDisabling setting, so it runs after, never beside,
+         GatewaySubscriptionValidationDisableRunner. -->
+    <test name="IntegrationV2-GatewayIsolatedRuntime-Eventing" parallel="classes" thread-count="1">
+        <parameter name="blockLabel" value="gateway-isolated-eventing"/>
+        <parameter name="apimCpuLimit" value="1"/>
+        <parameter name="initTenantUsers" value="true"/>
+        <parameter name="initBackend" value="true"/>
+        <parameter name="tomlExtraOverlayPath" value="src/test/resources/artifacts/configFiles/logging/deployment.toml"/>
+        <parameter name="bootstrapThrottleData" value="true"/>
+        <parameter name="throttleDataReadinessSeconds" value="180"/>
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayDenyEnforcementRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayWebSubInvocationRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewaySubscriptionValidationDisableRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.KeyManagerApiKeyRunner"/>
+        </classes>
+    </test>
+
     <!-- Keep AdminOrganizationVisibilityRunner last and sequential: it registers the organizationId local claim and
          tags each tenant admin with an organization; neither is removed when the runner finishes. -->
     <test name="IntegrationV2-DevPortal" parallel="classes" thread-count="1">
@@ -71,46 +186,7 @@
             <class name="org.wso2.am.integration.cucumbertests.runners.block.AdminOrganizationVisibilityRunner"/>
         </classes>
     </test>
-    <test name="IntegrationV2-Gateway-A" parallel="classes" thread-count="2">
-        <parameter name="blockLabel" value="gateway-a"/>
-        <parameter name="apimCpuLimit" value="1"/>
-        <parameter name="initTenantUsers" value="true"/>
-        <parameter name="initSecondaryUserStore" value="true"/>
-        <parameter name="initBackend" value="true"/>
-        <classes>
-            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayEndpointSecurityRunner"/>
-            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayApiProductInvocationRunner"/>
-            <class name="org.wso2.am.integration.cucumbertests.runners.block.GovernanceComplianceRunner"/>
-            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayRestEndpointRoutingRunner"/>
-            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayCorsRunner"/>
-            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayLifecycleStageInvocationRunner"/>
-            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayDefaultVersionRoutingRunner"/>
-            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayGraphQLSubscriptionRunner"/>
-            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayGraphqlSubscriptionThrottlingRunner"/>
-            <class name="org.wso2.am.integration.cucumbertests.runners.block.PublisherGraphqlFromUrlRunner"/>
-        </classes>
-    </test>
-    <test name="IntegrationV2-Gateway-B" parallel="classes" thread-count="2">
-        <parameter name="blockLabel" value="gateway-b"/>
-        <parameter name="apimCpuLimit" value="1"/>
-        <parameter name="initTenantUsers" value="true"/>
-        <parameter name="initSecondaryUserStore" value="true"/>
-        <parameter name="initBackend" value="true"/>
-        <classes>
-            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayMediationPoliciesRunner"/>
-            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayMcpInvocationRunner"/>
-            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayRestRequestDispatchRunner"/>
-            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayAiApiInvocationRunner"/>
-            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewaySoapInvocationRunner"/>
-            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayAudienceValidationRunner"/>
-            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayGraphQLScopeEnforcementRunner"/>
-            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayGraphqlQueryLimitsRunner"/>
-            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayCredentialTypeConfusionRunner"/>
-            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayGraphqlEndpointSecurityRunner"/>
-            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewaySchemaValidationRunner"/>
-            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayMessageTypeRunner"/>
-        </classes>
-    </test>
+
     <test name="IntegrationV2-Gateway-C" parallel="classes" thread-count="2">
         <parameter name="blockLabel" value="gateway-c"/>
         <parameter name="apimCpuLimit" value="1"/>
@@ -135,6 +211,68 @@
             <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayRestArtifactsRunner"/>
         </classes>
     </test>
+
+    <!-- Run analytics first; keep logging runners sequential because they mutate and inspect server-global state.
+         bootstrapThrottleData: ELK's throttling-fault scenario needs the Gateway throttleData JMS consumer, which can
+         fail to start polling on first boot; the bootstrap repairs the throttle-data registry hierarchy and, if the
+         pipeline is not ready, restarts the Gateway once (enable_restart_from_api is in this block's overlay). -->
+    <test name="IntegrationV2-LoggingAndElkAnalytics" parallel="classes" thread-count="1">
+        <parameter name="blockLabel" value="logging-elk-analytics"/>
+        <parameter name="apimCpuLimit" value="1"/>
+        <parameter name="initTenantUsers" value="true"/>
+        <parameter name="initBackend" value="true"/>
+        <parameter name="bootstrapThrottleData" value="true"/>
+        <parameter name="throttleDataReadinessSeconds" value="180"/>
+        <parameter name="initProxy" value="true"/>
+        <parameter name="tomlExtraOverlayPath" value="src/test/resources/artifacts/configFiles/loggingElkAnalytics/deployment.toml"/>
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.AnalyticsElkMetricsRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.AnalyticsCorrelationLoggingRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.AnalyticsPerApiLoggingRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayWebSocketProxyAnonRoutingRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.NetworkAccessControlTenantConfRunner"/>
+        </classes>
+    </test>
+
+    <test name="IntegrationV2-Gateway-B" parallel="classes" thread-count="2">
+        <parameter name="blockLabel" value="gateway-b"/>
+        <parameter name="apimCpuLimit" value="1"/>
+        <parameter name="initTenantUsers" value="true"/>
+        <parameter name="initSecondaryUserStore" value="true"/>
+        <parameter name="initBackend" value="true"/>
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayMediationPoliciesRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayMcpInvocationRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayRestRequestDispatchRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayAiApiInvocationRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewaySoapInvocationRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayAudienceValidationRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayGraphQLScopeEnforcementRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayGraphqlQueryLimitsRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayCredentialTypeConfusionRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayGraphqlEndpointSecurityRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewaySchemaValidationRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayMessageTypeRunner"/>
+        </classes>
+    </test>
+
+    <!-- Restart scenarios mutate the shared APIM server. -->
+    <test name="IntegrationV2-ServerRestart" parallel="classes" thread-count="1">
+        <parameter name="blockLabel" value="server-restart"/>
+        <parameter name="apimCpuLimit" value="1"/>
+        <parameter name="initTenantUsers" value="true"/>
+        <parameter name="initSecondaryUserStore" value="true"/>
+        <parameter name="initBackend" value="true"/>
+        <parameter name="bootstrapThrottleData" value="true"/>
+        <parameter name="throttleDataReadinessSeconds" value="180"/>
+        <parameter name="tomlExtraOverlayPath" value="src/test/resources/artifacts/configFiles/serverRestart/deployment.toml"/>
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.ServerRestartTokenPersistenceRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.ServerRestartSharedScopeRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.ServerRestartMultiProtocolRunner"/>
+        </classes>
+    </test>
+
     <!-- Keep AdminThrottlingPolicyRunner first (async key-manager config race) and RemoteLoggingRunner last
          (a failed log4j2.properties restore affects sibling logs). -->
     <test name="IntegrationV2-KeyManager" parallel="classes" thread-count="1">
@@ -157,70 +295,7 @@
             <class name="org.wso2.am.integration.cucumbertests.runners.block.RemoteLoggingRunner"/>
         </classes>
     </test>
-    <!-- Platform Gateway integration tests. -->
-    <test name="IntegrationV2-PlatformGateway" parallel="classes" thread-count="1">
-        <parameter name="blockLabel" value="platform-gateway"/>
-        <parameter name="apimCpuLimit" value="1"/>
-        <parameter name="initTenantUsers" value="true"/>
-        <parameter name="initBackend" value="true"/>
-        <parameter name="bootPlatformGateway" value="true"/>
-        <classes>
-            <class name="org.wso2.am.integration.cucumbertests.runners.block.PlatformGatewayRunner"/>
-        </classes>
-    </test>
-    <!-- Restart scenarios mutate the shared APIM server. -->
-    <test name="IntegrationV2-ServerRestart" parallel="classes" thread-count="1">
-        <parameter name="blockLabel" value="server-restart"/>
-        <parameter name="apimCpuLimit" value="1"/>
-        <parameter name="initTenantUsers" value="true"/>
-        <parameter name="initSecondaryUserStore" value="true"/>
-        <parameter name="initBackend" value="true"/>
-        <parameter name="bootstrapThrottleData" value="true"/>
-        <parameter name="throttleDataReadinessSeconds" value="180"/>
-        <parameter name="tomlExtraOverlayPath" value="src/test/resources/artifacts/configFiles/serverRestart/deployment.toml"/>
-        <classes>
-            <class name="org.wso2.am.integration.cucumbertests.runners.block.ServerRestartTokenPersistenceRunner"/>
-            <class name="org.wso2.am.integration.cucumbertests.runners.block.ServerRestartSharedScopeRunner"/>
-            <class name="org.wso2.am.integration.cucumbertests.runners.block.ServerRestartMultiProtocolRunner"/>
-        </classes>
-    </test>
-    <!-- Restart scenarios mutate the shared APIM server. -->
-    <!-- Restart scenarios mutate the shared APIM server. -->
-    <!-- Restart scenarios mutate the shared APIM server. -->
-    <!-- Restart scenarios mutate the shared APIM server. -->
-    <!-- Gateway throttling runtime: request-count, bandwidth and application-tier limits enforced on live throttle
-         counters, one runner at a time. -->
-    <test name="IntegrationV2-GatewayIsolatedRuntime-Throttling" parallel="classes" thread-count="1">
-        <parameter name="blockLabel" value="gateway-isolated-throttling"/>
-        <parameter name="apimCpuLimit" value="1"/>
-        <parameter name="initTenantUsers" value="true"/>
-        <parameter name="initBackend" value="true"/>
-        <parameter name="tomlExtraOverlayPath" value="src/test/resources/artifacts/configFiles/logging/deployment.toml"/>
-        <parameter name="bootstrapThrottleData" value="true"/>
-        <parameter name="throttleDataReadinessSeconds" value="180"/>
-        <classes>
-            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayThrottlingEnforcementRunner"/>
-            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayApplicationTierChangeRunner"/>
-        </classes>
-    </test>
-    <!-- Gateway eventing and key runtime, one runner at a time. KeyManagerApiKeyRunner mutates the tenant-global
-         AllowSubscriptionValidationDisabling setting, so it runs after, never beside,
-         GatewaySubscriptionValidationDisableRunner. -->
-    <test name="IntegrationV2-GatewayIsolatedRuntime-Eventing" parallel="classes" thread-count="1">
-        <parameter name="blockLabel" value="gateway-isolated-eventing"/>
-        <parameter name="apimCpuLimit" value="1"/>
-        <parameter name="initTenantUsers" value="true"/>
-        <parameter name="initBackend" value="true"/>
-        <parameter name="tomlExtraOverlayPath" value="src/test/resources/artifacts/configFiles/logging/deployment.toml"/>
-        <parameter name="bootstrapThrottleData" value="true"/>
-        <parameter name="throttleDataReadinessSeconds" value="180"/>
-        <classes>
-            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayDenyEnforcementRunner"/>
-            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayWebSubInvocationRunner"/>
-            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewaySubscriptionValidationDisableRunner"/>
-            <class name="org.wso2.am.integration.cucumbertests.runners.block.KeyManagerApiKeyRunner"/>
-        </classes>
-    </test>
+
     <!-- SSL-profile and WebSocket-CORS tests share gateway-global state; default REST CORS runs separately.
          Keep GatewayEndpointCertificateInvocationRunner last and sequential: its trust-propagation recovery can restart
          the gateway process, and its post-delete 500 leg needs no other runner holding the same backend's
@@ -243,83 +318,7 @@
             <class name="org.wso2.am.integration.cucumbertests.runners.block.PublisherEndpointCertificatesRunner"/>
         </classes>
     </test>
-    <!-- Keep GatewayCustomHandlerRunner last: it changes Gateway-wide Synapse configuration. -->
-    <test name="IntegrationV2-GatewayAuthAndApplicationConfig" parallel="classes" thread-count="1">
-        <parameter name="blockLabel" value="gateway-auth-app-config"/>
-        <parameter name="apimCpuLimit" value="1"/>
-        <parameter name="initTenantUsers" value="true"/>
-        <parameter name="initBackend" value="true"/>
-        <parameter name="tomlExtraOverlayPath" value="src/test/resources/artifacts/configFiles/gatewayAuthAndApplicationConfig/deployment.toml"/>
-        <parameter name="serverFilesToCopy" value="src/test/resources/artifacts/custom-handler/CustomAPIAuthenticationHandler-1.0.0.jar::repository/components/lib/CustomAPIAuthenticationHandler-1.0.0.jar,src/test/resources/artifacts/custom-handler/velocity_template.xml::repository/resources/api_templates/velocity_template.xml"/>
-        <classes>
-            <class name="org.wso2.am.integration.cucumbertests.runners.block.DevPortalApplicationAttributesRunner"/>
-            <class name="org.wso2.am.integration.cucumbertests.runners.block.KeyManagerBackendJwtRunner"/>
-            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayCustomAuthHeaderRunner"/>
-            <class name="org.wso2.am.integration.cucumbertests.runners.block.DevPortalApplicationSharingRunner"/>
-            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayCustomHandlerRunner"/>
-        </classes>
-    </test>
-    <!-- Token-persistence Gateway runners. -->
-    <!-- Email-mode Gateway runners require the node backend. -->
-    <test name="IntegrationV2-EmailUserName-Gateway" parallel="classes" thread-count="2">
-        <parameter name="blockLabel" value="email-username-gateway"/>
-        <parameter name="apimCpuLimit" value="1"/>
-        <parameter name="initTenantUsers" value="true"/>
-        <parameter name="emailUserMode" value="true"/>
-        <parameter name="initSecondaryUserStore" value="true"/>
-        <parameter name="initBackend" value="true"/>
-        <classes>
-            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayRestRequestDispatchRunner"/>
-            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayRestInvocationRunner"/>
-            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayRestEndpointRoutingRunner"/>
-            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayBasicAuthSecurityRunner"/>
-            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayRestArtifactsRunner"/>
-        </classes>
-    </test>
-    <!-- Keep UnifiedSearch first and throttling enforcement last to isolate their runtime state. -->
-    <test name="IntegrationV2-EmailUserName-DevPortal" parallel="classes" thread-count="1">
-        <parameter name="blockLabel" value="email-username-devportal"/>
-        <parameter name="apimCpuLimit" value="1"/>
-        <parameter name="initTenantUsers" value="true"/>
-        <parameter name="emailUserMode" value="true"/>
-        <parameter name="initSecondaryUserStore" value="true"/>
-        <parameter name="initBackend" value="true"/>
-        <parameter name="tomlExtraOverlayPath" value="src/test/resources/artifacts/configFiles/logging/deployment.toml"/>
-        <parameter name="bootstrapThrottleData" value="true"/>
-        <parameter name="throttleDataReadinessSeconds" value="180"/>
-        <classes>
-            <class name="org.wso2.am.integration.cucumbertests.runners.block.DevPortalUnifiedSearchRunner"/>
-            <class name="org.wso2.am.integration.cucumbertests.runners.block.DevPortalApplicationsRunner"/>
-            <class name="org.wso2.am.integration.cucumbertests.runners.block.DevPortalSearchRunner"/>
-            <class name="org.wso2.am.integration.cucumbertests.runners.block.DevPortalVisibilityRunner"/>
-            <class name="org.wso2.am.integration.cucumbertests.runners.block.DevPortalVisibilityDomainsRunner"/>
-            <class name="org.wso2.am.integration.cucumbertests.runners.block.DevPortalCommentThreadsRunner"/>
-            <class name="org.wso2.am.integration.cucumbertests.runners.block.DevPortalRatingsRunner"/>
-            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayDenyEnforcementRunner"/>
-            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayThrottlingEnforcementRunner"/>
-        </classes>
-    </test>
-    <test name="IntegrationV2-EmailUserName-Publisher" parallel="classes" thread-count="1">
-        <parameter name="blockLabel" value="email-username-publisher"/>
-        <parameter name="apimCpuLimit" value="1"/>
-        <parameter name="initTenantUsers" value="true"/>
-        <parameter name="emailUserMode" value="true"/>
-        <parameter name="initSecondaryUserStore" value="true"/>
-        <parameter name="initBackend" value="true"/>
-        <classes>
-            <class name="org.wso2.am.integration.cucumbertests.runners.block.PublisherDefinitionsRunner"/>
-            <class name="org.wso2.am.integration.cucumbertests.runners.block.PublisherAccessControlRunner"/>
-            <class name="org.wso2.am.integration.cucumbertests.runners.block.PublisherApiVisibilityDomainsRunner"/>
-            <class name="org.wso2.am.integration.cucumbertests.runners.block.PublisherServiceCatalogRunner"/>
-            <class name="org.wso2.am.integration.cucumbertests.runners.block.PublisherVersioningRunner"/>
-            <class name="org.wso2.am.integration.cucumbertests.runners.block.PublisherApiProductsRunner"/>
-            <class name="org.wso2.am.integration.cucumbertests.runners.block.KeyManagerTokenIssuanceRunner"/>
-        </classes>
-    </test>
 
-    <!-- =====================================================================================
-         IS7 / SPECIAL blocks below.
-        ===================================================================================== -->
     <!-- Keep FederatedBackendJwtRunner last: its IdP remains referenced until block teardown. -->
     <test name="IntegrationV2-Is7KeyManager" parallel="classes" thread-count="1">
         <parameter name="blockLabel" value="is7-km"/>
@@ -343,66 +342,25 @@
             <class name="org.wso2.am.integration.cucumbertests.runners.block.TokenExchangeRunner"/>
         </classes>
     </test>
-    <!-- Shares the external-IS lifecycle lock with IntegrationV2-ExternalIdpConsoleSso. -->
-    <test name="IntegrationV2-MultiTenantSso" parallel="classes" thread-count="1">
-        <parameter name="blockLabel" value="mt-sso"/>
+
+    <!-- Token-persistence Gateway runners. -->
+    <!-- Email-mode Gateway runners require the node backend. -->
+    <test name="IntegrationV2-EmailUserName-Gateway" parallel="classes" thread-count="2">
+        <parameter name="blockLabel" value="email-username-gateway"/>
         <parameter name="apimCpuLimit" value="1"/>
-        <parameter name="lifecycleLock" value="browser-sso"/>
-        <parameter name="bootExternalIdentityServer" value="true"/>
-        <parameter name="isCpuLimit" value="1"/>
+        <parameter name="initTenantUsers" value="true"/>
+        <parameter name="emailUserMode" value="true"/>
+        <parameter name="initSecondaryUserStore" value="true"/>
         <parameter name="initBackend" value="true"/>
-        <parameter name="receiveExternalIsNotifications" value="true"/>
-        <parameter name="isTomlExtraOverlayPath" value="src/test/resources/artifacts/configFiles/multiTenantSso/is-tenant-sync-overlay.toml"/>
-        <parameter name="tomlExtraOverlayPath" value="src/test/resources/artifacts/configFiles/multiTenantSso/deployment.toml"/>
         <classes>
-            <class name="org.wso2.am.integration.cucumbertests.runners.block.MultiTenantSsoRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayRestRequestDispatchRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayRestInvocationRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayRestEndpointRoutingRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayBasicAuthSecurityRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayRestArtifactsRunner"/>
         </classes>
     </test>
 
-    <!-- =====================================================================================
-         CONFIG-OVERLAY / SPECIAL blocks below.
-        ===================================================================================== -->
-    <!-- ConfigurableDefaultPolicyRunner mutates the shared tenant default-tier configuration. -->
-    <test name="IntegrationV2-UnlimitedTierDisabled" parallel="classes" thread-count="1">
-        <parameter name="blockLabel" value="unlimited-tier-disabled"/>
-        <parameter name="apimCpuLimit" value="1"/>
-        <parameter name="initTenantUsers" value="true"/>
-        <parameter name="initBackend" value="true"/>
-        <parameter name="tomlExtraOverlayPath" value="src/test/resources/artifacts/configFiles/unlimitedTierDisabled/deployment.toml"/>
-        <classes>
-            <class name="org.wso2.am.integration.cucumbertests.runners.block.UnlimitedTierDisabledRunner"/>
-            <class name="org.wso2.am.integration.cucumbertests.runners.block.ConfigurableDefaultPolicyRunner"/>
-            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayGeminiUnlimitedTierRunner"/>
-        </classes>
-    </test>
-    <!-- Certificate-chain validation is Gateway-wide; keep default-mode mTLS tests separate. -->
-    <test name="IntegrationV2-BackendJwtUrlSafeAndMtlsChain" parallel="classes" thread-count="2">
-        <parameter name="blockLabel" value="backend-jwt-urlsafe-mtls-chain"/>
-        <parameter name="apimCpuLimit" value="1"/>
-        <parameter name="initTenantUsers" value="true"/>
-        <parameter name="initBackend" value="true"/>
-        <parameter name="initProxy" value="true"/>
-        <parameter name="tomlExtraOverlayPath" value="src/test/resources/artifacts/configFiles/backendJwtUrlSafeMtlsChain/deployment.toml"/>
-        <parameter name="listenerSslReloadReadinessSeconds" value="180"/>
-        <classes>
-            <class name="org.wso2.am.integration.cucumbertests.runners.block.KeyManagerBackendJwtUrlSafeRunner"/>
-            <class name="org.wso2.am.integration.cucumbertests.runners.block.PublisherStreamingDesignRunner"/>
-            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayMutualSslChainValidationRunner"/>
-            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayWebSocketProxySpecificBypassRunner"/>
-        </classes>
-    </test>
-    <test name="IntegrationV2-SandboxAndTokenExchangeDisabled" parallel="classes" thread-count="2">
-        <parameter name="blockLabel" value="sandbox-tx-disabled"/>
-        <parameter name="apimCpuLimit" value="1"/>
-        <parameter name="initTenantUsers" value="true"/>
-        <parameter name="initBackend" value="true"/>
-        <parameter name="tomlExtraOverlayPath" value="src/test/resources/artifacts/configFiles/sandboxTxDisabled/deployment.toml"/>
-        <classes>
-            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewaySandboxEnvRunner"/>
-            <class name="org.wso2.am.integration.cucumbertests.runners.block.TokenExchangeDisabledRunner"/>
-            <class name="org.wso2.am.integration.cucumbertests.runners.block.NetworkAccessControlUrlDisabledRunner"/>
-        </classes>
-    </test>
     <test name="IntegrationV2-ThrottlingAndAllowedScopes" parallel="classes" thread-count="2">
         <parameter name="blockLabel" value="throttling-allowed-scopes"/>
         <parameter name="apimCpuLimit" value="1"/>
@@ -416,84 +374,7 @@
             <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayAllowedScopesRunner"/>
         </classes>
     </test>
-    <test name="IntegrationV2-SecurityAuditCorsDisabledAndSecretRotation" parallel="classes" thread-count="2">
-        <parameter name="blockLabel" value="security-audit-cors-disabled-secret-rotation"/>
-        <parameter name="apimCpuLimit" value="1"/>
-        <parameter name="initTenantUsers" value="true"/>
-        <parameter name="initBackend" value="true"/>
-        <parameter name="initProxy" value="true"/>
-        <parameter name="tomlExtraOverlayPath" value="src/test/resources/artifacts/configFiles/is7txSecurityAudit/deployment.toml"/>
-        <classes>
-            <class name="org.wso2.am.integration.cucumbertests.runners.block.PublisherSecurityAuditRunner"/>
-            <class name="org.wso2.am.integration.cucumbertests.runners.block.KeyManagerConsumerSecretRotationRunner"/>
-            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayWebSocketProxyCatchAllRunner"/>
-        </classes>
-    </test>
-    <test name="IntegrationV2-MandatoryPropertiesAndDisplayDeprecated" parallel="classes" thread-count="1">
-        <parameter name="blockLabel" value="mandatory-properties-display-deprecated"/>
-        <parameter name="apimCpuLimit" value="1"/>
-        <parameter name="initTenantUsers" value="true"/>
-        <parameter name="tomlExtraOverlayPath" value="src/test/resources/artifacts/configFiles/mandatoryPropertiesDisplayDeprecated/deployment.toml"/>
-        <classes>
-            <class name="org.wso2.am.integration.cucumbertests.runners.block.PublisherMandatoryPropertiesRunner"/>
-            <class name="org.wso2.am.integration.cucumbertests.runners.block.DevPortalDeprecatedApiDiscoverabilityRunner"/>
-        </classes>
-    </test>
-    <!-- Suppressing the Resident Key Manager breaks API creation. -->
-    <test name="IntegrationV2-Is7TenantSharingOff" parallel="classes" thread-count="1">
-        <parameter name="blockLabel" value="is7-no-km"/>
-        <parameter name="apimCpuLimit" value="1"/>
-        <parameter name="initTenantUsers" value="true"/>
-        <parameter name="tomlExtraOverlayPath" value="src/test/resources/artifacts/configFiles/is7nokm/deployment.toml"/>
-        <classes>
-            <class name="org.wso2.am.integration.cucumbertests.runners.block.TenantSharingOffRunner"/>
-        </classes>
-    </test>
-    <!-- Suppressing the Resident Key Manager breaks API creation. -->
-    <test name="IntegrationV2-Is7DefaultKeyManager" parallel="classes" thread-count="1">
-        <parameter name="blockLabel" value="is7-default-km"/>
-        <parameter name="apimCpuLimit" value="1"/>
-        <parameter name="initTenantUsers" value="true"/>
-        <parameter name="tomlExtraOverlayPath" value="src/test/resources/artifacts/configFiles/is7defaultkm/deployment.toml"/>
-        <classes>
-            <class name="org.wso2.am.integration.cucumbertests.runners.block.DefaultKmRunner"/>
-        </classes>
-    </test>
-    <!-- Keep tenant key-generation runners out: Solace key generation fails for tenant users. -->
-    <test name="IntegrationV2-Solace" parallel="classes" thread-count="1">
-        <parameter name="blockLabel" value="solace"/>
-        <parameter name="apimCpuLimit" value="1"/>
-        <parameter name="initTenantUsers" value="true"/>
-        <parameter name="initBackend" value="true"/>
-        <parameter name="initProxy" value="true"/>
-        <parameter name="initSolaceBroker" value="true"/>
-        <parameter name="tomlExtraOverlayPath" value="src/test/resources/artifacts/configFiles/solace/deployment.toml"/>
-        <classes>
-            <class name="org.wso2.am.integration.cucumbertests.runners.block.SolaceApiLifecycleRunner"/>
-            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayWebSocketProxyNoMatchRunner"/>
-        </classes>
-    </test>
-    <!-- Run analytics first; keep logging runners sequential because they mutate and inspect server-global state.
-         bootstrapThrottleData: ELK's throttling-fault scenario needs the Gateway throttleData JMS consumer, which can
-         fail to start polling on first boot; the bootstrap repairs the throttle-data registry hierarchy and, if the
-         pipeline is not ready, restarts the Gateway once (enable_restart_from_api is in this block's overlay). -->
-    <test name="IntegrationV2-LoggingAndElkAnalytics" parallel="classes" thread-count="1">
-        <parameter name="blockLabel" value="logging-elk-analytics"/>
-        <parameter name="apimCpuLimit" value="1"/>
-        <parameter name="initTenantUsers" value="true"/>
-        <parameter name="initBackend" value="true"/>
-        <parameter name="bootstrapThrottleData" value="true"/>
-        <parameter name="throttleDataReadinessSeconds" value="180"/>
-        <parameter name="initProxy" value="true"/>
-        <parameter name="tomlExtraOverlayPath" value="src/test/resources/artifacts/configFiles/loggingElkAnalytics/deployment.toml"/>
-        <classes>
-            <class name="org.wso2.am.integration.cucumbertests.runners.block.AnalyticsElkMetricsRunner"/>
-            <class name="org.wso2.am.integration.cucumbertests.runners.block.AnalyticsCorrelationLoggingRunner"/>
-            <class name="org.wso2.am.integration.cucumbertests.runners.block.AnalyticsPerApiLoggingRunner"/>
-            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayWebSocketProxyAnonRoutingRunner"/>
-            <class name="org.wso2.am.integration.cucumbertests.runners.block.NetworkAccessControlTenantConfRunner"/>
-        </classes>
-    </test>
+
     <!-- Run the redirect runner first to avoid stale workflow-executor cache from earlier config writes. -->
     <test name="IntegrationV2-ApprovalWorkflow" parallel="classes" thread-count="1">
         <parameter name="blockLabel" value="approval-workflow"/>
@@ -510,6 +391,7 @@
             <class name="org.wso2.am.integration.cucumbertests.runners.block.NetworkAccessControlUrlAllowRunner"/>
         </classes>
     </test>
+
     <test name="IntegrationV2-CrossTenantSubscription" parallel="classes" thread-count="1">
         <parameter name="blockLabel" value="cross-tenant-sub"/>
         <parameter name="apimCpuLimit" value="1"/>
@@ -525,6 +407,72 @@
             <class name="org.wso2.am.integration.cucumbertests.runners.block.NetworkAccessControlUrlTenantAllowRunner"/>
         </classes>
     </test>
+
+    <!-- Keep tenant key-generation runners out: Solace key generation fails for tenant users. -->
+    <test name="IntegrationV2-Solace" parallel="classes" thread-count="1">
+        <parameter name="blockLabel" value="solace"/>
+        <parameter name="apimCpuLimit" value="1"/>
+        <parameter name="initTenantUsers" value="true"/>
+        <parameter name="initBackend" value="true"/>
+        <parameter name="initProxy" value="true"/>
+        <parameter name="initSolaceBroker" value="true"/>
+        <parameter name="tomlExtraOverlayPath" value="src/test/resources/artifacts/configFiles/solace/deployment.toml"/>
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.SolaceApiLifecycleRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayWebSocketProxyNoMatchRunner"/>
+        </classes>
+    </test>
+
+    <!-- Keep GatewayCustomHandlerRunner last: it changes Gateway-wide Synapse configuration. -->
+    <test name="IntegrationV2-GatewayAuthAndApplicationConfig" parallel="classes" thread-count="1">
+        <parameter name="blockLabel" value="gateway-auth-app-config"/>
+        <parameter name="apimCpuLimit" value="1"/>
+        <parameter name="initTenantUsers" value="true"/>
+        <parameter name="initBackend" value="true"/>
+        <parameter name="tomlExtraOverlayPath" value="src/test/resources/artifacts/configFiles/gatewayAuthAndApplicationConfig/deployment.toml"/>
+        <parameter name="serverFilesToCopy" value="src/test/resources/artifacts/custom-handler/CustomAPIAuthenticationHandler-1.0.0.jar::repository/components/lib/CustomAPIAuthenticationHandler-1.0.0.jar,src/test/resources/artifacts/custom-handler/velocity_template.xml::repository/resources/api_templates/velocity_template.xml"/>
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.DevPortalApplicationAttributesRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.KeyManagerBackendJwtRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayCustomAuthHeaderRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.DevPortalApplicationSharingRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayCustomHandlerRunner"/>
+        </classes>
+    </test>
+
+    <!-- Shares the external-IS lifecycle lock with IntegrationV2-ExternalIdpConsoleSso. -->
+    <test name="IntegrationV2-MultiTenantSso" parallel="classes" thread-count="1">
+        <parameter name="blockLabel" value="mt-sso"/>
+        <parameter name="apimCpuLimit" value="1"/>
+        <parameter name="lifecycleLock" value="browser-sso"/>
+        <parameter name="bootExternalIdentityServer" value="true"/>
+        <parameter name="isCpuLimit" value="1"/>
+        <parameter name="initBackend" value="true"/>
+        <parameter name="receiveExternalIsNotifications" value="true"/>
+        <parameter name="isTomlExtraOverlayPath" value="src/test/resources/artifacts/configFiles/multiTenantSso/is-tenant-sync-overlay.toml"/>
+        <parameter name="tomlExtraOverlayPath" value="src/test/resources/artifacts/configFiles/multiTenantSso/deployment.toml"/>
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.MultiTenantSsoRunner"/>
+        </classes>
+    </test>
+
+    <!-- Certificate-chain validation is Gateway-wide; keep default-mode mTLS tests separate. -->
+    <test name="IntegrationV2-BackendJwtUrlSafeAndMtlsChain" parallel="classes" thread-count="2">
+        <parameter name="blockLabel" value="backend-jwt-urlsafe-mtls-chain"/>
+        <parameter name="apimCpuLimit" value="1"/>
+        <parameter name="initTenantUsers" value="true"/>
+        <parameter name="initBackend" value="true"/>
+        <parameter name="initProxy" value="true"/>
+        <parameter name="tomlExtraOverlayPath" value="src/test/resources/artifacts/configFiles/backendJwtUrlSafeMtlsChain/deployment.toml"/>
+        <parameter name="listenerSslReloadReadinessSeconds" value="180"/>
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.KeyManagerBackendJwtUrlSafeRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.PublisherStreamingDesignRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayMutualSslChainValidationRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayWebSocketProxySpecificBypassRunner"/>
+        </classes>
+    </test>
+
     <!-- NewVersionNotificationRunner changes email delivery and tenant notification settings. -->
     <test name="IntegrationV2-NewVersionNotification" parallel="classes" thread-count="1">
         <parameter name="blockLabel" value="new-version-notification"/>
@@ -538,6 +486,93 @@
             <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayWebSocketProxySpecificOverCatchAllRunner"/>
         </classes>
     </test>
+
+    <test name="IntegrationV2-SandboxAndTokenExchangeDisabled" parallel="classes" thread-count="2">
+        <parameter name="blockLabel" value="sandbox-tx-disabled"/>
+        <parameter name="apimCpuLimit" value="1"/>
+        <parameter name="initTenantUsers" value="true"/>
+        <parameter name="initBackend" value="true"/>
+        <parameter name="tomlExtraOverlayPath" value="src/test/resources/artifacts/configFiles/sandboxTxDisabled/deployment.toml"/>
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewaySandboxEnvRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.TokenExchangeDisabledRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.NetworkAccessControlUrlDisabledRunner"/>
+        </classes>
+    </test>
+
+    <!-- ConfigurableDefaultPolicyRunner mutates the shared tenant default-tier configuration. -->
+    <test name="IntegrationV2-UnlimitedTierDisabled" parallel="classes" thread-count="1">
+        <parameter name="blockLabel" value="unlimited-tier-disabled"/>
+        <parameter name="apimCpuLimit" value="1"/>
+        <parameter name="initTenantUsers" value="true"/>
+        <parameter name="initBackend" value="true"/>
+        <parameter name="tomlExtraOverlayPath" value="src/test/resources/artifacts/configFiles/unlimitedTierDisabled/deployment.toml"/>
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.UnlimitedTierDisabledRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.ConfigurableDefaultPolicyRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayGeminiUnlimitedTierRunner"/>
+        </classes>
+    </test>
+
+    <!-- Suppressing the Resident Key Manager breaks API creation. -->
+    <test name="IntegrationV2-Is7DefaultKeyManager" parallel="classes" thread-count="1">
+        <parameter name="blockLabel" value="is7-default-km"/>
+        <parameter name="apimCpuLimit" value="1"/>
+        <parameter name="initTenantUsers" value="true"/>
+        <parameter name="tomlExtraOverlayPath" value="src/test/resources/artifacts/configFiles/is7defaultkm/deployment.toml"/>
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.DefaultKmRunner"/>
+        </classes>
+    </test>
+
+    <!-- Platform Gateway integration tests. -->
+    <test name="IntegrationV2-PlatformGateway" parallel="classes" thread-count="1">
+        <parameter name="blockLabel" value="platform-gateway"/>
+        <parameter name="apimCpuLimit" value="1"/>
+        <parameter name="initTenantUsers" value="true"/>
+        <parameter name="initBackend" value="true"/>
+        <parameter name="bootPlatformGateway" value="true"/>
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.PlatformGatewayRunner"/>
+        </classes>
+    </test>
+
+    <test name="IntegrationV2-SecurityAuditCorsDisabledAndSecretRotation" parallel="classes" thread-count="2">
+        <parameter name="blockLabel" value="security-audit-cors-disabled-secret-rotation"/>
+        <parameter name="apimCpuLimit" value="1"/>
+        <parameter name="initTenantUsers" value="true"/>
+        <parameter name="initBackend" value="true"/>
+        <parameter name="initProxy" value="true"/>
+        <parameter name="tomlExtraOverlayPath" value="src/test/resources/artifacts/configFiles/is7txSecurityAudit/deployment.toml"/>
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.PublisherSecurityAuditRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.KeyManagerConsumerSecretRotationRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayWebSocketProxyCatchAllRunner"/>
+        </classes>
+    </test>
+
+    <test name="IntegrationV2-MandatoryPropertiesAndDisplayDeprecated" parallel="classes" thread-count="1">
+        <parameter name="blockLabel" value="mandatory-properties-display-deprecated"/>
+        <parameter name="apimCpuLimit" value="1"/>
+        <parameter name="initTenantUsers" value="true"/>
+        <parameter name="tomlExtraOverlayPath" value="src/test/resources/artifacts/configFiles/mandatoryPropertiesDisplayDeprecated/deployment.toml"/>
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.PublisherMandatoryPropertiesRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.DevPortalDeprecatedApiDiscoverabilityRunner"/>
+        </classes>
+    </test>
+
+    <!-- Suppressing the Resident Key Manager breaks API creation. -->
+    <test name="IntegrationV2-Is7TenantSharingOff" parallel="classes" thread-count="1">
+        <parameter name="blockLabel" value="is7-no-km"/>
+        <parameter name="apimCpuLimit" value="1"/>
+        <parameter name="initTenantUsers" value="true"/>
+        <parameter name="tomlExtraOverlayPath" value="src/test/resources/artifacts/configFiles/is7nokm/deployment.toml"/>
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.TenantSharingOffRunner"/>
+        </classes>
+    </test>
+
     <!-- Network access-control: outbound remote-reference host validation. -->
     <test name="IntegrationV2-NetworkAccessControlPrivateBlock" parallel="classes" thread-count="2">
         <parameter name="blockLabel" value="network-access-control-private-block"/>
@@ -548,19 +583,6 @@
             <class name="org.wso2.am.integration.cucumbertests.runners.block.NetworkAccessControlWsdlPrivateBlockRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.NetworkAccessControlEntrypointsPrivateBlockRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.NetworkAccessControlUrlPrivateBlockRunner"/>
-        </classes>
-    </test>
-    <!-- SSO blocks share a lifecycle lock to prevent concurrent use of the external IS. -->
-    <test name="IntegrationV2-ExternalIdpConsoleSso" parallel="classes" thread-count="1">
-        <parameter name="blockLabel" value="external-idp-sso"/>
-        <parameter name="apimCpuLimit" value="1"/>
-        <parameter name="lifecycleLock" value="browser-sso"/>
-        <parameter name="initTenantUsers" value="true"/>
-        <parameter name="initBackend" value="true"/>
-        <parameter name="bootExternalIdentityServer" value="true"/>
-        <parameter name="isCpuLimit" value="1"/>
-        <classes>
-            <class name="org.wso2.am.integration.cucumbertests.runners.block.ExternalIdpConsoleSsoRunner"/>
         </classes>
     </test>
 </suite>

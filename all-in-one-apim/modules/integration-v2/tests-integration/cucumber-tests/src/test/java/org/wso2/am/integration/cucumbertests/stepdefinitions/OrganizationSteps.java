@@ -20,6 +20,7 @@ package org.wso2.am.integration.cucumbertests.stepdefinitions;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.testng.Assert;
 import org.wso2.am.integration.cucumbertests.utils.Identity;
@@ -586,22 +587,30 @@ public class OrganizationSteps {
                         + timeoutSeconds + "s; last: " + last.getData());
     }
 
+    /**
+     * True when the response is a 200 whose tiers are exactly {@code expected}. A body or tier entry that does not
+     * parse reads as not settled, so retryUntil keeps polling and the caller's assertion reports the last body.
+     */
     private boolean hasExactlyDevportalTiers(HttpResponse response, List<String> expected) {
 
         if (response == null || response.getResponseCode() != 200 || response.getData() == null
                 || response.getData().isBlank()) {
             return false;
         }
-        JSONArray tiers = new JSONObject(response.getData()).optJSONArray("tiers");
-        if (tiers == null) {
+        try {
+            JSONArray tiers = new JSONObject(response.getData()).optJSONArray("tiers");
+            if (tiers == null) {
+                return false;
+            }
+            List<String> actual = new ArrayList<>();
+            for (int i = 0; i < tiers.length(); i++) {
+                actual.add(tiers.getJSONObject(i).getString("tierName"));
+            }
+            Collections.sort(actual);
+            return actual.equals(expected);
+        } catch (JSONException malformed) {
             return false;
         }
-        List<String> actual = new ArrayList<>();
-        for (int i = 0; i < tiers.length(); i++) {
-            actual.add(tiers.getJSONObject(i).getString("tierName"));
-        }
-        Collections.sort(actual);
-        return actual.equals(expected);
     }
 
     private List<String> tierNames(String tiersCsv) {
