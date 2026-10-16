@@ -1,6 +1,6 @@
 # Overlay for the IntegrationV2-MandatoryPropertiesAndDisplayDeprecated block: PublisherMandatoryPropertiesRunner and
 # DevPortalDeprecatedApiDiscoverabilityRunner, one runner at a time. Merged on top of the shared `basic` overlay.
-# The distributed suite keeps the two keys in separate blocks (mandatoryProperties/ and displayDeprecatedApis/).
+# The distributed twin applies both settings to CP.
 #
 # The two keys are mutually inert for these runners:
 #   - [apim.devportal] display_deprecated_apis only widens the lcState filter RegistrySearchUtil

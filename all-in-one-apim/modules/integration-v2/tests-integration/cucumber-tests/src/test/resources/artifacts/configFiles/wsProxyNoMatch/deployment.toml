@@ -1,4 +1,4 @@
-# Extra overlay for the IntegrationV2-Distributed-Gateway-WsProxyNoMatch block (Gateway overlay). The all-in-one suite
+# Gateway overlay for the IntegrationV2-Distributed-Solace block. The all-in-one suite
 # carries this profile in the IntegrationV2-Solace overlay.
 #
 # Tests that a backend hostname not matched by any profile's target_hosts is connected to directly,

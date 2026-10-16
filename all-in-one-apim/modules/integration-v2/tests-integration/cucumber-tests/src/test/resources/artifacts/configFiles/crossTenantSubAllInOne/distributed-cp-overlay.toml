@@ -1,0 +1,8 @@
+# CP configuration for the CrossTenantSubscription block.
+# Cross-tenant subscriptions and management-plane network access policy share this CP.
+[apim.devportal]
+enable_cross_tenant_subscriptions = true
+
+
+[server.network_security.access_control]
+block_private_network_access = false

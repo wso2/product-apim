@@ -1,4 +1,4 @@
-# Extra overlay for the IntegrationV2-Distributed-Gateway-WsProxyAuthWrongCreds block (Gateway overlay). The all-in-one suite
+# Gateway overlay for the IntegrationV2-Distributed-CrossTenantSubscription block. The all-in-one suite
 # carries this profile in the IntegrationV2-CrossTenantSubscription overlay.
 #
 # Tests that the gateway is rejected by the authenticated Squid proxy when the proxy profile

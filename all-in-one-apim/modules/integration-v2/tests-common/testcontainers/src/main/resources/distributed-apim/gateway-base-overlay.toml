@@ -14,3 +14,5 @@ password = "$ref{super_admin.password}"
 
 [apim.sync_runtime_artifacts.gateway]
 gateway_labels = ["Default"]
+# Match the all-in-one test lane: artifacts are read from the single CP's database, with no HA replication delay.
+event_waiting_time = 0

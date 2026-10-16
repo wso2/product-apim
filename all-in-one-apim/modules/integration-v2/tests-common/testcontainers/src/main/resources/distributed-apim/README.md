@@ -112,6 +112,10 @@ The composite owns and starts resources in this order:
 MySQL → CP → TM → Universal Gateway
 ```
 
+Each APIM component container is capped at 1 CPU. Its server JVM uses `-Xms1g -Xmx1g` heap settings.
+The existing `apimCpuLimit` block parameter, when present, overrides the CPU cap for all
+three components; the default remains 1 CPU.
+
 It stops them in reverse order and closes the private block network. MySQL is
 available inside that network as `mysql:3306`; CP, TM, and Gateway use the
 canonical component aliases `apim-cp`, `apim-tm`, and `apim-gw`. Host URLs are
@@ -158,12 +162,42 @@ initialization, backend initialization, external identity-server startup, and
 email mode remain lifecycle concerns and are handled by the distributed
 listener/composite.
 
+## Suite layout
+
+`tests-integration/cucumber-tests/src/test/resources/testng-v2.xml` defines the block and runner layout for both
+topologies. `testng-v2_distributed.xml` mirrors its 37 blocks and 199 runner entries in the same order, with four
+concurrent blocks and identical per-block class parallelism, lifecycle locks, user provisioning, and readiness
+parameters. Distributed test names and block labels have a `Distributed-` / `distributed-` prefix so logs and
+reports identify the topology. Runner classes and feature files are shared.
+
+The distributed suite routes the block's configuration to the component that consumes it:
+
+- CP receives publisher/devportal settings, workflow executor JARs, API-generation templates, network access
+  policies, and SMTP configuration.
+- Gateway receives invocation settings, listener/sender TLS settings, custom authentication handlers, analytics,
+  and outbound WebSocket proxy profiles.
+- TM receives conditional throttling flags; settings consumed by multiple components use the same overlay file
+  for each relevant component.
+
+Blocks running `GatewayRestArtifactsRunner` also configure Gateway's APIM database and tenant loading, with the
+same test encryption key on CP, TM, and Gateway. The custom-handler block retains that same topology wiring.
+Gateway's base overlay sets `event_waiting_time = 0`, matching the all-in-one test baseline: the single CP and
+Gateway use the same database and do not need an HA replication delay before fetching an artifact.
+
+Keep block grouping, runner order, and parallelism aligned when updating either suite. Topology-specific fixes
+belong in component configuration or infrastructure helpers. To compile the framework and suites without starting
+containers, run from the `integration-v2` directory:
+
+```bash
+mvn -pl tests-integration/cucumber-tests -am -DskipTests test-compile
+```
+
 ## Scope and current limitations
 
 This is a manual developer image workflow, not a CI image publication process.
-The current distributed focused suite is
+The distributed product suite is
 `tests-integration/cucumber-tests/src/test/resources/testng-v2_distributed.xml`.
-Run focused suites only while this topology is being developed.
+Runtime verification of the aligned suite is a separate step from layout and compilation checks.
 
 The following boundaries are intentional and should not be mistaken for image
 failures:
