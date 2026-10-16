@@ -1,8 +1,7 @@
 # Overlay for the IntegrationV2-Solace block (SolaceApiLifecycleRunner and GatewayWebSocketProxyNoMatchRunner, which
 # runs as the super-tenant admin and so is unaffected by the tenant key-generation failure below). Merged on top of
 # the shared `basic` overlay.
-# The distributed suite's Solace block uses solaceMtlsChain/deployment.toml, which also carries the mutual-SSL
-# chain-validation keys for the runner it co-hosts.
+# The distributed twin applies distributed-cp-overlay.toml to CP and wsProxyNoMatch/deployment.toml to Gateway.
 #
 # [apim.solace_config] is NOT confined to Solace-typed APIs: it activates SolaceKeyGenNotifier, which runs on EVERY
 # application key generation in the container and, in a tenant, dereferences a null application lookup

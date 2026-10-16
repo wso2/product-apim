@@ -447,7 +447,9 @@ distribution defaults. Only reach for an overlay when a feature genuinely needs 
   `<parameter name="isCpuLimit" value="1"/>` (valid only with `bootExternalIdentityServer`). The Squid proxy
   (`initProxy`) is always capped at 0.5 CPU (`SquidProxyServer.CPU_LIMIT`) and the shared node backend at 1 CPU
   for all blocks together (`NodeAppServer.CPU_LIMIT`); Solace is not capped. A malformed or non-positive value
-  fails the block's boot, and the distributed lane rejects `apimCpuLimit`. APIM and IS both run with a `-Xms1g -Xmx1536m` server heap. A cap slows boot and
+  fails the block's boot. In the distributed lane, `apimCpuLimit` applies to each CP/TM/Gateway container, with a
+  default of 1 CPU per component and a `-Xms1g -Xmx1g` server heap. All-in-one APIM and IS use
+  `-Xms1g -Xmx1536m`. A cap slows boot and
   CPU-heavy runners (Publisher-style CRUD) far more than wait-bound gateway runners, so set it from measurement.
 - **Browser cap.** The Playwright browser runs on the host, not in a container. On Linux hosts where
   `src/test/resources/browser-cgroup/setup-browser-cgroup.sh` has created the `/sys/fs/cgroup/pw-browser` group

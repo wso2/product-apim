@@ -53,6 +53,9 @@ public class DistributedDynamicApimContainer implements ApimRuntime {
     private static final String CP_ALIAS = "apim-cp";
     private static final String TM_ALIAS = "apim-tm";
     private static final String GATEWAY_ALIAS = "apim-gw";
+    /** Default hard resource limits for each APIM process in the distributed test topology. */
+    private static final CpuLimit DEFAULT_COMPONENT_CPU_LIMIT = CpuLimit.of(1);
+    private static final String COMPONENT_HEAP_OPTS = "-Xms1g -Xmx1g";
     private static final String SERVICES_PATH = "/services/";
     private static final String TEMPLATES_PATH = SERVER_HOME + "/repository/resources/conf/templates/";
     /**
@@ -71,6 +74,7 @@ public class DistributedDynamicApimContainer implements ApimRuntime {
     private final Network network;
     private final boolean ownsNetwork;
     private final DistributedMySqlContainer mysql;
+    private CpuLimit componentCpuLimit = DEFAULT_COMPONENT_CPU_LIMIT;
     private GenericContainer<?> cp;
     private GenericContainer<?> tm;
     private GenericContainer<?> gateway;
@@ -312,8 +316,8 @@ public class DistributedDynamicApimContainer implements ApimRuntime {
 
     @Override
     public DistributedDynamicApimContainer withCpuLimit(CpuLimit limit) {
-        throw new UnsupportedOperationException(
-                "Distributed CPU limits are not available; remove the CPU limit from the distributed block");
+        componentCpuLimit = Objects.requireNonNull(limit, "limit");
+        return this;
     }
 
     @Override
@@ -450,10 +454,15 @@ public class DistributedDynamicApimContainer implements ApimRuntime {
                 .withNetworkAliases(alias)
                 .withExtraHost("host.docker.internal", "host-gateway")
                 .withExposedPorts(exposedPorts)
+                .withEnv("JVM_MEM_OPTS", COMPONENT_HEAP_OPTS)
                 .withCopyToContainer(Transferable.of(toml, 0666), TOML_PATH)
                 .withCommand("-DportOffset=" + portOffset)
                 .waitingFor(Wait.forLogMessage(".*WSO2 Carbon started in.*", 1)
                         .withStartupTimeout(Duration.ofMinutes(20)));
+        container.withCreateContainerCmdModifier(cmd -> {
+            componentCpuLimit.applyTo(cmd);
+        });
+        logger.info("Distributed APIM component '{}' CPU cap: {}", alias, componentCpuLimit);
         container.withLogConsumer(componentLogConsumer(alias));
         return container;
     }

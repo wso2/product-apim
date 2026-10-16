@@ -1,7 +1,7 @@
-# All-in-one overlay for the IntegrationV2-CrossTenantSubscription block: the crossTenantSub/ keys plus the
-# wsProxyAuthWrongCreds WebSocket proxy profile and the permissive network access-control platform policy for
-# NetworkAccessControlUrlTenantAllowRunner. The distributed suite keeps using crossTenantSub/ and
-# wsProxyAuthWrongCreds/ separately.
+# Combined overlay for the IntegrationV2-CrossTenantSubscription block: cross-tenant subscriptions, the
+# WebSocket proxy profile with incorrect credentials, and the permissive network access policy for
+# NetworkAccessControlUrlTenantAllowRunner. The distributed twin uses distributed-cp-overlay.toml for CP and
+# wsProxyAuthWrongCreds/deployment.toml for Gateway.
 #
 # Feature-specific TOML overlay for the IntegrationV2-CrossTenantSubscription block.
 #

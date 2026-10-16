@@ -1,5 +1,5 @@
-# Overlay for the IntegrationV2-Is7KeyManager block (the CP overlay of the distributed Is7KeyManagerValidationModes
-# block) — its self-validate runners plus the INTROSPECTION and PEM
+# Overlay for the IntegrationV2-Is7KeyManager block and CP/Gateway of its distributed twin — its self-validate
+# runners plus the INTROSPECTION and PEM
 # external-KM validation modes, at thread-count=1 (see testng-v2.xml; the KM mode itself is the
 # feature-registered payload, these keys are test-convergence pins). Merged on top of the shared `basic`
 # overlay. The self-validate revoke->401 is unaffected by the gateway_token pin: the gateway checks its

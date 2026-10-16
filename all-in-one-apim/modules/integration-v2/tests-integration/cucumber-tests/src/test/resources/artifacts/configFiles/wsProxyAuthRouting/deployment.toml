@@ -1,4 +1,4 @@
-# Extra overlay for the IntegrationV2-Distributed-Gateway-WsProxyAuthRouting block (Gateway overlay). The all-in-one suite
+# Gateway overlay for the IntegrationV2-Distributed-ApprovalWorkflow block. The all-in-one suite
 # carries this profile in the IntegrationV2-ApprovalWorkflow overlay.
 #
 # Tests end-to-end WS routing through the Basic-auth Squid proxy. A single profile matches

@@ -1,6 +1,6 @@
 # Distributed APIM v2 infrastructure design
 
-**Status:** Implemented through the composite runtime and focused Publisher/Gateway lane; broader topology coverage remains incremental
+**Status:** Composite runtime implemented; distributed suite aligned with the all-in-one block/runner layout; runtime verification of the aligned suite pending
 **Date:** 2026-08-30  
 **Scope:** A drop-in distributed replacement for the v2 all-in-one block lifecycle
 
@@ -14,7 +14,11 @@ The intended suite-level switch is:
 
 The listener must preserve the existing block-facing contract: the same TestNG parameters, TestContext keys, URL meanings, readiness/failure semantics, and feature steps. The new runtime object should own one Control Plane, one Traffic Manager, one Universal Gateway, and one MySQL container.
 
-The first implementation target was a focused distributed lane containing the current Publisher and Gateway blocks. That lane is now present as `testng-v2_distributed.xml`; it is the controlled verification vehicle while the remaining blocks are added incrementally.
+The first implementation target was a focused distributed lane containing the Publisher and Gateway blocks.
+`testng-v2_distributed.xml` now mirrors all 37 blocks and 199 runner entries of `testng-v2.xml`, including the four
+concurrent lanes, block order, class order, and per-block parallelism. Only topology names, component TOML overlays,
+and boot-file destinations differ. The component image [README](../../tests-common/testcontainers/src/main/resources/distributed-apim/README.md#suite-layout)
+describes the current layout; the bring-up checkpoints below record the original implementation plan.
 
 ## 2. Current all-in-one contract
 
