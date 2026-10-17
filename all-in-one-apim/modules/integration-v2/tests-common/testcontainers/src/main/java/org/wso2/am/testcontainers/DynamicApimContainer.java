@@ -31,6 +31,8 @@ import org.wso2.am.integration.test.utils.Constants;
 import java.io.File;
 import java.io.IOException;
 import java.time.Duration;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * APIM container variant for the parallel-on-shared lane. Unlike {@link APIMContainer}, this
@@ -351,6 +353,22 @@ public class DynamicApimContainer extends GenericContainer<DynamicApimContainer>
             }
         }
         throw new IllegalStateException("Could not determine the container network gateway IP");
+    }
+
+    @Override
+    public Set<String> getGatewayBrokerClientAddresses() {
+        // Gateway and broker share this container. Their connection can use loopback or a container interface.
+        Set<String> addresses = new HashSet<>(Set.of("127.0.0.1", "::1", "0:0:0:0:0:0:0:1"));
+        for (com.github.dockerjava.api.model.ContainerNetwork value
+                : getContainerInfo().getNetworkSettings().getNetworks().values()) {
+            if (value.getIpAddress() != null && !value.getIpAddress().isBlank()) {
+                addresses.add(value.getIpAddress());
+            }
+            if (value.getGlobalIPv6Address() != null && !value.getGlobalIPv6Address().isBlank()) {
+                addresses.add(value.getGlobalIPv6Address());
+            }
+        }
+        return Set.copyOf(addresses);
     }
 
     public String getContainerTomlPath() {

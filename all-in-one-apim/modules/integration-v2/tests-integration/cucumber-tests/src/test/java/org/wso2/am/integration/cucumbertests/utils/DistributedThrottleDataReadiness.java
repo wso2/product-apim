@@ -18,41 +18,27 @@ package org.wso2.am.integration.cucumbertests.utils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
-import org.wso2.am.integration.cucumbertests.utils.clients.SimpleHTTPClient;
 import org.wso2.am.testcontainers.DistributedApimTomlBuilder.Component;
 import org.wso2.am.testcontainers.DistributedDynamicApimContainer;
-import org.wso2.carbon.automation.engine.context.beans.User;
-import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.regex.Pattern;
-import javax.xml.XMLConstants;
-import javax.xml.parsers.DocumentBuilderFactory;
 
 /** Read-only readiness of the distinct CP event-hub and TM throttling paths. */
 final class DistributedThrottleDataReadiness {
 
     private static final String PUBLISHER_DIRECTORY = "repository/deployment/server/eventpublishers/";
-    private static final String SUBSCRIPTIONS_ENVELOPE = "<soapenv:Envelope "
-            + "xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" "
-            + "xmlns:a=\"http://wso2.org/carbon/andes/admin/xsd\"><soapenv:Body>"
-            + "<a:getSubscriptions><a:isDurable>false</a:isDurable><a:isActive>true</a:isActive>"
-            + "<a:protocolType>AMQP</a:protocolType><a:destinationType>TOPIC</a:destinationType>"
-            + "</a:getSubscriptions></soapenv:Body></soapenv:Envelope>";
 
     private DistributedThrottleDataReadiness() {
     }
 
     static ThrottleDataReadiness.Result inspect(DistributedDynamicApimContainer runtime, String cpLog,
                                                 String tmLog, String gatewayLog) {
-        String gatewayAddress = runtime.getGatewayBrokerClientAddress();
-        User actor = Identity.resolveActor("admin");
-        Check cpConsumer = inspectBroker(runtime.getServletHttpsUrl(), actor, gatewayAddress);
-        Check tmConsumer = inspectBroker(runtime.getTrafficManagerManagementHttpsUrl(), actor, gatewayAddress);
+        var gatewayAddresses = runtime.getGatewayBrokerClientAddresses();
+        BrokerSubscriptionReadiness.Result cpConsumer = BrokerSubscriptionReadiness.inspect(
+                runtime.getServletHttpsUrl(), "throttleData", gatewayAddresses);
+        BrokerSubscriptionReadiness.Result tmConsumer = BrokerSubscriptionReadiness.inspect(
+                runtime.getTrafficManagerManagementHttpsUrl(), "throttleData", gatewayAddresses);
         Check blockingPublisher = inspectPublisher(runtime, Component.CP, "blockingEventJMSPublisher.xml",
                 "blockingEventJMSPublisher", "org.wso2.blocking.request.stream", "1.0.0", cpLog);
         Check throttlePublisher = inspectPublisher(runtime, Component.TM, "jmsEventPublisher.xml",
@@ -67,49 +53,12 @@ final class DistributedThrottleDataReadiness {
         return new ThrottleDataReadiness.Result(registryHealthy && blockingPublisher.ready(),
                 throttlePublisher.ready() && throttlePublisherV11.ready(),
                 cpConsumer.ready() && tmConsumer.ready(), false,
-                "distributed throttle-data: registryHealthy=" + registryHealthy + " gatewayAddress=" + gatewayAddress
+                "distributed throttle-data: registryHealthy=" + registryHealthy + " gatewayAddresses=" + gatewayAddresses
                         + "\nCP blocking publisher: " + blockingPublisher.diagnostics()
                         + "\nTM primary publisher: " + throttlePublisher.diagnostics()
                         + "\nTM stream 1.1 publisher: " + throttlePublisherV11.diagnostics()
                         + "\nCP Gateway subscription: " + cpConsumer.diagnostics()
                         + "\nTM Gateway subscription: " + tmConsumer.diagnostics());
-    }
-
-    private static Check inspectBroker(String baseUrl, User actor, String gatewayAddress) {
-        try {
-            SimpleHTTPClient client = SimpleHTTPClient.getInstance();
-            HttpResponse response = client.withSocketTimeout(10000, () -> client.sendSoapRequest(
-                    baseUrl + "services/AndesAdminService", SUBSCRIPTIONS_ENVELOPE, "urn:getSubscriptions",
-                    actor.getUserName(), actor.getPassword()));
-            if (response == null || response.getResponseCode() != 200) {
-                return new Check(false, response == null ? "no response" : "HTTP " + response.getResponseCode()
-                        + " " + abbreviate(response.getData()));
-            }
-            Document document = parseXml(response.getData());
-            if (document.getElementsByTagNameNS("*", "getSubscriptionsResponse").getLength() != 1
-                    || document.getElementsByTagNameNS("*", "Fault").getLength() != 0) {
-                return new Check(false, "unexpected getSubscriptions response: " + abbreviate(response.getData()));
-            }
-            NodeList subscriptions = document.getElementsByTagNameNS("*", "return");
-            List<String> activeOrigins = new ArrayList<>();
-            for (int i = 0; i < subscriptions.getLength(); i++) {
-                Element subscription = (Element) subscriptions.item(i);
-                // The shipped MBean ignores its isActive argument and merges active/inactive sets.
-                if (!"true".equals(childText(subscription, "active"))
-                        || !"throttledata".equalsIgnoreCase(childText(subscription, "subscribedQueueOrTopicName"))
-                        || !"AMQP".equals(childText(subscription, "protocolType"))
-                        || !"TOPIC".equals(childText(subscription, "destinationType"))) {
-                    continue;
-                }
-                activeOrigins.add(childText(subscription, "originHostAddress"));
-            }
-            boolean ready = activeOrigins.stream().anyMatch(origin -> origin.startsWith("/" + gatewayAddress + ":")
-                    || origin.startsWith("/[" + gatewayAddress + "]:"));
-            return new Check(ready, "active throttledata origins=" + activeOrigins
-                    + ", expected Gateway=" + gatewayAddress);
-        } catch (IOException e) {
-            return new Check(false, e.getMessage());
-        }
     }
 
     private static Check inspectPublisher(DistributedDynamicApimContainer runtime, Component component,
@@ -162,23 +111,7 @@ final class DistributedThrottleDataReadiness {
     }
 
     static Document parseXml(String xml) throws IOException {
-        try {
-            // The test classpath includes legacy Xerces, which lacks the JAXP external-access properties.
-            DocumentBuilderFactory factory = DocumentBuilderFactory.newDefaultInstance();
-            factory.setNamespaceAware(true);
-            factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-            factory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
-            factory.setAttribute(XMLConstants.ACCESS_EXTERNAL_DTD, "");
-            factory.setAttribute(XMLConstants.ACCESS_EXTERNAL_SCHEMA, "");
-            return factory.newDocumentBuilder().parse(new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8)));
-        } catch (Exception e) {
-            throw new IOException("Could not parse throttle-data readiness XML: " + e.getMessage(), e);
-        }
-    }
-
-    private static String childText(Element parent, String name) {
-        NodeList matches = parent.getElementsByTagNameNS("*", name);
-        return matches.getLength() == 1 ? matches.item(0).getTextContent().trim() : "";
+        return ReadinessXml.parse(xml);
     }
 
     private static String propertyText(Element adapter, String name) {
@@ -190,10 +123,6 @@ final class DistributedThrottleDataReadiness {
             }
         }
         return "";
-    }
-
-    private static String abbreviate(String value) {
-        return value == null ? "no body" : value.substring(0, Math.min(value.length(), 1000));
     }
 
     private record Check(boolean ready, String diagnostics) {

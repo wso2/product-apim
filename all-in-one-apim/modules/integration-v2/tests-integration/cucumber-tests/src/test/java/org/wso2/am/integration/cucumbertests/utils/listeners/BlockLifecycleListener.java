@@ -352,6 +352,7 @@ public class BlockLifecycleListener implements ITestListener {
         // leaks a live Docker container for the JVM lifetime (only reaped later by Ryuk).
         ApimRuntime container = null;
         try {
+            ClockStabilityListener.assertHealthy(context.getSuite());
             acquireLifecycleLock(context, label);
             // Every block runs on its OWN private docker network, which is what makes the lane's fixed aliases
             // (wso2am / wso2is / apimforsolace / solaceshim / nodebackend) network-scoped instead of JVM-unique.

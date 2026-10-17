@@ -354,6 +354,13 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y socat iproute2
           sudo bash all-in-one-apim/modules/integration-v2/tests-integration/cucumber-tests/src/test/resources/browser-cgroup/setup-browser-network.sh
+      - name: Prepare Ubuntu host clock for integration-v2
+        run: |
+          sudo apt-get install -y chrony
+          CLOCK_LOG_DIR="$GITHUB_WORKSPACE/all-in-one-apim/modules/integration-v2/tests-integration/cucumber-tests/target/logs/host-clock/preparation"
+          mkdir -p "$CLOCK_LOG_DIR"
+          sudo bash all-in-one-apim/modules/integration-v2/tests-integration/cucumber-tests/src/test/resources/host-clock/prepare-test-clock.sh prepare "$CLOCK_LOG_DIR"
+          echo "APIM_CLOCK_PREPARED_FILE=$CLOCK_LOG_DIR/prepared.json" >> "$GITHUB_ENV"
       # `mvn test` (not install) keeps the testcontainers pre-integration-test execs from firing, so the
       # loaded images and the restored target/is7 staging are reused. `-am` builds only the integration-v2
       # reactor deps up to the test phase; product 4.7.0-SNAPSHOT artifacts resolve from the restored repo.
@@ -370,6 +377,7 @@ jobs:
           -Dplaywright.sso=true
           -Dapim.coverage=true
           -Dapim.coverage.classfiles="$APIM_COVERAGE_CLASSFILES"
+          -Dapim.clock.prepared.file="$APIM_CLOCK_PREPARED_FILE"
           -Ddocker.extra.hosts="--add-host=host.docker.internal:host-gateway"
       - name: Run distributed integration-v2 suite (coverage intentionally disabled)
         if: matrix.topology == 'distributed'
@@ -382,6 +390,7 @@ jobs:
           -Ddistributed.apim.tm.image.name="distributed-apim-tm:${TM_VERSION}-jdk21"
           -Ddistributed.apim.gateway.image.name="distributed-apim-gateway:${GATEWAY_VERSION}-jdk21"
           -Dplaywright.sso=true
+          -Dapim.clock.prepared.file="$APIM_CLOCK_PREPARED_FILE"
           -Ddocker.extra.hosts="--add-host=host.docker.internal:host-gateway"
       - name: Archive test reports
         if: always()
