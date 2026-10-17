@@ -28,6 +28,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 /**
  * Composite distributed APIM runtime. It deliberately presents the same
@@ -465,6 +466,11 @@ public class DistributedDynamicApimContainer implements ApimRuntime {
 
     public String getGatewayContainerId() {
         return gateway.getContainerId();
+    }
+
+    @Override
+    public Set<String> getGatewayBrokerClientAddresses() {
+        return Set.of(getGatewayBrokerClientAddress());
     }
 
     /** Gateway's address seen by this block's brokers, distinct from the host client's bridge address. */
