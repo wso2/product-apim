@@ -3,10 +3,11 @@
 [diagnostic_tool.server_configuration]
 diagnostic_tool_enabled = false
 
-[server]
-# Allow the integration framework to perform a bounded, ordered recovery after repairing
-# registry-backed throttle-data infrastructure.
-enable_restart_from_api = true
+[governance_data]
+enable_cache = false
+
+[config_data]
+enable_cache = false
 
 [database.apim_db]
 type = "mysql"

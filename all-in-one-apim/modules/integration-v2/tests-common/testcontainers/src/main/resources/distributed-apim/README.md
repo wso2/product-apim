@@ -109,10 +109,11 @@ required by the test JVM.
 The composite owns and starts resources in this order:
 
 ```text
-MySQL → CP → TM → Universal Gateway
+MySQL → CP → shared registry initialization → TM → Universal Gateway
 ```
 
-Each APIM component container is capped at 1 CPU. Its server JVM uses `-Xms1g -Xmx1g` heap settings.
+Each APIM component container is capped at 1 CPU. The CP server JVM uses `-Xms1g -Xmx1g`;
+TM and Gateway server JVMs use `-Xms512m -Xmx750m`.
 The CP, TM and Gateway base overlays set `diagnostic_tool.server_configuration.diagnostic_tool_enabled = false`
 to reduce memory use during concurrent test blocks. The Diagnostics JVM starts briefly, then exits after reading
 the setting; automatic Diagnostics captures are disabled.
@@ -141,6 +142,37 @@ The merge order is product defaults, distributed base overlay, component extra
 overlay, and generated runtime values. This keeps the developer setup's
 full-file TOMLs out of the image and prevents runtime-generated addresses from
 being overwritten by a test overlay.
+
+Each component also gets the template overlays under `templates/` (listed in
+`DistributedDynamicApimContainer.TEMPLATE_OVERLAYS`). An overlay is an XML
+skeleton of the literal values to set; `J2TemplateOverlay` writes them into the
+component's own template, which the image-defaults extraction stages beside its
+`deployment.toml` as `<component>/templates/`, and the result is copied into
+`repository/resources/conf/templates/` before boot.
+`templates/repository/conf/registry.xml.j2` turns the registry resource cache
+off at the registry root, as the all-in-one lane's basic overlay does. This is
+not a switch for the separate local `REG_PATH_CACHE`. Each distributed base
+overlay also sets `governance_data.enable_cache = false` and
+`config_data.enable_cache = false`, disabling both mounted resource caches.
+
+## Throttle-data startup prerequisites
+
+The distributed lifecycle registers a CP initializer on the composite. Startup
+is MySQL, CP, registry-service readiness, shared throttle-data hierarchy
+initialization, TM, then Gateway. The callback uses the normal supertenant
+integration actor and registry SOAP service while CP is the only component
+writing this hierarchy. It runs for every distributed block, before TM has a
+path-cache entry and before Gateway starts its asynchronous broker subscriptions.
+Callback failures use the composite's normal reverse teardown.
+
+The later `bootstrapThrottleData` block option retains tenant-specific setup
+and checks readiness; it performs no distributed recovery restarts. Readiness
+requires an active `throttledata` subscription from the current Gateway on
+both CP's event-hub broker and TM's throttling broker. It uses the read-only
+`AndesAdminService.getSubscriptions` operation and validates enabled primary
+publishers. The HA-only `jmsEventPublisher2` and Gateway slow-start warnings do
+not establish readiness. Direct low-level composite users can register their
+own initializer with `withControlPlaneInitializer`.
 
 ## Component-specific test configuration
 
