@@ -8,6 +8,7 @@
   enableCache: the registry resource cache is off, as in the all-in-one lane's basic overlay. Under the suite's
   concurrent CRUD load, a read of an API artifact that lands while another request is writing it re-caches the
   previous version, and that write can then commit the stale content. Product default is true.
+  This root setting does not disable the separate local REG_PATH_CACHE used by JDBCPathCache.
 -->
 <wso2registry>
     <enableCache>false</enableCache>

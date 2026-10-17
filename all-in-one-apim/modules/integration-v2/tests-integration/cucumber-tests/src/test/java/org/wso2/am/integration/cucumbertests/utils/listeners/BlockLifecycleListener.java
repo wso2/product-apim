@@ -192,7 +192,7 @@ public class BlockLifecycleListener implements ITestListener {
     static final String PARAM_INIT_BACKEND = "initBackend";
     /** When set, fail block bootstrap unless the TM-to-Gateway throttle-data pipeline is healthy. */
     static final String PARAM_THROTTLE_DATA_READINESS_SECONDS = "throttleDataReadinessSeconds";
-    /** When true, repair the registry-backed throttle-data hierarchy and recover its event pipeline during boot. */
+    /** When true, initialize throttle-data prerequisites using the topology's bootstrap phase. */
     static final String PARAM_BOOTSTRAP_THROTTLE_DATA = "bootstrapThrottleData";
     /**
      * When set, wait up to this many seconds for the Gateway's HTTPS listener to start and restart the Gateway once if
@@ -537,16 +537,16 @@ public class BlockLifecycleListener implements ITestListener {
     }
 
     /**
-     * Repairs the registry parent hierarchy before any block scenario can trigger a throttle-data subscription.
-     * The product components start before the registry SOAP service is available, so repair is necessarily a
-     * post-boot bootstrap operation. The ordered component recovery (a graceful restart) runs only when the
+     * All-in-one bootstrap: its registry SOAP service is available only after the server has started.
+     * DistributedLifecycleListener overrides this hook and establishes the shared broker hierarchy between
+     * CP and TM startup. The all-in-one recovery (a graceful restart) runs only when the
      * current start's throttle-data pipeline is not ready, which is what a rejected startup binding produces: its
      * {@code REG_PATH}/subscription failure is newer than any consumer marker. A repaired registry alone does not
      * trigger it, because the hierarchy is created on every fresh database while the binding normally succeeds.
      * Existing tests still assert the same enforcement responses; this only prepares the infrastructure they
      * consume.
      */
-    private void bootstrapThrottleDataInfrastructure(ApimRuntime runtime, String label, boolean tenantUsersEnabled)
+    protected void bootstrapThrottleDataInfrastructure(ApimRuntime runtime, String label, boolean tenantUsersEnabled)
             throws Exception {
 
         boolean repaired = RegistryAdminService.ensureThrottleDataHierarchy(Utils.getBaseUrl(),
@@ -565,14 +565,7 @@ public class BlockLifecycleListener implements ITestListener {
 
         logger.warn("Throttle-data bootstrap for block '" + label + "' requires component recovery: repaired="
                 + repaired + ", observed=" + observed.diagnostics());
-        boolean unifiedRuntime = runtime.getServletHttpsUrl().equals(runtime.getGatewayManagementHttpsUrl());
-        if (unifiedRuntime) {
-            GracefulServerRestart.gateway();
-        } else {
-            GracefulServerRestart.controlPlane();
-            GracefulServerRestart.trafficManager();
-            GracefulServerRestart.gateway();
-        }
+        GracefulServerRestart.gateway();
 
         ThrottleDataReadiness.Result recovered = ThrottleDataReadiness.await(runtime, 180);
         if (!recovered.ready()) {

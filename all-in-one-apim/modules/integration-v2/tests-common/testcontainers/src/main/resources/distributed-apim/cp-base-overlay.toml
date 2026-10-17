@@ -3,6 +3,12 @@
 [diagnostic_tool.server_configuration]
 diagnostic_tool_enabled = false
 
+[governance_data]
+enable_cache = false
+
+[config_data]
+enable_cache = false
+
 [database.apim_db]
 type = "mysql"
 username = "wso2carbon"

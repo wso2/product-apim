@@ -18,6 +18,7 @@
 package org.wso2.am.integration.cucumbertests.utils.clients;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.axiom.attachments.Attachments;
 import org.apache.http.Header;
 import org.apache.http.HttpHeaders;
 import org.apache.http.HttpResponse;
@@ -821,6 +822,13 @@ public class SimpleHTTPClient {
             String url, final Map<String, String> headers, final String payload, String contentType)
             throws IOException {
 
+        return doPost(url, headers, payload, contentType, false);
+    }
+
+    private org.wso2.carbon.automation.test.utils.http.client.HttpResponse doPost(
+            String url, Map<String, String> headers, String payload, String contentType, boolean soapResponse)
+            throws IOException {
+
         return withGeneralErrorRetry(() -> {
             HttpPost request = new HttpPost(url);
             setHeaders(headers, request);
@@ -832,7 +840,7 @@ public class SimpleHTTPClient {
             }
 
             try (CloseableHttpResponse response = send(request)) {
-                return constructResponse(response);
+                return constructResponse(response, soapResponse);
             }
         });
     }
@@ -1095,8 +1103,7 @@ public class SimpleHTTPClient {
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Basic " + encodedAuth);
         headers.put("SOAPAction", soapAction);
 
-        return this.doPost(url, headers, payload,
-                Constants.CONTENT_TYPES.TEXT_XML);
+        return this.doPost(url, headers, payload, Constants.CONTENT_TYPES.TEXT_XML, true);
     }
 
     /**
@@ -1159,8 +1166,14 @@ public class SimpleHTTPClient {
     private static org.wso2.carbon.automation.test.utils.http.client.HttpResponse constructResponse(
             HttpResponse response) throws IOException {
 
+        return constructResponse(response, false);
+    }
+
+    static org.wso2.carbon.automation.test.utils.http.client.HttpResponse constructResponse(
+            HttpResponse response, boolean soapResponse) throws IOException {
+
         int code = response.getStatusLine().getStatusCode();
-        String body = responseEntityBodyToString(response);
+        String body = soapResponse ? soapResponseEntityBodyToString(response) : responseEntityBodyToString(response);
         Header[] headers = response.getAllHeaders();
         Map<String, String> heads = new HashMap<>();
         for (Header header : headers) {
@@ -1170,6 +1183,29 @@ public class SimpleHTTPClient {
                 new org.wso2.carbon.automation.test.utils.http.client.HttpResponse(body, code, heads);
         constructed.setResponseMessage(response.getStatusLine().getReasonPhrase());
         return constructed;
+    }
+
+    /**
+     * Registry admin services force MTOM even for metadata-only replies. Decode the MIME root part using its
+     * Content-Type/boundary/start identifier before XML consumers inspect it. Ordinary HTTP callers retain their
+     * raw body; SOAP status, reason and headers are preserved by constructResponse.
+     */
+    private static String soapResponseEntityBodyToString(HttpResponse response) throws IOException {
+        Header header = response.getFirstHeader(HttpHeaders.CONTENT_TYPE);
+        if (response.getEntity() == null || header == null
+                || !"multipart/related".equalsIgnoreCase(ContentType.parse(header.getValue()).getMimeType())) {
+            return responseEntityBodyToString(response);
+        }
+        try (InputStream content = response.getEntity().getContent()) {
+            Attachments attachments = new Attachments(content, header.getValue());
+            ContentType rootType = ContentType.parse(attachments.getSOAPPartContentType());
+            try (InputStream soap = attachments.getSOAPPartInputStream()) {
+                return IOUtils.toString(soap, rootType.getCharset() == null
+                        ? StandardCharsets.UTF_8 : rootType.getCharset());
+            }
+        } catch (RuntimeException e) {
+            throw new IOException("Could not decode multipart SOAP response", e);
+        }
     }
 
     /**
