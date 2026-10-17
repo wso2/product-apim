@@ -113,6 +113,9 @@ MySQL → CP → TM → Universal Gateway
 ```
 
 Each APIM component container is capped at 1 CPU. Its server JVM uses `-Xms1g -Xmx1g` heap settings.
+The CP, TM and Gateway base overlays set `diagnostic_tool.server_configuration.diagnostic_tool_enabled = false`
+to reduce memory use during concurrent test blocks. The Diagnostics JVM starts briefly, then exits after reading
+the setting; automatic Diagnostics captures are disabled.
 The existing `apimCpuLimit` block parameter, when present, overrides the CPU cap for all
 three components; the default remains 1 CPU.
 

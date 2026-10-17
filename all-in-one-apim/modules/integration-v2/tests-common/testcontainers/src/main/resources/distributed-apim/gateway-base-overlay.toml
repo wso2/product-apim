@@ -1,6 +1,9 @@
 # Distributed Universal Gateway delta from the product ZIP default. Runtime values are supplied by the composite
 # container.
 
+[diagnostic_tool.server_configuration]
+diagnostic_tool_enabled = false
+
 [database.shared_db]
 type = "mysql"
 username = "wso2carbon"
