@@ -1,0 +1,94 @@
+# Distributed-Gateway configuration for the IntegrationV2-Distributed-GatewayAuthAndApplicationConfig block.
+# ConfigServiceAdmin installs tenant-scoped static Synapse routes, so this Gateway must load tenant metadata
+# from APIM_DB. Runtime URL values are injected by the container because this overlay declares database.apim_db.
+
+# --- Custom gateway handler: the shipped deny-list minus ConfigServiceAdmin, which the custom-handler feature uses to
+# attach the handler to a live API and to install static Synapse routes. Every other denied service stays disabled.
+[admin_service]
+deny_list = [
+    "ClassMediatorAdmin",
+    "CommandMediatorAdmin",
+    "CustomMeteringService",
+    "DeploymentSynchronizerAdmin",
+    "EndpointTemplateAdminService",
+    "ESBNTaskAdmin",
+    "MediationLibraryAdminService",
+    "MediationLibraryUploader",
+    "MediationSecurityAdminService",
+    "MetricsDataService",
+    "ModuleAdminService",
+    "RemoteTaskAdmin",
+    "StatisticsAdmin",
+    "SynapseApplicationAdmin",
+    "SynapseArtifactUploaderAdmin",
+    "TemplateAdminService",
+    "ThemeMgtService",
+    "TierCacheService",
+    "WebappAdmin",
+    "NDataSourceAdmin"
+]
+
+# --- Custom auth header: the gateway reads the OAuth token from this header instead of Authorization. Every
+# token-bearing invocation in this block (custom-auth-header and custom-handler features) sends its token here; the
+# custom handler reads only CustomAuthorization and leaves token validation to APIM's authentication handler.
+[apim.oauth_config]
+auth_header = "Test-Custom-Header"
+
+# --- Application sharing: the devportal honours an application's `groups` field instead of silently dropping it.
+# enable_empty_values_in_application_attributes keeps an empty optional application attribute in the backend JWT.
+[apim.devportal]
+enable_application_sharing = true
+application_sharing_type = "default"
+enable_empty_values_in_application_attributes = true
+
+# --- Backend JWT: the gateway injects X-JWT-Assertion (carrying the application-attribute claims) towards the
+# backend.
+[apim.jwt]
+enable = true
+encoding = "base64"
+claim_dialect = "http://wso2.org/claims"
+header = "X-JWT-Assertion"
+signing_algorithm = "SHA256withRSA"
+
+# --- Application attributes. "External Reference Id" is required with no default, so every application create and
+# update in this block carries it (create_apim_test_app_with_external_ref.json); "Optional attribute" may be empty and
+# still surfaces in the backend JWT because enable_empty_values_in_application_attributes is on (see [apim.devportal]
+# above). Production/Sandbox access required default to "Yes".
+[[apim.devportal.application_attributes]]
+required = true
+hidden = false
+name = "External Reference Id"
+description = "External Reference Id"
+
+[[apim.devportal.application_attributes]]
+required = false
+hidden = false
+name = "Optional attribute"
+description = "Description of Optional attribute"
+
+[[apim.devportal.application_attributes]]
+required = true
+hidden = false
+default = "Yes"
+name = "Sandbox access required"
+description = "Does this Application require access to APIs in the Sandbox environment ? (Yes or No)"
+
+[[apim.devportal.application_attributes]]
+required = true
+hidden = false
+default = "Yes"
+name = "Production access required"
+description = "Does this Application require access to APIs in the Production environment ? (Yes or No)"
+
+[encryption]
+key = "04cd2cfc3c200bba4e1b8c3a591e2131558b8250b25b32db747c47e7ab3055d5"
+
+[database.apim_db]
+type = "mysql"
+username = "wso2carbon"
+password = "wso2carbon"
+driver = "com.mysql.cj.jdbc.Driver"
+
+[apim.sync_runtime_artifacts.tenant_loading]
+enable = true
+tenants = "*"

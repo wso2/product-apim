@@ -21,8 +21,8 @@ package org.wso2.am.integration.cucumbertests.runners.block;
 import io.cucumber.testng.CucumberOptions;
 
 /**
- * Runner for WS proxy profile — specific profile bypass. Runs in the IntegrationV2-WsProxySpecificBypass
- * block whose deployment.toml overlay (wsProxySpecificBypass) loads two [[transport.ws.proxy_profile]]
+ * Runner for WS proxy profile — specific profile bypass. Runs in IntegrationV2-BackendJwtUrlSafeAndMtlsChain (all-in-one) and
+ * IntegrationV2-Distributed-Gateway-WsProxySpecificBypass, whose overlay (wsProxySpecificBypass) loads two [[transport.ws.proxy_profile]]
  * entries: one for nodebackend with bypass_hosts = ["nodebackend"] (direct connection) and one for
  * proxied.backend.test without bypass (proxy routed, proxy unreachable → rejection).
  * Ports WebSocketProxyProfileTestCase#testBypassHostInSpecificProfileGosDirect.

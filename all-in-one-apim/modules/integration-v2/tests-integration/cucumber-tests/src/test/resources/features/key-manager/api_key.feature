@@ -226,16 +226,34 @@ Feature: Key Manager API Key
   Scenario Outline: An internal API key for a sandbox-only API carries keytype SANDBOX as <actor>
     Given The system is ready and I have valid publisher access tokens as "<actor>"
     When I put JSON payload from file "artifacts/payloads/create_apim_sandbox_only_api.json" in context as "sandboxApiPayload"
+    And I extract field "name" from json payload "sandboxApiPayload" and store it as "sandboxApiExpectedName"
+    And I extract field "version" from json payload "sandboxApiPayload" and store it as "sandboxApiExpectedVersion"
+    And I extract field "context" from json payload "sandboxApiPayload" and store it as "sandboxApiExpectedContext"
     And I create an "apis" resource with payload "sandboxApiPayload" as "sandboxApiId"
     Then The response status code should be 201
     When I generate an internal API key for API "sandboxApiId" and store it as "sandboxInternalKey"
     Then The response status code should be 200
     And The JWT stored as "sandboxInternalKey" should contain "SANDBOX"
+    And The JWT stored as "sandboxInternalKey" should have claim "keytype" equal to "SANDBOX"
+    When I retrieve the "apis" resource with id "sandboxApiId"
+    Then The response status code should be 200
+    And The value of response field "name" should be "{{sandboxApiExpectedName}}"
+    And The value of response field "version" should be "{{sandboxApiExpectedVersion}}"
+    And The value of response field "context" should be "<contextPrefix>{{sandboxApiExpectedContext}}"
+    And I extract response field "context" and store it as "sandboxApiContext"
+    When I deploy the API with id "sandboxApiId"
+    Then The response status code should be 201
+    And I wait until "apis" "sandboxApiId" revision is deployed in the gateway
+    And the "apis" resource "sandboxApiId" should be live on the gateway, redeploying if propagation is lost
+    When I invoke the API at gateway context "{{sandboxApiContext}}/1.0.0/customers/123/" with method "GET" using internal key "sandboxInternalKey" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
 
     Examples:
-      | actor                     |
-      | publisherUser             |
-      | publisherUser@tenant1.com |
+      | actor                     | contextPrefix   |
+      | publisherUser             | /               |
+      | publisherUser@tenant1.com | /t/tenant1.com/ |
 
   # API-key Referer restriction: a key generated with a permittedReferer is enforced at the gateway against the
   # request's Referer header — a matching exact path is authorised (200), a non-matching one is forbidden (403),

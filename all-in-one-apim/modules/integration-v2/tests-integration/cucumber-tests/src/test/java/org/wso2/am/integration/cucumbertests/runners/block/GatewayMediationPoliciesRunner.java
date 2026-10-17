@@ -22,7 +22,7 @@ import io.cucumber.testng.CucumberOptions;
 /**
  * Runner for gateway-plane mediation / operation-policy runtime behaviour (the port of the attach-and-invoke
  * slice of OperationPolicyTestCase, JWTClaimBasedAccessValidatorPolicyTestCase, ESBJAVA3380 jsonToXML,
- * ScriptMediatorTestCase and ContentAwareMediationPolicyEmptyBodyTestCase). Runs in the backend-enabled IntegrationV2-Gateway block, which starts the header/body
+ * ScriptMediatorTestCase and ContentAwareMediationPolicyEmptyBodyTestCase). Runs in a backend-enabled IntegrationV2-Gateway-* block, which starts the header/body
  * reflecting node backend; the per-scenario cleanup hook tears down the API/app/common-policy.
  */
 @CucumberOptions(

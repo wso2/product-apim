@@ -96,5 +96,5 @@ Feature: Gateway GraphQL Subscription Tenant Isolation Under Concurrent Handshak
     #      subscribe frame's scope check (authorizeGraphQLSubscriptionEvents) on a poisoned thread — so this fails on
     #      the unfixed scope path (null-tenant NPE -> no data) and passes once that path owns its tenant flow. ----
     When I start a sustained flood of 8 concurrent tenant handshakes to tenant ws context "{{tenantWsContext}}/1.0.0" using access token "generatedAccessToken"
-    And I invoke the GraphQL subscription at gateway ws context "{{gqlSubContext}}/1.0.0" with query "subscription { liftStatusChange { name } }" using access token "generatedAccessToken" expecting data containing "Astra Express" within 120 seconds
+    And I invoke the GraphQL subscription at gateway ws context "{{gqlSubContext}}/1.0.0" with query "subscription { liftStatusChange { name } }" using access token "generatedAccessToken" expecting exact data frame from JSON file "artifacts/payloads/graphql_subscription_expected_frame.json" within 120 seconds
     Then I stop the sustained flood

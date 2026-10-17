@@ -1,6 +1,13 @@
-# Distributed CP portion of the token-exchange/security-audit overlay.
+# CP configuration for the SecurityAuditCorsDisabledAndSecretRotation block.
+# The security-audit backend and OAuth credential settings are consumed by CP.
 [security_audit]
 api_token = "mock-audit-api-token"
 collection_id = "mock-audit-collection-id"
 base_url = "http://nodebackend:3002/auditapi"
 global = true
+
+[oauth]
+allowed_scopes = ["^device_.*", "openid", "scope1", "scope2"]
+
+[oauth.multiple_client_secrets]
+enable = false

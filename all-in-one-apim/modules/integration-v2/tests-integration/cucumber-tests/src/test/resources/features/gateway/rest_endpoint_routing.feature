@@ -4,8 +4,9 @@ Feature: Gateway REST Endpoint Routing
   Gateway-plane routing of a published REST API to its backend endpoints, in both the super tenant and
   tenant1.com: production and sandbox tokens reach their own endpoints (and a token for an absent key type is
   refused), unsecured resources serve the production endpoint whatever key type is presented, a swapped endpoint
-  URL repoints the API, custom-sequence backends serve through the gateway,
-  the backend Location header is forwarded and a trailing slash routes identically.
+  URL repoints the API, custom-sequence backends serve through the gateway, a delayed backend times out cleanly,
+  the backend Location header is forwarded and a trailing slash routes identically. Static Synapse routing is
+  exercised in the isolated custom-handler feature because it requires ConfigServiceAdmin.
   Teardown via the per-scenario cleanup hook.
 
   # Endpoint routing by token type: an API with distinct production and sandbox endpoints routes a PRODUCTION
@@ -110,6 +111,7 @@ Feature: Gateway REST Endpoint Routing
     When I invoke the API at gateway context "{{poContext}}/1.0.0/x" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 403 within 60 seconds
     Then The response status code should be 403
     And The error response should have code "900901" message "Runtime Error" and description containing "Sandbox key offered to the API with no sandbox endpoint"
+    And The value of error response field "type" should be "Status report"
 
     Examples:
       | actor             |
@@ -150,6 +152,7 @@ Feature: Gateway REST Endpoint Routing
     When I invoke the API at gateway context "{{soContext}}/1.0.0/x" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 403 within 60 seconds
     Then The response status code should be 403
     And The error response should have code "900901" message "Runtime Error" and description containing "Production key offered to the API with no production endpoint"
+    And The value of error response field "type" should be "Status report"
 
     Examples:
       | actor             |
@@ -536,9 +539,34 @@ Feature: Gateway REST Endpoint Routing
       | admin             |
       | admin@tenant1.com |
 
+  # Keep the caller's read deadline shorter than the deterministic upstream response delay. After the caller times
+  # out, wait for the backend completion marker before teardown; this exercises the late-response path without a
+  # three-minute fixed wait, and fails on any client-side NullPointerException or unrelated connection failure.
+  @cap:gateway @feat:rest-invocation @rule:request-timeout @type:regression @dep:publisher @legacy:APIM4312NPEAfterRequestTimeoutTestCase
+  Scenario Outline: A delayed API response times out cleanly as <actor>
+    Given The system is ready and I have valid publisher access tokens as "<actor>"
+    And I generate a unique alphanumeric value and store it as "timeoutRequestId"
+    When I put JSON payload from file "artifacts/payloads/create_apim_timeout_probe_api.json" in context as "timeoutProbeApiPayload"
+    And I create an "apis" resource with payload "timeoutProbeApiPayload" as "timeoutProbeApiId"
+    Then The response status code should be 201
+    When I deploy the API with id "timeoutProbeApiId"
+    Then The response status code should be 201
+    When I publish the "apis" resource with id "timeoutProbeApiId"
+    Then The lifecycle status of API "timeoutProbeApiId" should be "Published"
+    When I retrieve the "apis" resource with id "timeoutProbeApiId"
+    And I extract response field "context" and store it as "timeoutProbeApiContext"
+    And the "apis" resource "timeoutProbeApiId" should be live on the gateway, redeploying if propagation is lost
+    When I invoke the API at gateway context "{{timeoutProbeApiContext}}/1.0.0/timeout-probe/{{timeoutRequestId}}" without authentication and expect a socket timeout within 2000 milliseconds
+    Then the delayed backend should complete request "timeoutRequestId" within 20 seconds
+
+    Examples:
+      | actor             |
+      | admin             |
+      | admin@tenant1.com |
+
   # The gateway forwards a backend Location response header: an ABSOLUTE Location is forwarded without a doubled
-  # slash, and a RELATIVE Location is preserved. Ports LocationHeaderTestCase + RelativeUrlLocationHeaderTestCase.
-  @cap:gateway @feat:header-transformation @rule:location-header @type:regression @dep:publisher @legacy:LocationHeaderTestCase @legacy:RelativeUrlLocationHeaderTestCase
+  # slash, and a RELATIVE Location is preserved. Ports the managed-API behavior of RelativeUrlLocationHeaderTestCase.
+  @cap:gateway @feat:header-transformation @rule:location-header @type:regression @dep:publisher @legacy:RelativeUrlLocationHeaderTestCase
   Scenario Outline: The gateway forwards the backend Location header (absolute and relative) as <actor>
     Given The system is ready
     And I have valid access tokens as "<actor>"
@@ -593,7 +621,7 @@ Feature: Gateway REST Endpoint Routing
     And The value of response field "id" should be "123"
     And The value of response field "name" should be "John"
 
-    Examples:
+  Examples:
       | actor             |
       | admin             |
       | admin@tenant1.com |

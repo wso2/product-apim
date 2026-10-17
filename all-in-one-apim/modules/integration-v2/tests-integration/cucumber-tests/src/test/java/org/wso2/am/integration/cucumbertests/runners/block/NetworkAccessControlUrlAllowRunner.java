@@ -20,7 +20,8 @@ package org.wso2.am.integration.cucumbertests.runners.block;
 import io.cucumber.testng.CucumberOptions;
 
 /**
- * Runner for the network access-control URL-gate allow-mode tests - the port of HostValidationAllowModeTestCase. Under allow mode a non-allow-listed or private-IP endpoint URL is blocked, and a platform allow policy overrides a tenant allow policy. Runs in the network-access-control-allow container.
+ * Runner for the network access-control URL-gate allow-mode tests - the port of HostValidationAllowModeTestCase. Under allow mode a non-allow-listed or private-IP endpoint URL is blocked, and a platform allow policy overrides a tenant allow policy. Runs in the
+ * IntegrationV2-ApprovalWorkflow block, whose overlay carries the allow-mode policy.
  */
 @CucumberOptions(
         features = {

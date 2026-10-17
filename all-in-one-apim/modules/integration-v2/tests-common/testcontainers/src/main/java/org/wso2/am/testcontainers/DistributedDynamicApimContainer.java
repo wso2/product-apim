@@ -28,6 +28,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 /**
  * Composite distributed APIM runtime. It deliberately presents the same
@@ -35,7 +36,7 @@ import java.util.Objects;
  * to know that management, throttling, gateway traffic, and persistence are
  * separate containers.
  *
- * <p>Startup is ordered MySQL, CP, TM, Gateway. Teardown is the exact reverse
+ * <p>Startup is ordered MySQL, CP, shared-registry initialization, TM, Gateway. Teardown is the exact reverse
  * and is failure-safe so a component boot failure cannot leave the network or
  * database behind.</p>
  */
@@ -53,6 +54,10 @@ public class DistributedDynamicApimContainer implements ApimRuntime {
     private static final String CP_ALIAS = "apim-cp";
     private static final String TM_ALIAS = "apim-tm";
     private static final String GATEWAY_ALIAS = "apim-gw";
+    /** Default CPU cap and server JVM heap sizes for distributed APIM components. */
+    private static final CpuLimit DEFAULT_COMPONENT_CPU_LIMIT = CpuLimit.of(1);
+    private static final String CP_HEAP_OPTS = "-Xms1g -Xmx1g";
+    private static final String TM_GATEWAY_HEAP_OPTS = "-Xms512m -Xmx750m";
     private static final String SERVICES_PATH = "/services/";
     private static final String TEMPLATES_PATH = SERVER_HOME + "/repository/resources/conf/templates/";
     /**
@@ -71,6 +76,7 @@ public class DistributedDynamicApimContainer implements ApimRuntime {
     private final Network network;
     private final boolean ownsNetwork;
     private final DistributedMySqlContainer mysql;
+    private CpuLimit componentCpuLimit = DEFAULT_COMPONENT_CPU_LIMIT;
     private GenericContainer<?> cp;
     private GenericContainer<?> tm;
     private GenericContainer<?> gateway;
@@ -82,6 +88,25 @@ public class DistributedDynamicApimContainer implements ApimRuntime {
     private boolean externalIsNotificationAlias;
     private boolean solaceJwksAlias;
     private boolean started;
+    private ControlPlaneInitializer controlPlaneInitializer;
+
+    /** Initializes shared infrastructure after CP starts and before TM or Gateway can use it. */
+    @FunctionalInterface
+    public interface ControlPlaneInitializer {
+        void initialize(String controlPlaneBaseUrl) throws Exception;
+    }
+
+    /**
+     * Registers the framework's registry prerequisite without depending on Cucumber or its actor registry.
+     * The initializer runs on the caller's thread, preserving the block scope, and failures stop the composition.
+     */
+    public DistributedDynamicApimContainer withControlPlaneInitializer(ControlPlaneInitializer initializer) {
+        if (cp != null) {
+            throw new IllegalStateException("Control Plane initializer must be configured before startup");
+        }
+        controlPlaneInitializer = Objects.requireNonNull(initializer, "initializer");
+        return this;
+    }
 
     private static String requiredImage(String property) {
         String image = System.getProperty(property);
@@ -201,11 +226,18 @@ public class DistributedDynamicApimContainer implements ApimRuntime {
             createComponents();
             mysql.start();
             cp.start();
+            if (controlPlaneInitializer != null) {
+                logger.info("Distributed APIM block '{}' initializing shared registry before TM/Gateway startup", label);
+                controlPlaneInitializer.initialize(getServletHttpsUrl());
+            }
             tm.start();
             gateway.start();
             started = true;
         } catch (Throwable failure) {
             stop();
+            if (failure instanceof InterruptedException) {
+                Thread.currentThread().interrupt();
+            }
             throw new IllegalStateException("Distributed APIM startup failed for block '" + label + "'", failure);
         }
     }
@@ -312,8 +344,8 @@ public class DistributedDynamicApimContainer implements ApimRuntime {
 
     @Override
     public DistributedDynamicApimContainer withCpuLimit(CpuLimit limit) {
-        throw new UnsupportedOperationException(
-                "Distributed CPU limits are not available; remove the CPU limit from the distributed block");
+        componentCpuLimit = Objects.requireNonNull(limit, "limit");
+        return this;
     }
 
     @Override
@@ -436,11 +468,54 @@ public class DistributedDynamicApimContainer implements ApimRuntime {
         return gateway.getContainerId();
     }
 
+    @Override
+    public Set<String> getGatewayBrokerClientAddresses() {
+        return Set.of(getGatewayBrokerClientAddress());
+    }
+
+    /** Gateway's address seen by this block's brokers, distinct from the host client's bridge address. */
+    public String getGatewayBrokerClientAddress() {
+        for (com.github.dockerjava.api.model.ContainerNetwork value
+                : gateway.getContainerInfo().getNetworkSettings().getNetworks().values()) {
+            if (network.getId().equals(value.getNetworkID())
+                    && value.getIpAddress() != null && !value.getIpAddress().isBlank()) {
+                return value.getIpAddress();
+            }
+        }
+        throw new IllegalStateException("Could not determine Gateway address on the block's private network");
+    }
+
+    /** Reads the effective configuration of one component for infrastructure readiness checks. */
+    public String readComponentFile(DistributedApimTomlBuilder.Component component, String serverRelativePath) {
+        GenericContainer<?> container;
+        switch (component) {
+            case CP:
+                container = cp;
+                break;
+            case TM:
+                container = tm;
+                break;
+            case GATEWAY:
+                container = gateway;
+                break;
+            default:
+                throw new IllegalArgumentException("Unsupported component: " + component);
+        }
+        try {
+            return container.copyFileFromContainer(SERVER_HOME + "/" + serverRelativePath,
+                    stream -> new String(stream.readAllBytes(), StandardCharsets.UTF_8));
+        } catch (Exception e) {
+            throw new IllegalStateException("Failed to read distributed " + component + " file: "
+                    + serverRelativePath, e);
+        }
+    }
+
     public String getDatabaseHostJdbcUrl(String database) {
         return mysql.getHostJdbcUrl(database);
     }
 
-    private GenericContainer<?> component(String image, String alias, String toml, int portOffset, int... ports) {
+    private GenericContainer<?> component(String image, String alias, String toml, String heapOpts,
+                                          int portOffset, int... ports) {
         Integer[] exposedPorts = new Integer[ports.length];
         for (int i = 0; i < ports.length; i++) {
             exposedPorts[i] = ports[i];
@@ -450,10 +525,15 @@ public class DistributedDynamicApimContainer implements ApimRuntime {
                 .withNetworkAliases(alias)
                 .withExtraHost("host.docker.internal", "host-gateway")
                 .withExposedPorts(exposedPorts)
+                .withEnv("JVM_MEM_OPTS", heapOpts)
                 .withCopyToContainer(Transferable.of(toml, 0666), TOML_PATH)
                 .withCommand("-DportOffset=" + portOffset)
                 .waitingFor(Wait.forLogMessage(".*WSO2 Carbon started in.*", 1)
                         .withStartupTimeout(Duration.ofMinutes(20)));
+        container.withCreateContainerCmdModifier(cmd -> {
+            componentCpuLimit.applyTo(cmd);
+        });
+        logger.info("Distributed APIM component '{}' CPU cap: {}", alias, componentCpuLimit);
         container.withLogConsumer(componentLogConsumer(alias));
         return container;
     }
@@ -491,9 +571,9 @@ public class DistributedDynamicApimContainer implements ApimRuntime {
         String tmToml = buildToml(tmDefaults, DistributedApimTomlBuilder.Component.TM, "tm-base-overlay.toml");
         String gatewayToml = buildToml(gatewayDefaults, DistributedApimTomlBuilder.Component.GATEWAY,
                 "gateway-base-overlay.toml");
-        cp = component(CP_IMAGE, CP_ALIAS, cpToml, 0, 9443, 9763, 5672);
-        tm = component(TM_IMAGE, TM_ALIAS, tmToml, 0, 9443, 5672, 9611, 9711);
-        gateway = component(GATEWAY_IMAGE, GATEWAY_ALIAS, gatewayToml, 0, 9443,
+        cp = component(CP_IMAGE, CP_ALIAS, cpToml, CP_HEAP_OPTS, 0, 9443, 9763, 5672);
+        tm = component(TM_IMAGE, TM_ALIAS, tmToml, TM_GATEWAY_HEAP_OPTS, 0, 9443, 5672, 9611, 9711);
+        gateway = component(GATEWAY_IMAGE, GATEWAY_ALIAS, gatewayToml, TM_GATEWAY_HEAP_OPTS, 0, 9443,
                 Constants.GATEWAY_HTTPS_PORT, Constants.GATEWAY_HTTP_PORT, Constants.GATEWAY_WS_PORT,
                 Constants.GATEWAY_WSS_PORT, Constants.WEBSUB_EVENT_RECEIVER_PORT);
         if (externalIsNotificationAlias) {

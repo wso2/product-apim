@@ -21,8 +21,8 @@ package org.wso2.am.integration.cucumbertests.runners.block;
 import io.cucumber.testng.CucumberOptions;
 
 /**
- * Runner for WS proxy profile — specific profile precedence over catch-all. Runs in the
- * IntegrationV2-WsProxySpecificOverCatchAll block whose deployment.toml overlay
+ * Runner for WS proxy profile — specific profile precedence over catch-all. Runs in IntegrationV2-NewVersionNotification (all-in-one) and
+ * IntegrationV2-Distributed-Gateway-WsProxySpecificOverCatchAll, whose overlay
  * (wsProxySpecificOverCatchAll) loads two profiles: a specific one for "nodebackend" that routes
  * through the anonymous Squid proxy, and a catch-all with bypass_hosts for "nodebackend" that
  * would connect directly. The CONNECT count assertion distinguishes which profile was selected —

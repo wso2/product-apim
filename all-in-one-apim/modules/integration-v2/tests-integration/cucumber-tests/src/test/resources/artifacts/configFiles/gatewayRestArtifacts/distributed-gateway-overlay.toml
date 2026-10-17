@@ -1,0 +1,18 @@
+# Distributed Gateway configuration for blocks containing GatewayRestArtifactsRunner.
+# The Gateway REST API authenticates tenant-qualified Basic-auth actors and needs resident IdP metadata from APIM_DB.
+# The distributed Gateway image otherwise uses only SHARED_DB. Runtime URL values are injected by the container
+# because this overlay declares database.apim_db.
+[encryption]
+# Distributed APIM components must share this test-only key to decrypt tenant IdP keystore data written by CP.
+key = "04cd2cfc3c200bba4e1b8c3a591e2131558b8250b25b32db747c47e7ab3055d5"
+
+[database.apim_db]
+type = "mysql"
+username = "wso2carbon"
+password = "wso2carbon"
+driver = "com.mysql.cj.jdbc.Driver"
+
+# These scenarios exercise a shared Gateway serving the super tenant and tenant1.com.
+[apim.sync_runtime_artifacts.tenant_loading]
+enable = true
+tenants = "*"

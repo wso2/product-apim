@@ -63,6 +63,8 @@ mutable.**
   `utils/TenantUserProvisioner`), isolated from other classes — never reuse another class's tenant.
 - **Wait, never sleep.** Poll/await for readiness (`utils/ServerReadiness` and equivalents). No
   `Thread.sleep` — it is the main cause of flaky parallel tests.
+- External-IS blocks using the APIM notification callback share the fixed `wso2am` alias; serialize
+  those blocks so only one holds the alias at a time.
 
 ## 5. Cleanup
 - Every resource a test creates is removed.
@@ -197,6 +199,12 @@ execs don't re-fire):
 mvn test -pl tests-integration/cucumber-tests -am -Dsurefire.suite.xml=<suite>.xml
 ```
 (from `all-in-one-apim/modules/integration-v2`). Confirm your new scenario passes before committing.
+
+`testng-v2.xml` is the V2 product suite; select it with `-Dsurefire.suite.xml=testng-v2.xml`. Do not add
+placeholder blocks: framework-verification suites cover lane boot, while product runners provide the real
+integration coverage. The suite-level `thread-count` controls how many blocks/containers run concurrently.
+JaCoCo collection is opt-in with `-Dapim.coverage=true`: the all-in-one lane dumps coverage per block and
+merges it into a suite report; distributed-lane coverage is not collected. See the coverage architecture doc.
 
 **After editing the shared `tests-common/integration-test-utils` module** (e.g. new `Constants`/`Utils`
 symbols), re-install it first — the bare `mvn test` resolves that module from the local `.m2` jar, not from
@@ -370,11 +378,14 @@ tenants (`carbon.super` and `tenant1.com`) on boot — pick the one with the lea
   different codes, assert each one's exact value in its own scenario/row; do not widen the check to accept
   several (e.g. `status == 401 || status == 403`). A permissive assertion passes today but silently swallows a
   future regression — including an actual security bypass that returns a *different but still-4xx* code.
-  Example: an invalid token at the MCP `tools/call` is rejected with **401** for the *proxy* subtype but **403**
-  for the *DirectBackend (OpenAPI)* subtype. The right fix is two strict assertions (`gateway/mcp_proxy_invocation`
-  asserts 401, `gateway/mcp_openapi_invocation` asserts 403), each pinning its subtype's real behaviour — NOT a
-  step that accepts either. When you discover such a per-case difference, record it (backlog/comment) and encode
-  it as separate exact assertions.
+  When two cases genuinely differ, encode each as its own exact assertion and record the difference
+  (backlog/comment) — NOT a step that accepts either.
+- **A status code alone does not say WHY a request was rejected.** Different causes can share a status: at the
+  gateway, an invalid token (401/900901) and a call to a resource the API does not expose (403/900906 "No matching
+  resource") are both auth-handler rejections. A negative that only checks the status can pass on the wrong cause.
+  Make the request otherwise valid (e.g. call a tool the MCP server exposes) and assert the gateway's error
+  `code`/`message` too (`gateway/mcp_invocation` invalid-token steps assert 401 + 900901 + "Invalid Credentials"
+  for every MCP subtype).
 - **An exact assertion is only as sound as the state it reads.** Exactness is required (above); WHERE you point
   it is what makes it valid. Blocks share one container and run classes in parallel, so:
   - **Scenario-owned** (a GET by an id this scenario created) — assert exact values and exact counts freely.
@@ -406,10 +417,17 @@ distribution defaults. Only reach for an overlay when a feature genuinely needs 
   config (DB, ports, gateway wiring) unless you restate it all. `tomlOverlayPath` exists for framework-
   verification suites that deliberately supply or omit a complete file.
 - **One overlay block can host several features** when their extra config is *orthogonal* (different TOML
-  tables, no behavioural collision) — e.g. `IntegrationV2-CustomAuthHeaderAndAppSharing` carries
-  `[apim.oauth_config] auth_header` (gateway data-plane) **and** `[apim.devportal] enable_application_sharing`
-  in one overlay, saving a whole container. Co-locate only if neither feature's config changes the other's
+  tables, no behavioural collision) — e.g. `IntegrationV2-GatewayAuthAndApplicationConfig` carries
+  `[apim.oauth_config] auth_header` (gateway data-plane), `[apim.devportal] enable_application_sharing`, the
+  declared application attributes, backend JWT and the custom-handler deny-list in one overlay, saving whole
+  containers. Co-locate only if neither feature's config changes the other's
   behaviour (verify it: a "loud" change like `auth_header` must not break the other feature's flows).
+- **Choosing Runner Parallelism.** Set a block's TestNG `thread-count` according to its dominant workload.
+  CPU-bound blocks (such as Publisher and DevPortal) should use low runner concurrency, preferably
+  `thread-count="1"`, especially when the APIM container is capped at one CPU. I/O-bound blocks (such as
+  Gateway invocation tests, which spend much of their time waiting on deployment and responses) can use
+  higher concurrency, provided runtime runs confirm stability and resource isolation. Reassess the setting
+  when runners or container limits change; do not assume one value fits every block.
 - **Template overlays (`.j2`) cover config that no `deployment.toml` key reaches** — a value the product template
   hard-codes rather than renders. Each file under `artifacts/configFiles/basic/templates/` is an XML skeleton that
   restates only the ancestors of the values it sets (e.g. `<wso2registry><enableCache>false</enableCache>
@@ -419,10 +437,37 @@ distribution defaults. Only reach for an overlay when a feature genuinely needs 
   `DynamicApimContainer` directly. Only literal leaf values can be set: an overlay path must match exactly one
   plain-text element, and a value the template renders from `deployment.toml` is rejected — set that with a TOML
   overlay. The distributed lane applies `distributed-apim/templates/` the same way to each component's own template.
-  - `basic/templates/repository/conf/registry.xml.j2` turns the registry resource cache off for the whole suite:
+  - `basic/templates/repository/conf/registry.xml.j2` turns the root registry resource cache off for the suite:
     under the suite's concurrent CRUD load a read that lands while an API artifact is being written re-caches the
     previous version, and the write can then commit that stale copy (a publish that leaves the API `Created`, an
-    edit that is lost). The product default is `true`, so v2 does not exercise registry-cache behaviour.
+    edit that is lost). The product default is `true`. The same root override is applied to all three distributed
+    components. It does not disable JDBCPathCache's separate local `REG_PATH_CACHE`. Distributed base overlays also
+    disable the mounted resource caches with `governance_data.enable_cache=false` and `config_data.enable_cache=false`.
+- **Distributed throttle-data startup.** The distributed lifecycle initializes the shared supertenant registry
+  hierarchy after CP's registry SOAP service becomes available and before TM/Gateway start. This is a broker
+  infrastructure prerequisite for every distributed block: both brokers would otherwise create the same path
+  with independent local caches when Gateway starts its two asynchronous subscriptions. The later block option
+  retains tenant-specific setup and readiness, with no distributed bootstrap restart. Readiness queries CP and TM
+  independently through `AndesAdminService.getSubscriptions`, requires active `throttledata` subscriptions from the
+  current Gateway, and checks enabled primary publisher configurations. Disabled HA secondary publishers and
+  polling-task slow-start warnings are not readiness evidence. Existing feature steps use the same public gate.
+- **CPU cap per block.** `<parameter name="apimCpuLimit" value="1"/>` caps that block's APIM container at the
+  given number of CPUs (Docker `--cpus`; fractions such as `1.5` allowed). Without the parameter the container is
+  uncapped. It caps only APIM; a block that boots an external IS caps that container with
+  `<parameter name="isCpuLimit" value="1"/>` (valid only with `bootExternalIdentityServer`). The Squid proxy
+  (`initProxy`) is always capped at 0.5 CPU (`SquidProxyServer.CPU_LIMIT`) and the shared node backend at 1 CPU
+  for all blocks together (`NodeAppServer.CPU_LIMIT`); Solace is not capped. A malformed or non-positive value
+  fails the block's boot. In the distributed lane, `apimCpuLimit` applies to each CP/TM/Gateway container, with a
+  default of 1 CPU per component. CP uses a `-Xms1g -Xmx1g` server heap; TM and Gateway use
+  `-Xms512m -Xmx750m`. All-in-one APIM and IS use
+  `-Xms1g -Xmx1536m`. A cap slows boot and
+  CPU-heavy runners (Publisher-style CRUD) far more than wait-bound gateway runners, so set it from measurement.
+- **Browser cap.** The Playwright browser runs on the host, not in a container. On Linux hosts where
+  `src/test/resources/browser-cgroup/setup-browser-cgroup.sh` has created the `/sys/fs/cgroup/pw-browser` group
+  (CI runs it with sudo before the suite), `PlaywrightSsoClient` launches Chromium through
+  `chromium-cgroup-wrapper.sh`, so the whole browser tree shares 1 CPU and 2.5 GiB; each launch logs
+  `Browser launched capped: cgroup … cpu.max=[…] memory.max=[…] pids=[…]`. Elsewhere (macOS has no cgroups) it
+  logs `Browser launched uncapped` and runs as before.
 - **Browser network namespace.** On a Linux host the browser shares the network namespace in which Docker creates
   and removes the other lanes' bridges and veths; Chromium treats every such address change as a network change
   and cancels in-flight requests (`net::ERR_NETWORK_CHANGED`, then `ChunkLoadError`, and the console control never

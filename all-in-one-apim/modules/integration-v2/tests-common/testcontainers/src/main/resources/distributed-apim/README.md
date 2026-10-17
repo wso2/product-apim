@@ -109,8 +109,21 @@ required by the test JVM.
 The composite owns and starts resources in this order:
 
 ```text
-MySQL → CP → TM → Universal Gateway
+MySQL → CP → shared registry initialization → TM → Universal Gateway
 ```
+
+Each APIM component container is capped at 1 CPU. The CP server JVM uses `-Xms1g -Xmx1g`;
+TM and Gateway server JVMs use `-Xms512m -Xmx750m`.
+The CP, TM and Gateway base overlays set `diagnostic_tool.server_configuration.diagnostic_tool_enabled = false`
+to reduce memory use during concurrent test blocks. The Diagnostics JVM starts briefly, then exits after reading
+the setting; automatic Diagnostics captures are disabled.
+The existing `apimCpuLimit` block parameter, when present, overrides the CPU cap for all
+three components; the default remains 1 CPU.
+
+Each block's MySQL container is capped at 0.5 CPU and 512 MiB of RAM, with swap disabled. It uses a 64 MiB InnoDB
+buffer pool, a 16 MiB log buffer, a 16 MiB TempTable RAM threshold, and table caches of 512 entries. Performance
+Schema is disabled. Database files use the image's private anonymous disk volume instead of tmpfs;
+Testcontainers removes the volume when it removes the container, keeping database state isolated between blocks.
 
 It stops them in reverse order and closes the private block network. MySQL is
 available inside that network as `mysql:3306`; CP, TM, and Gateway use the
@@ -129,6 +142,37 @@ The merge order is product defaults, distributed base overlay, component extra
 overlay, and generated runtime values. This keeps the developer setup's
 full-file TOMLs out of the image and prevents runtime-generated addresses from
 being overwritten by a test overlay.
+
+Each component also gets the template overlays under `templates/` (listed in
+`DistributedDynamicApimContainer.TEMPLATE_OVERLAYS`). An overlay is an XML
+skeleton of the literal values to set; `J2TemplateOverlay` writes them into the
+component's own template, which the image-defaults extraction stages beside its
+`deployment.toml` as `<component>/templates/`, and the result is copied into
+`repository/resources/conf/templates/` before boot.
+`templates/repository/conf/registry.xml.j2` turns the registry resource cache
+off at the registry root, as the all-in-one lane's basic overlay does. This is
+not a switch for the separate local `REG_PATH_CACHE`. Each distributed base
+overlay also sets `governance_data.enable_cache = false` and
+`config_data.enable_cache = false`, disabling both mounted resource caches.
+
+## Throttle-data startup prerequisites
+
+The distributed lifecycle registers a CP initializer on the composite. Startup
+is MySQL, CP, registry-service readiness, shared throttle-data hierarchy
+initialization, TM, then Gateway. The callback uses the normal supertenant
+integration actor and registry SOAP service while CP is the only component
+writing this hierarchy. It runs for every distributed block, before TM has a
+path-cache entry and before Gateway starts its asynchronous broker subscriptions.
+Callback failures use the composite's normal reverse teardown.
+
+The later `bootstrapThrottleData` block option retains tenant-specific setup
+and checks readiness; it performs no distributed recovery restarts. Readiness
+requires an active `throttledata` subscription from the current Gateway on
+both CP's event-hub broker and TM's throttling broker. It uses the read-only
+`AndesAdminService.getSubscriptions` operation and validates enabled primary
+publishers. The HA-only `jmsEventPublisher2` and Gateway slow-start warnings do
+not establish readiness. Direct low-level composite users can register their
+own initializer with `withControlPlaneInitializer`.
 
 ## Component-specific test configuration
 
@@ -158,12 +202,42 @@ initialization, backend initialization, external identity-server startup, and
 email mode remain lifecycle concerns and are handled by the distributed
 listener/composite.
 
+## Suite layout
+
+`tests-integration/cucumber-tests/src/test/resources/testng-v2.xml` defines the block and runner layout for both
+topologies. `testng-v2_distributed.xml` mirrors its 37 blocks and 199 runner entries in the same order, with four
+concurrent blocks and identical per-block class parallelism, lifecycle locks, user provisioning, and readiness
+parameters. Distributed test names and block labels have a `Distributed-` / `distributed-` prefix so logs and
+reports identify the topology. Runner classes and feature files are shared.
+
+The distributed suite routes the block's configuration to the component that consumes it:
+
+- CP receives publisher/devportal settings, workflow executor JARs, API-generation templates, network access
+  policies, and SMTP configuration.
+- Gateway receives invocation settings, listener/sender TLS settings, custom authentication handlers, analytics,
+  and outbound WebSocket proxy profiles.
+- TM receives conditional throttling flags; settings consumed by multiple components use the same overlay file
+  for each relevant component.
+
+Blocks running `GatewayRestArtifactsRunner` also configure Gateway's APIM database and tenant loading, with the
+same test encryption key on CP, TM, and Gateway. The custom-handler block retains that same topology wiring.
+Gateway's base overlay sets `event_waiting_time = 0`, matching the all-in-one test baseline: the single CP and
+Gateway use the same database and do not need an HA replication delay before fetching an artifact.
+
+Keep block grouping, runner order, and parallelism aligned when updating either suite. Topology-specific fixes
+belong in component configuration or infrastructure helpers. To compile the framework and suites without starting
+containers, run from the `integration-v2` directory:
+
+```bash
+mvn -pl tests-integration/cucumber-tests -am -DskipTests test-compile
+```
+
 ## Scope and current limitations
 
 This is a manual developer image workflow, not a CI image publication process.
-The current distributed focused suite is
+The distributed product suite is
 `tests-integration/cucumber-tests/src/test/resources/testng-v2_distributed.xml`.
-Run focused suites only while this topology is being developed.
+Runtime verification of the aligned suite is a separate step from layout and compilation checks.
 
 The following boundaries are intentional and should not be mistaken for image
 failures:

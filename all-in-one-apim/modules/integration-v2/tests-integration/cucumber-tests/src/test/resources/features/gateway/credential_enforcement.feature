@@ -152,15 +152,17 @@ Feature: Gateway Credential Enforcement
   # so the refusal could not be distinguished from a missing-certificate rejection. Here the target is an
   # OAUTH2-ONLY API (no mTLS in the mix) and the credential is a WELL-FORMED base64 of a REAL existing user's
   # username:password — a credential the gateway CAN decode and authenticate, and which succeeds on a
-  # basic_auth-permitting API (see the basic-auth scenario above). So the refusal below is genuinely about the
-  # SCHEME not being permitted. The OAuth positive control first proves the API itself is routable.
+  # basic_auth-permitting API (see the basic-auth scenario in gateway/security_enforcement.feature). So the
+  # refusal below is genuinely about the SCHEME not being permitted. The OAuth positive control first proves the
+  # API itself is routable.
   #
   # OBSERVED, and stronger than expected: the refusal is 401 with code 900902 "Missing Credentials" - NOT 900901
   # "Invalid Credentials". The gateway does not merely reject the Basic credential, it does not treat the header as
   # a candidate credential AT ALL for an API that does not permit basic_auth. That is the sharpest possible form of
   # scheme enforcement, and it is exactly what legacy's "Basic abcce" could never have shown: a malformed Basic
-  # header on a basic_auth-PERMITTING API is 900901 (the wrong-password case above), so legacy's bare 401 was
-  # equally consistent with the Basic scheme being fully accepted. The code is pinned per case, empirically: the
+  # header on a basic_auth-PERMITTING API is 900901 (the wrong-password case in
+  # gateway/security_enforcement.feature), so legacy's bare 401 was equally consistent with the Basic scheme being
+  # fully accepted. The code is pinned per case, empirically: the
   # cross-credential scenario above answers 900901 on the very same status, so a status-only assertion would
   # conflate two different product behaviours.
   @cap:gateway @feat:security-enforcement @type:negative @rule:basic-auth @dep:publisher @legacy:APISecurityTestCase
@@ -301,8 +303,9 @@ Feature: Gateway Credential Enforcement
   # Subscription REMOVAL (as opposed to never having subscribed) is enforced on an api-key credential. Ports
   # testInvocationWithApiKeysWithoutSubscription: an api key generated on a SUBSCRIBED application invokes the
   # api_key-secured API (200); once the subscription is DELETED the same key is refused (403). The never-subscribed
-  # OAuth case is covered by the no-subscription scenario above; this one proves the gateway also drops an
-  # already-valid api key when its subscription goes away (a JMS-propagated invalidation, hence the retry window).
+  # OAuth case is covered by the no-subscription scenario in gateway/security_enforcement.feature; this one proves
+  # the gateway also drops an already-valid api key when its subscription goes away (a JMS-propagated
+  # invalidation, hence the retry window).
   @cap:gateway @feat:security-enforcement @type:negative @rule:no-subscription @dep:publisher @dep:devportal @legacy:APISecurityTestCase
   Scenario Outline: An api key is refused after its application's subscription is removed as <actor>
     Given The system is ready
@@ -400,8 +403,8 @@ Feature: Gateway Credential Enforcement
 
     # A password-grant token FOR THAT USER invokes the API (200) — the token is issued and works.
     # No explicit scope on purpose: what is pinned below is credential-change revocation, which is
-    # scope-independent. The "PRODUCTION" scope on this file's other password grants is a key-type marker on the
-    # acting-actor step, not a scope under test.
+    # scope-independent. The "PRODUCTION" scope on the password grants in gateway/security_enforcement.feature is
+    # a key-type marker on the acting-actor step, not a scope under test.
     When I request an OAuth access token using password grant as user "{{pcUsernameLoginName}}" with password "Password@123"
     Then The response status code should be 200
     When I invoke the API at gateway context "{{pcContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds

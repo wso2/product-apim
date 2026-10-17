@@ -23,9 +23,10 @@ import io.cucumber.testng.CucumberOptions;
  * Runner for gateway/endpoint_certificate_invocation — the RUNTIME half of the endpoint-certificate feature
  * (ports the invocation methods of APIEndpointCertificateTestCase). Invokes an API whose backend is the
  * tls-backend HTTPS app on {@code https://nodebackend:3023} and asserts the 500 → upload → 200 → delete → 500
- * transition, so it needs the node backend AND its own container block: the block's TOML overlay shortens the
- * HTTPS sender's SSL-profile read interval and the certificate reloader period from the product defaults (10
- * minutes each), without which the post-upload 200 leg is unreachable inside any test window.
+ * transition, so it needs the node backend and a block whose TOML overlay shortens the HTTPS sender's SSL-profile
+ * read interval and the certificate reloader period from the product defaults (10 minutes each), without which the
+ * post-upload 200 leg is unreachable inside any test window. It runs last in its sequential block because its
+ * propagation recovery can restart the gateway process.
  */
 @CucumberOptions(
         features = "src/test/resources/features/gateway/endpoint_certificate_invocation.feature",
