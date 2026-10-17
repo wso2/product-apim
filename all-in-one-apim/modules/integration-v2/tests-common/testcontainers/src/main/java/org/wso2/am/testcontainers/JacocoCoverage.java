@@ -21,6 +21,7 @@ import org.jacoco.agent.AgentJar;
 import org.jacoco.core.analysis.Analyzer;
 import org.jacoco.core.analysis.CoverageBuilder;
 import org.jacoco.core.analysis.IBundleCoverage;
+import org.jacoco.core.analysis.IClassCoverage;
 import org.jacoco.core.analysis.ICounter;
 import org.jacoco.core.tools.ExecDumpClient;
 import org.jacoco.core.tools.ExecFileLoader;
@@ -84,6 +85,9 @@ public final class JacocoCoverage {
 
     /** Upper bound on a single dump, so an unresponsive agent can't stall test teardown forever. */
     private static final int DUMP_TIMEOUT_SECONDS = 60;
+
+    /** How many no-match class names {@link #reportDetailed} lists in its warning. */
+    private static final int NO_MATCH_LOG_LIMIT = 20;
 
     private JacocoCoverage() {
     }
@@ -495,6 +499,17 @@ public final class JacocoCoverage {
      */
     public static double report(List<File> execFiles, List<File> classfiles, List<File> sourceRoots,
                                 File xmlOut, File htmlDir, String title) throws IOException {
+        return reportDetailed(execFiles, classfiles, sourceRoots, xmlOut, htmlDir, title).linePercent();
+    }
+
+    /**
+     * {@link #report} returning the full {@link CoverageResult}: every bundle counter, the analysis-failure count,
+     * and the classes whose execution data does not match the analyzed bytecode ({@link CoverageResult#noMatchClasses()}).
+     * A no-match class has execution data recorded under the same name but a different class id, i.e. the class
+     * files given here are not the bytes that ran; its probes are discarded and it reports as uncovered.
+     */
+    public static CoverageResult reportDetailed(List<File> execFiles, List<File> classfiles, List<File> sourceRoots,
+                                                File xmlOut, File htmlDir, String title) throws IOException {
         ExecFileLoader loader = new ExecFileLoader();
         for (File exec : execFiles) {
             loader.load(exec);
@@ -551,7 +566,99 @@ public final class JacocoCoverage {
                 line.getCoveredCount(), line.getTotalCount(), String.format("%.1f", linePct),
                 instr.getCoveredCount(), instr.getTotalCount());
         logger.info("Report: xml={} html={}/index.html", xmlOut, htmlDir);
-        return linePct;
+
+        List<String> noMatch = new ArrayList<>();
+        for (IClassCoverage cc : builder.getNoMatchClasses()) {
+            noMatch.add(cc.getName().replace('/', '.'));
+        }
+        java.util.Collections.sort(noMatch);
+        if (!noMatch.isEmpty()) {
+            logger.warn("Coverage analysis found {} class(es) whose execution data does not match the analyzed "
+                    + "bytecode (reported as uncovered); first: {}", noMatch.size(),
+                    noMatch.subList(0, Math.min(NO_MATCH_LOG_LIMIT, noMatch.size())));
+        }
+        return new CoverageResult(bundle, execFiles.size(), loader.getSessionInfoStore().getInfos().size(),
+                loader.getExecutionDataStore().getContents().size(), skipped, noMatch);
+    }
+
+    /**
+     * Outcome of {@link #reportDetailed}: the bundle counters plus the inputs and integrity signals behind them.
+     */
+    public static final class CoverageResult {
+        private final ICounter lines;
+        private final ICounter instructions;
+        private final ICounter branches;
+        private final ICounter methods;
+        private final ICounter classes;
+        private final int execFiles;
+        private final int sessions;
+        private final int executionDataEntries;
+        private final int analysisFailures;
+        private final List<String> noMatchClasses;
+
+        CoverageResult(IBundleCoverage bundle, int execFiles, int sessions, int executionDataEntries,
+                       int analysisFailures, List<String> noMatchClasses) {
+            this.lines = bundle.getLineCounter();
+            this.instructions = bundle.getInstructionCounter();
+            this.branches = bundle.getBranchCounter();
+            this.methods = bundle.getMethodCounter();
+            this.classes = bundle.getClassCounter();
+            this.execFiles = execFiles;
+            this.sessions = sessions;
+            this.executionDataEntries = executionDataEntries;
+            this.analysisFailures = analysisFailures;
+            this.noMatchClasses = java.util.Collections.unmodifiableList(new ArrayList<>(noMatchClasses));
+        }
+
+        public ICounter lines() {
+            return lines;
+        }
+
+        public ICounter instructions() {
+            return instructions;
+        }
+
+        public ICounter branches() {
+            return branches;
+        }
+
+        public ICounter methods() {
+            return methods;
+        }
+
+        public ICounter classes() {
+            return classes;
+        }
+
+        /** Number of {@code .exec} files loaded. */
+        public int execFiles() {
+            return execFiles;
+        }
+
+        /** Number of agent sessions recorded across the loaded {@code .exec} files. */
+        public int sessions() {
+            return sessions;
+        }
+
+        /** Number of per-class execution-data entries after merging the loaded {@code .exec} files. */
+        public int executionDataEntries() {
+            return executionDataEntries;
+        }
+
+        /** Classes dropped from the denominator because they could not be read or parsed. */
+        public int analysisFailures() {
+            return analysisFailures;
+        }
+
+        /** Dotted names of the analyzed classes whose execution data has a different class id. */
+        public List<String> noMatchClasses() {
+            return noMatchClasses;
+        }
+
+        /** Line coverage in percent over the analyzed classes; 0 when there are no lines. */
+        public double linePercent() {
+            return lines.getTotalCount() == 0 ? 0.0 : lines.getCoveredRatio() * 100.0;
+        }
     }
 
     private static ISourceFileLocator buildSourceLocator(List<File> sourceRoots) {
