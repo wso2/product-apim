@@ -72,7 +72,9 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -95,6 +97,15 @@ public class SimpleHTTPClient {
 
     /** Read-stall bound applied to every request this thread sends inside {@link #withSocketTimeout}. */
     private static final ThreadLocal<Integer> SCOPED_SOCKET_TIMEOUT = new ThreadLocal<>();
+    private static final ThreadLocal<RequestDeadline> SCOPED_REQUEST_DEADLINE = new ThreadLocal<>();
+    private static final ScheduledThreadPoolExecutor DEADLINE_ABORTS = new ScheduledThreadPoolExecutor(1, task -> {
+        Thread thread = new Thread(task, "http-request-deadlines");
+        thread.setDaemon(true);
+        return thread;
+    });
+    static {
+        DEADLINE_ABORTS.setRemoveOnCancelPolicy(true);
+    }
 
     /** Set while this thread runs inside {@link #withoutGeneralErrorRetry}. */
     private static final ThreadLocal<Boolean> GENERAL_ERROR_RETRY_SUSPENDED = new ThreadLocal<>();
@@ -184,6 +195,65 @@ public class SimpleHTTPClient {
         }
     }
 
+    /** Bounds an infrastructure operation through connection acquisition, headers and response-body consumption. */
+    public <T> T withRequestDeadline(int timeoutMillis, ScopedCall<T> call) throws IOException {
+        if (timeoutMillis <= 0) {
+            throw new IllegalArgumentException("Request deadline must be positive");
+        }
+        RequestDeadline enclosing = SCOPED_REQUEST_DEADLINE.get();
+        long end = System.nanoTime() + TimeUnit.MILLISECONDS.toNanos(timeoutMillis);
+        RequestDeadline deadline = new RequestDeadline(enclosing == null ? end : Math.min(end, enclosing.end));
+        var cancellation = DEADLINE_ABORTS.schedule(deadline::abort,
+                Math.max(0, deadline.end - System.nanoTime()), TimeUnit.NANOSECONDS);
+        SCOPED_REQUEST_DEADLINE.set(deadline);
+        try {
+            return withSocketTimeout(deadline.remainingMillis(), call);
+        } finally {
+            cancellation.cancel(false);
+            if (enclosing == null) {
+                SCOPED_REQUEST_DEADLINE.remove();
+            } else {
+                SCOPED_REQUEST_DEADLINE.set(enclosing);
+            }
+        }
+    }
+
+    private static final class RequestDeadline {
+        private final long end;
+        private final AtomicReference<HttpRequestBase> request = new AtomicReference<>();
+
+        private RequestDeadline(long end) {
+            this.end = end;
+        }
+
+        private int remainingMillis() throws java.net.SocketTimeoutException {
+            long remaining = end - System.nanoTime();
+            if (remaining <= 0) {
+                abort();
+                throw new java.net.SocketTimeoutException("Infrastructure HTTP request deadline exhausted");
+            }
+            return (int) Math.max(1, TimeUnit.NANOSECONDS.toMillis(remaining));
+        }
+
+        private void bind(HttpUriRequest candidate) throws IOException {
+            if (!(candidate instanceof HttpRequestBase configurable)) {
+                throw new IOException("Infrastructure deadline requires an abortable HTTP request");
+            }
+            request.set(configurable);
+            int remaining = remainingMillis();
+            RequestConfig base = configurable.getConfig() == null ? DEFAULT_REQUEST_CONFIG : configurable.getConfig();
+            configurable.setConfig(RequestConfig.copy(base).setConnectTimeout(remaining)
+                    .setConnectionRequestTimeout(remaining).build());
+        }
+
+        private void abort() {
+            HttpRequestBase active = request.get();
+            if (active != null) {
+                active.abort();
+            }
+        }
+    }
+
     /**
      * Runs {@code call} with the transient {@value #GENERAL_ERROR_CODE} retry (see {@link #withGeneralErrorRetry})
      * switched off for every request it sends on this thread, so each request is sent exactly once. For a step
@@ -231,6 +301,10 @@ public class SimpleHTTPClient {
      * holds the server's management lock while it runs.
      */
     private CloseableHttpResponse send(HttpUriRequest request) throws IOException {
+        RequestDeadline deadline = SCOPED_REQUEST_DEADLINE.get();
+        if (deadline != null) {
+            deadline.bind(request);
+        }
         Integer scoped = SCOPED_SOCKET_TIMEOUT.get();
         if (scoped != null) {
             applySocketTimeoutIfUnset(request, scoped);
@@ -312,7 +386,10 @@ public class SimpleHTTPClient {
         long waitStart = System.currentTimeMillis();
         boolean acquired;
         try {
-            acquired = lock.tryLock(MANAGEMENT_LOCK_WAIT_MILLIS, TimeUnit.MILLISECONDS);
+            RequestDeadline deadline = SCOPED_REQUEST_DEADLINE.get();
+            long waitMillis = deadline == null ? MANAGEMENT_LOCK_WAIT_MILLIS
+                    : Math.min(MANAGEMENT_LOCK_WAIT_MILLIS, deadline.remainingMillis());
+            acquired = lock.tryLock(waitMillis, TimeUnit.MILLISECONDS);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             throw new InterruptedIOException("Interrupted while waiting for the management lock for "

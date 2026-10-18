@@ -114,6 +114,11 @@ MySQL → CP → shared registry initialization → TM → Universal Gateway
 
 Each APIM component container is capped at 1 CPU. The CP server JVM uses `-Xms1g -Xmx1g`;
 TM and Gateway server JVMs use `-Xms512m -Xmx750m`.
+External Identity Server JVMs started by distributed blocks use `-Xms750m -Xmx1g`;
+all-in-one blocks retain `-Xms1g -Xmx1536m` for their external Identity Servers.
+The shared Solace helper caps PubSub+ at 0.25 CPU and 512 MiB of RAM, and its control-plane shim
+at 0.25 CPU and 100 MiB. The shared Squid proxy is capped at 0.5 CPU and 50 MiB.
+These helper limits apply to both topologies, with swap disabled for each helper container.
 The CP, TM and Gateway base overlays set `diagnostic_tool.server_configuration.diagnostic_tool_enabled = false`
 to reduce memory use during concurrent test blocks. The Diagnostics JVM starts briefly, then exits after reading
 the setting; automatic Diagnostics captures are disabled.
@@ -157,6 +162,11 @@ overlay also sets `governance_data.enable_cache = false` and
 
 ## Throttle-data startup prerequisites
 
+CP manages policies and publishes their changes; TM owns local Siddhi policy execution. Runtime-derived values
+set `apim.throttling.enable_policy_deployment=false` on CP and `true` on TM after block overlays. The separate
+`enable_policy_deploy` setting is retained. This avoids a second policy engine and duplicate tenant warm-up on CP
+while preserving TM enforcement and Gateway's counter/decision routing.
+
 The distributed lifecycle registers a CP initializer on the composite. Startup
 is MySQL, CP, registry-service readiness, shared throttle-data hierarchy
 initialization, TM, then Gateway. The callback uses the normal supertenant
@@ -164,6 +174,16 @@ integration actor and registry SOAP service while CP is the only component
 writing this hierarchy. It runs for every distributed block, before TM has a
 path-cache entry and before Gateway starts its asynchronous broker subscriptions.
 Callback failures use the composite's normal reverse teardown.
+
+Registry hierarchy initialization uses one bounded window (180 seconds normally, the CP startup budget during
+its initializer). Reads can be retried during warm-up; each missing collection gets one creation request. A lost
+creation response is reconciled through reads, without replaying the mutation. Every path must become readable
+and identify itself as a collection; authentication, storage and explicit creation errors still fail. Bootstrap
+requests do not replace a scenario's assertion response. Existing live broker readiness gates run afterwards.
+
+On a transport failure or exhausted initialization budget, lifecycle callers save bounded diagnostic snapshots
+under `target/logs/registry-bootstrap/`: CP threads/heap and, in distributed mode, MySQL process/lock state. The
+capture is read-only and cannot turn an initialization failure into a pass.
 
 The later `bootstrapThrottleData` block option retains tenant-specific setup
 and checks readiness; it performs no distributed recovery restarts. Readiness

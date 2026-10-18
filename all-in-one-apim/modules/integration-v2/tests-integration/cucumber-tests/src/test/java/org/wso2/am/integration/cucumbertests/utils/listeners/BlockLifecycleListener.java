@@ -29,6 +29,7 @@ import org.wso2.am.integration.cucumbertests.utils.Identity;
 import org.wso2.am.integration.cucumbertests.utils.IntegrationActors;
 import org.wso2.am.integration.cucumbertests.utils.ModulePathResolver;
 import org.wso2.am.integration.cucumbertests.utils.RegistryAdminService;
+import org.wso2.am.integration.cucumbertests.utils.RegistryBootstrapDiagnostics;
 import org.wso2.am.integration.cucumbertests.utils.ServerReadiness;
 import org.wso2.am.integration.cucumbertests.utils.SecondaryUserStoreProvisioner;
 import org.wso2.am.integration.cucumbertests.utils.TenantUserProvisioner;
@@ -551,10 +552,12 @@ public class BlockLifecycleListener implements ITestListener {
             throws Exception {
 
         boolean repaired = RegistryAdminService.ensureThrottleDataHierarchy(Utils.getBaseUrl(),
-                Identity.resolveActor("admin"));
+                Identity.resolveActor("admin"),
+                RegistryBootstrapDiagnostics.forRuntime(runtime, label, "carbon.super"));
         if (tenantUsersEnabled) {
             repaired |= RegistryAdminService.ensureThrottleDataHierarchy(Utils.getBaseUrl(),
-                    Identity.resolveActor("admin@tenant1.com"));
+                    Identity.resolveActor("admin@tenant1.com"),
+                    RegistryBootstrapDiagnostics.forRuntime(runtime, label, "tenant1.com"));
         }
 
         ThrottleDataReadiness.Result observed = ThrottleDataReadiness.await(runtime, THROTTLE_DATA_OBSERVE_SECONDS);
@@ -925,7 +928,7 @@ public class BlockLifecycleListener implements ITestListener {
             String moduleDir = ModulePathResolver.getModuleDir(BlockLifecycleListener.class);
             extraContent = Files.readString(Paths.get(moduleDir, isTomlExtraOverlayPath).normalize());
         }
-        DynamicISContainer is = new DynamicISContainer(label, extraContent);
+        DynamicISContainer is = createExternalIdentityServer(label, extraContent);
         is.withNetwork(blockNetwork).withNetworkAliases(DynamicISContainer.NETWORK_ALIAS);
         if (cpuLimit.isPresent()) {
             is.withCpuLimit(cpuLimit.get());
@@ -949,6 +952,11 @@ public class BlockLifecycleListener implements ITestListener {
                 + (isTomlExtraOverlayPath == null || isTomlExtraOverlayPath.isBlank() ? "none"
                         : isTomlExtraOverlayPath) + "'); isBaseUrl=" + isBaseUrl);
         return is;
+    }
+
+    /** Factory hook for topology-specific external IS settings; all-in-one retains the container defaults. */
+    protected DynamicISContainer createExternalIdentityServer(String label, String extraOverlayContent) {
+        return new DynamicISContainer(label, extraOverlayContent);
     }
 
     /** Factory hook used by the distributed listener; all remaining block lifecycle is shared. */

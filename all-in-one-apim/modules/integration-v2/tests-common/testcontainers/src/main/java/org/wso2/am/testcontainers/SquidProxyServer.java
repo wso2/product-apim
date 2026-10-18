@@ -65,6 +65,7 @@ public class SquidProxyServer {
 
     /** Both Squid instances together use a few percent of one core at peak (measured), so half a CPU is ample. */
     public static final CpuLimit CPU_LIMIT = CpuLimit.of(0.5);
+    private static final long MEMORY_LIMIT_BYTES = 50L * 1024 * 1024;
 
     private final GenericContainer<?> container;
     private final String blockLabel;
@@ -78,7 +79,10 @@ public class SquidProxyServer {
                 .withExposedPorts(ANON_PORT, AUTH_PORT)
                 .withNetwork(network)
                 .withNetworkAliases("squid-proxy")
-                .withCreateContainerCmdModifier(CPU_LIMIT::applyTo)
+                .withCreateContainerCmdModifier(cmd -> {
+                    CPU_LIMIT.applyTo(cmd);
+                    cmd.getHostConfig().withMemory(MEMORY_LIMIT_BYTES).withMemorySwap(MEMORY_LIMIT_BYTES);
+                })
                 .waitingFor(Wait.forListeningPort().withStartupTimeout(Duration.ofMinutes(2)));
 
         container.withLogConsumer(new JclLogConsumer(logger));

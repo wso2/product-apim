@@ -514,6 +514,13 @@ public class DistributedDynamicApimContainer implements ApimRuntime {
         return mysql.getHostJdbcUrl(database);
     }
 
+    /** Read-only snapshot for diagnosing a slow registry bootstrap before its database is torn down. */
+    public Container.ExecResult inspectDatabaseLocks() throws IOException, InterruptedException {
+        return mysql.execInContainer("timeout", "10", "mysql", "-h127.0.0.1", "-uroot",
+                "-p" + DistributedMySqlContainer.ROOT_PASSWORD, "-e",
+                "SHOW FULL PROCESSLIST; SHOW ENGINE INNODB STATUS;");
+    }
+
     private GenericContainer<?> component(String image, String alias, String toml, String heapOpts,
                                           int portOffset, int... ports) {
         Integer[] exposedPorts = new Integer[ports.length];
@@ -675,6 +682,7 @@ public class DistributedDynamicApimContainer implements ApimRuntime {
         switch (component) {
             case CP:
                 values.put("server.hostname", CP_ALIAS);
+                values.put("apim.throttling.enable_policy_deployment", false);
                 values.put("database.apim_db.url", mysqlTomlUrl(DistributedMySqlContainer.APIM_DATABASE));
                 values.put("database.shared_db.url", mysqlTomlUrl(DistributedMySqlContainer.SHARED_DATABASE));
                 values.put("apim.key_manager.service_url", controlPlaneServices);
@@ -688,6 +696,7 @@ public class DistributedDynamicApimContainer implements ApimRuntime {
                 break;
             case TM:
                 values.put("server.hostname", TM_ALIAS);
+                values.put("apim.throttling.enable_policy_deployment", true);
                 values.put("database.apim_db.url", mysqlTomlUrl(DistributedMySqlContainer.APIM_DATABASE));
                 values.put("database.shared_db.url", mysqlTomlUrl(DistributedMySqlContainer.SHARED_DATABASE));
                 values.put("apim.event_hub.service_url", controlPlaneServices);

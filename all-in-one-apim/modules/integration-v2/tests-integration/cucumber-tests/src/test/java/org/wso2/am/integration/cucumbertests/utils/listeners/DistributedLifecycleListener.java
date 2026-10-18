@@ -8,12 +8,14 @@ import org.testng.ITestContext;
 import org.testcontainers.containers.Network;
 import org.wso2.am.integration.cucumbertests.utils.Identity;
 import org.wso2.am.integration.cucumbertests.utils.RegistryAdminService;
+import org.wso2.am.integration.cucumbertests.utils.RegistryBootstrapDiagnostics;
 import org.wso2.am.integration.cucumbertests.utils.TenantUserProvisioner;
 import org.wso2.am.integration.cucumbertests.utils.ThrottleDataReadiness;
 import org.wso2.am.integration.test.utils.Constants;
 import org.wso2.am.testcontainers.ApimRuntime;
 import org.wso2.am.testcontainers.DistributedApimTomlBuilder;
 import org.wso2.am.testcontainers.DistributedDynamicApimContainer;
+import org.wso2.am.testcontainers.DynamicISContainer;
 import org.wso2.carbon.automation.engine.context.beans.User;
 
 import java.io.IOException;
@@ -21,6 +23,14 @@ import java.util.Map;
 
 /** Block lifecycle variant that swaps the all-in-one APIM runtime for the distributed composite. */
 public class DistributedLifecycleListener extends BlockLifecycleListener {
+
+    private static final String EXTERNAL_IS_HEAP_OPTS = "-Xms750m -Xmx1g";
+
+    @Override
+    protected DynamicISContainer createExternalIdentityServer(String label, String extraOverlayContent) {
+        return new DynamicISContainer(label, extraOverlayContent)
+                .withEnv("JVM_MEM_OPTS", EXTERNAL_IS_HEAP_OPTS);
+    }
 
     @Override
     protected ApimRuntime createApimContainer(String label, ITestContext context, Network blockNetwork)
@@ -31,13 +41,15 @@ public class DistributedLifecycleListener extends BlockLifecycleListener {
         }
         // Every distributed Gateway starts both broker consumers, independently of the block's readiness flag.
         // Establish the shared collection while CP is its only writer and TM's path cache is still empty.
-        return new DistributedDynamicApimContainer(label, blockNetwork)
-                .withControlPlaneInitializer(baseUrl -> {
-                    TenantUserProvisioner.addSuperTenant();
-                    User actor = Identity.resolveActor("admin");
-                    RegistryAdminService.awaitAvailable(baseUrl, actor, Constants.SERVER_STARTUP_WAIT_TIME);
-                    RegistryAdminService.ensureThrottleDataHierarchy(baseUrl, actor);
-                });
+        DistributedDynamicApimContainer runtime = new DistributedDynamicApimContainer(label, blockNetwork);
+        return runtime.withControlPlaneInitializer(baseUrl -> {
+            TenantUserProvisioner.addSuperTenant();
+            User actor = Identity.resolveActor("admin");
+            RegistryAdminService.awaitAvailable(baseUrl, actor, Constants.SERVER_STARTUP_WAIT_TIME);
+            RegistryAdminService.ensureThrottleDataHierarchy(baseUrl, actor,
+                    Constants.SERVER_STARTUP_WAIT_TIME,
+                    RegistryBootstrapDiagnostics.forRuntime(runtime, label, "carbon.super"));
+        });
     }
 
     /** The supertenant broker hierarchy already exists; retain tenant setup without restarting components. */
@@ -46,7 +58,8 @@ public class DistributedLifecycleListener extends BlockLifecycleListener {
             throws Exception {
         if (tenantUsersEnabled) {
             RegistryAdminService.ensureThrottleDataHierarchy(runtime.getServletHttpsUrl(),
-                    Identity.resolveActor("admin@tenant1.com"));
+                    Identity.resolveActor("admin@tenant1.com"),
+                    RegistryBootstrapDiagnostics.forRuntime(runtime, label, "tenant1.com"));
         }
         ThrottleDataReadiness.Result readiness = ThrottleDataReadiness.await(runtime, 180);
         if (readiness == null || !readiness.ready()) {

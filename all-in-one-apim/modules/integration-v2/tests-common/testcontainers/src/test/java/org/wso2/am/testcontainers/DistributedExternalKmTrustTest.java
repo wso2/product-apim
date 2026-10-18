@@ -60,6 +60,10 @@ public class DistributedExternalKmTrustTest {
             constructor.setAccessible(true);
             DistributedDynamicApimContainer runtime = constructor.newInstance("km-trust", defaults[0], defaults[1],
                     defaults[2], schema, schema, network, false);
+            runtime.withTomlExtraOverlay(DistributedApimTomlBuilder.Component.CP,
+                    "[apim.throttling]\nenable_policy_deployment=true\n");
+            runtime.withTomlExtraOverlay(DistributedApimTomlBuilder.Component.TM,
+                    "[apim.throttling]\nenable_policy_deployment=false\n");
             if (externalTrust) {
                 runtime.withExternalKmTrust();
             }
@@ -88,8 +92,12 @@ public class DistributedExternalKmTrustTest {
                         files.get("/opt/wso2/repository/conf/deployment.toml"), StandardCharsets.UTF_8));
                 Assert.assertEquals(toml.at("/apim/event_hub/service_url").asText(), expectedServices, name);
                 if (name.equals("cp")) {
+                    Assert.assertFalse(toml.at("/apim/throttling/enable_policy_deployment").asBoolean());
                     Assert.assertEquals(toml.at("/apim/key_manager/service_url").asText(), expectedServices);
                     Assert.assertEquals(container.getNetworkAliases().contains("wso2am"), notifications);
+                }
+                if (name.equals("tm")) {
+                    Assert.assertTrue(toml.at("/apim/throttling/enable_policy_deployment").asBoolean());
                 }
                 Assert.assertEquals(toml.at("/server/hostname").asText(), "apim-" +
                         (name.equals("gateway") ? "gw" : name));
