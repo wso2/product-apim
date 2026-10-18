@@ -46,7 +46,7 @@ public class DistributedMySqlContainer extends GenericContainer<DistributedMySql
     public static final String SHARED_DATABASE = "WSO2AM_SHARED_DB";
 
     private static final CpuLimit CPU_LIMIT = CpuLimit.of(0.5);
-    private static final long MEMORY_LIMIT_BYTES = 512L * 1024 * 1024;
+    private static final long MEMORY_LIMIT_BYTES = 384L * 1024 * 1024;
     private static final String SEED_MARKER_TABLE = "INTEGRATION_V2_SCHEMA_SEED";
 
     private final Map<String, Path> schemaFiles = new LinkedHashMap<>();
@@ -69,7 +69,7 @@ public class DistributedMySqlContainer extends GenericContainer<DistributedMySql
             CPU_LIMIT.applyTo(cmd);
             cmd.getHostConfig().withMemory(MEMORY_LIMIT_BYTES).withMemorySwap(MEMORY_LIMIT_BYTES);
         });
-        // Keep buffers and instrumentation within the container's 512 MiB budget.
+        // Keep buffers and instrumentation within the container's 384 MiB budget.
         withCommand("--performance-schema=OFF",
                 "--innodb-buffer-pool-size=64M",
                 "--innodb-log-buffer-size=16M",

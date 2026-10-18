@@ -56,8 +56,11 @@ public class DistributedDynamicApimContainer implements ApimRuntime {
     private static final String GATEWAY_ALIAS = "apim-gw";
     /** Default CPU cap and server JVM heap sizes for distributed APIM components. */
     private static final CpuLimit DEFAULT_COMPONENT_CPU_LIMIT = CpuLimit.of(1);
-    private static final String CP_HEAP_OPTS = "-Xms1g -Xmx1g";
-    private static final String TM_GATEWAY_HEAP_OPTS = "-Xms512m -Xmx750m";
+    private static final long CP_MEMORY_LIMIT_BYTES = 1_536L * 1024 * 1024;
+    private static final long TM_MEMORY_LIMIT_BYTES = 896L * 1024 * 1024;
+    private static final long GATEWAY_MEMORY_LIMIT_BYTES = 1_536L * 1024 * 1024;
+    private static final String CP_HEAP_OPTS = "-Xms512m -Xmx768m";
+    private static final String TM_GATEWAY_HEAP_OPTS = "-Xms256m -Xmx384m";
     private static final String SERVICES_PATH = "/services/";
     private static final String TEMPLATES_PATH = SERVER_HOME + "/repository/resources/conf/templates/";
     /**
@@ -522,6 +525,7 @@ public class DistributedDynamicApimContainer implements ApimRuntime {
     }
 
     private GenericContainer<?> component(String image, String alias, String toml, String heapOpts,
+                                          long memoryLimitBytes,
                                           int portOffset, int... ports) {
         Integer[] exposedPorts = new Integer[ports.length];
         for (int i = 0; i < ports.length; i++) {
@@ -539,8 +543,10 @@ public class DistributedDynamicApimContainer implements ApimRuntime {
                         .withStartupTimeout(Duration.ofMinutes(20)));
         container.withCreateContainerCmdModifier(cmd -> {
             componentCpuLimit.applyTo(cmd);
+            cmd.getHostConfig().withMemory(memoryLimitBytes).withMemorySwap(memoryLimitBytes);
         });
-        logger.info("Distributed APIM component '{}' CPU cap: {}", alias, componentCpuLimit);
+        logger.info("Distributed APIM component '{}' CPU cap: {}, memory cap: {} MiB", alias, componentCpuLimit,
+                memoryLimitBytes / (1024 * 1024));
         container.withLogConsumer(componentLogConsumer(alias));
         return container;
     }
@@ -578,9 +584,11 @@ public class DistributedDynamicApimContainer implements ApimRuntime {
         String tmToml = buildToml(tmDefaults, DistributedApimTomlBuilder.Component.TM, "tm-base-overlay.toml");
         String gatewayToml = buildToml(gatewayDefaults, DistributedApimTomlBuilder.Component.GATEWAY,
                 "gateway-base-overlay.toml");
-        cp = component(CP_IMAGE, CP_ALIAS, cpToml, CP_HEAP_OPTS, 0, 9443, 9763, 5672);
-        tm = component(TM_IMAGE, TM_ALIAS, tmToml, TM_GATEWAY_HEAP_OPTS, 0, 9443, 5672, 9611, 9711);
-        gateway = component(GATEWAY_IMAGE, GATEWAY_ALIAS, gatewayToml, TM_GATEWAY_HEAP_OPTS, 0, 9443,
+        cp = component(CP_IMAGE, CP_ALIAS, cpToml, CP_HEAP_OPTS, CP_MEMORY_LIMIT_BYTES, 0, 9443, 9763, 5672);
+        tm = component(TM_IMAGE, TM_ALIAS, tmToml, TM_GATEWAY_HEAP_OPTS, TM_MEMORY_LIMIT_BYTES,
+                0, 9443, 5672, 9611, 9711);
+        gateway = component(GATEWAY_IMAGE, GATEWAY_ALIAS, gatewayToml, TM_GATEWAY_HEAP_OPTS,
+                GATEWAY_MEMORY_LIMIT_BYTES, 0, 9443,
                 Constants.GATEWAY_HTTPS_PORT, Constants.GATEWAY_HTTP_PORT, Constants.GATEWAY_WS_PORT,
                 Constants.GATEWAY_WSS_PORT, Constants.WEBSUB_EVENT_RECEIVER_PORT);
         if (externalIsNotificationAlias) {

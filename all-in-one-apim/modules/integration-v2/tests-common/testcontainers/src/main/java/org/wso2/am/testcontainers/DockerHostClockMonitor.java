@@ -23,6 +23,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 /** One unprivileged clock observer per suite, using the same Linux kernel clock as the product containers. */
 public final class DockerHostClockMonitor implements AutoCloseable {
+    private static final long DISTRIBUTED_MEMORY_LIMIT_BYTES = 128L * 1024 * 1024;
     private static final ObjectMapper JSON = new ObjectMapper();
     private static final long WARMUP_NANOS = Duration.ofSeconds(20).toNanos();
     private final ClockSampleDetector detector = new ClockSampleDetector();
@@ -37,6 +38,10 @@ public final class DockerHostClockMonitor implements AutoCloseable {
     private volatile boolean closing;
 
     public DockerHostClockMonitor(Path directory) throws IOException {
+        this(directory, false);
+    }
+
+    public DockerHostClockMonitor(Path directory, boolean distributedTopology) throws IOException {
         this.directory = directory;
         Files.createDirectories(directory);
         samples = Files.newBufferedWriter(directory.resolve("samples.jsonl"));
@@ -47,8 +52,11 @@ public final class DockerHostClockMonitor implements AutoCloseable {
                         "/tmp/apim-clock-probe.js")
                 .withCreateContainerCmdModifier(cmd -> {
                     cmd.withEntrypoint("node");
-                    cmd.getHostConfig().withNanoCPUs(100_000_000L).withMemory(128L * 1024 * 1024)
-                            .withMemorySwap(128L * 1024 * 1024);
+                    cmd.getHostConfig().withNanoCPUs(100_000_000L);
+                    if (distributedTopology) {
+                        cmd.getHostConfig().withMemory(DISTRIBUTED_MEMORY_LIMIT_BYTES)
+                                .withMemorySwap(DISTRIBUTED_MEMORY_LIMIT_BYTES);
+                    }
                 })
                 .withCommand("/tmp/apim-clock-probe.js")
                 .withLogConsumer(this::consume)

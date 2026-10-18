@@ -366,14 +366,14 @@ public class BlockLifecycleListener implements ITestListener {
             // APIM resolves "nodebackend". The flag is set only AFTER a successful attach, so teardown never
             // tries to detach something that was never attached.
             if (Boolean.parseBoolean(param(context, PARAM_INIT_BACKEND))) {
-                NodeAppServer.getInstance().attachToNetwork(blockNetwork);
+                nodeAppServer().attachToNetwork(blockNetwork);
                 TestContext.setShared(BACKEND_ATTACHED_KEY, Boolean.TRUE);
                 logger.info("Block '" + label + "' attached the shared NodeAppServer backend to its network");
             }
 
             if (Boolean.parseBoolean(param(context, PARAM_INIT_PROXY))) {
                 // Publish before start() so a partial startup is still visible to failure-safe teardown.
-                SquidProxyServer proxy = new SquidProxyServer(label, blockNetwork);
+                SquidProxyServer proxy = createSquidProxyServer(label, blockNetwork);
                 TestContext.setShared(SQUID_PROXY_KEY, proxy);
                 proxy.start();
                 logger.info("Block '" + label + "' booted its per-block Squid proxy");
@@ -746,7 +746,7 @@ public class BlockLifecycleListener implements ITestListener {
             if (Boolean.TRUE.equals(TestContext.get(BACKEND_ATTACHED_KEY))) {
                 TestContext.removeShared(BACKEND_ATTACHED_KEY);
                 try {
-                    NodeAppServer.getInstance().detachFromNetwork(network);
+                    nodeAppServer().detachFromNetwork(network);
                 } catch (Throwable e) {
                     logger.warn("Block '" + label + "' NodeAppServer detach failed (network may leak): "
                             + e.getMessage());
@@ -957,6 +957,16 @@ public class BlockLifecycleListener implements ITestListener {
     /** Factory hook for topology-specific external IS settings; all-in-one retains the container defaults. */
     protected DynamicISContainer createExternalIdentityServer(String label, String extraOverlayContent) {
         return new DynamicISContainer(label, extraOverlayContent);
+    }
+
+    /** Shared backend factory; all-in-one leaves its memory unlimited. */
+    protected NodeAppServer nodeAppServer() {
+        return NodeAppServer.getInstance();
+    }
+
+    /** Per-block proxy factory; all-in-one leaves its memory unlimited. */
+    protected SquidProxyServer createSquidProxyServer(String label, Network blockNetwork) {
+        return new SquidProxyServer(label, blockNetwork);
     }
 
     /** Factory hook used by the distributed listener; all remaining block lifecycle is shared. */

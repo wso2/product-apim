@@ -64,13 +64,20 @@ public class NodeAppServer {
      * cap bounds its total share of the runner rather than a per-block budget.
      */
     public static final CpuLimit CPU_LIMIT = CpuLimit.of(1);
+    private static final long DISTRIBUTED_MEMORY_LIMIT_BYTES = 1_024L * 1024 * 1024;
 
     /** {@code containerPort -> explicitly chosen host port}, redrawn per boot attempt. See {@link #freeHostPort()}. */
     private final Map<Integer, Integer> stableHostPorts = new LinkedHashMap<>();
 
     private final GenericContainer<?> container;
+    private final Long memoryLimitBytes;
 
     public NodeAppServer() {
+        this(null);
+    }
+
+    public NodeAppServer(Long memoryLimitBytes) {
+        this.memoryLimitBytes = memoryLimitBytes;
         logger.info("Initializing NodeAppServer...");
         container = startWithPortRetry();
         logger.info("NodeAppServer successfully initialized (" + CPU_LIMIT + ")");
@@ -122,6 +129,9 @@ public class NodeAppServer {
                 .withCreateContainerCmdModifier(cmd -> {
                     declareStableHostPorts(cmd);
                     CPU_LIMIT.applyTo(cmd);
+                    if (memoryLimitBytes != null) {
+                        cmd.getHostConfig().withMemory(memoryLimitBytes).withMemorySwap(memoryLimitBytes);
+                    }
                 })
                 .waitingFor(Wait.forListeningPort().withStartupTimeout(Duration.ofMinutes(5)));
         candidate.withLogConsumer(new JclLogConsumer(logger));
@@ -231,13 +241,21 @@ public class NodeAppServer {
     private static volatile RuntimeException initializationFailure;
 
     public static synchronized NodeAppServer getInstance() {
+        return getInstance(null);
+    }
+
+    public static synchronized NodeAppServer getInstance(boolean distributedTopology) {
+        return getInstance(distributedTopology ? DISTRIBUTED_MEMORY_LIMIT_BYTES : null);
+    }
+
+    private static synchronized NodeAppServer getInstance(Long memoryLimitBytes) {
         if (initializationFailure != null) {
             throw new IllegalStateException("NodeAppServer failed to start earlier in this JVM",
                     initializationFailure);
         }
         if (instance == null) {
             try {
-                instance = new NodeAppServer();
+                instance = new NodeAppServer(memoryLimitBytes);
             } catch (RuntimeException e) {
                 initializationFailure = e;
                 throw e;

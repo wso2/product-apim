@@ -16,20 +16,37 @@ import org.wso2.am.testcontainers.ApimRuntime;
 import org.wso2.am.testcontainers.DistributedApimTomlBuilder;
 import org.wso2.am.testcontainers.DistributedDynamicApimContainer;
 import org.wso2.am.testcontainers.DynamicISContainer;
+import org.wso2.am.testcontainers.NodeAppServer;
+import org.wso2.am.testcontainers.SquidProxyServer;
 import org.wso2.carbon.automation.engine.context.beans.User;
 
 import java.io.IOException;
+import java.time.Duration;
 import java.util.Map;
 
 /** Block lifecycle variant that swaps the all-in-one APIM runtime for the distributed composite. */
 public class DistributedLifecycleListener extends BlockLifecycleListener {
 
-    private static final String EXTERNAL_IS_HEAP_OPTS = "-Xms750m -Xmx1g";
+    private static final String EXTERNAL_IS_HEAP_OPTS = "-Xms512m -Xmx768m";
+    private static final long EXTERNAL_IS_MEMORY_LIMIT_BYTES = 1_536L * 1024 * 1024;
+    private static final Duration EXTERNAL_IS_STARTUP_TIMEOUT = Duration.ofMinutes(8);
+
+    @Override
+    protected NodeAppServer nodeAppServer() {
+        return NodeAppServer.getInstance(true);
+    }
+
+    @Override
+    protected SquidProxyServer createSquidProxyServer(String label, Network blockNetwork) {
+        return new SquidProxyServer(label, blockNetwork, SquidProxyServer.DISTRIBUTED_MEMORY_LIMIT_BYTES);
+    }
 
     @Override
     protected DynamicISContainer createExternalIdentityServer(String label, String extraOverlayContent) {
         return new DynamicISContainer(label, extraOverlayContent)
-                .withEnv("JVM_MEM_OPTS", EXTERNAL_IS_HEAP_OPTS);
+                .withEnv("JVM_MEM_OPTS", EXTERNAL_IS_HEAP_OPTS)
+                .withMemoryLimit(EXTERNAL_IS_MEMORY_LIMIT_BYTES)
+                .withStartupTimeout(EXTERNAL_IS_STARTUP_TIMEOUT);
     }
 
     @Override

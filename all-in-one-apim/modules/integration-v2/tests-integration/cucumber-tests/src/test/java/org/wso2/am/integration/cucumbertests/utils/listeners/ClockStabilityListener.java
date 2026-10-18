@@ -24,6 +24,7 @@ import java.util.concurrent.atomic.AtomicReference;
 public final class ClockStabilityListener implements ISuiteListener, IInvokedMethodListener, IExecutionListener {
     private static final Log LOG = LogFactory.getLog(ClockStabilityListener.class);
     private static final String KEY = ClockStabilityListener.class.getName();
+    private static final String TOPOLOGY_PARAMETER = "apim.topology";
     private final AtomicReference<RuntimeException> executionFailure = new AtomicReference<>();
     private final AtomicBoolean reportedByTest = new AtomicBoolean();
 
@@ -32,7 +33,9 @@ public final class ClockStabilityListener implements ISuiteListener, IInvokedMet
         Path directory = Path.of(ModulePathResolver.getModuleDir(ClockStabilityListener.class),
                 "target", "logs", "host-clock", UUID.randomUUID().toString());
         try {
-            DockerHostClockMonitor monitor = new DockerHostClockMonitor(directory);
+            boolean distributedTopology = "distributed".equalsIgnoreCase(
+                    suite.getXmlSuite().getParameter(TOPOLOGY_PARAMETER));
+            DockerHostClockMonitor monitor = new DockerHostClockMonitor(directory, distributedTopology);
             suite.setAttribute(KEY, monitor);
             String marker = System.getProperty("apim.clock.prepared.file");
             monitor.start(marker == null || marker.isBlank() ? null : Path.of(marker));
