@@ -84,13 +84,7 @@ public class SimpleHTTPClient {
     private static final Log logger = LogFactory.getLog(SimpleHTTPClient.class);
     private final CloseableHttpClient client;
 
-    /**
-     * The management REST API (publisher/admin/devportal) surfaces a transient server-side failure as this
-     * generic error — HTTP 5xx with body {@code {"code":900967,"message":"General Error","description":"Server
-     * Error Occurred",...}}. Under the concurrent-boot load of the parallel-block lane this occasionally hits an
-     * otherwise-valid mutate (e.g. an API create returning 500/900967), so every request below retries ONLY on
-     * this exact signature. See {@link #withGeneralErrorRetry}.
-     */
+    /** Management error envelope retried only for GET, HEAD and OPTIONS. Mutations can commit partially. */
     private static final int GENERAL_ERROR_CODE = 900967;
     private static final int GENERAL_ERROR_RETRIES = 3;
     private static final long GENERAL_ERROR_RETRY_WAIT_MS = 2000L;
@@ -233,71 +227,70 @@ public class SimpleHTTPClient {
     /**
      * Executes {@code request} on the shared client, applying the thread's {@link #withSocketTimeout} bound unless
      * the request already carries its own positive socket timeout (a timeout that is itself under test). A
-     * Publisher REST API request with neither is bounded by {@link #PUBLISHER_SOCKET_TIMEOUT_MILLIS}, because it
-     * holds the server's publisher lock while it runs.
+     * guarded management request with neither is bounded by {@link #MANAGEMENT_SOCKET_TIMEOUT_MILLIS}, because it
+     * holds the server's management lock while it runs.
      */
     private CloseableHttpResponse send(HttpUriRequest request) throws IOException {
         Integer scoped = SCOPED_SOCKET_TIMEOUT.get();
         if (scoped != null) {
             applySocketTimeoutIfUnset(request, scoped);
         }
-        Lock publisherLock = publisherLockFor(request);
-        if (publisherLock == null) {
+        Lock managementLock = managementLockFor(request);
+        if (managementLock == null) {
             return client.execute(request);
         }
-        applySocketTimeoutIfUnset(request, PUBLISHER_SOCKET_TIMEOUT_MILLIS);
-        acquire(publisherLock, request);
+        applySocketTimeoutIfUnset(request, MANAGEMENT_SOCKET_TIMEOUT_MILLIS);
+        acquire(managementLock, request);
         try {
             return client.execute(request);
         } finally {
-            publisherLock.unlock();
+            managementLock.unlock();
         }
     }
 
-    /** Publisher REST API requests. */
-    private static final Pattern PUBLISHER_API = Pattern.compile("/api/am/publisher/v\\d+/.*");
+    private static final Pattern PUBLISHER_API = Pattern.compile("(?:/t/[^/]+)?/api/am/publisher/v\\d+(?:/.*)?");
 
-    /** Waits longer than this for the publisher lock are logged. */
-    private static final long PUBLISHER_LOCK_LOG_MS = 1000L;
+    /** Entry points that create, update or delete OAuth service providers, including scenario cleanup. */
+    private static final Pattern SERVICE_PROVIDER_API = Pattern.compile("(?:/t/[^/]+)?(?:"
+            + "/api/am/(?:devportal|admin)/v\\d+/applications(?:/.*)?"
+            + "|/client-registration/v\\d+(?:\\.\\d+)?/register(?:/.*)?"
+            + "|/api/identity/oauth2/dcr/v\\d+(?:\\.\\d+)?/register(?:/.*)?"
+            + "|/services/(?:IdentityApplicationManagementService|OAuthAdminService)(?:/.*)?"
+            + "|/api/server/v1/applications(?:/.*)?)");
 
-    /**
-     * Read-stall bound for a Publisher REST API request that sets no socket timeout of its own. The request holds
-     * the server's publisher lock, so a response that never arrives would otherwise block every later Publisher
-     * request to that server. The suite's propagation ceiling, far above any Publisher response.
-     */
-    private static final int PUBLISHER_SOCKET_TIMEOUT_MILLIS = (int) Constants.RUNTIME_PROPAGATION_TIMEOUT;
-
-    /** Longest wait for the publisher lock; a request still queued after it fails instead of waiting on. */
-    private static final long PUBLISHER_LOCK_WAIT_MILLIS = Constants.RUNTIME_PROPAGATION_TIMEOUT;
-
-    /** One publisher lock per APIM server, keyed by the request's scheme, host and port. */
-    private static final Map<String, ReadWriteLock> PUBLISHER_LOCKS = new ConcurrentHashMap<>();
+    private static final long MANAGEMENT_LOCK_LOG_MS = 1000L;
+    private static final int MANAGEMENT_SOCKET_TIMEOUT_MILLIS = (int) Constants.RUNTIME_PROPAGATION_TIMEOUT;
+    private static final long MANAGEMENT_LOCK_WAIT_MILLIS = Constants.RUNTIME_PROPAGATION_TIMEOUT;
+    private static final Map<String, ReadWriteLock> MANAGEMENT_LOCKS = new ConcurrentHashMap<>();
 
     /**
-     * The lock that orders {@code request} against the other Publisher REST API requests to the same server, or
-     * {@code null} when the request is not a Publisher REST API request.
+     * Orders management requests on each server. Publisher writes race on registry collections and cached
+     * artifacts. OAuth service-provider updates replace SP_METADATA with DELETE followed by a batch of INSERTs;
+     * concurrent updates of distinct providers can deadlock on the unique index's duplicate-check gap locks,
+     * including at READ COMMITTED. Application key generation commits a mapping before DCR, so replay is unsafe.
      *
-     * <p>The Publisher keeps API artifacts in the registry, whose writes are not safe against concurrent requests:
-     * deleting an API removes its provider's registry collection when that collection looks empty inside the
-     * delete's transaction, so a concurrent create for the same provider loses its artifact (201 with no readable
-     * API, and a delete that fails with 500); two first creates for a provider collide on creating that collection
-     * (a registry foreign-key violation, answered as 500/900967); and a read during an update can re-cache the
-     * previous artifact version. Reads ({@code GET}, {@code HEAD}, {@code OPTIONS}) take the read side and run
-     * concurrently with each other; every other method takes the write side, so a write never overlaps another
-     * write or a read on the same server.</p>
+     * <p>Use one server lock across REST registration, application management and SOAP provisioning/cleanup.
+     * A lock per application or tenant cannot protect shared index gaps. GET, HEAD and OPTIONS share the read
+     * side; other methods, including SOAP POSTs, take the write side. Gateway invocations and token requests
+     * remain outside this guard. Each topology has a separate server address for each isolated block.</p>
      */
-    private static Lock publisherLockFor(HttpUriRequest request) {
+    static Lock managementLockFor(HttpUriRequest request) {
         java.net.URI uri = request.getURI();
         String path = uri.getPath();
-        if (path == null || !PUBLISHER_API.matcher(path).matches()) {
+        if (path == null || !(PUBLISHER_API.matcher(path).matches()
+                || SERVICE_PROVIDER_API.matcher(path).matches())) {
             return null;
         }
-        String method = request.getMethod();
-        boolean read = HttpGet.METHOD_NAME.equals(method) || HttpHead.METHOD_NAME.equals(method)
+        int port = uri.getPort() >= 0 ? uri.getPort() : ("https".equalsIgnoreCase(uri.getScheme()) ? 443 : 80);
+        String server = uri.getScheme().toLowerCase(Locale.ROOT) + "://"
+                + uri.getHost().toLowerCase(Locale.ROOT) + ":" + port;
+        ReadWriteLock lock = MANAGEMENT_LOCKS.computeIfAbsent(server, key -> new ReentrantReadWriteLock(true));
+        return isReadMethod(request.getMethod()) ? lock.readLock() : lock.writeLock();
+    }
+
+    private static boolean isReadMethod(String method) {
+        return HttpGet.METHOD_NAME.equals(method) || HttpHead.METHOD_NAME.equals(method)
                 || HttpOptions.METHOD_NAME.equals(method);
-        String server = uri.getScheme() + "://" + uri.getAuthority();
-        ReadWriteLock lock = PUBLISHER_LOCKS.computeIfAbsent(server, key -> new ReentrantReadWriteLock(true));
-        return read ? lock.readLock() : lock.writeLock();
     }
 
     /** Sets {@code socketTimeoutMillis} on {@code request} unless it already carries a positive socket timeout. */
@@ -319,21 +312,21 @@ public class SimpleHTTPClient {
         long waitStart = System.currentTimeMillis();
         boolean acquired;
         try {
-            acquired = lock.tryLock(PUBLISHER_LOCK_WAIT_MILLIS, TimeUnit.MILLISECONDS);
+            acquired = lock.tryLock(MANAGEMENT_LOCK_WAIT_MILLIS, TimeUnit.MILLISECONDS);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            throw new InterruptedIOException("Interrupted while waiting for the publisher lock for "
+            throw new InterruptedIOException("Interrupted while waiting for the management lock for "
                     + request.getMethod() + " " + request.getURI().getPath());
         }
         long waited = System.currentTimeMillis() - waitStart;
         if (!acquired) {
-            throw new IOException("publisher-lock: " + request.getMethod() + " " + request.getURI().getPath()
-                    + " could not acquire the publisher lock within " + waited
-                    + "ms; another Publisher request on the same server is still running");
+            throw new IOException("management-lock: " + request.getMethod() + " " + request.getURI().getPath()
+                    + " could not acquire the management lock within " + waited
+                    + "ms; another management request on the same server is still running");
         }
-        if (waited >= PUBLISHER_LOCK_LOG_MS) {
-            logger.info("publisher-lock: " + request.getMethod() + " " + request.getURI().getPath()
-                    + " waited " + waited + "ms for an overlapping Publisher request on the same server");
+        if (waited >= MANAGEMENT_LOCK_LOG_MS) {
+            logger.info("management-lock: " + request.getMethod() + " " + request.getURI().getPath()
+                    + " waited " + waited + "ms for an overlapping management request on the same server");
         }
     }
 
@@ -344,17 +337,13 @@ public class SimpleHTTPClient {
     }
 
     /**
-     * Runs {@code call} and retries it — up to {@value #GENERAL_ERROR_RETRIES} attempts,
-     * {@value #GENERAL_ERROR_RETRY_WAIT_MS} ms apart — ONLY when the response is the management API's transient
-     * "General Error" (see {@link #GENERAL_ERROR_CODE}). Retrying that removes the load-induced flake WITHOUT
-     * masking a real result: any other outcome — a 2xx, a deterministic 4xx, or even a DIFFERENT 5xx such as the
-     * descriptive {@code "already exists"} / {@code "validation failure"} 500s some tests deliberately assert —
-     * is NOT a 900967, so it returns on the first attempt. {@code call} rebuilds its request each attempt, so a
-     * request entity (POST/PUT body, multipart) is re-sent cleanly rather than being read from a consumed stream.
+     * Retries the generic management error only for reads. A failed mutation may have committed state before
+     * returning 500 (key generation reserves its key mapping before registering the OAuth client). Return that
+     * first failure intact instead of replaying the mutation and replacing it with an unrelated conflict.
      */
-    private org.wso2.carbon.automation.test.utils.http.client.HttpResponse withGeneralErrorRetry(HttpCall call)
-            throws IOException {
-        if (Boolean.TRUE.equals(GENERAL_ERROR_RETRY_SUSPENDED.get())) {
+    private org.wso2.carbon.automation.test.utils.http.client.HttpResponse withGeneralErrorRetry(
+            String method, HttpCall call) throws IOException {
+        if (!isReadMethod(method) || Boolean.TRUE.equals(GENERAL_ERROR_RETRY_SUSPENDED.get())) {
             return call.invoke();
         }
         org.wso2.carbon.automation.test.utils.http.client.HttpResponse response = null;
@@ -419,7 +408,7 @@ public class SimpleHTTPClient {
     public org.wso2.carbon.automation.test.utils.http.client.HttpResponse doGet(String url, Map<String, String> headers)
             throws IOException {
 
-        return withGeneralErrorRetry(() -> {
+        return withGeneralErrorRetry(HttpGet.METHOD_NAME, () -> {
             HttpGet request = new HttpGet(url);
             setHeaders(headers, request);
             try (CloseableHttpResponse response = send(request)) {
@@ -453,7 +442,7 @@ public class SimpleHTTPClient {
     public org.wso2.carbon.automation.test.utils.http.client.HttpResponse doGet(String url,
             Map<String, String> headers, List<Header> additionalHeaders) throws IOException {
 
-        return withGeneralErrorRetry(() -> {
+        return withGeneralErrorRetry(HttpGet.METHOD_NAME, () -> {
             HttpGet request = new HttpGet(url);
             setHeaders(headers, request);
             if (additionalHeaders != null) {
@@ -580,7 +569,7 @@ public class SimpleHTTPClient {
     public org.wso2.carbon.automation.test.utils.http.client.HttpResponse doHead(String url, Map<String, String> headers)
             throws IOException {
 
-        return withGeneralErrorRetry(() -> {
+        return withGeneralErrorRetry(HttpHead.METHOD_NAME, () -> {
             HttpHead request = new HttpHead(url);
             setHeaders(headers, request);
             try (CloseableHttpResponse response = send(request)) {
@@ -602,7 +591,7 @@ public class SimpleHTTPClient {
     public org.wso2.carbon.automation.test.utils.http.client.HttpResponse doOptions(String url,
             Map<String, String> headers) throws IOException {
 
-        return withGeneralErrorRetry(() -> {
+        return withGeneralErrorRetry(HttpOptions.METHOD_NAME, () -> {
             HttpOptions request = new HttpOptions(url);
             setHeaders(headers, request);
             try (CloseableHttpResponse response = send(request)) {
@@ -799,7 +788,7 @@ public class SimpleHTTPClient {
     public org.wso2.carbon.automation.test.utils.http.client.HttpResponse doDelete(
             String url, final Map<String, String> headers) throws IOException {
 
-        return withGeneralErrorRetry(() -> {
+        return withGeneralErrorRetry(HttpDelete.METHOD_NAME, () -> {
             HttpDelete request = new HttpDelete(url);
             setHeaders(headers, request);
             try (CloseableHttpResponse response = send(request)) {
@@ -829,7 +818,7 @@ public class SimpleHTTPClient {
             String url, Map<String, String> headers, String payload, String contentType, boolean soapResponse)
             throws IOException {
 
-        return withGeneralErrorRetry(() -> {
+        return withGeneralErrorRetry(HttpPost.METHOD_NAME, () -> {
             HttpPost request = new HttpPost(url);
             setHeaders(headers, request);
             boolean zip = headers != null && "gzip".equals(headers.get(HttpHeaders.CONTENT_ENCODING));
@@ -859,7 +848,7 @@ public class SimpleHTTPClient {
             String url, final Map<String, String> headers, final Map<String, File> files,
             final Map<String, String> formFields) throws IOException {
 
-        return withGeneralErrorRetry(() -> {
+        return withGeneralErrorRetry(HttpPost.METHOD_NAME, () -> {
             HttpPost request = new HttpPost(url);
 
             setHeaders(headers, request);
@@ -915,8 +904,8 @@ public class SimpleHTTPClient {
             String url, final Map<String, String> headers, final Map<String, File> files,
             final Map<String, String> textFields, final Map<String, String> jsonFields) throws IOException {
 
-        return withGeneralErrorRetry(() -> sendMultipartWithJsonFields(new HttpPost(url), headers, files, textFields,
-                jsonFields));
+        return withGeneralErrorRetry(HttpPost.METHOD_NAME, () -> sendMultipartWithJsonFields(
+                new HttpPost(url), headers, files, textFields, jsonFields));
     }
 
     /**
@@ -928,8 +917,8 @@ public class SimpleHTTPClient {
             String url, final Map<String, String> headers, final Map<String, File> files,
             final Map<String, String> textFields, final Map<String, String> jsonFields) throws IOException {
 
-        return withGeneralErrorRetry(() -> sendMultipartWithJsonFields(new HttpPut(url), headers, files, textFields,
-                jsonFields));
+        return withGeneralErrorRetry(HttpPut.METHOD_NAME, () -> sendMultipartWithJsonFields(
+                new HttpPut(url), headers, files, textFields, jsonFields));
     }
 
     /**
@@ -990,7 +979,7 @@ public class SimpleHTTPClient {
             String url, final Map<String, String> headers, final String payload, String contentType)
             throws IOException {
 
-        return withGeneralErrorRetry(() -> {
+        return withGeneralErrorRetry(HttpPut.METHOD_NAME, () -> {
             HttpPut request = new HttpPut(url);
             setHeaders(headers, request);
             final boolean zip = headers != null && "gzip".equals(headers.get(HttpHeaders.CONTENT_ENCODING));
@@ -1020,7 +1009,7 @@ public class SimpleHTTPClient {
             String url, final Map<String, String> headers, final Map<String, File> files,
             final Map<String, String> formFields) throws IOException {
 
-        return withGeneralErrorRetry(() -> {
+        return withGeneralErrorRetry(HttpPut.METHOD_NAME, () -> {
             HttpPut request = new HttpPut(url);
 
             setHeaders(headers, request);
@@ -1077,7 +1066,7 @@ public class SimpleHTTPClient {
     public org.wso2.carbon.automation.test.utils.http.client.HttpResponse doPatch(String url, final Map<String, String> headers, final String payload, String contentType)
             throws IOException {
 
-        return withGeneralErrorRetry(() -> {
+        return withGeneralErrorRetry(HttpPatch.METHOD_NAME, () -> {
             HttpPatch request = new HttpPatch(url);
             setHeaders(headers, request);
             final boolean zip = headers != null && "gzip".equals(headers.get(HttpHeaders.CONTENT_ENCODING));

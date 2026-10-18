@@ -584,6 +584,8 @@ public class DistributedDynamicApimContainer implements ApimRuntime {
             String path = configured == null || configured.isBlank()
                     ? System.getProperty("module.dir", ".") + "/target/is7/client-truststore.jks" : configured;
             copyToCp(path, SERVER_HOME + "/repository/resources/security/client-truststore.jks");
+            // TM fetches policies and revoked tokens from CP, whose SSO overlay uses the fixed wso2am cert.
+            copyToComponent(tm, path, SERVER_HOME + "/repository/resources/security/client-truststore.jks");
             copyToComponent(gateway, path, SERVER_HOME + "/repository/resources/security/client-truststore.jks");
             // The Gateway's HTTPS pass-through listener also uses the APIM keystore. Without this copy the
             // Gateway may report Carbon startup while silently failing to bind 8243, making browser/API
@@ -663,12 +665,12 @@ public class DistributedDynamicApimContainer implements ApimRuntime {
     private Map<String, ?> finalRuntimeValues(DistributedApimTomlBuilder.Component component,
                                               boolean gatewayDeclaresApimDb) {
         Map<String, Object> values = new LinkedHashMap<>();
-        String controlPlaneServices = serviceUrl(CP_ALIAS);
+        // Notification-enabled overlays use a CP TLS certificate covering wso2am, not apim-cp. All CP
+        // HTTPS clients, including TM's event-hub client, must use that certificate-covered network alias.
+        String controlPlaneServices = serviceUrl(externalIsNotificationAlias ? "wso2am" : CP_ALIAS);
         String trafficManagerEvents = "tcp://" + TM_ALIAS + ":9611";
         String trafficManagerEventsSsl = "ssl://" + TM_ALIAS + ":9711";
         String gatewayServices = serviceUrl(GATEWAY_ALIAS);
-        String gatewayEventHubServices = externalIsNotificationAlias ? "https://wso2am:9443" + SERVICES_PATH
-                : controlPlaneServices;
 
         switch (component) {
             case CP:
@@ -697,7 +699,7 @@ public class DistributedDynamicApimContainer implements ApimRuntime {
                     values.put("database.apim_db.url", mysqlTomlUrl(DistributedMySqlContainer.APIM_DATABASE));
                 }
                 values.put("database.shared_db.url", mysqlTomlUrl(DistributedMySqlContainer.SHARED_DATABASE));
-                values.put("apim.event_hub.service_url", gatewayEventHubServices);
+                values.put("apim.event_hub.service_url", controlPlaneServices);
                 values.put("apim.event_hub.event_listening_endpoints", List.of("tcp://" + CP_ALIAS + ":5672"));
                 values.put("apim.throttling.throttle_decision_endpoints",
                         List.of("tcp://" + TM_ALIAS + ":5672"));

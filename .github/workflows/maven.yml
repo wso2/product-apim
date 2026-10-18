@@ -368,6 +368,8 @@ jobs:
         if: matrix.topology == 'all-in-one'
         working-directory: all-in-one-apim/modules/integration-v2
         run: >
+          python3 tests-integration/cucumber-tests/src/test/resources/host-diagnostics/run-with-host-diagnostics.py
+          --output tests-integration/cucumber-tests/target/logs/host-diagnostics --
           mvn test -pl tests-integration/cucumber-tests -am
           -Dsurefire.suite.xml=${{ matrix.suite }}
           -Dapim.server.version="$APIM_VERSION"
@@ -383,6 +385,8 @@ jobs:
         if: matrix.topology == 'distributed'
         working-directory: all-in-one-apim/modules/integration-v2
         run: >
+          python3 tests-integration/cucumber-tests/src/test/resources/host-diagnostics/run-with-host-diagnostics.py
+          --output tests-integration/cucumber-tests/target/logs/host-diagnostics --
           mvn test -pl tests-integration/cucumber-tests -am
           -Dsurefire.suite.xml=${{ matrix.suite }}
           -Dapim.server.version="$APIM_VERSION"
@@ -392,6 +396,12 @@ jobs:
           -Dplaywright.sso=true
           -Dapim.clock.prepared.file="$APIM_CLOCK_PREPARED_FILE"
           -Ddocker.extra.hosts="--add-host=host.docker.internal:host-gateway"
+      - name: Stop host diagnostics collector
+        if: always()
+        working-directory: all-in-one-apim/modules/integration-v2
+        run: >
+          python3 tests-integration/cucumber-tests/src/test/resources/host-diagnostics/run-with-host-diagnostics.py
+          --output tests-integration/cucumber-tests/target/logs/host-diagnostics --stop
       - name: Archive test reports
         if: always()
         uses: actions/upload-artifact@v4

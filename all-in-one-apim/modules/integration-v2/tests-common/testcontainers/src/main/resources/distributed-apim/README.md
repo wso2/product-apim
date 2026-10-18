@@ -176,6 +176,12 @@ own initializer with `withControlPlaneInitializer`.
 
 ## Component-specific test configuration
 
+External-key-manager blocks stage the augmented client truststore in CP, TM and Gateway before startup. TM
+needs it for CP policy and revoked-token requests when a block selects the fixed SSO TLS certificate. When
+`receiveExternalIsNotifications` is enabled, CP receives the `wso2am` network alias and all CP HTTPS service
+URLs use that certificate-covered authority. Other blocks retain the `apim-cp` authority. Trust and hostname
+verification remain enabled; the SSO certificate covers `wso2am`, not `apim-cp`.
+
 Distributed mode rejects ambiguous all-component parameters. Use qualified
 names for extra TOMLs and boot files:
 
