@@ -116,7 +116,7 @@ Each APIM component container is capped at 1 CPU. The distributed CP container h
 and its server JVM uses `-Xms512m -Xmx768m`. The TM container has an 896 MiB memory cap and the Gateway
 container has a 1,536 MiB memory cap; both server JVMs use `-Xms256m -Xmx384m`. The shared Node backend
 container has a 1,024 MiB memory cap in distributed topology.
-External Identity Server containers started by distributed blocks have a 1,536 MiB memory cap and use
+External Identity Server containers started by distributed blocks have a 1,024 MiB memory cap and use
 `-Xms512m -Xmx768m`; all-in-one blocks retain `-Xms1g -Xmx1536m` without a Docker memory cap.
 The shared Solace helper caps PubSub+ at 0.25 CPU and 512 MiB of RAM, and its control-plane shim
 at 0.25 CPU and 100 MiB. The shared Squid proxy is capped at 0.5 CPU and 50 MiB.

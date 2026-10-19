@@ -466,7 +466,7 @@ distribution defaults. Only reach for an overlay when a feature genuinely needs 
 - **Browser cap.** The Playwright browser runs on the host, not in a container. On Linux hosts where
   `src/test/resources/browser-cgroup/setup-browser-cgroup.sh` has created the `/sys/fs/cgroup/pw-browser` group
   (CI runs it with sudo before the suite), `PlaywrightSsoClient` launches Chromium through
-  `chromium-cgroup-wrapper.sh`, so the whole browser tree shares 1 CPU and 2.5 GiB; each launch logs
+  `chromium-cgroup-wrapper.sh`, so the whole browser tree shares 1 CPU and 2.5 GiB in all-in-one or 1 GiB in distributed CI; each launch logs
   `Browser launched capped: cgroup … cpu.max=[…] memory.max=[…] pids=[…]`. Elsewhere (macOS has no cgroups) it
   logs `Browser launched uncapped` and runs as before.
 - **Browser network namespace.** On a Linux host the browser shares the network namespace in which Docker creates

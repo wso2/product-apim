@@ -343,10 +343,12 @@ jobs:
           docker cp "$cid:$BASE/components/plugins"        "$SRC/plugins"
           docker cp "$cid:$BASE/deployment/server/webapps" "$SRC/webapps"
           echo "APIM_COVERAGE_CLASSFILES=$SRC" >> "$GITHUB_ENV"
-      # Caps the host Playwright browser (1 CPU, 2.5 GiB, no swap): PlaywrightSsoClient launches Chromium inside this
-      # cgroup whenever it exists, and logs the group's limits and member pids at each launch.
+      # Caps the host Playwright browser (1 CPU, 2.5 GiB all-in-one / 512 MiB distributed, no swap).
+      # PlaywrightSsoClient launches Chromium inside this cgroup whenever it exists and logs its limits and pids.
       - name: Create browser cgroup
-        run: sudo bash all-in-one-apim/modules/integration-v2/tests-integration/cucumber-tests/src/test/resources/browser-cgroup/setup-browser-cgroup.sh
+        env:
+          BROWSER_MEMORY_LIMIT_BYTES: ${{ matrix.topology == 'distributed' && '536870912' || '2684354560' }}
+        run: sudo bash all-in-one-apim/modules/integration-v2/tests-integration/cucumber-tests/src/test/resources/browser-cgroup/setup-browser-cgroup.sh /sys/fs/cgroup/pw-browser "$BROWSER_MEMORY_LIMIT_BYTES"
       # Runs the host Playwright browser in a private network namespace, so the bridges and veths the parallel blocks
       # create and remove never reach Chromium (which cancels in-flight requests on any host address change).
       - name: Configure browser network isolation

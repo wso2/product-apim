@@ -28,7 +28,7 @@ import java.util.Map;
 public class DistributedLifecycleListener extends BlockLifecycleListener {
 
     private static final String EXTERNAL_IS_HEAP_OPTS = "-Xms512m -Xmx768m";
-    private static final long EXTERNAL_IS_MEMORY_LIMIT_BYTES = 1_536L * 1024 * 1024;
+    private static final long EXTERNAL_IS_MEMORY_LIMIT_BYTES = 1_024L * 1024 * 1024;
     private static final Duration EXTERNAL_IS_STARTUP_TIMEOUT = Duration.ofMinutes(8);
 
     @Override

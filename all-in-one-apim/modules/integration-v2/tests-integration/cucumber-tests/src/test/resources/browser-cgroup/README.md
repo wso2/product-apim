@@ -1,7 +1,8 @@
 The Linux SSO browser runs in a private network namespace with stable loopback and dummy interfaces. A filesystem
 Unix socket connects its loopback proxy relay to the test JVM's CONNECT proxy. Chromium keeps the invoking user's
 UID and Playwright's debugging socketpairs on descriptors 3/4. The optional cgroup covers the browser and its
-namespace helpers with 1 CPU, 2.5 GiB of memory and no swap.
+namespace helpers with 1 CPU and no swap. Its memory limit defaults to 2.5 GiB for all-in-one and is set to 512 MiB
+for distributed CI.
 
 Linux setup (CI performs these steps):
 
