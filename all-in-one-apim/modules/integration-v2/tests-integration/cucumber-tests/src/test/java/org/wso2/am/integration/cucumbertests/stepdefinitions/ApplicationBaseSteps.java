@@ -6464,6 +6464,44 @@ public class ApplicationBaseSteps {
     }
 
     /**
+     * Waits for one exact document's metadata entry to become searchable before a subsequent document-content
+     * update is submitted. Registry indexing is asynchronous; this gate prevents the create and content-update
+     * events for the same document from racing each other in the indexer.
+     */
+    @When("I unified-search the {string} plane for {string} until document {string} of API {string} is present within {int} seconds")
+    public void iUnifiedSearchUntilSpecificDocumentPresent(String plane, String query, String documentIdKey,
+                                                            String apiIdKey, int seconds)
+            throws InterruptedException {
+
+        String resolvedQuery = Utils.resolveContextPlaceholders(query);
+        Object apiIdValue = TestContext.get(Utils.normalizeContextKey(apiIdKey));
+        Object documentIdValue = TestContext.get(Utils.normalizeContextKey(documentIdKey));
+        Assert.assertNotNull(apiIdValue, "No API id found in context for key '" + apiIdKey + "'");
+        Assert.assertNotNull(documentIdValue, "No document id found in context for key '" + documentIdKey + "'");
+        String apiId = apiIdValue.toString();
+        String documentId = documentIdValue.toString();
+        Assert.assertFalse(apiId.isBlank(), "API id in context for key '" + apiIdKey + "' is blank");
+        Assert.assertFalse(documentId.isBlank(), "Document id in context for key '" + documentIdKey + "' is blank");
+
+        String url = Utils.getUnifiedSearchURL(Utils.getBaseUrl(), plane, resolvedQuery);
+        Map<String, String> headers = "publisher".equals(plane)
+                ? Identity.publisherHeaders() : Identity.devportalHeaders();
+        HttpResponse response = Utils.retryUntil(seconds * 1000L,
+                () -> Requests.get(url, headers),
+                result -> result != null && result.getResponseCode() == 200
+                        && hasUnifiedSearchDocument(result, apiId, documentId));
+        Requests.publishPollResult(response);
+        Assert.assertNotNull(response, "No unified-search response from the " + plane + " plane");
+        Assert.assertEquals(response.getResponseCode(), 200,
+                "Unified search on the " + plane + " plane did not return HTTP 200; last body: "
+                        + response.getData());
+        Assert.assertTrue(hasUnifiedSearchDocument(response, apiId, documentId),
+                "Document " + documentId + " linked to API " + apiId + " did not appear in " + plane
+                        + " unified-search results for query '" + resolvedQuery + "'; last body: "
+                        + response.getData());
+    }
+
+    /**
      * Polls until a specific document-search entry is absent. Callers should first establish that the document is
      * indexed for an authorized actor, so an initially cold index cannot make this negative check pass vacuously.
      */
@@ -6529,6 +6567,11 @@ public class ApplicationBaseSteps {
 
     private boolean hasUnifiedSearchDocument(HttpResponse response, String apiId) {
 
+        return hasUnifiedSearchDocument(response, apiId, null);
+    }
+
+    private boolean hasUnifiedSearchDocument(HttpResponse response, String apiId, String documentId) {
+
         if (response == null || response.getData() == null || response.getData().isBlank()) {
             return false;
         }
@@ -6540,7 +6583,8 @@ public class ApplicationBaseSteps {
             for (int i = 0; i < results.length(); i++) {
                 JSONObject result = results.optJSONObject(i);
                 if (result != null && "DOC".equals(result.optString("type"))
-                        && apiId.equals(result.optString("apiUUID"))) {
+                        && apiId.equals(result.optString("apiUUID"))
+                        && (documentId == null || documentId.equals(result.optString("id")))) {
                     return true;
                 }
             }

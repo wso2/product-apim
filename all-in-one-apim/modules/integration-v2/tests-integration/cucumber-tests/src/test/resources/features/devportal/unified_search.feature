@@ -178,9 +178,14 @@ Feature: DevPortal Unified Search
     And I unified-search the "publisher" plane for "name:{{ssDocApiName}}" until API "ssDocApiId" is present within 120 seconds
     And I update API "ssDocApiId" to restricted Store visibility for role "Internal/publisher" and no Publisher access restriction
 
-    When I prepare a new document payload with type "HOWTO", sourceType "INLINE", and inlineContent "placeholder"
+    When I generate a unique value and store it as "ssDocIndexName"
+    And I prepare a new document payload with type "HOWTO", sourceType "INLINE", and inlineContent "placeholder"
+    And I set the prepared document name to "{{ssDocIndexName}}"
     And I add the document to API "ssDocApiId"
     Then The response status code should be 201
+    # Let the metadata-only registry index update settle before posting inline content, which triggers a second
+    # update for the same document. This keeps the two asynchronous index events from racing each other.
+    And I unified-search the "publisher" plane for "content:{{ssDocIndexName}}" until document "documentID" of API "ssDocApiId" is present within 120 seconds
     When I add inline content "ordinary secondary-store document {{ssDocToken}}" to document "documentID" of API "ssDocApiId"
     Then The response status code should be 201
 
@@ -287,9 +292,13 @@ Feature: DevPortal Unified Search
     And the "apis" resource "usDelApiId" should be live on the gateway, redeploying if propagation is lost
     When I publish the "apis" resource with id "usDelApiId"
     Then The lifecycle status of API "usDelApiId" should be "Published"
-    When I prepare a new document payload with type "HOWTO", sourceType "INLINE", and inlineContent "placeholder"
+    When I generate a unique value and store it as "usDelDocIndexName"
+    And I prepare a new document payload with type "HOWTO", sourceType "INLINE", and inlineContent "placeholder"
+    And I set the prepared document name to "{{usDelDocIndexName}}"
     And I add the document to API "usDelApiId"
     Then The response status code should be 201
+    # Wait for the created metadata entry before the inline-content update to avoid overlapping index events.
+    And I unified-search the "devportal" plane for "content:{{usDelDocIndexName}}" until document "documentID" of API "usDelApiId" is present within 120 seconds
     When I add inline content "delete probe body zzdocdeltoken" to document "documentID" of API "usDelApiId"
     Then The response status code should be 201
     # Present first — so the zero below cannot pass against an index that never saw the document.
