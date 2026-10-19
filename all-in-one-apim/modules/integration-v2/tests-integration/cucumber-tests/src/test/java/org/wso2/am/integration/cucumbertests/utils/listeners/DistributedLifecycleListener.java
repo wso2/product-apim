@@ -15,6 +15,7 @@ import org.wso2.am.integration.test.utils.Constants;
 import org.wso2.am.testcontainers.ApimRuntime;
 import org.wso2.am.testcontainers.DistributedApimTomlBuilder;
 import org.wso2.am.testcontainers.DistributedDynamicApimContainer;
+import org.wso2.am.testcontainers.DistributedMemoryLimits;
 import org.wso2.am.testcontainers.DynamicISContainer;
 import org.wso2.am.testcontainers.NodeAppServer;
 import org.wso2.am.testcontainers.SquidProxyServer;
@@ -38,14 +39,17 @@ public class DistributedLifecycleListener extends BlockLifecycleListener {
 
     @Override
     protected SquidProxyServer createSquidProxyServer(String label, Network blockNetwork) {
-        return new SquidProxyServer(label, blockNetwork, SquidProxyServer.DISTRIBUTED_MEMORY_LIMIT_BYTES);
+        long memoryLimitBytes = SquidProxyServer.DISTRIBUTED_MEMORY_LIMIT_BYTES;
+        return new SquidProxyServer(label, blockNetwork, memoryLimitBytes,
+                DistributedMemoryLimits.memoryAndSwapLimitBytes(memoryLimitBytes));
     }
 
     @Override
     protected DynamicISContainer createExternalIdentityServer(String label, String extraOverlayContent) {
         return new DynamicISContainer(label, extraOverlayContent)
                 .withEnv("JVM_MEM_OPTS", EXTERNAL_IS_HEAP_OPTS)
-                .withMemoryLimit(EXTERNAL_IS_MEMORY_LIMIT_BYTES)
+                .withMemoryLimit(EXTERNAL_IS_MEMORY_LIMIT_BYTES,
+                        DistributedMemoryLimits.memoryAndSwapLimitBytes(EXTERNAL_IS_MEMORY_LIMIT_BYTES))
                 .withStartupTimeout(EXTERNAL_IS_STARTUP_TIMEOUT);
     }
 

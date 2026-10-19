@@ -13,12 +13,31 @@ configuration, assertions, suite ordering, concurrency, or any existing containe
   do not add process RSS to container memory totals. Disk counters are per device, not an aggregate across layers.
   Container `memory.current` includes charged cache and kernel memory; it is not JVM heap usage and can differ
   from Docker CLI's cache-adjusted memory display.
+  The distributed workload's shared `apimdistributed.slice` is sampled separately, including its RAM pressure
+  threshold, RAM/swap ceilings and memory events. Its browser is sampled from the nested `apimdistributed-browser.service` cgroup;
+  all-in-one retains the browser cgroup at the root. Workload totals include their children, so do not add them
+  to the container/browser totals.
   Filesystem space/inodes are recorded separately for `/`, Docker's data directory and the output directory;
   this matters when the workspace is a separate mount. Filesystems with the same device ID share capacity.
 - Every **60 seconds**: a summary relayed to the GitHub job log, including available memory, swap usage,
   host pressure, per-container CPU throttling and OOM counters, and observed memory/sampling extrema. The first
   sample and final shutdown also emit summaries. CPU counters are cumulative; compare consecutive samples
   for interval usage/throttling. Host CPU percentages exclude I/O wait, which is reported separately.
+  Each container includes current RAM, swap, combined RAM-plus-swap usage and their limits in bytes.
+  Cgroup v2 `memory.swap.max` is the swap-only allowance; Docker `MemorySwap` is RAM plus swap.
+  `memory_peaks` retains each container's sampled RAM, swap and combined peaks after it stops, keyed by container
+  ID, plus separate browser and shared-workload peaks. These groups overlap: do not add their values together.
+  Kernel RAM/swap high-water marks are retained separately when supported; the combined peak comes from a
+  simultaneous sample, never the sum of separate RAM and swap peaks. Peaks are not reset at summary boundaries.
+  `max_cpu_busy_percent` and `max_cpu_iowait_percent` retain host CPU peaks from the 5-second sample intervals,
+  with UTC timestamps. These percentages cover the whole host (100% means all CPUs), not an individual core.
+  Host RAM use is `MemTotal - MemAvailable`; both current and peak byte counts survive in the summaries.
+  Host swap includes total/free/used bytes and swap-in/out bytes per second, calculated from `/proc/vmstat`
+  page counters, the host page size and monotonic elapsed time. Peak rates are also retained. Missing metrics,
+  the first rate interval, and reset counters remain `null`; no swap activity is reported as zero when measured.
+  Historical peaks are relayed in batches of eight records per CI log line, identified by summary UTC, offset
+  and total count. The local summary JSON retains the complete list. This keeps growing peak history out of
+  one oversized console line without increasing the summary frequency.
 - Continuously: Docker lifecycle/OOM events and kernel journal messages. On `die`/`oom`, container inspection
   attempts to retain exit status and `OOMKilled`. Removal may race this inspection; earlier samples/events remain.
 - Container discovery records image, name, network aliases/IPs, configured limits and cgroup path. These allow

@@ -73,6 +73,7 @@ public class DynamicISContainer extends GenericContainer<DynamicISContainer> {
     private static final Duration DEFAULT_STARTUP_TIMEOUT = Duration.ofMinutes(4);
     private CpuLimit cpuLimit;
     private Long memoryLimitBytes;
+    private Long memoryAndSwapLimitBytes;
 
     /** Network alias APIM and the KM registration payload use to reach IS on the block's private network. */
     public static final String NETWORK_ALIAS = "wso2is";
@@ -114,7 +115,7 @@ public class DynamicISContainer extends GenericContainer<DynamicISContainer> {
                 cpuLimit.applyTo(cmd);
             }
             if (memoryLimitBytes != null) {
-                cmd.getHostConfig().withMemory(memoryLimitBytes).withMemorySwap(memoryLimitBytes);
+                cmd.getHostConfig().withMemory(memoryLimitBytes).withMemorySwap(memoryAndSwapLimitBytes);
             }
         });
 
@@ -154,11 +155,21 @@ public class DynamicISContainer extends GenericContainer<DynamicISContainer> {
 
     /** Caps the container's memory and disables swap beyond that limit. Must be called before {@link #start()}. */
     public DynamicISContainer withMemoryLimit(long limitBytes) {
+        return withMemoryLimit(limitBytes, limitBytes);
+    }
+
+    /** Caps memory and allows the supplied bounded combined memory-plus-swap limit. Must be called before start. */
+    public DynamicISContainer withMemoryLimit(long limitBytes, long memoryAndSwapLimitBytes) {
         if (limitBytes <= 0) {
             throw new IllegalArgumentException("IS container memory limit must be positive");
         }
+        if (memoryAndSwapLimitBytes < limitBytes) {
+            throw new IllegalArgumentException("IS container memory-plus-swap limit must be at least its memory limit");
+        }
         this.memoryLimitBytes = limitBytes;
-        logger.info("External Identity Server memory cap: " + (limitBytes / (1024 * 1024)) + " MiB");
+        this.memoryAndSwapLimitBytes = memoryAndSwapLimitBytes;
+        logger.info("External Identity Server memory cap: " + (limitBytes / (1024 * 1024)) + " MiB, swap allowance: "
+                + ((memoryAndSwapLimitBytes - limitBytes) / (1024 * 1024)) + " MiB");
         return this;
     }
 

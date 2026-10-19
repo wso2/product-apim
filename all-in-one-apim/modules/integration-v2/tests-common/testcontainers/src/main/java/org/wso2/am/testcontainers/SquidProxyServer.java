@@ -77,6 +77,14 @@ public class SquidProxyServer {
     }
 
     public SquidProxyServer(String blockLabel, Network network, Long memoryLimitBytes) {
+        this(blockLabel, network, memoryLimitBytes, memoryLimitBytes);
+    }
+
+    public SquidProxyServer(String blockLabel, Network network, Long memoryLimitBytes, Long memoryAndSwapLimitBytes) {
+        if (memoryLimitBytes != null
+                && (memoryAndSwapLimitBytes == null || memoryAndSwapLimitBytes < memoryLimitBytes)) {
+            throw new IllegalArgumentException("Squid memory-plus-swap limit must be at least its memory limit");
+        }
         this.blockLabel = blockLabel;
         logger.info("Initializing SquidProxyServer for block '" + blockLabel + "'...");
         container = new GenericContainer<>(System.getProperty("squid.docker.image.name", "squid-proxy:latest"))
@@ -86,7 +94,8 @@ public class SquidProxyServer {
                 .withCreateContainerCmdModifier(cmd -> {
                     CPU_LIMIT.applyTo(cmd);
                     if (memoryLimitBytes != null) {
-                        cmd.getHostConfig().withMemory(memoryLimitBytes).withMemorySwap(memoryLimitBytes);
+                        cmd.getHostConfig().withMemory(memoryLimitBytes)
+                                .withMemorySwap(memoryAndSwapLimitBytes);
                     }
                 })
                 .waitingFor(Wait.forListeningPort().withStartupTimeout(Duration.ofMinutes(2)));

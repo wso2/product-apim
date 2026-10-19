@@ -40,7 +40,9 @@ class HostDiagnosticsTest(unittest.TestCase):
 
     def test_cgroup_caps_and_events(self):
         for name, value in {"memory.current": "123", "memory.max": "max", "cpu.max": "50000 100000",
-                            "cpu.stat": "usage_usec 900\nnr_throttled 7\n", "memory.events": "oom_kill 2\n"}.items():
+                            "cpu.stat": "usage_usec 900\nnr_throttled 7\n", "memory.events": "oom_kill 2\n",
+                            "memory.swap.current": "12", "memory.swap.peak": "24",
+                            "memory.swap.events": "max 1\nfail 0\n"}.items():
             (self.output / name).write_text(value)
         sample = collect.cgroup_sample(self.output)
         self.assertEqual(123, sample["memory.current"])
@@ -48,6 +50,9 @@ class HostDiagnosticsTest(unittest.TestCase):
         self.assertEqual("50000 100000", sample["cpu.max"])
         self.assertEqual(7, sample["cpu.stat"]["nr_throttled"])
         self.assertEqual(2, sample["memory.events"]["oom_kill"])
+        self.assertEqual(24, sample["memory.swap.peak"])
+        self.assertEqual(1, sample["memory.swap.events"]["max"])
+        self.assertEqual(135, collect.compact_cgroup(sample)["memory_and_swap_bytes"])
 
     def test_pressure_parsing(self):
         (self.output / "memory").write_text("some avg10=1.50 avg60=0.25 avg300=0.10 total=12345\n")
@@ -55,6 +60,42 @@ class HostDiagnosticsTest(unittest.TestCase):
         self.assertEqual(1.5, sample["memory"]["some"]["avg10"])
         self.assertEqual(12345, sample["memory"]["some"]["total"])
         self.assertNotIn("cpu", sample)
+
+    def test_distributed_budget_and_browser_are_sampled_under_the_slice(self):
+        workload = self.output / "apimdistributed.slice"
+        browser = workload / "apimdistributed-browser.service"
+        browser.mkdir(parents=True)
+        (workload / "memory.high").write_text(str(14 * 1024**3))
+        (workload / "memory.max").write_text(str(15 * 1024**3))
+        (workload / "memory.swap.max").write_text(str(5 * 1024**3))
+        (workload / "memory.events").write_text("high 9\noom_kill 1\n")
+        (browser / "memory.max").write_text(str(512 * 1024**2))
+        (browser / "memory.swap.max").write_text(str(128 * 1024**2))
+        with patch.object(collect, "DISTRIBUTED_CGROUP", workload), \
+                patch.object(collect, "BROWSER_CGROUP", self.output / "absent"):
+            sample = collect.resource_group_samples()
+        collector = collect.Collector(self.output, 5, 60)
+        collector.summary(sample)
+        summary = json.loads((self.output / "summary.json").read_text())
+        self.assertEqual(14 * 1024**3, summary["workload"]["memory.high"])
+        self.assertEqual(15 * 1024**3, summary["workload"]["memory.max"])
+        self.assertEqual(5 * 1024**3, summary["workload"]["memory.swap.max"])
+        self.assertEqual(9, summary["workload"]["memory.events"]["high"])
+        self.assertEqual(1, summary["workload"]["memory.events"]["oom_kill"])
+        self.assertEqual(512 * 1024**2, summary["browser"]["memory.max"])
+        self.assertEqual(128 * 1024**2, summary["browser"]["memory.swap.max"])
+
+    def test_all_in_one_browser_is_sampled_without_a_distributed_slice(self):
+        browser = self.output / "pw-browser"
+        browser.mkdir()
+        (browser / "memory.max").write_text(str(2560 * 1024**2))
+        (browser / "memory.swap.max").write_text("0")
+        with patch.object(collect, "DISTRIBUTED_CGROUP", self.output / "absent"), \
+                patch.object(collect, "BROWSER_CGROUP", browser):
+            sample = collect.resource_group_samples()
+        self.assertIsNone(sample["workload"])
+        self.assertEqual(2560 * 1024**2, sample["browser"]["memory.max"])
+        self.assertEqual(0, sample["browser"]["memory.swap.max"])
 
     def test_filesystem_usage_and_missing_paths(self):
         sample = collect.filesystems([self.output, self.output / "missing"])
@@ -93,6 +134,83 @@ class HostDiagnosticsTest(unittest.TestCase):
         self.assertEqual(123, summary["min_available_bytes"])
         self.assertEqual(72, summary["max_sample_gap_seconds"])
         self.assertFalse((self.output / "summary.json.tmp").exists())
+
+    def test_memory_and_swap_are_combined_without_treating_unknown_as_zero(self):
+        usage = collect.memory_usage({"memory.current": 100, "memory.swap.current": 30,
+                                      "memory.max": 200, "memory.swap.max": 50})
+        self.assertEqual(130, usage["memory_and_swap_bytes"])
+        self.assertEqual(250, usage["memory_and_swap_limit_bytes"])
+        self.assertEqual(30, usage["swap_bytes"])
+        self.assertIsNone(collect.memory_usage({"memory.current": 100})["memory_and_swap_bytes"])
+        self.assertIsNone(collect.memory_usage(None)["swap_bytes"])
+        self.assertEqual("max", collect.memory_usage({"memory.max": "max", "memory.swap.max": 0})[
+            "memory_and_swap_limit_bytes"])
+
+    def test_swap_activity_uses_page_size_and_monotonic_interval(self):
+        old = {"vmstat": {"pswpin": 10, "pswpout": 20}}
+        host = {"memory_bytes": {"SwapTotal": 1000, "SwapFree": 750},
+                "vmstat": {"pswpin": 13, "pswpout": 25}}
+        with patch.object(collect.os, "sysconf", return_value=65536):
+            usage = collect.swap_activity(host, old, 5)
+        self.assertEqual(250, usage["used_bytes"])
+        self.assertEqual(3 * 65536 / 5, usage["in_bytes_per_second"])
+        self.assertEqual(65536, usage["out_bytes_per_second"])
+        self.assertIsNone(collect.swap_activity(host)["in_bytes_per_second"])
+        self.assertIsNone(collect.swap_activity(host, old, 0)["out_bytes_per_second"])
+        self.assertIsNone(collect.swap_activity({}, old, 5)["used_bytes"])
+        self.assertIsNone(collect.swap_activity({"vmstat": {"pswpin": 1}}, old, 5)["in_bytes_per_second"])
+
+    def test_summary_retains_sampled_cpu_and_memory_peaks_after_container_exit(self):
+        collector = collect.Collector(self.output, 5, 60)
+        container = {"id": "original", "name": "cp", "image": "cp:test",
+                     "cgroup": {"memory.current": 100, "memory.swap.current": 40,
+                                "memory.max": 200, "memory.swap.max": 50, "memory.peak": 120}}
+        first = {"utc": "first", "host": {"memory_bytes": {"MemTotal": 1000, "MemAvailable": 250},
+                                         "cpu_percent": {"busy": 90, "iowait": 3},
+                                         "swap": {"in_bytes_per_second": 10, "out_bytes_per_second": 20}},
+                 "containers": [container], "browser": {"memory.current": 50, "memory.swap.current": 10}}
+        collector.observe_usage(first)
+        collector.summary(first)
+        summary = json.loads((self.output / "summary.json").read_text())
+        self.assertEqual(40, summary["containers"][0]["swap_bytes"])
+        self.assertEqual(50, summary["containers"][0]["swap_limit_bytes"])
+        self.assertEqual(140, summary["containers"][0]["memory_and_swap_bytes"])
+        self.assertEqual(120, summary["containers"][0]["memory_peak_bytes"])
+        # RAM and swap reach their separate peaks in different samples: do not sum those peaks.
+        container["cgroup"].update({"memory.current": 130, "memory.swap.current": 0})
+        collector.observe_usage({"utc": "second", "containers": [container]})
+        final = {"host": {"cpu_percent": {"busy": 10, "iowait": 1}}, "containers": []}
+        collector.observe_usage(final)
+        collector.summary(final, final=True)
+        summary = json.loads((self.output / "summary.json").read_text())
+        self.assertEqual(90, summary["max_cpu_busy_percent"])
+        self.assertEqual("first", summary["max_cpu_busy_percent_utc"])
+        self.assertEqual(750, summary["max_memory_used_bytes"])
+        self.assertEqual(3, summary["max_cpu_iowait_percent"])
+        self.assertEqual(20, summary["max_swap_out_bytes_per_second"])
+        peaks = {entry["id"]: entry for entry in summary["memory_peaks"]}
+        self.assertEqual(130, peaks["original"]["max_memory_bytes"])
+        self.assertEqual(40, peaks["original"]["max_swap_bytes"])
+        self.assertEqual(140, peaks["original"]["max_memory_and_swap_bytes"])
+        self.assertEqual(120, peaks["original"]["memory_peak_bytes"])
+        self.assertEqual(50, peaks["original"]["swap_limit_bytes"])
+        self.assertEqual(60, peaks["browser"]["max_memory_and_swap_bytes"])
+        self.assertEqual("second", peaks["original"]["last_seen_utc"])
+        self.assertEqual([], summary["containers"])
+
+    def test_peak_identity_uses_container_id_and_missing_metrics_remain_unknown(self):
+        collector = collect.Collector(self.output, 5, 60)
+        collector.observe_usage({"containers": [
+            {"id": "one", "name": "cp", "cgroup": {"memory.current": 100}},
+            {"id": "two", "name": "cp", "cgroup": {"memory.current": 20, "memory.swap.current": 0}}]})
+        collector.summary({})
+        summary = json.loads((self.output / "summary.json").read_text())
+        self.assertIsNone(summary["max_cpu_busy_percent"])
+        peaks = {entry["id"]: entry for entry in summary["memory_peaks"]}
+        self.assertIsNone(peaks["one"]["max_swap_bytes"])
+        self.assertIsNone(peaks["one"]["max_memory_and_swap_bytes"])
+        self.assertEqual(0, peaks["two"]["max_swap_bytes"])
+        self.assertEqual(20, peaks["two"]["max_memory_bytes"])
 
     def check_stream_reconnect(self, kind, records, command):
         stop = threading.Event()
@@ -153,6 +271,21 @@ class HostDiagnosticsTest(unittest.TestCase):
         self.assertIn("--property=CPUQuota=10%", arguments)
         self.assertIn("--property=MemoryMax=192M", arguments)
         self.assertNotIn("--property=OOMScoreAdjust=-100", arguments)
+
+    def test_ci_log_retains_all_peaks_in_small_batches_without_modifying_summary(self):
+        peaks = [{"id": str(index), "max_swap_bytes": index} for index in range(21)]
+        record = {"utc": "sample-time", "max_cpu_busy_percent": 99, "memory_peaks": peaks}
+        captured = io.StringIO()
+        with contextlib.redirect_stdout(captured):
+            wrapper.emit_summary(record)
+        records = [json.loads(line.removeprefix("[host-diagnostics] ")) for line in captured.getvalue().splitlines()]
+        self.assertEqual(99, records[0]["max_cpu_busy_percent"])
+        self.assertEqual(21, records[0]["memory_peak_records"])
+        self.assertEqual([0, 8, 16], [item["memory_peaks_offset"] for item in records[1:]])
+        self.assertEqual(peaks, [peak for item in records[1:] for peak in item["memory_peaks"]])
+        self.assertTrue(all(len(item["memory_peaks"]) <= 8 for item in records[1:]))
+        self.assertTrue(all(item["utc"] == "sample-time" for item in records))
+        self.assertEqual(peaks, record["memory_peaks"])
 
     def test_maven_exit_status_and_arguments_are_preserved(self):
         for status in (0, 7, -9):

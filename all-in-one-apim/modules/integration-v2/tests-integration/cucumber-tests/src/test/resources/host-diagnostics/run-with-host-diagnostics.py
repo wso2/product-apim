@@ -18,6 +18,19 @@ def emit(message):
     print(f"[host-diagnostics] {message}", flush=True)
 
 
+def emit_summary(record):
+    # A full suite accumulates historical container peaks. Keep each CI log line small while retaining
+    # every record at the same 60-second cadence; local summary files retain the complete JSON object.
+    peaks = record.get("memory_peaks", [])
+    summary = {key: value for key, value in record.items() if key != "memory_peaks"}
+    summary["memory_peak_records"] = len(peaks)
+    emit(json.dumps(summary, separators=(",", ":")))
+    for offset in range(0, len(peaks), 8):
+        emit(json.dumps({"utc": record.get("utc"), "memory_peaks_offset": offset,
+                         "memory_peak_records": len(peaks), "memory_peaks": peaks[offset:offset + 8]},
+                        separators=(",", ":")))
+
+
 def service(*arguments):
     return subprocess.run(["sudo", "-n", *arguments], stdout=subprocess.PIPE,
                           stderr=subprocess.STDOUT, text=True, timeout=20)
@@ -82,7 +95,7 @@ def run(output, command):
             record = json.loads((output / "summary.json").read_text())
             if record.get("utc") != last_summary:
                 # The collector emits only metrics and selected names, never commands or environment values.
-                emit(json.dumps(record, separators=(",", ":")))
+                emit_summary(record)
                 last_summary = record.get("utc")
         except (OSError, ValueError):
             pass

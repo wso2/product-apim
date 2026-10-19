@@ -67,7 +67,8 @@ public class DistributedMySqlContainer extends GenericContainer<DistributedMySql
         withEnv("MYSQL_PASSWORD", DATABASE_PASSWORD);
         withCreateContainerCmdModifier(cmd -> {
             CPU_LIMIT.applyTo(cmd);
-            cmd.getHostConfig().withMemory(MEMORY_LIMIT_BYTES).withMemorySwap(MEMORY_LIMIT_BYTES);
+            cmd.getHostConfig().withMemory(MEMORY_LIMIT_BYTES)
+                    .withMemorySwap(DistributedMemoryLimits.memoryAndSwapLimitBytes(MEMORY_LIMIT_BYTES));
         });
         // Keep buffers and instrumentation within the container's 384 MiB budget.
         withCommand("--performance-schema=OFF",

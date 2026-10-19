@@ -55,7 +55,8 @@ public final class DockerHostClockMonitor implements AutoCloseable {
                     cmd.getHostConfig().withNanoCPUs(100_000_000L);
                     if (distributedTopology) {
                         cmd.getHostConfig().withMemory(DISTRIBUTED_MEMORY_LIMIT_BYTES)
-                                .withMemorySwap(DISTRIBUTED_MEMORY_LIMIT_BYTES);
+                                .withMemorySwap(DistributedMemoryLimits.memoryAndSwapLimitBytes(
+                                        DISTRIBUTED_MEMORY_LIMIT_BYTES));
                     }
                 })
                 .withCommand("/tmp/apim-clock-probe.js")

@@ -18,6 +18,8 @@ import time
 
 
 STOP = threading.Event()
+DISTRIBUTED_CGROUP = Path("/sys/fs/cgroup/apimdistributed.slice")
+BROWSER_CGROUP = Path("/sys/fs/cgroup/pw-browser")
 
 
 def stamp():
@@ -132,12 +134,13 @@ def cgroup_sample(path):
     if path is None or not path.is_dir():
         return None
     result = {"path": str(path)}
-    for name in ("memory.current", "memory.peak", "memory.max", "memory.swap.current", "memory.swap.max",
+    for name in ("memory.current", "memory.peak", "memory.high", "memory.max",
+                 "memory.swap.current", "memory.swap.peak", "memory.swap.max",
                  "cpu.max", "pids.current", "pids.max"):
         value = read(path / name)
         if value is not None:
             result[name] = int(value) if value.isdigit() else value
-    for name in ("cpu.stat", "memory.events", "memory.events.local", "memory.stat", "pids.events"):
+    for name in ("cpu.stat", "memory.events", "memory.events.local", "memory.swap.events", "memory.stat", "pids.events"):
         result[name] = counters(path / name)
     result["io.stat"] = read(path / "io.stat")
     result["pressure"] = {}
@@ -149,8 +152,43 @@ def cgroup_sample(path):
 def compact_cgroup(sample):
     if sample is None:
         return None
-    return {key: sample.get(key) for key in ("memory.current", "memory.max", "memory.swap.current", "cpu.max",
-                                            "cpu.stat", "memory.events", "pids.current", "pids.max")}
+    return {**{key: sample.get(key) for key in ("memory.current", "memory.peak", "memory.high", "memory.max",
+                                               "memory.swap.current", "memory.swap.peak", "memory.swap.max", "cpu.max",
+                                               "cpu.stat", "memory.events", "memory.swap.events", "pids.current", "pids.max")},
+            **memory_usage(sample)}
+
+
+def memory_usage(sample):
+    """RAM and swap are separate cgroup v2 charges; combine only known byte counts."""
+    sample = sample or {}
+    ram, swap = sample.get("memory.current"), sample.get("memory.swap.current")
+    ram_limit, swap_limit = sample.get("memory.max"), sample.get("memory.swap.max")
+    combined = ram + swap if isinstance(ram, int) and isinstance(swap, int) else None
+    combined_limit = None
+    if ram_limit is not None and swap_limit is not None:
+        combined_limit = "max" if "max" in (ram_limit, swap_limit) else ram_limit + swap_limit
+    return {"memory_bytes": ram, "memory_limit_bytes": ram_limit,
+            "swap_bytes": swap, "swap_limit_bytes": swap_limit,
+            "memory_and_swap_bytes": combined, "memory_and_swap_limit_bytes": combined_limit}
+
+
+def swap_activity(host, previous=None, elapsed=None):
+    memory = host.get("memory_bytes", {})
+    total, free = memory.get("SwapTotal"), memory.get("SwapFree")
+    result = {"total_bytes": total, "free_bytes": free,
+              "used_bytes": total - free if total is not None and free is not None else None,
+              "in_bytes_per_second": None, "out_bytes_per_second": None}
+    if previous is not None and elapsed is not None and elapsed > 0:
+        for direction, counter in (("in", "pswpin"), ("out", "pswpout")):
+            current, old = host.get("vmstat", {}).get(counter), previous.get("vmstat", {}).get(counter)
+            if current is not None and old is not None and current >= old:
+                result[f"{direction}_bytes_per_second"] = (current - old) * os.sysconf("SC_PAGE_SIZE") / elapsed
+    return result
+
+
+def resource_group_samples():
+    return {"workload": cgroup_sample(DISTRIBUTED_CGROUP),
+            "browser": cgroup_sample(DISTRIBUTED_CGROUP / "apimdistributed-browser.service") or cgroup_sample(BROWSER_CGROUP)}
 
 
 def container_details(identifier):
@@ -222,9 +260,55 @@ class Collector:
         self.children, self.threads, self.containers = [], [], {}
         self.docker_root = Path("/var/lib/docker")
         self.started = time.monotonic()
+        self.memory_peaks = {}
         self.aggregate = {"samples": 0, "max_sample_gap_seconds": 0, "min_available_bytes": None,
-                          "max_swap_used_bytes": 0, "max_running_containers": 0, "sampling_errors": 0,
-                          "docker_oom_events": 0, "kernel_oom_messages": 0, "collector_errors": 0}
+                          "max_swap_used_bytes": None, "max_running_containers": 0, "sampling_errors": 0,
+                          "docker_oom_events": 0, "kernel_oom_messages": 0, "collector_errors": 0,
+                          "max_memory_used_bytes": None,
+                          "max_cpu_busy_percent": None, "max_cpu_iowait_percent": None,
+                          "max_swap_in_bytes_per_second": None, "max_swap_out_bytes_per_second": None}
+
+    def observe_usage(self, sample):
+        """Retain extrema from every sample, including containers absent at summary time."""
+        host = sample.get("host", {})
+        memory = host.get("memory_bytes", {})
+        total, available = memory.get("MemTotal"), memory.get("MemAvailable")
+        used = total - available if total is not None and available is not None else None
+        for key, value in (("max_cpu_busy_percent", host.get("cpu_percent", {}).get("busy")),
+                           ("max_memory_used_bytes", used),
+                           ("max_cpu_iowait_percent", host.get("cpu_percent", {}).get("iowait")),
+                           ("max_swap_in_bytes_per_second", host.get("swap", {}).get("in_bytes_per_second")),
+                           ("max_swap_out_bytes_per_second", host.get("swap", {}).get("out_bytes_per_second"))):
+            if value is not None:
+                old = self.aggregate[key]
+                if old is None or value > old:
+                    self.aggregate[key] = value
+                    self.aggregate[f"{key}_utc"] = sample.get("utc")
+        groups = [("container", container.get("id"), container.get("name"), container.get("image"),
+                   container.get("cgroup")) for container in sample.get("containers", [])]
+        groups.extend((kind, kind, kind, None, sample.get(kind)) for kind in ("workload", "browser"))
+        for kind, identifier, name, image, cg in groups:
+            if identifier is None or not cg:
+                continue
+            key = f"{kind}:{identifier}"
+            record = self.memory_peaks.setdefault(key, {"kind": kind, "id": identifier, "name": name, "image": image,
+                                                        "max_memory_bytes": None, "max_swap_bytes": None,
+                                                        "max_memory_and_swap_bytes": None,
+                                                        "memory_peak_bytes": None, "swap_peak_bytes": None})
+            record["last_seen_utc"] = sample.get("utc")
+            for metric, value in memory_usage(cg).items():
+                if metric.endswith("limit_bytes"):
+                    record[metric] = value
+                peak = f"max_{metric}"
+                if peak in record and isinstance(value, int):
+                    old = record[peak]
+                    record[peak] = value if old is None else max(old, value)
+            # Kernel high-water marks can catch a spike between samples. Combined usage has no equivalent
+            # kernel counter: its peak must come from simultaneous RAM/swap samples, never separate maxima.
+            for metric, field in (("memory.peak", "memory_peak_bytes"), ("memory.swap.peak", "swap_peak_bytes")):
+                value, old = cg.get(metric), record[field]
+                if isinstance(value, int):
+                    record[field] = value if old is None else max(old, value)
 
     def error(self, source, error):
         self.aggregate["collector_errors"] += 1
@@ -349,18 +433,26 @@ class Collector:
 
     def summary(self, sample, final=False):
         memory = sample.get("host", {}).get("memory_bytes", {})
+        swap = {**swap_activity(sample.get("host", {})), **sample.get("host", {}).get("swap", {})}
+        total, available = memory.get("MemTotal"), memory.get("MemAvailable")
         top = []
         for container in sample.get("containers", []):
             cg = container.get("cgroup") or {}
-            top.append({"name": container["name"], "memory_bytes": cg.get("memory.current"),
-                        "memory_limit_bytes": cg.get("memory.max"), "cpu_max": cg.get("cpu.max"),
-                        "cpu": cg.get("cpu.stat"), "memory_events": cg.get("memory.events")})
+            top.append({"id": container.get("id"), "name": container["name"], **memory_usage(cg),
+                        "memory_peak_bytes": cg.get("memory.peak"), "swap_peak_bytes": cg.get("memory.swap.peak"),
+                        "cpu_max": cg.get("cpu.max"), "cpu": cg.get("cpu.stat"),
+                        "memory_events": cg.get("memory.events"), "swap_events": cg.get("memory.swap.events")})
         record = {**stamp(), "final": final, "elapsed_seconds": time.monotonic() - self.started,
                   **self.aggregate, "available_bytes": memory.get("MemAvailable"),
-                  "swap_used_bytes": memory.get("SwapTotal", 0) - memory.get("SwapFree", 0),
+                  "memory_total_bytes": total,
+                  "memory_used_bytes": total - available if total is not None and available is not None else None,
+                  "cpu_count": os.cpu_count(),
+                  "swap_used_bytes": swap["used_bytes"], "swap": swap,
+                  "memory_peaks": list(self.memory_peaks.values()),
                   "cpu_percent": sample.get("host", {}).get("cpu_percent"),
                   "pressure": sample.get("host", {}).get("pressure"), "containers": top,
                   "browser": compact_cgroup(sample.get("browser")), "collector_pid": os.getpid(),
+                  "workload": compact_cgroup(sample.get("workload")),
                   "collector": compact_cgroup(sample.get("collector")), "filesystems": sample.get("filesystems"),
                   "collection_seconds": sample.get("collection_seconds"), "docker_error": sample.get("docker_error")}
         atomic_json(self.output / "summary.json", record)
@@ -372,6 +464,7 @@ class Collector:
         metadata = {**stamp(), "pid": os.getpid(), "kernel": os.uname().release,
                     "os_release": read("/etc/os-release"), "cpu_count": os.cpu_count(),
                     "clock_ticks_per_second": os.sysconf("SC_CLK_TCK"), "boot_id": read("/proc/sys/kernel/random/boot_id"),
+                    "page_size_bytes": os.sysconf("SC_PAGE_SIZE"),
                     "sample_interval_seconds": self.interval, "summary_interval_seconds": self.summary_interval,
                     "disk_free_bytes": disk.f_bavail * disk.f_frsize,
                     "cgroup_controllers": read("/sys/fs/cgroup/cgroup.controllers"),
@@ -401,8 +494,9 @@ class Collector:
                     sample["host"] = host_sample()
                     sample["processes"] = processes()
                     sample["filesystems"] = filesystems((Path("/"), self.docker_root, self.output))
-                    sample["browser"] = cgroup_sample(Path("/sys/fs/cgroup/pw-browser"))
+                    sample.update(resource_group_samples())
                     sample["collector"] = cgroup_sample(cgroup_for_pid(os.getpid()))
+                    gap = None
                     if previous:
                         gap = sample["monotonic_seconds"] - previous["monotonic_seconds"]
                         sample["sample_gap_seconds"] = gap
@@ -413,19 +507,23 @@ class Collector:
                         if total > 0:
                             sample["host"]["cpu_percent"] = {"busy": 100 * (total - delta[3] - delta[4]) / total,
                                                              "iowait": 100 * delta[4] / total}
+                    sample["host"]["swap"] = swap_activity(sample["host"], previous.get("host") if previous else None, gap)
                     try:
                         sample["containers"] = self.sample_containers()
                     except (OSError, ValueError, http.client.HTTPException) as error:
                         sample["docker_error"] = str(error)[:500]
                         self.error("docker_sample", error)
+                    self.observe_usage(sample)
                     self.aggregate["samples"] += 1
                     memory = sample["host"]["memory_bytes"]
                     available = memory.get("MemAvailable")
                     if available is not None:
                         minimum = self.aggregate["min_available_bytes"]
                         self.aggregate["min_available_bytes"] = available if minimum is None else min(minimum, available)
-                    self.aggregate["max_swap_used_bytes"] = max(self.aggregate["max_swap_used_bytes"],
-                                                               memory.get("SwapTotal", 0) - memory.get("SwapFree", 0))
+                    swap_used = sample["host"]["swap"]["used_bytes"]
+                    if swap_used is not None:
+                        maximum = self.aggregate["max_swap_used_bytes"]
+                        self.aggregate["max_swap_used_bytes"] = swap_used if maximum is None else max(maximum, swap_used)
                     self.aggregate["max_running_containers"] = max(self.aggregate["max_running_containers"],
                                                                    len(sample.get("containers", [])))
                     previous = sample

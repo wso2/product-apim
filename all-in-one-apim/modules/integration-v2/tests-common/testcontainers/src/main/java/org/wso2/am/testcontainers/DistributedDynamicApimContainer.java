@@ -543,10 +543,13 @@ public class DistributedDynamicApimContainer implements ApimRuntime {
                         .withStartupTimeout(Duration.ofMinutes(20)));
         container.withCreateContainerCmdModifier(cmd -> {
             componentCpuLimit.applyTo(cmd);
-            cmd.getHostConfig().withMemory(memoryLimitBytes).withMemorySwap(memoryLimitBytes);
+            cmd.getHostConfig().withMemory(memoryLimitBytes)
+                    .withMemorySwap(DistributedMemoryLimits.memoryAndSwapLimitBytes(memoryLimitBytes));
         });
-        logger.info("Distributed APIM component '{}' CPU cap: {}, memory cap: {} MiB", alias, componentCpuLimit,
-                memoryLimitBytes / (1024 * 1024));
+        long swapAllowanceMiB = (DistributedMemoryLimits.memoryAndSwapLimitBytes(memoryLimitBytes) - memoryLimitBytes)
+                / (1024 * 1024);
+        logger.info("Distributed APIM component '{}' CPU cap: {}, memory cap: {} MiB, swap allowance: {} MiB", alias,
+                componentCpuLimit, memoryLimitBytes / (1024 * 1024), swapAllowanceMiB);
         container.withLogConsumer(componentLogConsumer(alias));
         return container;
     }

@@ -71,13 +71,19 @@ public class NodeAppServer {
 
     private final GenericContainer<?> container;
     private final Long memoryLimitBytes;
+    private final Long memoryAndSwapLimitBytes;
 
     public NodeAppServer() {
-        this(null);
+        this(null, null);
     }
 
     public NodeAppServer(Long memoryLimitBytes) {
+        this(memoryLimitBytes, memoryLimitBytes);
+    }
+
+    private NodeAppServer(Long memoryLimitBytes, Long memoryAndSwapLimitBytes) {
         this.memoryLimitBytes = memoryLimitBytes;
+        this.memoryAndSwapLimitBytes = memoryAndSwapLimitBytes;
         logger.info("Initializing NodeAppServer...");
         container = startWithPortRetry();
         logger.info("NodeAppServer successfully initialized (" + CPU_LIMIT + ")");
@@ -130,7 +136,7 @@ public class NodeAppServer {
                     declareStableHostPorts(cmd);
                     CPU_LIMIT.applyTo(cmd);
                     if (memoryLimitBytes != null) {
-                        cmd.getHostConfig().withMemory(memoryLimitBytes).withMemorySwap(memoryLimitBytes);
+                        cmd.getHostConfig().withMemory(memoryLimitBytes).withMemorySwap(memoryAndSwapLimitBytes);
                     }
                 })
                 .waitingFor(Wait.forListeningPort().withStartupTimeout(Duration.ofMinutes(5)));
@@ -241,21 +247,25 @@ public class NodeAppServer {
     private static volatile RuntimeException initializationFailure;
 
     public static synchronized NodeAppServer getInstance() {
-        return getInstance(null);
+        return getInstance(null, null);
     }
 
     public static synchronized NodeAppServer getInstance(boolean distributedTopology) {
-        return getInstance(distributedTopology ? DISTRIBUTED_MEMORY_LIMIT_BYTES : null);
+        if (!distributedTopology) {
+            return getInstance(null, null);
+        }
+        return getInstance(DISTRIBUTED_MEMORY_LIMIT_BYTES,
+                DistributedMemoryLimits.memoryAndSwapLimitBytes(DISTRIBUTED_MEMORY_LIMIT_BYTES));
     }
 
-    private static synchronized NodeAppServer getInstance(Long memoryLimitBytes) {
+    private static synchronized NodeAppServer getInstance(Long memoryLimitBytes, Long memoryAndSwapLimitBytes) {
         if (initializationFailure != null) {
             throw new IllegalStateException("NodeAppServer failed to start earlier in this JVM",
                     initializationFailure);
         }
         if (instance == null) {
             try {
-                instance = new NodeAppServer(memoryLimitBytes);
+                instance = new NodeAppServer(memoryLimitBytes, memoryAndSwapLimitBytes);
             } catch (RuntimeException e) {
                 initializationFailure = e;
                 throw e;
