@@ -1001,6 +1001,24 @@ public class BaseSteps {
         assertResponseFieldValue(fieldName, expectedValue, true);
     }
 
+    /** Asserts a response string field has the expected canonical prefix. */
+    @Then("The response field {string} should start with {string}")
+    public void theResponseFieldShouldStartWith(String fieldName, String expectedPrefix) throws IOException {
+
+        fieldName = Utils.resolveContextPlaceholders(fieldName);
+        expectedPrefix = Utils.resolveContextPlaceholders(expectedPrefix);
+        HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
+        Assert.assertNotNull(response, "No response is available while checking field '" + fieldName + "'");
+        Assert.assertTrue(response.getResponseCode() >= 200 && response.getResponseCode() < 300,
+                "Expected a successful response before checking field '" + fieldName + "', got "
+                        + response.getResponseCode() + " / " + response.getData());
+        Object actual = Utils.extractValueFromPayload(response.getData(), fieldName);
+        Assert.assertNotNull(actual, "Response field '" + fieldName + "' is missing: " + response.getData());
+        Assert.assertTrue(String.valueOf(actual).startsWith(expectedPrefix),
+                "Response field '" + fieldName + "' should start with '" + expectedPrefix + "' but was '"
+                        + actual + "'");
+    }
+
     /**
      * Asserts a field's exact value in an ERROR (non-2xx) response body — the counterpart of
      * {@link #theValueOfResponseFieldShouldBe} for a fault payload that names WHY the call was refused, where the

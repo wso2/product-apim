@@ -34,6 +34,7 @@ Feature: Gateway Allowed-Scopes Enforcement
     Then The response status code should be 201
     When I publish the "apis" resource with id "allowedScopesApiId"
     Then The lifecycle status of API "allowedScopesApiId" should be "Published"
+    And the "apis" resource "allowedScopesApiId" should be live on the gateway, redeploying if propagation is lost
     When I retrieve the "apis" resource with id "allowedScopesApiId"
     And I extract response field "context" and store it as "apiContext"
 
@@ -124,20 +125,29 @@ Feature: Gateway Allowed-Scopes Enforcement
   # and ScopeC-on-/echo/products/popular are the two directions of the exact-vs-segment-wildcard tie-break, and a
   # gateway that resolved that tie the wrong way would still pass the diagonal plus any single off-diagonal cell.
   #
-  # NOT PORTED — the AllowedScopesTestWithCorsDisabled container. That legacy class asserts this SAME 5x5 status
-  # matrix; diffing the two overlays, it differs ONLY by `[apim.cors] enable = false` (plus dropping an unrelated
-  # `[apim] gateway_type` line). Every request here is a plain GET with NO Origin header, which the CORS handler
-  # passes through untouched, so the whole matrix is byte-identical under either setting — it cannot distinguish the
-  # configurations, and a dedicated container is real capacity for zero discrimination. The CORS handler's own
-  # behaviour is covered by gateway/cors.feature. Residual risk, recorded rather than silently dropped: this does
-  # not prove the 403 is produced with the CORS handler absent from the API's in-sequence.
+  # The same complete matrix runs with API-level CORS explicitly enabled and disabled. Each outline row creates a
+  # fresh API and updates its corsConfiguration before revision/deployment, reusing these 25 assertions rather than
+  # maintaining a duplicate scenario. This is the API-level equivalent of AllowedScopesTestWithCorsDisabled; it
+  # does not change gateway-global CORS. Calls are one-shot after the API deployment readiness gate, matching the
+  # legacy assertion semantics; each issued scope token also has an exact expires_in assertion.
   @cap:gateway @feat:security-enforcement @type:regression @dep:publisher @legacy:AllowedScopesTestCase @legacy:AllowedScopesTestWithCorsDisabled
-  Scenario Outline: Per-resource scopes with wildcard precedence are enforced independently as <actor>
+  Scenario Outline: Per-resource scopes with wildcard precedence are enforced with API CORS <corsMode> as <actor>
     Given The system is ready
     And I have valid access tokens as "<actor>"
     When I put JSON payload from file "artifacts/payloads/create_apim_scope_matrix_api.json" in context as "scopeMatrixCreatePayload"
     And I create an "apis" resource with payload "scopeMatrixCreatePayload" as "scopeMatrixApiId"
     Then The response status code should be 201
+    When I retrieve the "apis" resource with id "scopeMatrixApiId"
+    Then The response status code should be 200
+    And I put the response payload in context as "scopeMatrixApiPayload"
+    When I update the "apis" resource "scopeMatrixApiId" and "scopeMatrixApiPayload" with configuration type "corsConfiguration" and value:
+    """
+    {"corsConfigurationEnabled": <corsEnabled>,"accessControlAllowOrigins":["*"],"accessControlAllowCredentials":false,"accessControlAllowHeaders":["authorization","Access-Control-Allow-Origin","Content-Type"],"accessControlAllowMethods":["GET","OPTIONS"]}
+    """
+    Then The response status code should be 200
+    When I retrieve the "apis" resource with id "scopeMatrixApiId"
+    Then The response status code should be 200
+    And The value of response field "corsConfiguration.corsConfigurationEnabled" should be "<corsEnabled>"
     When I put the following JSON payload in context as "scopeMatrixRevPayload"
     """
     {"description":"scope-matrix revision"}
@@ -152,6 +162,7 @@ Feature: Gateway Allowed-Scopes Enforcement
     Then The response status code should be 201
     When I publish the "apis" resource with id "scopeMatrixApiId"
     Then The lifecycle status of API "scopeMatrixApiId" should be "Published"
+    And the "apis" resource "scopeMatrixApiId" should be live on the gateway, redeploying if propagation is lost
     When I retrieve the "apis" resource with id "scopeMatrixApiId"
     And I extract response field "context" and store it as "scopeMatrixContext"
 
@@ -175,83 +186,90 @@ Feature: Gateway Allowed-Scopes Enforcement
     When I request an OAuth access token for the current user using password grant with scope "ScopeA"
     Then The response status code should be 200
     And The issued token scope list should include "ScopeA" and exclude "ScopeB,ScopeC,ScopeD,ScopeE"
-    And I invoke the API at gateway context "{{scopeMatrixContext}}/1.0.0/echo/products/catalog/1" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
+    And The value of response field "expires_in" should be "3600"
+    And I invoke the API at gateway context "{{scopeMatrixContext}}/1.0.0/echo/products/catalog/1" once with method "GET" using access token "generatedAccessToken" and payload ""
     Then The response status code should be 200
     And The response should contain "echo/products/catalog/1"
-    When I invoke the API at gateway context "{{scopeMatrixContext}}/1.0.0/echo/products/popular" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 403 within 60 seconds
+    When I invoke the API at gateway context "{{scopeMatrixContext}}/1.0.0/echo/products/popular" once with method "GET" using access token "generatedAccessToken" and payload ""
     Then The response status code should be 403
-    When I invoke the API at gateway context "{{scopeMatrixContext}}/1.0.0/echo/products/noexactmatch" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 403 within 60 seconds
+    When I invoke the API at gateway context "{{scopeMatrixContext}}/1.0.0/echo/products/noexactmatch" once with method "GET" using access token "generatedAccessToken" and payload ""
     Then The response status code should be 403
-    When I invoke the API at gateway context "{{scopeMatrixContext}}/1.0.0/echo/orders" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 403 within 60 seconds
+    When I invoke the API at gateway context "{{scopeMatrixContext}}/1.0.0/echo/orders" once with method "GET" using access token "generatedAccessToken" and payload ""
     Then The response status code should be 403
-    When I invoke the API at gateway context "{{scopeMatrixContext}}/1.0.0/echo/noexactmatch" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 403 within 60 seconds
+    When I invoke the API at gateway context "{{scopeMatrixContext}}/1.0.0/echo/noexactmatch" once with method "GET" using access token "generatedAccessToken" and payload ""
     Then The response status code should be 403
 
     # --- Row B: ScopeB (exact /echo/products/popular) — the exact binding wins over the /echo/products/* wildcard.
     When I request an OAuth access token for the current user using password grant with scope "ScopeB"
     Then The response status code should be 200
     And The issued token scope list should include "ScopeB" and exclude "ScopeA,ScopeC,ScopeD,ScopeE"
-    And I invoke the API at gateway context "{{scopeMatrixContext}}/1.0.0/echo/products/popular" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
+    And The value of response field "expires_in" should be "3600"
+    And I invoke the API at gateway context "{{scopeMatrixContext}}/1.0.0/echo/products/popular" once with method "GET" using access token "generatedAccessToken" and payload ""
     Then The response status code should be 200
     And The response should contain "echo/products/popular"
-    When I invoke the API at gateway context "{{scopeMatrixContext}}/1.0.0/echo/products/catalog/1" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 403 within 60 seconds
+    When I invoke the API at gateway context "{{scopeMatrixContext}}/1.0.0/echo/products/catalog/1" once with method "GET" using access token "generatedAccessToken" and payload ""
     Then The response status code should be 403
-    When I invoke the API at gateway context "{{scopeMatrixContext}}/1.0.0/echo/products/noexactmatch" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 403 within 60 seconds
+    When I invoke the API at gateway context "{{scopeMatrixContext}}/1.0.0/echo/products/noexactmatch" once with method "GET" using access token "generatedAccessToken" and payload ""
     Then The response status code should be 403
-    When I invoke the API at gateway context "{{scopeMatrixContext}}/1.0.0/echo/orders" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 403 within 60 seconds
+    When I invoke the API at gateway context "{{scopeMatrixContext}}/1.0.0/echo/orders" once with method "GET" using access token "generatedAccessToken" and payload ""
     Then The response status code should be 403
-    When I invoke the API at gateway context "{{scopeMatrixContext}}/1.0.0/echo/noexactmatch" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 403 within 60 seconds
+    When I invoke the API at gateway context "{{scopeMatrixContext}}/1.0.0/echo/noexactmatch" once with method "GET" using access token "generatedAccessToken" and payload ""
     Then The response status code should be 403
 
     # --- Row C: ScopeC (segment wildcard /echo/products/*) — 200 only on the products path with no exact binding.
     When I request an OAuth access token for the current user using password grant with scope "ScopeC"
     Then The response status code should be 200
     And The issued token scope list should include "ScopeC" and exclude "ScopeA,ScopeB,ScopeD,ScopeE"
-    And I invoke the API at gateway context "{{scopeMatrixContext}}/1.0.0/echo/products/noexactmatch" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
+    And The value of response field "expires_in" should be "3600"
+    And I invoke the API at gateway context "{{scopeMatrixContext}}/1.0.0/echo/products/noexactmatch" once with method "GET" using access token "generatedAccessToken" and payload ""
     Then The response status code should be 200
     And The response should contain "echo/products/noexactmatch"
-    When I invoke the API at gateway context "{{scopeMatrixContext}}/1.0.0/echo/products/catalog/1" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 403 within 60 seconds
+    When I invoke the API at gateway context "{{scopeMatrixContext}}/1.0.0/echo/products/catalog/1" once with method "GET" using access token "generatedAccessToken" and payload ""
     Then The response status code should be 403
-    When I invoke the API at gateway context "{{scopeMatrixContext}}/1.0.0/echo/products/popular" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 403 within 60 seconds
+    When I invoke the API at gateway context "{{scopeMatrixContext}}/1.0.0/echo/products/popular" once with method "GET" using access token "generatedAccessToken" and payload ""
     Then The response status code should be 403
-    When I invoke the API at gateway context "{{scopeMatrixContext}}/1.0.0/echo/orders" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 403 within 60 seconds
+    When I invoke the API at gateway context "{{scopeMatrixContext}}/1.0.0/echo/orders" once with method "GET" using access token "generatedAccessToken" and payload ""
     Then The response status code should be 403
-    When I invoke the API at gateway context "{{scopeMatrixContext}}/1.0.0/echo/noexactmatch" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 403 within 60 seconds
+    When I invoke the API at gateway context "{{scopeMatrixContext}}/1.0.0/echo/noexactmatch" once with method "GET" using access token "generatedAccessToken" and payload ""
     Then The response status code should be 403
 
     # --- Row D: ScopeD (exact /echo/orders) — the exact binding wins over the /echo/* global wildcard.
     When I request an OAuth access token for the current user using password grant with scope "ScopeD"
     Then The response status code should be 200
     And The issued token scope list should include "ScopeD" and exclude "ScopeA,ScopeB,ScopeC,ScopeE"
-    And I invoke the API at gateway context "{{scopeMatrixContext}}/1.0.0/echo/orders" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
+    And The value of response field "expires_in" should be "3600"
+    And I invoke the API at gateway context "{{scopeMatrixContext}}/1.0.0/echo/orders" once with method "GET" using access token "generatedAccessToken" and payload ""
     Then The response status code should be 200
     And The response should contain "echo/orders"
-    When I invoke the API at gateway context "{{scopeMatrixContext}}/1.0.0/echo/products/catalog/1" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 403 within 60 seconds
+    When I invoke the API at gateway context "{{scopeMatrixContext}}/1.0.0/echo/products/catalog/1" once with method "GET" using access token "generatedAccessToken" and payload ""
     Then The response status code should be 403
-    When I invoke the API at gateway context "{{scopeMatrixContext}}/1.0.0/echo/products/popular" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 403 within 60 seconds
+    When I invoke the API at gateway context "{{scopeMatrixContext}}/1.0.0/echo/products/popular" once with method "GET" using access token "generatedAccessToken" and payload ""
     Then The response status code should be 403
-    When I invoke the API at gateway context "{{scopeMatrixContext}}/1.0.0/echo/products/noexactmatch" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 403 within 60 seconds
+    When I invoke the API at gateway context "{{scopeMatrixContext}}/1.0.0/echo/products/noexactmatch" once with method "GET" using access token "generatedAccessToken" and payload ""
     Then The response status code should be 403
-    When I invoke the API at gateway context "{{scopeMatrixContext}}/1.0.0/echo/noexactmatch" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 403 within 60 seconds
+    When I invoke the API at gateway context "{{scopeMatrixContext}}/1.0.0/echo/noexactmatch" once with method "GET" using access token "generatedAccessToken" and payload ""
     Then The response status code should be 403
 
     # --- Row E: ScopeE (global wildcard /echo/*) — 200 only on the path no more specific operation claims.
     When I request an OAuth access token for the current user using password grant with scope "ScopeE"
     Then The response status code should be 200
     And The issued token scope list should include "ScopeE" and exclude "ScopeA,ScopeB,ScopeC,ScopeD"
-    And I invoke the API at gateway context "{{scopeMatrixContext}}/1.0.0/echo/noexactmatch" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
+    And The value of response field "expires_in" should be "3600"
+    And I invoke the API at gateway context "{{scopeMatrixContext}}/1.0.0/echo/noexactmatch" once with method "GET" using access token "generatedAccessToken" and payload ""
     Then The response status code should be 200
     And The response should contain "echo/noexactmatch"
-    When I invoke the API at gateway context "{{scopeMatrixContext}}/1.0.0/echo/products/catalog/1" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 403 within 60 seconds
+    When I invoke the API at gateway context "{{scopeMatrixContext}}/1.0.0/echo/products/catalog/1" once with method "GET" using access token "generatedAccessToken" and payload ""
     Then The response status code should be 403
-    When I invoke the API at gateway context "{{scopeMatrixContext}}/1.0.0/echo/products/popular" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 403 within 60 seconds
+    When I invoke the API at gateway context "{{scopeMatrixContext}}/1.0.0/echo/products/popular" once with method "GET" using access token "generatedAccessToken" and payload ""
     Then The response status code should be 403
-    When I invoke the API at gateway context "{{scopeMatrixContext}}/1.0.0/echo/products/noexactmatch" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 403 within 60 seconds
+    When I invoke the API at gateway context "{{scopeMatrixContext}}/1.0.0/echo/products/noexactmatch" once with method "GET" using access token "generatedAccessToken" and payload ""
     Then The response status code should be 403
-    When I invoke the API at gateway context "{{scopeMatrixContext}}/1.0.0/echo/orders" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 403 within 60 seconds
+    When I invoke the API at gateway context "{{scopeMatrixContext}}/1.0.0/echo/orders" once with method "GET" using access token "generatedAccessToken" and payload ""
     Then The response status code should be 403
 
-    Examples:
-      | actor             |
-      | admin             |
-      | admin@tenant1.com |
+    Examples: CORS enabled and disabled on API for each actor tenant
+      | actor             | corsMode  | corsEnabled |
+      | admin             | enabled   | true        |
+      | admin             | disabled  | false       |
+      | admin@tenant1.com | enabled   | true        |
+      | admin@tenant1.com | disabled  | false       |

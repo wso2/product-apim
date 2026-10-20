@@ -21,7 +21,7 @@ import io.cucumber.testng.CucumberOptions;
 
 /**
  * Runner for the tenant-configuration policy source of the network access-control feature. Runs in the
- * network-access-control-tenant-conf container, which has NO platform policy, so the gate is driven purely by
+ * IntegrationV2-LoggingAndElkAnalytics block, which has NO platform policy, so the gate is driven purely by
  * a per-tenant NetworkSecurityAccessControl policy set in tenant-conf.json: the configuring tenant is blocked
  * while a tenant with no policy resolves the same reference.
  */

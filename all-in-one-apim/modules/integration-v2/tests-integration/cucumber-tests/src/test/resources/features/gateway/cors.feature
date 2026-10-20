@@ -10,6 +10,7 @@ Feature: Gateway CORS
   Scenario Outline: CORS allow-origin and allow-credentials headers are returned for a matching origin as <actor>
     Given The system is ready
     And I have valid access tokens as "<actor>"
+    And I put literal value "http://localhost" in context as "corsAllowedOrigin"
     And I have created an api from "artifacts/payloads/create_apim_cors_api.json" as "corsApiId" and deployed it
     And the "apis" resource "corsApiId" should be live on the gateway, redeploying if propagation is lost
     When I publish the "apis" resource with id "corsApiId"
@@ -35,16 +36,18 @@ Feature: Gateway CORS
 
   # Ports the pre-flight cases of CORSHeadersTestCase — an OPTIONS pre-flight request to a CORS-enabled API is
   # answered by the gateway (200) with the configured Access-Control-Allow-Origin / -Allow-Methods / -Allow-Headers
-  # response headers. The API enables a specific origin (http://localhost) with the method and header allow-lists
-  # from its CORS config. Runs in the gateway block, both tenants.
+  # response headers. The API-level allowed origin and request path are varied together: the existing V2 case uses
+  # localhost and a trailing slash, while the legacy CORSHeadersTestCase uses wildcard origin and no trailing slash.
+  # Both send Origin: http://localhost. Runs in the gateway block, both tenants.
   # Also ports the REST facet of CORSHeadersForAllAPITypesTestCase: the pre-flight echoes a custom configured
   # allow-header (X-BrowserSessionID), and a NORMAL (non pre-flight) request does NOT carry the pre-flight-only
   # Access-Control-Allow-Methods / -Allow-Headers response headers. That negative is asserted once here (it is a
   # property of the CORS handler, independent of API type) rather than repeated per type.
-  @cap:gateway @feat:cors @rule:preflight @type:regression @dep:publisher @dep:devportal @legacy:CORSHeadersTestCase @legacy:CORSHeadersForAllAPITypesTestCase
+  @cap:gateway @feat:cors @rule:preflight @type:regression @dep:publisher @dep:devportal @legacy:CORSHeadersTestCase @legacy:CORSHeadersForAllAPITypesTestCase @legacy:APIMANAGER3965TestCase
   Scenario Outline: A CORS pre-flight OPTIONS request returns the configured allow-origin, allow-methods and allow-headers as <actor>
     Given The system is ready
     And I have valid access tokens as "<actor>"
+    And I put literal value "<corsAllowedOrigin>" in context as "corsAllowedOrigin"
     And I have created an api from "artifacts/payloads/create_apim_cors_api.json" as "corsPfApiId" and deployed it
     And the "apis" resource "corsPfApiId" should be live on the gateway, redeploying if propagation is lost
     When I publish the "apis" resource with id "corsPfApiId"
@@ -58,27 +61,40 @@ Feature: Gateway CORS
     # access token is needed for a pre-flight (the gateway answers it before auth). The Access-Control-Request-Method
     # header is required: the CORS handler matches the target resource by the requested method, so without it the
     # request finds no acceptable resource and is rejected 405.
-    When I send a CORS preflight to gateway context "{{corsPfContext}}/1.0.0/customers/123/" with origin "http://localhost" and request method "GET" until response status code becomes 200 within 60 seconds
+    When I send a CORS preflight to gateway context "{{corsPfContext}}/1.0.0/<requestPath>" with origin "http://localhost" and request method "GET" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
-    And The response should contain the header "Access-Control-Allow-Origin" with value "http://localhost"
+    And The response should contain the header "Access-Control-Allow-Origin" with value "<expectedAllowOrigin>"
+    And The response header "Access-Control-Allow-Credentials" should match expectation "<expectedCredentials>"
     And The response header "Access-Control-Allow-Methods" should contain "GET"
+    And The response header "Access-Control-Allow-Methods" should not contain "POST"
+    And The response header "Access-Control-Allow-Methods" should not contain "PUT"
+    And The response header "Access-Control-Allow-Methods" should not contain "DELETE"
+    And The response header "Access-Control-Allow-Methods" should not contain "PATCH"
     And The response header "Access-Control-Allow-Headers" should contain "authorization"
+    And The response header "Access-Control-Allow-Headers" should contain "Access-Control-Allow-Origin"
+    And The response header "Access-Control-Allow-Headers" should contain "Content-Type"
+    And The response header "Access-Control-Allow-Headers" should contain "apikey"
     # The custom configured allow-header is echoed in the pre-flight allow-headers.
     And The response header "Access-Control-Allow-Headers" should contain "X-BrowserSessionID"
+    And The response header "Access-Control-Allow-Headers" should be exactly "authorization,Access-Control-Allow-Origin,Content-Type,apikey,X-BrowserSessionID,Authorization,ApiKey"
 
     # Negative: a NORMAL (non pre-flight) request carrying an Origin gets a 200 but MUST NOT carry the
     # pre-flight-only Access-Control-Allow-Methods / -Allow-Headers response headers.
-    When I invoke the API at gateway context "{{corsPfContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" with request header "Origin" set to "http://localhost" until response status code becomes 200 within 60 seconds
+    When I invoke the API at gateway context "{{corsPfContext}}/1.0.0/<requestPath>" with method "GET" using access token "generatedAccessToken" and payload "" with request header "Origin" set to "http://localhost" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
     And The value of response field "id" should be "123"
     And The value of response field "name" should be "John"
+    And The response should contain the header "Access-Control-Allow-Origin" with value "<expectedAllowOrigin>"
+    And The response header "Access-Control-Allow-Credentials" should match expectation "<expectedCredentials>"
     And The response should not contain the header "Access-Control-Allow-Methods"
     And The response should not contain the header "Access-Control-Allow-Headers"
 
     Examples:
-      | actor             |
-      | admin             |
-      | admin@tenant1.com |
+      | actor             | corsAllowedOrigin | expectedAllowOrigin | expectedCredentials | requestPath    |
+      | admin             | http://localhost  | http://localhost    | true                 | customers/123/ |
+      | admin             | *                 | *                   | absent               | customers/123  |
+      | admin@tenant1.com | http://localhost  | http://localhost    | true                 | customers/123/ |
+      | admin@tenant1.com | *                 | *                   | absent               | customers/123  |
 
   # Default CORS (no corsConfiguration on the API): the gateway still answers a pre-flight OPTIONS with a wildcard
   # Access-Control-Allow-Origin (*) and an Access-Control-Allow-Methods that reflects ONLY the API's actual
@@ -223,13 +239,14 @@ Feature: Gateway CORS
     And I wait until "apis" "cuApiId" revision is deployed in the gateway
 
     # The pre-flight now reflects the UPDATED config: the request's origin is echoed (no longer "*"),
-    # allow-credentials is true, and allow-methods is filtered to the API's OWN verb — GET only.
-    # Polled on the HEADER, not the status: the pre-flight answers 200 with the OLD config too, so an until-200
-    # poll would return the stale response and the assertions below would race artifact propagation.
-    When I send a CORS preflight to gateway context "{{cuContext}}/1.0.0/customers/123/" with origin "http://localhost:8080" and request method "GET" until response header "Access-Control-Allow-Origin" becomes "http://localhost:8080" within 90 seconds
+    # allow-credentials is true, and allow-methods is filtered to the API's OWN verb — GET only. The updated
+    # allow-headers wire value also includes the gateway's Authorization and ApiKey headers, as in the legacy
+    # update contract. Poll on that header, not the status: the pre-flight answers 200 with the OLD config too.
+    When I send a CORS preflight to gateway context "{{cuContext}}/1.0.0/customers/123/" with origin "http://localhost:8080" and request method "GET" until response header "Access-Control-Allow-Headers" becomes "Access-Control-Allow-Origin,authorization,Content-Type,SOAPAction,Authorization,ApiKey" within 90 seconds
     Then The response status code should be 200
     And The response should contain the header "Access-Control-Allow-Origin" with value "http://localhost:8080"
     And The response should contain the header "Access-Control-Allow-Credentials" with value "true"
+    And The response header "Access-Control-Allow-Headers" should be exactly "Access-Control-Allow-Origin,authorization,Content-Type,SOAPAction,Authorization,ApiKey"
     And The response header "Access-Control-Allow-Methods" should contain "GET"
     And The response header "Access-Control-Allow-Methods" should not contain "POST"
     And The response header "Access-Control-Allow-Methods" should not contain "PUT"
@@ -272,8 +289,8 @@ Feature: Gateway CORS
     Then The response status code should be 200
     # The BACKEND's exact allow-origin — a gateway-handled pre-flight would answer "*" instead.
     And The response should contain the header "Access-Control-Allow-Origin" with value "http://localhost"
-    And The response header "Access-Control-Allow-Methods" should contain "OPTIONS"
-    And The response header "Access-Control-Allow-Headers" should contain "Content-Type"
+    And The response should contain the header "Access-Control-Allow-Methods" with value "GET, POST, DELETE, PUT, OPTIONS, HEAD"
+    And The response should contain the header "Access-Control-Allow-Headers" with value "Content-Type"
     # The backend sets no allow-credentials, so the gateway must add none either.
     And The response should not contain the header "Access-Control-Allow-Credentials"
 

@@ -9,7 +9,7 @@ Feature: Gateway API Product Invocation
   analogue of gateway/lifecycle_stage_invocation. Also covers what a product does with CHANGES to a member API:
   an endpoint switch and an operation-policy change must both surface through an already-deployed product once it
   is re-saved and redeployed. Products aggregate TWO APIs (with disjoint resource sets) where the legacy did.
-  Runs in the concurrent IntegrationV2-Gateway block (backend started). Teardown via @cleanup.
+  Runs in a concurrent IntegrationV2-Gateway-* block (backend started). Teardown via @cleanup.
 
   @cap:gateway @feat:rest-invocation @type:smoke @dep:publisher @legacy:APIProductCreationTestCase
   Scenario Outline: Invoke a published API product over two APIs with all four credential types as <actor>

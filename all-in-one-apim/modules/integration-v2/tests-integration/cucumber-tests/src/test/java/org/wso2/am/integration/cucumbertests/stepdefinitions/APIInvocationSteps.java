@@ -345,11 +345,10 @@ public class APIInvocationSteps {
      * exception policy again — 18 near-identical loops used to, and one had already drifted off the shared ceiling
      * onto a hardcoded window.
      *
-     * <p>Its second job is to be this family's ONE observable failure point. An unexpected 401 is reported once
-     * through {@link Utils#logAuthRejection} — naming the credential and its {@code jti} — instead of surfacing as
-     * an opaque status mismatch after a whole window has burned. A credential rejected on every attempt cannot
-     * recover by being replayed (see that method), so this diagnostic is the difference between pinpointing the
-     * cause from CI logs and re-running the investigation.
+     * <p>Its second job is to make unexpected 401s observable without changing the retry contract. Every 401
+     * response while polling for another status is logged with a masked credential identity; a final 401 also
+     * receives the terminal summary. This exposes transient authorization propagation failures that would
+     * otherwise disappear when a later retry succeeds.
      *
      * @param what                 what is being invoked, for the diagnostic (typically the resolved context)
      * @param credentialContextKey context key of the token/API key presented, or {@code null} when unauthenticated
@@ -358,8 +357,17 @@ public class APIInvocationSteps {
                                    Utils.RetryAttempt<HttpResponse> attempt) throws Exception {
 
         long started = System.currentTimeMillis();
-        HttpResponse last = Utils.retryUntil(timeoutSeconds * 1000L, attempt,
-                response -> response.getResponseCode() == expectedStatus);
+        AtomicInteger attemptsWithResponse = new AtomicInteger();
+        HttpResponse last = Utils.retryUntil(timeoutSeconds * 1000L, () -> {
+            HttpResponse response = attempt.attempt();
+            int attemptNumber = attemptsWithResponse.incrementAndGet();
+            if (response != null && response.getResponseCode() == 401 && expectedStatus != 401) {
+                Utils.logUnexpectedAuthRejectionAttempt(what, credentialContextKey,
+                        credentialForDiagnostic(credentialContextKey), response.getData(), attemptNumber,
+                        System.currentTimeMillis() - started);
+            }
+            return response;
+        }, response -> response.getResponseCode() == expectedStatus);
         if (last != null && last.getResponseCode() == 401 && expectedStatus != 401) {
             Utils.logAuthRejection(what, credentialContextKey, credentialForDiagnostic(credentialContextKey),
                     last.getResponseCode(), last.getData(), System.currentTimeMillis() - started);

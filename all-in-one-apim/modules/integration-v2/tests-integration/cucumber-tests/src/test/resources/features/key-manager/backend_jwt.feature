@@ -6,9 +6,14 @@ Feature: Backend JWT Claims
   routes to the header-reflecting backend (/reflect-headers) so the decoded assertion can be inspected. Runs
   in the backend-JWT-enabled block (shared with application attributes, whose overlay turns on backend JWT and
   declares a required application attribute — so applications here supply it). Ports JWTTestCase (default
-  app/API/subscriber claims). The dotted-username and user-profile-claim cases are ported separately.
+  app/API/subscriber claims) and its dotted-username cases; the user-profile-claim case of FederatedUserJWTTestCase is
+  in federated_backend_jwt.feature.
+  The block's gateway reads OAuth tokens from the custom `Test-Custom-Header` (`[apim.oauth_config] auth_header`), so
+  every OAuth-token invocation here sends its bearer token in that header; API-key invocations are unaffected.
 
-  @cap:key-manager @feat:backend-jwt @rule:backend-jwt-claims @type:regression @dep:gateway @legacy:JWTTestCase
+  # Also contributes the backend application-name and cryptographic-signature assertions of URLSafeJWTTestCase.
+  # URL-safe encoding and the JWT-token/password-grant inputs remain covered only by backend_jwt_urlsafe.feature.
+  @cap:key-manager @feat:backend-jwt @rule:backend-jwt-claims @type:regression @dep:gateway @legacy:JWTTestCase @legacy:URLSafeJWTTestCase
   Scenario Outline: The backend JWT carries the application, API and subscriber claims as <actor>
     Given The system is ready
     And I have valid access tokens as "<actor>"
@@ -105,9 +110,10 @@ Feature: Backend JWT Claims
   # generator-invariant assertions (typ/alg/kid, iss, applicationtier). The app/API/subscription claims are
   # grant-invariant so they are pinned too; enduser/sub are the resource-owner-path discriminators.
   @cap:key-manager @feat:backend-jwt @rule:authcode-credential @type:regression @dep:gateway @legacy:JWTTestCase
-  Scenario Outline: The backend JWT is generated for an authorization-code token invocation as <actor>
+  Scenario Outline: The auth-code backend JWT preserves subscriber identity <username> in <tenant> as set up by <actor>
     Given The system is ready
     And I have valid access tokens as "<actor>"
+    And I provision user "<username>" as actor "<ownerActor>" with roles "Internal/subscriber" in tenant "<tenant>"
     And I have created an api from "artifacts/payloads/create_apim_reflect_api.json" as "acApiId" and deployed it
     And the "apis" resource "acApiId" should be live on the gateway, redeploying if propagation is lost
     When I publish the "apis" resource with id "acApiId"
@@ -137,11 +143,12 @@ Feature: Backend JWT Claims
     And I subscribe to API "acApiId" using application "createdAppId" with payload "acSub" as "acSubId"
     Then The response status code should be 201
 
-    # The token's resource owner is the acting actor, established through the authorize/consent flow.
+    # The token's resource owner is the provisioned subscriber, established through the authorize/consent flow.
+    When I act as "<ownerActor><suffix>"
     When I request an OAuth access token via authorization code grant with scope "PRODUCTION"
     Then The response status code should be 200
-    # The resource owner's user id, read from the token this grant issued. It is minted when the block provisions
-    # the actor, so the enduser/sub claims below are pinned against it rather than against a literal.
+    # The resource owner's user id, read from the token this grant issued. The subscriber was provisioned in this
+    # scenario, so the enduser/sub claims below are pinned against the token subject rather than a guessed literal.
     And I extract JWT claim "sub" from access token "generatedAccessToken" and store it as "acEndUserId"
 
     When I invoke the API at gateway context "{{acApiContext}}/1.0.0/reflect-headers" with method "GET" using access token "generatedAccessToken" in header "Test-Custom-Header" and payload "" until response status code becomes 200 within 60 seconds
@@ -159,18 +166,24 @@ Feature: Backend JWT Claims
     And The reflected backend JWT header should contain "typ" with value "JWT"
     And The reflected backend JWT should be signed with algorithm "RS256"
     And The reflected backend JWT header should contain "kid" with value "Q049bG9jYWxob3N0LCBPVT1XU08yLCBPPVdTTzIsIEw9TW91bnRhaW4gVmlldywgU1Q9Q0EsIEM9VVMjMjExMjc5NDc5Njg2NTExMjgzMzcxNzY2ODEwMjc1MjAyMjU0ODQ5MzE4NzgwMzI3"
-    # A user-profile claim the resource owner never configured must NOT leak — admin has no mobile claim.
+    And The reflected backend JWT should be verifiably signed by the key the gateway JWKS endpoint publishes
+    # A user-profile claim the resource owner never configured must NOT leak — the provisioned user has no mobile claim.
     And The reflected backend JWT should not contain claim "mobile"
     # DISCRIMINATORS of the resource-owner path, both observed on a live 4.7.0 container: enduser is the resource
     # owner's USER ID qualified with the tenant domain (the api-key path carries the bare username instead), and
     # that same user id is present as sub (the api-key path has no sub at all).
     And The reflected backend JWT should contain claim "enduser" with value "{{acEndUserId}}@<tenantDomain>"
     And The reflected backend JWT should contain claim "sub" with value "{{acEndUserId}}"
+    And The reflected backend JWT should not contain claim "wrongclaim"
 
     Examples:
-      | actor             | tenantDomain |
-      | admin             | carbon.super |
-      | admin@tenant1.com | tenant1.com  |
+      | actor             | tenant       | suffix       | tenantDomain | username                     | ownerActor    |
+      | admin             | carbon.super |              | carbon.super | subscriberUser2              | jwtAuthBare   |
+      | admin             | carbon.super |              | carbon.super | subscriberUser2@wso2.com     | jwtAuthWso2   |
+      | admin             | carbon.super |              | carbon.super | subscriberUser2@abc.com      | jwtAuthAbc    |
+      | admin@tenant1.com | tenant1.com  | @tenant1.com | tenant1.com  | subscriberUser2              | jwtAuthBare   |
+      | admin@tenant1.com | tenant1.com  | @tenant1.com | tenant1.com  | subscriberUser2@wso2.com     | jwtAuthWso2   |
+      | admin@tenant1.com | tenant1.com  | @tenant1.com | tenant1.com  | subscriberUser2@abc.com      | jwtAuthAbc    |
 
   # Same backend-JWT claim family reached via a DEVPORTAL API KEY instead of an OAuth access token. The four legacy
   # api-key JWT methods (testAPIKeyOnlySecuredAPIInvocation, testEnableJWTAndClaimsForAPIKeyApp,
@@ -201,6 +214,8 @@ Feature: Backend JWT Claims
     Then The lifecycle status of API "kApiId" should be "Published"
     When I retrieve the "apis" resource with id "kApiId"
     And I extract response field "context" and store it as "kApiContext"
+    And I extract response field "name" and store it as "kApiName"
+    And I extract response field "version" and store it as "kApiVersion"
 
     # Same application shape as the client-credentials scenario: tokenType JWT and the required application
     # attribute (the block overlay declares one). The api-key credential is issued against THIS application.
@@ -208,6 +223,9 @@ Feature: Backend JWT Claims
     And I set the field "tokenType" to "JWT" in the payload "kAppPayload"
     And I create an application with payload "kAppPayload"
     Then The response status code should be 201
+    When I retrieve the application with id "createdAppId"
+    Then The response status code should be 200
+    And I extract response field "name" and store it as "kAppName"
 
     When I put the following JSON payload in context as "kSub"
     """
@@ -231,6 +249,15 @@ Feature: Backend JWT Claims
     # exactly so a generator change dropping or renaming either fails here too.
     And The reflected backend JWT should contain claim "iss" with value "wso2.org/products/am"
     And The reflected backend JWT should contain claim "applicationtier" with value "Unlimited"
+    And The reflected backend JWT should contain claim "keytype" with value "PRODUCTION"
+    # API, application, and subscriber claims are asserted on this credential path too; a correct JWT on the
+    # client-credentials path alone would not catch an API-key-specific claim assembly regression.
+    And The reflected backend JWT should contain claim "applicationname" with value "{{kAppName}}"
+    And The reflected backend JWT should contain claim "apiname" with value "{{kApiName}}"
+    And The reflected backend JWT should contain claim "version" with value "{{kApiVersion}}"
+    And The reflected backend JWT should contain claim "apicontext" with value "{{kApiContext}}/{{kApiVersion}}"
+    And The reflected backend JWT should contain claim "subscriber" with value "<actor>"
+    And The reflected backend JWT should not contain claim "wrongclaim"
     # typ in the JOSE header declares the assertion is a JWT; the payload-claim assertions below are blind to it.
     And The reflected backend JWT header should contain "typ" with value "JWT"
     # alg pins the signing algorithm on the api-key path too (RS256 = SHA256withRSA); an alg:none downgrade would
@@ -239,6 +266,7 @@ Feature: Backend JWT Claims
     # kid names the verification key the backend selects; a blank/absent kid leaves it unable to pick one. Same
     # base64(DN+serial) of the shipped wso2carbon signing certificate as the client-credentials path.
     And The reflected backend JWT header should contain "kid" with value "Q049bG9jYWxob3N0LCBPVT1XU08yLCBPPVdTTzIsIEw9TW91bnRhaW4gVmlldywgU1Q9Q0EsIEM9VVMjMjExMjc5NDc5Njg2NTExMjgzMzcxNzY2ODEwMjc1MjAyMjU0ODQ5MzE4NzgwMzI3"
+    And The reflected backend JWT should be verifiably signed by the key the gateway JWKS endpoint publishes
     # DISCRIMINATOR 1: on the api-key path enduser is the bare username (the client-credentials path gives
     # admin@carbon.super). Parameterised per row; both row values are measured — see the note at the Examples table.
     And The reflected backend JWT should contain claim "enduser" with value "<enduser>"
@@ -265,6 +293,92 @@ Feature: Backend JWT Claims
       | admin             | admin             |
       | admin@tenant1.com | admin@tenant1.com |
 
+  # JWTTestCase also invokes APIs whose sole application security scheme is api_key. Its legacy checks assert a
+  # successful API-key invocation and that the gateway injected X-JWT-Assertion. Keep this separate from the
+  # oauth2+api_key claim scenario above, and exercise both locally signed JWT-format and opaque credentials.
+  @cap:key-manager @feat:backend-jwt @rule:api-key-only-credential @type:regression @dep:gateway @legacy:JWTTestCase
+  Scenario Outline: An api_key-only API invocation carries a valid backend JWT for <actor>
+    Given The system is ready
+    And I have valid access tokens as "<actor>"
+    And I have created an api from "artifacts/payloads/create_apim_reflect_api.json" as "koApiId" and deployed it
+
+    When I retrieve the "apis" resource with id "koApiId"
+    Then The response status code should be 200
+    And I put the response payload in context as "koApiPayload"
+    When I update the "apis" resource "koApiId" and "koApiPayload" with configuration type "securityScheme" and value:
+      """
+      ["api_key"]
+      """
+    Then The response status code should be 200
+    # The publisher stores an api_key-only scheme with its application-security-mandatory marker added.
+    When I retrieve the "apis" resource with id "koApiId" until its security schemes equal the following within 180 seconds:
+      """
+      ["api_key", "oauth_basic_auth_api_key_mandatory"]
+      """
+    Then The response field "securityScheme[*]" should be exactly the list "api_key,oauth_basic_auth_api_key_mandatory"
+    When I deploy the API with id "koApiId"
+    Then The response status code should be 201
+    And I wait until "apis" "koApiId" revision is deployed in the gateway
+    When I publish the "apis" resource with id "koApiId"
+    Then The lifecycle status of API "koApiId" should be "Published"
+    When I retrieve the "apis" resource with id "koApiId"
+    And I extract response field "context" and store it as "koApiContext"
+    And I extract response field "name" and store it as "koApiName"
+    And I extract response field "version" and store it as "koApiVersion"
+
+    When I put JSON payload from file "artifacts/payloads/create_apim_app_with_attribute.json" in context as "koAppPayload"
+    And I set the field "tokenType" to "JWT" in the payload "koAppPayload"
+    And I create an application with payload "koAppPayload"
+    Then The response status code should be 201
+    When I retrieve the application with id "createdAppId"
+    Then The response status code should be 200
+    And I extract response field "name" and store it as "koAppName"
+
+    When I put the following JSON payload in context as "koSubPayload"
+      """
+      {"applicationId": "{{applicationId}}", "apiId": "{{apiId}}", "throttlingPolicy": "Gold"}
+      """
+    And I subscribe to API "koApiId" using application "createdAppId" with payload "koSubPayload" as "koSubId"
+    Then The response status code should be 201
+
+    # Opaque API key (the legacy opaque-key method).
+    When I put the following JSON payload in context as "koOpaqueKeyPayload"
+      """
+      {"keyName": "BackendJwtApiKeyOnly", "validityPeriod": 3600, "additionalProperties": {"permittedIP": "", "permittedReferer": ""}}
+      """
+    And I request an api key for application id "createdAppId" using payload "koOpaqueKeyPayload"
+    Then The response status code should be 200
+    When I invoke the API at gateway context "{{koApiContext}}/1.0.0/reflect-headers" with method "GET" using api key "apiKey" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    And The reflected backend JWT should contain claim "iss" with value "wso2.org/products/am"
+    And The reflected backend JWT should contain claim "keytype" with value "PRODUCTION"
+    And The reflected backend JWT should contain claim "apiname" with value "{{koApiName}}"
+    And The reflected backend JWT should contain claim "version" with value "{{koApiVersion}}"
+    And The reflected backend JWT should contain claim "apicontext" with value "{{koApiContext}}/{{koApiVersion}}"
+    And The reflected backend JWT should contain claim "applicationname" with value "{{koAppName}}"
+    And The reflected backend JWT should contain claim "subscriber" with value "<actor>"
+    And The reflected backend JWT should not contain claim "wrongclaim"
+    And The reflected backend JWT should be verifiably signed by the key the gateway JWKS endpoint publishes
+
+    # Locally signed JWT-format API key (the legacy non-opaque-key method).
+    When I generate locally signed JWT API key for application id "createdAppId" as "koJwtApiKey"
+    And I invoke the API at gateway context "{{koApiContext}}/1.0.0/reflect-headers" with method "GET" using api key "koJwtApiKey" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    And The reflected backend JWT should contain claim "iss" with value "wso2.org/products/am"
+    And The reflected backend JWT should contain claim "keytype" with value "PRODUCTION"
+    And The reflected backend JWT should contain claim "apiname" with value "{{koApiName}}"
+    And The reflected backend JWT should contain claim "version" with value "{{koApiVersion}}"
+    And The reflected backend JWT should contain claim "apicontext" with value "{{koApiContext}}/{{koApiVersion}}"
+    And The reflected backend JWT should contain claim "applicationname" with value "{{koAppName}}"
+    And The reflected backend JWT should contain claim "subscriber" with value "<actor>"
+    And The reflected backend JWT should not contain claim "wrongclaim"
+    And The reflected backend JWT should be verifiably signed by the key the gateway JWKS endpoint publishes
+
+    Examples:
+      | actor             |
+      | admin             |
+      | admin@tenant1.com |
+
   # applicationAttributes empty-value flag: with enable_empty_values_in_application_attributes = true (set in
   # this block's overlay), an OPTIONAL application attribute left with an EMPTY value still appears in the
   # backend JWT's applicationAttributes claim (as ""). Ports the empty-value assertion of JWTTestCase (which
@@ -272,7 +386,9 @@ Feature: Backend JWT Claims
   # the flag is tenant-agnostic. Only the TRUE side is covered: the FALSE side (empty optional attribute
   # ABSENT with the flag defaulted off) would require a separate default-config overlay/block, which §13
   # forbids adding solely for the false side — deferred as a follow-up (documented in the overlay).
-  @cap:key-manager @feat:backend-jwt @rule:app-attributes-empty-value @type:regression @dep:gateway @legacy:JWTTestCase
+  # Also exercises applicationAttributes claim serialization for URLSafeJWTTestCase; its empty-value=true setup
+  # complements, but does not replace, URLSafeJWTTestCase's expected absence with the flag disabled.
+  @cap:key-manager @feat:backend-jwt @rule:app-attributes-empty-value @type:regression @dep:gateway @legacy:JWTTestCase @legacy:URLSafeJWTTestCase
   Scenario Outline: An empty optional application attribute surfaces in the backend JWT claim as <actor>
     Given The system is ready
     And I have valid access tokens as "<actor>"
@@ -477,61 +593,3 @@ Feature: Backend JWT Claims
       | tenant       | suffix       | owner                          |
       | carbon.super |              | jwtdecode.keyowner             |
       | tenant1.com  | @tenant1.com | jwtdecode.keyowner@tenant1.com |
-
-  # User-profile claims in the backend JWT: a resource owner's profile claims (givenname / lastname / mobile /
-  # organization), set on the user via setUserClaimValue, surface in the gateway-injected X-JWT-Assertion. A
-  # password-grant token (openid scope) is minted for that user so the gateway generates the backend JWT with
-  # their profile. Attempted ×2 tenant — the claim/scope/SP SOAP operations are tenant-scoped. Ports the
-  # user-profile-claims part of JWTTestCase.
-  @cap:key-manager @feat:backend-jwt @rule:user-profile-claims @type:regression @dep:gateway @legacy:JWTTestCase
-  Scenario Outline: The backend JWT carries the resource owner's profile claims in <tenant>
-    Given The system is ready
-    And I have valid access tokens as "admin<suffix>"
-    And I register the OIDC user-profile claim mappings and scope in tenant "<tenant>"
-    And I provision user "jwtclaims.user" with roles "Internal/subscriber" in tenant "<tenant>"
-    And I set the user claim "http://wso2.org/claims/givenname" to "ProfileFirstName" for user "jwtclaims.user" in tenant "<tenant>"
-    And I set the user claim "http://wso2.org/claims/lastname" to "ProfileLastName" for user "jwtclaims.user" in tenant "<tenant>"
-    And I set the user claim "http://wso2.org/claims/mobile" to "94123456987" for user "jwtclaims.user" in tenant "<tenant>"
-    And I set the user claim "http://wso2.org/claims/organization" to "ProfileOrgABC" for user "jwtclaims.user" in tenant "<tenant>"
-    And I have created an api from "artifacts/payloads/create_apim_reflect_api.json" as "upApiId" and deployed it
-    When I publish the "apis" resource with id "upApiId"
-    Then The lifecycle status of API "upApiId" should be "Published"
-    When I retrieve the "apis" resource with id "upApiId"
-    And I extract response field "context" and store it as "upApiContext"
-
-    When I put JSON payload from file "artifacts/payloads/create_apim_app_with_attribute.json" in context as "upAppPayload"
-    And I set the field "tokenType" to "JWT" in the payload "upAppPayload"
-    And I create an application with payload "upAppPayload"
-    Then The response status code should be 201
-    When I put the following JSON payload in context as "upKeys"
-    """
-    {"keyType": "PRODUCTION", "grantTypesToBeSupported": ["client_credentials", "password"]}
-    """
-    And I generate client credentials for application id "createdAppId" with payload "upKeys"
-    Then The response status code should be 200
-    When I put the following JSON payload in context as "upSub"
-    """
-    {"applicationId": "{{applicationId}}", "apiId": "{{apiId}}", "throttlingPolicy": "Gold"}
-    """
-    And I subscribe to API "upApiId" using application "createdAppId" with payload "upSub" as "upSubId"
-    Then The response status code should be 201
-
-    # Configure the app's OAuth service provider to REQUEST the user-profile claims (the backend JWT only surfaces
-    # claims the SP requests). Must happen before the token is minted.
-    When I configure the service provider for consumer key "consumerKey" to request the user-profile claims in tenant "<tenant>"
-
-    # Mint a password-grant token (openid scope) whose resource owner is the claim-populated user, then invoke.
-    When I act as "jwtclaims.user<suffix>"
-    And I request an OAuth access token for the current user using password grant with scope "openid profile"
-    Then The response status code should be 200
-    When I invoke the API at gateway context "{{upApiContext}}/1.0.0/reflect-headers" with method "GET" using access token "generatedAccessToken" in header "Test-Custom-Header" and payload "" until response status code becomes 200 within 60 seconds
-    Then The response status code should be 200
-    And The reflected backend JWT should contain claim "givenname" with value "ProfileFirstName"
-    And The reflected backend JWT should contain claim "lastname" with value "ProfileLastName"
-    And The reflected backend JWT should contain claim "mobile" with value "94123456987"
-    And The reflected backend JWT should contain claim "organization" with value "ProfileOrgABC"
-
-    Examples:
-      | tenant       | suffix       |
-      | carbon.super |              |
-      | tenant1.com  | @tenant1.com |

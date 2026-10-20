@@ -1,4 +1,4 @@
-# Feature-specific TOML overlay for the IntegrationV2-DisplayDeprecatedApis block.
+# Feature-specific TOML overlay for the IntegrationV2-Distributed-DisplayDeprecatedApis block (CP overlay).
 #
 # Merged ON TOP of the shared `basic` overlay (which is itself merged onto the product distribution
 # deployment.toml) via the block's `tomlExtraOverlayPath` parameter — so only the extra key this feature
