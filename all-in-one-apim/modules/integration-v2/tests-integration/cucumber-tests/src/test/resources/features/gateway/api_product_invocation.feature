@@ -1001,6 +1001,7 @@ Feature: Gateway API Product Invocation
     Then The response status code should be 200
     When I invoke the API at gateway context "{{revProductContext}}/1.0.0/scoped" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 403 within 60 seconds
     Then The response status code should be 403
+    And The error response should have code "900910" and message "The access token does not allow you to access the requested resource"
     When I request an OAuth access token for the current user using password grant with scope "{{revScopeB}}"
     Then The response status code should be 200
     When I invoke the API at gateway context "{{revProductContext}}/1.0.0/scoped" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
@@ -1010,16 +1011,19 @@ Feature: Gateway API Product Invocation
     Then The response status code should be 200
     When I invoke the API at gateway context "{{revProductContext}}/1.0.0/scoped" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 403 within 60 seconds
     Then The response status code should be 403
+    And The error response should have code "900910" and message "The access token does not allow you to access the requested resource"
     When I invoke the API at gateway context "{{revProductContext}}/1.0.0/control" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
     When I invoke the API at gateway context "{{revProductContext}}/1.0.0/open" with method "GET" without authentication until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
     When I invoke the API at gateway context "{{revProductContext}}/1.0.0/secure" with method "GET" without authentication until response status code becomes 401 within 60 seconds
     Then The response status code should be 401
+    And The error response should have code "900902" message "Missing Credentials" and description containing "Make sure your API invocation call has a header"
     When I invoke the API at gateway context "{{revProductContext}}/1.0.0/open" with method "GET" using basic auth for actor "<actor>" with password "wrong-password" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
     When I invoke the API at gateway context "{{revProductContext}}/1.0.0/secure" with method "GET" using basic auth for actor "<actor>" with password "wrong-password" until response status code becomes 401 within 60 seconds
     Then The response status code should be 401
+    And The error response should have code "900901" message "Invalid Credentials" and description containing "Make sure you have provided the correct security credentials"
 
     # Roll back to revision A: the gateway holds and enforces A's settings again.
     When I deploy revision "revStateARevId" of "api-products" resource "revProductId"
@@ -1038,12 +1042,15 @@ Feature: Gateway API Product Invocation
     Then The response status code should be 200
     When I invoke the API at gateway context "{{revProductContext}}/1.0.0/scoped" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 403 within 60 seconds
     Then The response status code should be 403
+    And The error response should have code "900910" and message "The access token does not allow you to access the requested resource"
     When I invoke the API at gateway context "{{revProductContext}}/1.0.0/open" with method "GET" without authentication until response status code becomes 401 within 60 seconds
     Then The response status code should be 401
+    And The error response should have code "900902" message "Missing Credentials" and description containing "Make sure your API invocation call has a header"
     When I invoke the API at gateway context "{{revProductContext}}/1.0.0/secure" with method "GET" without authentication until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
     When I invoke the API at gateway context "{{revProductContext}}/1.0.0/open" with method "GET" using basic auth for actor "<actor>" with password "wrong-password" until response status code becomes 401 within 60 seconds
     Then The response status code should be 401
+    And The error response should have code "900901" message "Invalid Credentials" and description containing "Make sure you have provided the correct security credentials"
     When I invoke the API at gateway context "{{revProductContext}}/1.0.0/secure" with method "GET" using basic auth for actor "<actor>" with password "wrong-password" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
 
@@ -1059,11 +1066,14 @@ Feature: Gateway API Product Invocation
     Then The response status code should be 200
     When I invoke the API at gateway context "{{revProductContext}}/1.0.0/secure" with method "GET" without authentication until response status code becomes 401 within 60 seconds
     Then The response status code should be 401
+    And The error response should have code "900902" message "Missing Credentials" and description containing "Make sure your API invocation call has a header"
 
-    # Restoring revision A changes only the working copy — the gateway keeps serving B — and a revision cut from
-    # the restored working copy carries A's settings to the gateway.
+    # Restoring revision A changes only the working copy — revision B stays the deployed revision and the gateway
+    # keeps serving it — and a revision cut from the restored working copy carries A's settings to the gateway.
     When I restore revision "revStateARevId" of "api-products" resource "revProductId"
     Then The response status code should be 201
+    When I retrieve the deployed revisions of "api-products" resource "revProductId"
+    Then The revision response should list exactly revision IDs "revStateBRevId"
     When I retrieve the gateway API info of "revProductId" until the response field "urlMappings[?(@.authScheme=='None')].urlPattern" is exactly the list "/open" within 10 seconds
     Then The response field "urlMappings[?(@.urlPattern=='/tier')].throttlingPolicy" should be exactly the list "{{advThrottlePolicyName}}"
     When I put the following JSON payload in context as "revRestoredRev"
@@ -1082,6 +1092,7 @@ Feature: Gateway API Product Invocation
     And The response field "urlMappings[?(@.urlPattern=='/scoped')].scopes[*]" should be exactly the list "{{revScopeA}}"
     When I invoke the API at gateway context "{{revProductContext}}/1.0.0/open" with method "GET" without authentication until response status code becomes 401 within 60 seconds
     Then The response status code should be 401
+    And The error response should have code "900902" message "Missing Credentials" and description containing "Make sure your API invocation call has a header"
     When I invoke the API at gateway context "{{revProductContext}}/1.0.0/secure" with method "GET" without authentication until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
 
@@ -1173,6 +1184,7 @@ Feature: Gateway API Product Invocation
     Then The response status code should be 200
     When I invoke the API at gateway context "{{pathsProductContext}}/1.0.0/d" with method "GET" without authentication until response status code becomes 401 within 60 seconds
     Then The response status code should be 401
+    And The error response should have code "900902" message "Missing Credentials" and description containing "Make sure your API invocation call has a header"
     When I invoke the API at gateway context "{{pathsProductContext}}/1.0.0/c" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 404 within 60 seconds
     Then The response status code should be 404
 
@@ -1225,6 +1237,7 @@ Feature: Gateway API Product Invocation
     Then The response status code should be 200
     When I invoke the API at gateway context "{{pathsProductContext}}/1.0.0/d" with method "GET" without authentication until response status code becomes 401 within 60 seconds
     Then The response status code should be 401
+    And The error response should have code "900902" message "Missing Credentials" and description containing "Make sure your API invocation call has a header"
 
     # Undeploy: the gateway drops the product, its secured and unauthenticated resources alike; deploying the same
     # revision again serves both.
@@ -1306,6 +1319,7 @@ Feature: Gateway API Product Invocation
     Then The response status code should be 200
     When I invoke the API at gateway context "{{nvgProductContext}}/1.0.0/secured" with method "GET" without authentication until response status code becomes 401 within 60 seconds
     Then The response status code should be 401
+    And The error response should have code "900902" message "Missing Credentials" and description containing "Make sure your API invocation call has a header"
     When I invoke the API at gateway context "{{nvgProductContext}}/open" with method "GET" without authentication until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
     When I invoke the API at gateway context "/{{nvgProductCtx}}/1.0.0/open" with method "GET" without authentication until response status code becomes <unprefixedStatus> within 60 seconds

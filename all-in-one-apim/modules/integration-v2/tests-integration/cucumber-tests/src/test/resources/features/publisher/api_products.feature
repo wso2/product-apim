@@ -1130,7 +1130,7 @@ Feature: Publisher API Products
 
     Examples:
       | actor             |
-      | admin             |
+      | superTenantAdmin  |
       | admin@tenant1.com |
 
   # A versionless create resolves to the same name + version 1.0.0 identity as an explicit one, so a second product
@@ -1148,23 +1148,28 @@ Feature: Publisher API Products
     And I remove the field "version" from the payload "dupProductPayload"
     And I create an "api-products" resource with payload "dupProductPayload" as "dupProductId"
     Then The response status code should be 201
+    And The value of response field "version" should be "1.0.0"
     # The same name and context, without a version and with version 1.0.0.
     When I attempt to create an "api-products" resource with payload "dupProductPayload"
     Then The response status code should be 409
+    And The value of error response field "code" should be "900300"
     When I put an API product payload "{{dupProductName}}" with context "{{dupProductCtx}}" from APIs "dupApiId" in context as "dupSameContextPayload"
     And I attempt to create an "api-products" resource with payload "dupSameContextPayload"
     Then The response status code should be 409
+    And The value of error response field "code" should be "900300"
     # The same name on another context, without a version: the conflict can only be the name and version.
     When I put an API product payload "{{dupProductName}}" with context "${UNIQUE:dupProductOtherCtx}" from APIs "dupApiId" in context as "dupNoVersionPayload"
     And I remove the field "version" from the payload "dupNoVersionPayload"
     And I attempt to create an "api-products" resource with payload "dupNoVersionPayload"
     Then The response status code should be 409
+    And The value of error response field "code" should be "900300"
     # A blank version on a new name.
     When I put an API product payload "${UNIQUE:BlankVersionProduct}" with context "${UNIQUE:blankVersionCtx}" from APIs "dupApiId" in context as "dupBlankVersionPayload"
     And I set the field "version" to "" in the payload "dupBlankVersionPayload"
     And I attempt to create an "api-products" resource with payload "dupBlankVersionPayload"
     Then The response status code should be 400
     And The response should contain "Validation Error"
+    And The value of error response field "error[0].code" should be "400_version"
 
     Examples:
       | actor                     |
@@ -1236,7 +1241,8 @@ Feature: Publisher API Products
     Then The response status code should be 200
     And The value of response field "context" should be "<tenantPrefix>/{{updProductCtx}}"
     And The value of response field "version" should be "2.0.0"
-    # The other version was not created as a product of its own.
+    # The product exports at its own version, and the other version was not created as a product of its own.
+    And I attempt to export the API product named "{{updProductName}}" version "2.0.0" expecting status 200
     And I attempt to export the API product named "{{updProductName}}" version "9.9.9" expecting status 404
     # A blank context or version is not a missing one: the request validation refuses both.
     When I retrieve the "api-products" resource with id "updProductId"
@@ -1245,12 +1251,14 @@ Feature: Publisher API Products
     And I update "api-products" resource of id "updProductId" with payload "updBlankPayload"
     Then The response status code should be 400
     And The response should contain "Validation Error"
+    And The value of error response field "error[0].code" should be "400_context"
     When I retrieve the "api-products" resource with id "updProductId"
     And I put the response payload in context as "updBlankPayload"
     And I set the field "version" to "" in the payload "updBlankPayload"
     And I update "api-products" resource of id "updProductId" with payload "updBlankPayload"
     Then The response status code should be 400
     And The response should contain "Validation Error"
+    And The value of error response field "error[0].code" should be "400_version"
     When I retrieve the "api-products" resource with id "updProductId"
     Then The value of response field "context" should be "<tenantPrefix>/{{updProductCtx}}"
     And The value of response field "version" should be "2.0.0"
@@ -1258,7 +1266,7 @@ Feature: Publisher API Products
 
     Examples:
       | actor             | tenantPrefix   |
-      | admin             |                |
+      | superTenantAdmin  |                |
       | admin@tenant1.com | /t/tenant1.com |
 
   # Importing an archive of an EXISTING product: with overwrite, the import updates the product but keeps its
@@ -1314,10 +1322,11 @@ Feature: Publisher API Products
     # The same archive without overwrite is refused: the product already exists.
     When I import the API product archive "impArchive" with overwrite "false"
     Then The response status code should be 409
+    And The value of error response field "code" should be "900300"
 
     Examples:
       | actor             | tenantPrefix   |
-      | admin             |                |
+      | superTenantAdmin  |                |
       | admin@tenant1.com | /t/tenant1.com |
 
   # Importing a NEW product (another name and context, no id, no version) creates it as version 1.0.0 with a
@@ -1354,5 +1363,5 @@ Feature: Publisher API Products
 
     Examples:
       | actor             | tenantPrefix   |
-      | admin             |                |
+      | superTenantAdmin  |                |
       | admin@tenant1.com | /t/tenant1.com |
