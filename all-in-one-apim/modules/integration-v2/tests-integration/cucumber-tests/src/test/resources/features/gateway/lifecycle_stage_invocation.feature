@@ -7,7 +7,7 @@ Feature: Gateway Lifecycle-Stage Invocation
   a PUBLISHED API via a subscription token (200), a BLOCKED API is refused (503), a DEPRECATED API is still
   invocable (200), and a RETIRED API is gone (404). Run in BOTH the super tenant and tenant1.com to prove the
   lifecycle enforcement is tenant-agnostic (the tenant API is addressed by its full /t/<tenant> context). Runs
-  in the concurrent IntegrationV2-Gateway block (backend started). Teardown via the per-scenario cleanup hook.
+  in a concurrent IntegrationV2-Gateway-* block (backend started). Teardown via the per-scenario cleanup hook.
 
   # Also provides the gateway-plane parity for AccessibilityOfBlockAPITestCase (published->blocked; blocked
   # invocation refused — legacy asserts 503). This outline retires the API after published->blocked->deprecated;

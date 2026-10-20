@@ -31,12 +31,14 @@ import org.wso2.am.integration.cucumbertests.utils.Names;
 import org.wso2.am.integration.cucumbertests.utils.Requests;
 import org.wso2.am.integration.cucumbertests.utils.TestContext;
 import org.wso2.am.integration.cucumbertests.utils.Utils;
+import org.wso2.am.integration.cucumbertests.utils.WebSubSubscriptionCleanup;
 import org.wso2.am.integration.cucumbertests.utils.clients.SimpleHTTPClient;
 import org.wso2.am.integration.test.utils.Constants;
 import org.wso2.am.testcontainers.NodeAppServer;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import java.io.IOException;
+import java.net.SocketTimeoutException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -71,10 +73,9 @@ import java.util.concurrent.atomic.AtomicInteger;
  * delivery counts, the delivered body, the {@code link} header, the hub re-signing each delivery with the
  * SUBSCRIBER's own {@code hub.secret}, deliveries stopping at unsubscribe, and the event-count quota.
  *
- * <p>ONE limitation is real and remains uncovered: the INBOUND rejection of a mis-signed post to the event
- * receiver. The template {@code <drop/>}s such a post with no response at all, so it presents as a client timeout
- * rather than a status and cannot be asserted with the status-based publish step. That is a missing negative, not
- * a parked scenario — everything else on this leg is covered.
+ * <p>The INBOUND rejection of a mis-signed post is asserted by the template's signature-failure log and an unchanged,
+ * settled callback count. The transport status is deliberately not used as the rejection oracle: the deployed
+ * mediation can return an HTTP response even though its signature-validation branch drops the event.
  *
  * <p>Every wait funnels through {@link Utils#retryUntil}; the request steps publish through {@link Requests} so the
  * feature asserts the exact status itself, and the local introspection reads use {@link SimpleHTTPClient} directly
@@ -309,6 +310,16 @@ public class WebSubInvocationSteps {
             return Requests.post(gatewayUrl, headers, parameters,
                     Constants.CONTENT_TYPES.APPLICATION_X_WWW_FORM_URLENCODED);
         });
+
+        if ("subscribe".equals(hubMode) && (expectedStatus == 200 || expectedStatus == 202)) {
+            WebSubSubscriptionCleanup.register(Identity.actingTenantDomain(), Identity.actingActorRef(),
+                    TestContext.resolve(accessToken).toString(), TestContext.resolve("websubApiId").toString(),
+                    resolvedContext, resolvedCallback, resolvedTopic, resolvedSecret,
+                    Utils.resolveContextPlaceholders(leaseSeconds), asQueryParameters, expectedStatus);
+        } else if ("unsubscribe".equals(hubMode) && (expectedStatus == 200 || expectedStatus == 202)) {
+            WebSubSubscriptionCleanup.deregister(Identity.actingTenantDomain(),
+                    TestContext.resolve("websubApiId").toString(), resolvedCallback, resolvedTopic);
+        }
     }
 
     /** Builds the {@code hub.*} parameter string shared by the query-parameter and form-body encodings. */
@@ -344,6 +355,45 @@ public class WebSubInvocationSteps {
         retryUntilStatus("WebSub event publish to " + receiverUrl, null, expectedStatus, timeoutSeconds,
                 () -> Requests.post(receiverUrl, signatureHeaders(signature), body,
                         Constants.CONTENT_TYPES.APPLICATION_JSON));
+    }
+
+    /**
+     * Sends one event with a deliberately corrupted source HMAC. The caller must assert the product-side rejection
+     * log and unchanged settled callback count; HTTP status is not an oracle because the deployed mediation can
+     * return a response after its signature-validation branch drops the event. Retries are disabled because
+     * replaying this source POST would make the delivery-count assertion ambiguous.
+     */
+    @When("I publish the WebSub event {string} to the event receiver at gateway context {string} topic {string} "
+            + "with an invalid signature using secret {string} once with timeout {int} milliseconds")
+    public void publishEventWithInvalidSignature(String eventBody, String context, String topic, String secret,
+                                                 int timeoutMillis) throws IOException {
+
+        Assert.assertTrue(timeoutMillis > 0, "Expected a positive socket timeout for the dropped WebSub event");
+        String body = TestContext.resolve(eventBody).toString();
+        String resolvedTopic = Utils.resolveContextPlaceholders(topic);
+        String receiverUrl = eventReceiverUrl(context, resolvedTopic);
+        String validSignature = HmacTestUtils.hubSignature("SHA1", body,
+                Utils.resolveContextPlaceholders(secret));
+        int separator = validSignature.indexOf('=');
+        Assert.assertTrue(separator >= 0 && separator + 1 < validSignature.length(),
+                "HMAC helper returned an invalid signature format: " + validSignature);
+        char original = validSignature.charAt(separator + 1);
+        char replacement = original == '0' ? '1' : '0';
+        String invalidSignature = validSignature.substring(0, separator + 1) + replacement
+                + validSignature.substring(separator + 2);
+
+        try {
+            HttpResponse response = SimpleHTTPClient.getInstance().withSocketTimeout(timeoutMillis,
+                    () -> SimpleHTTPClient.getInstance().withoutAutomaticRetries(
+                            () -> SimpleHTTPClient.getInstance().withoutGeneralErrorRetry(
+                                    () -> Requests.post(receiverUrl, signatureHeaders(invalidSignature), body,
+                                            Constants.CONTENT_TYPES.APPLICATION_JSON))));
+            log.info("The mis-signed WebSub event received HTTP " + response.getResponseCode() + " from "
+                    + receiverUrl + "; status is not used to assert signature rejection.");
+        } catch (SocketTimeoutException expectedDrop) {
+            log.info("The mis-signed WebSub source request timed out after " + timeoutMillis + " ms: " + receiverUrl
+                    + "; the following product-log and settled-delivery assertions determine rejection.");
+        }
     }
 
     /**
@@ -604,7 +654,18 @@ public class WebSubInvocationSteps {
     private static boolean hasThrottledOutDelivery(String name) throws IOException {
         JSONArray events = readReceiver(name).getJSONArray("events");
         for (int i = 0; i < events.length(); i++) {
-            if (events.getJSONObject(i).optString("body", "").contains(THROTTLED_OUT_CODE)) {
+            String body = events.getJSONObject(i).optString("body", "");
+            JSONObject notice;
+            try {
+                notice = new JSONObject(body);
+            } catch (org.json.JSONException notJson) {
+                continue;
+            }
+            if (THROTTLED_OUT_CODE.equals(notice.optString("code", null))) {
+                Assert.assertEquals(notice.optString("message", null), "Message throttled out",
+                        "WebSub throttle notice has an unexpected message: " + notice);
+                Assert.assertEquals(notice.optString("description", null), "You have exceeded your quota",
+                        "WebSub throttle notice has an unexpected description: " + notice);
                 return true;
             }
         }

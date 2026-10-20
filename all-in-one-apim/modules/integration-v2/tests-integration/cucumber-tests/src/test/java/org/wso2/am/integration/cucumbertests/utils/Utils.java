@@ -377,24 +377,19 @@ public class Utils {
     }
 
     /**
-     * Emits THE single grep-able diagnostic ({@code "auth-reject:"}) for an auth rejection observed inside a
-     * {@link #retryUntil} loop that did NOT expect one, and returns the same text for the caller's assertion
-     * message. Exists because this failure mode is otherwise near-undiagnosable from CI: the gateway logs only
-     * a masked {@code Invalid JWT token}, while the step reports a generic status mismatch after burning the
-     * whole window — the two are hard to correlate across parallel blocks, which cost one full investigation.
+     * Emits the terminal grep-able diagnostic ({@code "auth-reject:"}) when polling for a different status
+     * ends on an unexpected authentication rejection. Individual unexpected 401 responses are logged by
+     * {@link #logUnexpectedAuthRejectionAttempt} as they occur, including transient responses before recovery.
      *
      * <p>Logs the token's {@code jti} deliberately: the gateway's revoked-JWT map and invalid-token cache are
-     * BOTH keyed by it, so a jti here can be matched straight against a gateway {@code
-     * RevokedJWTDataHolder}/invalid-token-cache hit. A token rejected on EVERY attempt is almost never a
-     * propagation delay — both those caches outlive any window we wait (revocation until the token's own
-     * expiry, the invalid-token cache 900s by default), so replaying one can NEVER recover, and re-minting on
-     * rejection would only mask it: a freshly issued token must not be rejected intermittently.
+     * both keyed by it, so a jti can be correlated with a gateway cache hit. This method summarizes the final
+     * response; it does not imply that every earlier retry had the same result.
      */
     public static String logAuthRejection(String what, String tokenContextKey, String token, int statusCode,
                                           String responseBody, long elapsedMillis) {
         StringBuilder detail = new StringBuilder("auth-reject: ").append(what)
-                .append(" was rejected with status ").append(statusCode)
-                .append(" on every attempt over ").append(elapsedMillis / 1000).append("s");
+                .append(" ended with status ").append(statusCode)
+                .append(" after ").append(elapsedMillis / 1000).append("s of retries");
         if (tokenContextKey != null) {
             detail.append("; credential context key='").append(tokenContextKey).append('\'');
         }
@@ -409,6 +404,24 @@ public class Utils {
         String message = detail.toString();
         log.warn(message);
         return message;
+    }
+
+    /** Logs an individual unexpected 401 observed while polling for a different expected invocation status. */
+    public static void logUnexpectedAuthRejectionAttempt(String what, String tokenContextKey, String token,
+                                                         String responseBody, int attemptNumber,
+                                                         long elapsedMillis) {
+        StringBuilder detail = new StringBuilder("auth-reject-attempt: ").append(what)
+                .append(" returned unexpected status 401 on response attempt #").append(attemptNumber)
+                .append(" after ").append(elapsedMillis).append("ms");
+        if (tokenContextKey != null) {
+            detail.append("; credential context key='").append(tokenContextKey).append('\'');
+        }
+        detail.append("; ").append(describeCredential(token));
+        String body = responseBody == null ? "" : responseBody.trim();
+        if (!body.isBlank()) {
+            detail.append("; gateway said ").append(body.length() > 300 ? body.substring(0, 300) + "..." : body);
+        }
+        log.warn(detail.toString());
     }
 
     /**

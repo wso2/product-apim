@@ -59,7 +59,7 @@ Feature: Per-API Logging Configuration
     Then The response status code should be 200
     # The API-wide entry is the one that flips; it carries no resource scoping.
     And The per-API log listing should contain API "loggingApiId" at level "FULL" for resource "null" "null"
-    When I wait 15 seconds for the "per-API logging" configuration to reach the gateway
+    When I wait until the gateway log file "api.log" records marker "INFO {API_LOG} {{loggingApiName}}" for API context "{{loggingApiContext}}/1.0.0/customers/123/" using access token "generatedAccessToken" within 60 seconds
 
     When I mark the current end of the server log file "api.log"
     And I invoke the API at gateway context "{{loggingApiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
@@ -94,7 +94,7 @@ Feature: Per-API Logging Configuration
     # Scope FULL to GET /customers/{id} only, leaving GET /orders/{orderId} at OFF.
     When I set the log level of API "resourceLogApiId" to "full" for resource "GET" "/customers/{id}" in tenant "<tenantDomain>"
     Then The response status code should be 200
-    When I wait 15 seconds for the "per-API logging" configuration to reach the gateway
+    When I wait until the gateway log file "api.log" records marker "INFO {API_LOG} {{resourceLogApiName}}" for API context "{{resourceLogApiContext}}/1.0.0/customers/123/" using access token "generatedAccessToken" within 60 seconds
 
     When I retrieve the per-API log levels for tenant "<tenantDomain>" filtered to level "full"
     Then The response status code should be 200
@@ -106,6 +106,15 @@ Feature: Per-API Logging Configuration
     When I retrieve the per-API log levels for tenant "<tenantDomain>"
     Then The response status code should be 200
     And The per-API log listing should contain API "resourceLogApiId" at level "OFF" for resource "GET" "/orders/{orderId}"
+
+    # Prove the OFF sibling stays silent while customers is FULL. The successful response proves that this
+    # resource was actually invoked; the scenario-unique API name scopes the negative log assertion.
+    When I mark the current end of the server log file "api.log"
+    And I invoke the API at gateway context "{{resourceLogApiContext}}/1.0.0/orders/223" once with method "GET" using access token "generatedAccessToken" and payload ""
+    Then The response status code should be 200
+    And The value of response field "id" should be "223"
+    And The value of response field "description" should be "order 223"
+    And The server log file "api.log" should gain no line containing "INFO {API_LOG} {{resourceLogApiName}}" within 20 seconds
 
     When I mark the current end of the server log file "api.log"
     And I invoke the API at gateway context "{{resourceLogApiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
@@ -122,10 +131,9 @@ Feature: Per-API Logging Configuration
     Then The response status code should be 200
     And The per-API log listing should not contain API "resourceLogApiId"
 
-    # The wait is load-bearing, not defensive: the sibling correlation_logging.feature records that without it the
-    # next invocation still produced the full set of lines despite a 200 from the disable. Re-marking the log
-    # after the wait means the assertion only ever reads lines written by the invocation below.
-    When I wait 15 seconds for the "per-API logging" configuration to reach the gateway
+    # Observe successful traffic with no API_LOG line for a full quiet interval after the OFF update. The measured
+    # request and its original 20-second negative window remain separate assertions.
+    When I verify the gateway log file "api.log" has no marker "INFO {API_LOG} {{resourceLogApiName}}" for API context "{{resourceLogApiContext}}/1.0.0/customers/123/" using access token "generatedAccessToken" for 15 seconds within 60 seconds
     And I mark the current end of the server log file "api.log"
     # The 200 is what makes the negative meaningful: traffic demonstrably reached the API, so an absent log line
     # is the logging being off rather than the call never happening.

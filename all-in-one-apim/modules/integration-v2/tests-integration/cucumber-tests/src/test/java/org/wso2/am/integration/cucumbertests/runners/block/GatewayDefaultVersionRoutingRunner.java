@@ -21,7 +21,7 @@ import io.cucumber.testng.CucumberOptions;
 
 /**
  * Runner for gateway default-version routing: a versionless context routes to the default version, follows the
- * default from v1 to v2, and returns 404 once no version is default. Runs in the IntegrationV2-Gateway block
+ * default from v1 to v2, and returns 404 once no version is default. Runs in an IntegrationV2-Gateway-* block
  * (backend started); parallel-safe (own uniquely-created API versions/app).
  */
 @CucumberOptions(
