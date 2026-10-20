@@ -33,6 +33,11 @@ public class DistributedLifecycleListener extends BlockLifecycleListener {
     private static final Duration EXTERNAL_IS_STARTUP_TIMEOUT = Duration.ofMinutes(8);
 
     @Override
+    protected boolean supportsHostedDatabaseProfile() {
+        return false;
+    }
+
+    @Override
     protected NodeAppServer nodeAppServer() {
         return NodeAppServer.getInstance(true);
     }
@@ -61,13 +66,17 @@ public class DistributedLifecycleListener extends BlockLifecycleListener {
                     + "tomlExtraOverlayPath.cp, .tm, or .gateway");
         }
         // Every distributed Gateway starts both broker consumers, independently of the block's readiness flag.
-        // Establish the shared collection while CP is its only writer and TM's path cache is still empty.
+        // Establish the throttle topic and Andes subscription collection while CP is the only broker writer, before
+        // TM and Gateway can concurrently create the jms.subscriptions collection on first subscription.
         DistributedDynamicApimContainer runtime = new DistributedDynamicApimContainer(label, blockNetwork);
         return runtime.withControlPlaneInitializer(baseUrl -> {
             TenantUserProvisioner.addSuperTenant();
             User actor = Identity.resolveActor("admin");
             RegistryAdminService.awaitAvailable(baseUrl, actor, Constants.SERVER_STARTUP_WAIT_TIME);
             RegistryAdminService.ensureThrottleDataHierarchy(baseUrl, actor,
+                    Constants.SERVER_STARTUP_WAIT_TIME,
+                    RegistryBootstrapDiagnostics.forRuntime(runtime, label, "carbon.super"));
+            RegistryAdminService.ensureThrottleDataSubscriptionsCollection(baseUrl, actor,
                     Constants.SERVER_STARTUP_WAIT_TIME,
                     RegistryBootstrapDiagnostics.forRuntime(runtime, label, "carbon.super"));
         });

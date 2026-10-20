@@ -28,6 +28,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public class RegistryAdminServiceTest {
     private static final String EVENT = "/_system/governance/event";
+    private static final String THROTTLE_SUBSCRIPTIONS = EVENT + "/topics/throttledata/jms.subscriptions";
     private static final List<String> PATHS = List.of("/_system", "/_system/governance", EVENT,
             EVENT + "/topics", EVENT + "/topics/throttledata");
 
@@ -50,6 +51,27 @@ public class RegistryAdminServiceTest {
         Assert.assertTrue(client.writeTimeouts.stream().allMatch(timeout -> timeout > 0 && timeout <= 60000));
         Assert.assertEquals(client.writeTimeouts.get(0).intValue(), 60000,
                 "A mutation may use more than the former ten-second limit while reserving verification time");
+    }
+
+    @Test
+    public void precreatesDistributedThrottleSubscriptionCollectionBeforeConsumersStart() throws Exception {
+        Fixture client = new Fixture();
+        Assert.assertFalse(ensure(client, 2000, () -> { }));
+
+        Assert.assertTrue(ensureSubscriptions(client, 2000, () -> { }));
+        Assert.assertTrue(client.present.contains(THROTTLE_SUBSCRIPTIONS));
+        Assert.assertEquals(client.creates.get(THROTTLE_SUBSCRIPTIONS).intValue(), 1);
+        Assert.assertEquals(client.reads.get(client.reads.size() - 1), THROTTLE_SUBSCRIPTIONS);
+    }
+
+    @Test
+    public void existingThrottleSubscriptionCollectionRequiresNoWrite() throws Exception {
+        Fixture client = new Fixture();
+        client.present.add(THROTTLE_SUBSCRIPTIONS);
+
+        Assert.assertFalse(ensureSubscriptions(client, 2000, () -> { }));
+        Assert.assertTrue(client.creates.isEmpty());
+        Assert.assertEquals(client.reads.get(client.reads.size() - 1), THROTTLE_SUBSCRIPTIONS);
     }
 
     @Test
@@ -204,6 +226,11 @@ public class RegistryAdminServiceTest {
 
     private static boolean ensure(Fixture client, long timeout, Runnable diagnostics) throws IOException {
         return RegistryAdminService.ensureThrottleDataHierarchy(client, timeout, diagnostics);
+    }
+
+    private static boolean ensureSubscriptions(Fixture client, long timeout, Runnable diagnostics)
+            throws IOException {
+        return RegistryAdminService.ensureThrottleDataSubscriptionsCollection(client, timeout, diagnostics);
     }
 
     private static Fixture missingHierarchy() {

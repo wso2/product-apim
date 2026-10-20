@@ -46,6 +46,7 @@ import org.wso2.am.testcontainers.DynamicISContainer;
 import org.wso2.am.testcontainers.DynamicPlatformGatewayContainer;
 import org.wso2.am.testcontainers.JacocoCoverage;
 import org.wso2.am.testcontainers.DynamicSolaceBroker;
+import org.wso2.am.testcontainers.HostedDatabaseBlock;
 import org.wso2.am.testcontainers.NodeAppServer;
 import org.wso2.am.testcontainers.SquidProxyServer;
 
@@ -79,6 +80,7 @@ public class BlockLifecycleListener implements ITestListener {
     static final String BOOT_ERROR_ATTRIBUTE = "bootError";
 
     static final String CONTAINER_KEY = "blockApimContainer";
+    private static final String HOSTED_DATABASE_KEY = "blockHostedDatabase";
     static final String BASE_URL_KEY = "baseUrl";
     static final String BASE_GATEWAY_URL_KEY = "baseGatewayUrl";
     static final String BASE_GATEWAY_HTTP_URL_KEY = "baseGatewayHttpUrl";
@@ -400,6 +402,7 @@ public class BlockLifecycleListener implements ITestListener {
                         + " but does not set " + PARAM_BOOT_EXTERNAL_IS + "=true");
             }
 
+            provisionHostedDatabaseIfSelected(label);
             container = createApimContainer(label, context, blockNetwork);
             configureServerFiles(context, container);
             if (apimCpuLimit.isPresent()) {
@@ -760,6 +763,18 @@ public class BlockLifecycleListener implements ITestListener {
                         + e.getMessage());
             }
         }
+        Object hostedDatabase = TestContext.get(HOSTED_DATABASE_KEY);
+        if (hostedDatabase instanceof HostedDatabaseBlock database) {
+            TestContext.removeShared(HOSTED_DATABASE_KEY);
+            try {
+                database.close();
+                logger.info("Block '" + label + "' dropped its hosted APIM and Shared databases");
+            } catch (Exception e) {
+                logger.error("Block '" + label + "' could not drop its hosted databases; manual cleanup may be "
+                        + "required. Database names: APIM='" + database.apimDatabaseName() + "', Shared='"
+                        + database.sharedDatabaseName() + "'", e);
+            }
+        }
     }
 
     /**
@@ -972,13 +987,45 @@ public class BlockLifecycleListener implements ITestListener {
     /** Factory hook used by the distributed listener; all remaining block lifecycle is shared. */
     protected ApimRuntime createApimContainer(String label, ITestContext context, Network blockNetwork)
             throws java.io.IOException {
-        DynamicApimContainer container = new DynamicApimContainer(label, resolveTomlContent(context));
+        Object hostedDatabase = TestContext.get(HOSTED_DATABASE_KEY);
+        DynamicApimContainer container = new DynamicApimContainer(label, resolveTomlContent(context),
+                hostedDatabase instanceof HostedDatabaseBlock database ? database.connectionSettings() : null);
         java.util.List<String> templates = Utils.applyDefaultTemplates(container,
                 ModulePathResolver.getModuleDir(BlockLifecycleListener.class));
         logger.info("Block '" + label + "' applies template overlays to " + templates);
         container.withLabel("block", label);
         container.withNetwork(blockNetwork);
         return container;
+    }
+
+    /** Only this all-in-one listener consumes the opt-in profile; distributed runs explicitly decline it. */
+    protected boolean supportsHostedDatabaseProfile() {
+        return true;
+    }
+
+    private void provisionHostedDatabaseIfSelected(String label) throws Exception {
+        if (!supportsHostedDatabaseProfile()) {
+            return;
+        }
+        String profile = System.getProperty(HostedDatabaseBlock.PROFILE_SYSTEM_PROPERTY);
+        if (profile == null || profile.isBlank()) {
+            return;
+        }
+        String normalizedProfile = HostedDatabaseBlock.normalizeProfile(profile);
+        String moduleDir = ModulePathResolver.getModuleDir(BlockLifecycleListener.class);
+        String envFileArgument = System.getProperty(HostedDatabaseBlock.ENV_FILE_SYSTEM_PROPERTY);
+        Path envFile = envFileArgument == null || envFileArgument.isBlank()
+                ? Paths.get(moduleDir, "src/test/resources/artifacts/configFiles/basic/database.env")
+                : Paths.get(envFileArgument).toAbsolutePath().normalize();
+        String productZipArgument = System.getProperty("apim.product.zip.path");
+        if (productZipArgument == null || productZipArgument.isBlank()) {
+            throw new IllegalStateException("Hosted database profile requires -Dapim.product.zip.path pointing to the "
+                    + "APIM distribution ZIP used by this test run");
+        }
+        HostedDatabaseBlock database = HostedDatabaseBlock.provision(label, envFile, Path.of(productZipArgument));
+        TestContext.setShared(HOSTED_DATABASE_KEY, database);
+        logger.info("Block '" + label + "' provisioned hosted " + normalizedProfile + " databases APIM='"
+                + database.apimDatabaseName() + "' Shared='" + database.sharedDatabaseName() + "'");
     }
 
     protected boolean awaitApimReady(ApimRuntime container) {

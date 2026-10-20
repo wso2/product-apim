@@ -44,6 +44,7 @@ public final class RegistryAdminService {
     private static final String OPERATION_NAMESPACE = "http://services.resource.registry.carbon.wso2.org";
     private static final String COLLECTION_MEDIA_TYPE = "application/vnd.wso2.registry.collection";
     private static final String THROTTLE_DATA_PATH = "/_system/governance/event/topics/throttledata";
+    private static final String THROTTLE_DATA_SUBSCRIPTIONS_PATH = THROTTLE_DATA_PATH + "/jms.subscriptions";
 
     private RegistryAdminService() {
     }
@@ -77,8 +78,23 @@ public final class RegistryAdminService {
 
     public static boolean ensureThrottleDataHierarchy(String baseUrl, User actor, long timeoutMillis,
                                                      Runnable diagnostics) throws IOException {
+        return ensureCollectionPath(baseUrl, actor, THROTTLE_DATA_PATH, timeoutMillis, diagnostics);
+    }
+
+    /**
+     * Creates the Carbon Andes subscription collection before distributed broker consumers connect.
+     * The collection is normally created on the first subscription. In distributed APIM, Gateway connects to
+     * both CP and TM brokers during startup; those writes can concurrently try to create this shared path.
+     */
+    public static boolean ensureThrottleDataSubscriptionsCollection(String baseUrl, User actor, long timeoutMillis,
+                                                                    Runnable diagnostics) throws IOException {
+        return ensureCollectionPath(baseUrl, actor, THROTTLE_DATA_SUBSCRIPTIONS_PATH, timeoutMillis, diagnostics);
+    }
+
+    private static boolean ensureCollectionPath(String baseUrl, User actor, String path, long timeoutMillis,
+                                                Runnable diagnostics) throws IOException {
         SimpleHTTPClient http = SimpleHTTPClient.getInstance();
-        return ensureThrottleDataHierarchy(new RegistryClient() {
+        return ensureCollectionPath(new RegistryClient() {
             @Override
             public HttpResponse read(String path, int timeout) throws IOException {
                 return http.withRequestDeadline(timeout, () -> http.withoutAutomaticRetries(() ->
@@ -94,7 +110,7 @@ public final class RegistryAdminService {
                         http.sendSoapRequest(baseUrl + SERVICE_PATH, addCollectionEnvelope(parent, name),
                                 "urn:addCollection", actor.getUserName(), actor.getPassword()))));
             }
-        }, timeoutMillis, diagnostics);
+        }, path, timeoutMillis, diagnostics);
     }
 
     interface RegistryClient {
@@ -104,10 +120,20 @@ public final class RegistryAdminService {
 
     static boolean ensureThrottleDataHierarchy(RegistryClient client, long timeoutMillis, Runnable diagnostics)
             throws IOException {
+        return ensureCollectionPath(client, THROTTLE_DATA_PATH, timeoutMillis, diagnostics);
+    }
+
+    static boolean ensureThrottleDataSubscriptionsCollection(RegistryClient client, long timeoutMillis,
+                                                             Runnable diagnostics) throws IOException {
+        return ensureCollectionPath(client, THROTTLE_DATA_SUBSCRIPTIONS_PATH, timeoutMillis, diagnostics);
+    }
+
+    private static boolean ensureCollectionPath(RegistryClient client, String path, long timeoutMillis,
+                                                Runnable diagnostics) throws IOException {
         Budget budget = new Budget(timeoutMillis, diagnostics);
         String current = "";
         boolean repaired = false;
-        for (String segment : THROTTLE_DATA_PATH.substring(1).split("/")) {
+        for (String segment : path.substring(1).split("/")) {
             current += "/" + segment;
             HttpResponse existing = awaitResource(client, current, budget, false);
             if (existing.getResponseCode() == 200) {

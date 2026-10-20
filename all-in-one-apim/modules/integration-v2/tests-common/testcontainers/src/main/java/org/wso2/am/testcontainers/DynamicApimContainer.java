@@ -54,16 +54,23 @@ public class DynamicApimContainer extends GenericContainer<DynamicApimContainer>
      */
     static final String SERVER_HEAP_OPTS = "-Xms1g -Xmx1536m";
     private static final String JVM_MEM_OPTS = "JVM_MEM_OPTS";
+    private static final String MYSQL_CONNECTOR_SERVER_PATH = "repository/components/lib/mysql-connector-j.jar";
+    private static final String POSTGRESQL_CONNECTOR_SERVER_PATH = "repository/components/lib/postgresql-jdbc.jar";
 
     public DynamicApimContainer(String containerLabel, String deploymentTomlContent) {
+        this(containerLabel, deploymentTomlContent, null);
+    }
+
+    /** Creates an APIM block with an explicit hosted database pair; null retains Maven's existing DB environment. */
+    public DynamicApimContainer(String containerLabel, String deploymentTomlContent,
+                                HostedDatabaseBlock.ConnectionSettings hostedDatabase) {
 
         super(requiredImage(APIM_IMAGE_PROPERTY));
 
-        String apimDbUrl = System.getenv(Constants.API_MANAGER_DATABASE_URL).replace("&", "&amp;");
-        String sharedDbUrl = System.getenv(Constants.SHARED_DATABASE_URL).replace("&", "&amp;");
-
-        logger.info("APIM DB URL: {}", apimDbUrl);
-        logger.info("SHARED DB URL: {}", sharedDbUrl);
+        String apimDbUrl = (hostedDatabase == null ? System.getenv(Constants.API_MANAGER_DATABASE_URL)
+                : hostedDatabase.apimUrl()).replace("&", "&amp;");
+        String sharedDbUrl = (hostedDatabase == null ? System.getenv(Constants.SHARED_DATABASE_URL)
+                : hostedDatabase.sharedUrl()).replace("&", "&amp;");
 
         // Expose canonical ports; Docker assigns ephemeral host ports resolved via getMappedPort.
         // GATEWAY_WS_PORT (9099) is the gateway WebSocket inbound; GATEWAY_WSS_PORT (8099) is the SECURE WebSocket
@@ -77,22 +84,40 @@ public class DynamicApimContainer extends GenericContainer<DynamicApimContainer>
                 Constants.GATEWAY_WSS_PORT, Constants.WEBSUB_EVENT_RECEIVER_PORT);
 
         // Env vars for APIMGT_DB
-        withEnv(Constants.API_MANAGER_DATABASE_TYPE, System.getenv(Constants.API_MANAGER_DATABASE_TYPE));
-        withEnv(Constants.API_MANAGER_DATABASE_DRIVER, System.getenv(Constants.API_MANAGER_DATABASE_DRIVER));
+        withEnv(Constants.API_MANAGER_DATABASE_TYPE, hostedDatabase == null
+                ? System.getenv(Constants.API_MANAGER_DATABASE_TYPE) : hostedDatabase.type());
+        withEnv(Constants.API_MANAGER_DATABASE_DRIVER, hostedDatabase == null
+                ? System.getenv(Constants.API_MANAGER_DATABASE_DRIVER) : hostedDatabase.driver());
         withEnv(Constants.API_MANAGER_DATABASE_URL, apimDbUrl);
-        withEnv(Constants.API_MANAGER_DATABASE_USERNAME, System.getenv(Constants.API_MANAGER_DATABASE_USERNAME));
-        withEnv(Constants.API_MANAGER_DATABASE_PASSWORD, System.getenv(Constants.API_MANAGER_DATABASE_PASSWORD));
-        withEnv(Constants.API_MANAGER_DATABASE_VALIDATION_QUERY, System.getenv(Constants.
-                API_MANAGER_DATABASE_VALIDATION_QUERY));
+        withEnv(Constants.API_MANAGER_DATABASE_USERNAME, hostedDatabase == null
+                ? System.getenv(Constants.API_MANAGER_DATABASE_USERNAME) : hostedDatabase.username());
+        withEnv(Constants.API_MANAGER_DATABASE_PASSWORD, hostedDatabase == null
+                ? System.getenv(Constants.API_MANAGER_DATABASE_PASSWORD) : hostedDatabase.password());
+        withEnv(Constants.API_MANAGER_DATABASE_VALIDATION_QUERY, hostedDatabase == null
+                ? System.getenv(Constants.API_MANAGER_DATABASE_VALIDATION_QUERY) : hostedDatabase.validationQuery());
 
         // Env vars for SHARED_DB
-        withEnv(Constants.SHARED_DATABASE_TYPE, System.getenv(Constants.SHARED_DATABASE_TYPE));
-        withEnv(Constants.SHARED_DATABASE_DRIVER, System.getenv(Constants.SHARED_DATABASE_DRIVER));
+        withEnv(Constants.SHARED_DATABASE_TYPE, hostedDatabase == null
+                ? System.getenv(Constants.SHARED_DATABASE_TYPE) : hostedDatabase.type());
+        withEnv(Constants.SHARED_DATABASE_DRIVER, hostedDatabase == null
+                ? System.getenv(Constants.SHARED_DATABASE_DRIVER) : hostedDatabase.driver());
         withEnv(Constants.SHARED_DATABASE_URL, sharedDbUrl);
-        withEnv(Constants.SHARED_DATABASE_USERNAME, System.getenv(Constants.SHARED_DATABASE_USERNAME));
-        withEnv(Constants.SHARED_DATABASE_PASSWORD, System.getenv(Constants.SHARED_DATABASE_PASSWORD));
-        withEnv(Constants.SHARED_DATABASE_VALIDATION_QUERY, System.getenv(Constants.
-                SHARED_DATABASE_VALIDATION_QUERY));
+        withEnv(Constants.SHARED_DATABASE_USERNAME, hostedDatabase == null
+                ? System.getenv(Constants.SHARED_DATABASE_USERNAME) : hostedDatabase.username());
+        withEnv(Constants.SHARED_DATABASE_PASSWORD, hostedDatabase == null
+                ? System.getenv(Constants.SHARED_DATABASE_PASSWORD) : hostedDatabase.password());
+        withEnv(Constants.SHARED_DATABASE_VALIDATION_QUERY, hostedDatabase == null
+                ? System.getenv(Constants.SHARED_DATABASE_VALIDATION_QUERY) : hostedDatabase.validationQuery());
+
+        if (hostedDatabase != null) {
+            if ("mysql".equalsIgnoreCase(hostedDatabase.type())) {
+                withServerFile(mysqlConnectorPath(), MYSQL_CONNECTOR_SERVER_PATH);
+            } else if ("postgre".equalsIgnoreCase(hostedDatabase.type())) {
+                withServerFile(postgresqlConnectorPath(), POSTGRESQL_CONNECTOR_SERVER_PATH);
+            } else {
+                throw new IllegalArgumentException("Unsupported hosted database type: " + hostedDatabase.type());
+            }
+        }
 
         withEnv(JVM_MEM_OPTS, SERVER_HEAP_OPTS);
 
@@ -134,6 +159,24 @@ public class DynamicApimContainer extends GenericContainer<DynamicApimContainer>
 
         withLogConsumer(logConsumer);
         waitingFor(Wait.forListeningPort().withStartupTimeout(Duration.ofMinutes(20)));
+    }
+
+    private static String mysqlConnectorPath() {
+        try {
+            return new File(com.mysql.cj.jdbc.Driver.class.getProtectionDomain().getCodeSource().getLocation()
+                    .toURI()).getAbsolutePath();
+        } catch (Exception e) {
+            throw new IllegalStateException("Unable to locate the MySQL JDBC connector for hosted DB profile", e);
+        }
+    }
+
+    private static String postgresqlConnectorPath() {
+        try {
+            return new File(org.postgresql.Driver.class.getProtectionDomain().getCodeSource().getLocation()
+                    .toURI()).getAbsolutePath();
+        } catch (Exception e) {
+            throw new IllegalStateException("Unable to locate the PostgreSQL JDBC connector for hosted DB profile", e);
+        }
     }
 
     private static String requiredImage(String property) {
