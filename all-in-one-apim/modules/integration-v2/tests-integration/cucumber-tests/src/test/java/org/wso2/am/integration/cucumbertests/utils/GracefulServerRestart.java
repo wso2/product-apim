@@ -21,8 +21,6 @@ import org.testng.Assert;
 import org.wso2.am.integration.cucumbertests.utils.clients.SimpleHTTPClient;
 import org.wso2.am.integration.test.utils.Constants;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
@@ -31,8 +29,6 @@ import java.util.Map;
 
 /** Shared topology-aware implementation of the Carbon graceful restart operation. */
 public final class GracefulServerRestart {
-
-    private static final Logger logger = LoggerFactory.getLogger(GracefulServerRestart.class);
 
     private GracefulServerRestart() {
     }
@@ -44,10 +40,6 @@ public final class GracefulServerRestart {
 
     /** Restarts the Control Plane node (the unified node in all-in-one topology). */
     public static void controlPlane() throws Exception {
-        if (Utils.getBaseUrl().equals(Utils.getBaseGatewayManagementUrl())) {
-            logger.info("Control Plane and Gateway management URLs share one runtime; it was already restarted.");
-            return;
-        }
         restart(Utils.getBaseUrl(), true);
     }
 
