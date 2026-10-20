@@ -41,6 +41,9 @@
              before the all-in-one-apim reactor reaches this module. -->
         <mysql.connector.version>8.4.0</mysql.connector.version>
         <postgresql.connector.version>42.7.4</postgresql.connector.version>
+        <mssql.connector.version>13.6.0.jre11</mssql.connector.version>
+        <oracle.connector.version>23.9.0.25.07</oracle.connector.version>
+        <db2.connector.version>12.1.0.0</db2.connector.version>
         <distributed.apim.build.directory>${project.build.directory}/distributed-apim</distributed.apim.build.directory>
         <distributed.apim.cp.zip>${project.basedir}/../../../../../api-control-plane/modules/distribution/product/target/wso2am-acp-${project.version}.zip</distributed.apim.cp.zip>
         <distributed.apim.tm.zip>${project.basedir}/../../../../../traffic-manager/modules/distribution/product/target/wso2am-tm-${project.version}.zip</distributed.apim.tm.zip>
@@ -80,6 +83,24 @@
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
             <version>${postgresql.connector.version}</version>
+        </dependency>
+        <!-- Used by the opt-in all-in-one hosted-MSSQL profile for schema seeding and APIM runtime. -->
+        <dependency>
+            <groupId>com.microsoft.sqlserver</groupId>
+            <artifactId>mssql-jdbc</artifactId>
+            <version>${mssql.connector.version}</version>
+        </dependency>
+        <!-- Used by the opt-in all-in-one hosted-Oracle profile for schema seeding and APIM runtime. -->
+        <dependency>
+            <groupId>com.oracle.database.jdbc</groupId>
+            <artifactId>ojdbc11</artifactId>
+            <version>${oracle.connector.version}</version>
+        </dependency>
+        <!-- Used by the opt-in all-in-one hosted-Db2 profile for schema seeding and APIM runtime. -->
+        <dependency>
+            <groupId>com.ibm.db2</groupId>
+            <artifactId>jcc</artifactId>
+            <version>${db2.connector.version}</version>
         </dependency>
         <!-- ExecDumpClient (dump over tcpserver), ExecFileLoader (merge), Analyzer/CoverageBuilder (analysis). -->
         <dependency>

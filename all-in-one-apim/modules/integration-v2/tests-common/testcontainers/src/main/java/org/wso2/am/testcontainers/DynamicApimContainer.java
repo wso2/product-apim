@@ -56,6 +56,9 @@ public class DynamicApimContainer extends GenericContainer<DynamicApimContainer>
     private static final String JVM_MEM_OPTS = "JVM_MEM_OPTS";
     private static final String MYSQL_CONNECTOR_SERVER_PATH = "repository/components/lib/mysql-connector-j.jar";
     private static final String POSTGRESQL_CONNECTOR_SERVER_PATH = "repository/components/lib/postgresql-jdbc.jar";
+    private static final String MSSQL_CONNECTOR_SERVER_PATH = "repository/components/lib/mssql-jdbc.jar";
+    private static final String ORACLE_CONNECTOR_SERVER_PATH = "repository/components/lib/ojdbc11.jar";
+    private static final String DB2_CONNECTOR_SERVER_PATH = "repository/components/lib/db2jcc4.jar";
 
     public DynamicApimContainer(String containerLabel, String deploymentTomlContent) {
         this(containerLabel, deploymentTomlContent, null);
@@ -90,7 +93,7 @@ public class DynamicApimContainer extends GenericContainer<DynamicApimContainer>
                 ? System.getenv(Constants.API_MANAGER_DATABASE_DRIVER) : hostedDatabase.driver());
         withEnv(Constants.API_MANAGER_DATABASE_URL, apimDbUrl);
         withEnv(Constants.API_MANAGER_DATABASE_USERNAME, hostedDatabase == null
-                ? System.getenv(Constants.API_MANAGER_DATABASE_USERNAME) : hostedDatabase.username());
+                ? System.getenv(Constants.API_MANAGER_DATABASE_USERNAME) : hostedDatabase.apimUsername());
         withEnv(Constants.API_MANAGER_DATABASE_PASSWORD, hostedDatabase == null
                 ? System.getenv(Constants.API_MANAGER_DATABASE_PASSWORD) : hostedDatabase.password());
         withEnv(Constants.API_MANAGER_DATABASE_VALIDATION_QUERY, hostedDatabase == null
@@ -103,7 +106,7 @@ public class DynamicApimContainer extends GenericContainer<DynamicApimContainer>
                 ? System.getenv(Constants.SHARED_DATABASE_DRIVER) : hostedDatabase.driver());
         withEnv(Constants.SHARED_DATABASE_URL, sharedDbUrl);
         withEnv(Constants.SHARED_DATABASE_USERNAME, hostedDatabase == null
-                ? System.getenv(Constants.SHARED_DATABASE_USERNAME) : hostedDatabase.username());
+                ? System.getenv(Constants.SHARED_DATABASE_USERNAME) : hostedDatabase.sharedUsername());
         withEnv(Constants.SHARED_DATABASE_PASSWORD, hostedDatabase == null
                 ? System.getenv(Constants.SHARED_DATABASE_PASSWORD) : hostedDatabase.password());
         withEnv(Constants.SHARED_DATABASE_VALIDATION_QUERY, hostedDatabase == null
@@ -114,6 +117,12 @@ public class DynamicApimContainer extends GenericContainer<DynamicApimContainer>
                 withServerFile(mysqlConnectorPath(), MYSQL_CONNECTOR_SERVER_PATH);
             } else if ("postgre".equalsIgnoreCase(hostedDatabase.type())) {
                 withServerFile(postgresqlConnectorPath(), POSTGRESQL_CONNECTOR_SERVER_PATH);
+            } else if ("mssql".equalsIgnoreCase(hostedDatabase.type())) {
+                withServerFile(mssqlConnectorPath(), MSSQL_CONNECTOR_SERVER_PATH);
+            } else if ("oracle".equalsIgnoreCase(hostedDatabase.type())) {
+                withServerFile(oracleConnectorPath(), ORACLE_CONNECTOR_SERVER_PATH);
+            } else if ("db2".equalsIgnoreCase(hostedDatabase.type())) {
+                withServerFile(db2ConnectorPath(), DB2_CONNECTOR_SERVER_PATH);
             } else {
                 throw new IllegalArgumentException("Unsupported hosted database type: " + hostedDatabase.type());
             }
@@ -176,6 +185,34 @@ public class DynamicApimContainer extends GenericContainer<DynamicApimContainer>
                     .toURI()).getAbsolutePath();
         } catch (Exception e) {
             throw new IllegalStateException("Unable to locate the PostgreSQL JDBC connector for hosted DB profile", e);
+        }
+    }
+
+    private static String mssqlConnectorPath() {
+        try {
+            return new File(com.microsoft.sqlserver.jdbc.SQLServerDriver.class.getProtectionDomain().getCodeSource()
+                    .getLocation().toURI()).getAbsolutePath();
+        } catch (Exception e) {
+            throw new IllegalStateException("Unable to locate the Microsoft SQL Server JDBC connector for hosted DB "
+                    + "profile", e);
+        }
+    }
+
+    private static String oracleConnectorPath() {
+        try {
+            return new File(oracle.jdbc.driver.OracleDriver.class.getProtectionDomain().getCodeSource()
+                    .getLocation().toURI()).getAbsolutePath();
+        } catch (Exception e) {
+            throw new IllegalStateException("Unable to locate the Oracle JDBC connector for hosted DB profile", e);
+        }
+    }
+
+    private static String db2ConnectorPath() {
+        try {
+            return new File(com.ibm.db2.jcc.DB2Driver.class.getProtectionDomain().getCodeSource().getLocation()
+                    .toURI()).getAbsolutePath();
+        } catch (Exception e) {
+            throw new IllegalStateException("Unable to locate the IBM Db2 JDBC connector for hosted DB profile", e);
         }
     }
 
