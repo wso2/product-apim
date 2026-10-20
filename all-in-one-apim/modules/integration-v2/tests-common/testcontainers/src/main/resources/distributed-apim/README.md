@@ -130,15 +130,6 @@ overlay, and generated runtime values. This keeps the developer setup's
 full-file TOMLs out of the image and prevents runtime-generated addresses from
 being overwritten by a test overlay.
 
-Each component also gets the template overlays under `templates/` (listed in
-`DistributedDynamicApimContainer.TEMPLATE_OVERLAYS`). An overlay is an XML
-skeleton of the literal values to set; `J2TemplateOverlay` writes them into the
-component's own template, which the image-defaults extraction stages beside its
-`deployment.toml` as `<component>/templates/`, and the result is copied into
-`repository/resources/conf/templates/` before boot.
-`templates/repository/conf/registry.xml.j2` turns the registry resource cache
-off, as the all-in-one lane's basic overlay does.
-
 ## Component-specific test configuration
 
 Distributed mode rejects ambiguous all-component parameters. Use qualified

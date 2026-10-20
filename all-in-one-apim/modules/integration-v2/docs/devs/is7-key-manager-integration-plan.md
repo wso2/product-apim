@@ -35,16 +35,13 @@ external-KM data plane (DCR, token issuance, gateway validation, revocation, tok
   nondeterministic.
 
 ### Suite layout (`testng-v2.xml`)
-- **`IntegrationV2-Is7KeyManager`** (product section, after Admin; overlay = `is7kmValidationModes`: the
-  `wso2am.p12` keystore plus the introspection runner's convergence pins, gateway token cache off and a 15s
-  introspection-cache TTL): end-to-end token-flow outline (BasicAuth AND Mutual-TLS client-auth rows),
-  well-known discovery, KM coexistence/permissions/grant-handling extras, IS-side role creation, grant types +
-  keygen negatives + token validation, tenant-org revocation, role-based enforcement, then the introspection
-  and PEM validation modes. Holds the notification alias; the self-validate revoke->401 still depends on it
-  with the token cache off (the gateway's revoked-JWT map is checked regardless — mutation-verified).
-  `thread-count=1` (the runners mutate the tenant-global KM registry and all register same-issuer KMs — see
-  pinned behaviours).
-- **Config-overlay section**: `Is7TokenExchange`
+- **`IntegrationV2-Is7KeyManager`** (product section, after Admin; overlay = `wso2am.p12` keystore only —
+  pure KM plumbing): end-to-end token-flow outline (BasicAuth AND Mutual-TLS client-auth rows), well-known
+  discovery, KM coexistence/permissions/grant-handling extras, IS-side role creation, grant types + keygen
+  negatives + token validation, tenant-org revocation, role-based enforcement. Holds the notification
+  alias. `thread-count=1` (the runners mutate the tenant-global KM registry — see pinned behaviours).
+- **Config-overlay section**: `Is7KeyManagerValidationModes` (introspection + PEM merged; the overlay keys
+  are test-convergence pins verified mutually inert; tc=1 per same-issuer rule), `Is7TokenExchange`
   (`enforce_type_header_validation=true` is behaviour under test), `Is7DefaultKeyManager` and
   `Is7TenantSharingOff` (IS-free direct-notify blocks), and the token-exchange-disabled negative co-hosted
   in `SandboxAndTokenExchangeDisabled` (it has no gateway/API surface).

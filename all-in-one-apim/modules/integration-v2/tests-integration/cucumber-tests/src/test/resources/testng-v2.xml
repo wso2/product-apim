@@ -132,9 +132,8 @@
         </classes>
     </test>
 
-    <!-- Gateway eventing and key runtime, one runner at a time. KeyManagerApiKeyRunner mutates the tenant-global
-         AllowSubscriptionValidationDisabling setting, so it runs after, never beside,
-         GatewaySubscriptionValidationDisableRunner. -->
+    <!-- GatewaySubscriptionValidationDisableRunner and KeyManagerApiKeyRunner both mutate the tenant-global
+         AllowSubscriptionValidationDisabling setting; keep this block sequential and preserve their order. -->
     <test name="IntegrationV2-GatewayIsolatedRuntime-Eventing" parallel="classes" thread-count="1">
         <parameter name="blockLabel" value="gateway-isolated-eventing"/>
         <parameter name="apimCpuLimit" value="1"/>

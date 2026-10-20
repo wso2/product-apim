@@ -127,9 +127,42 @@ public class WebSocketInvocationSteps {
             throws Exception {
 
         String token = TestContext.resolve(accessToken).toString();
-        String received = connectSendReceive(buildWsUrl(context), token, message);
+        String received = connectSendReceive(buildWsUrl(context), token, message, true);
         Assert.assertEquals(received, expectedEcho,
                 "Single WebSocket invocation did not return the expected echo; the connection is not retried.");
+    }
+
+    @When("I invoke the WebSocket API at gateway ws context {string} with message {string} using access token {string} expecting echo {string} within {int} seconds and await close")
+    public void invokeWebSocketAndAwaitClose(String context, String message, String accessToken, String expectedEcho,
+                                             int timeoutSeconds) throws Exception {
+
+        String resolvedContext = Utils.resolveContextPlaceholders(context);
+        String token = TestContext.resolve(accessToken).toString();
+        String base = Utils.getBaseGatewayWsUrl();
+        if (base.endsWith("/")) {
+            base = base.substring(0, base.length() - 1);
+        }
+        String wsUrl = base + (resolvedContext.startsWith("/") ? "" : "/") + resolvedContext;
+        long startedMillis = System.currentTimeMillis();
+        AtomicReference<Throwable> lastFailure = new AtomicReference<>();
+        String received = Utils.retryUntil(timeoutSeconds * 1000L,
+                () -> {
+                    try {
+                        return connectSendReceive(wsUrl, token, message, true);
+                    } catch (InterruptedException interrupted) {
+                        Thread.currentThread().interrupt();
+                        return null;
+                    } catch (Exception failedAttempt) {
+                        lastFailure.set(failedAttempt);
+                        return null;
+                    }
+                }, echo -> echo != null);
+        String authDetail = received != null ? ""
+                : authRejectionDetail(wsUrl, accessToken, token, lastFailure, startedMillis);
+        Assert.assertNotNull(received, "WebSocket API did not echo a response and close cleanly within the deadline; "
+                + "last error: " + lastErrorOf(lastFailure) + authDetail);
+        Assert.assertEquals(received, expectedEcho,
+                "WebSocket echo mismatch — expected the backend to return the message uppercased.");
     }
 
     /**
@@ -1285,6 +1318,11 @@ public class WebSocketInvocationSteps {
         return connectSendReceive(wsUrl, "Authorization", "Bearer " + token, message);
     }
 
+    private String connectSendReceive(String wsUrl, String token, String message, boolean awaitClose)
+            throws Exception {
+        return connectSendReceive(wsUrl, "Authorization", "Bearer " + token, message, awaitClose);
+    }
+
     /**
      * One connect → sendText → await first text response → close cycle, presenting the given auth header
      * ({@code Authorization: Bearer <token>} or {@code apikey: <key>}). Returns the response, or throws if the
@@ -1297,11 +1335,24 @@ public class WebSocketInvocationSteps {
         return connectSendReceive(wsUrl, headers, message);
     }
 
+    private String connectSendReceive(String wsUrl, String headerName, String headerValue, String message,
+                                      boolean awaitClose) throws Exception {
+        Map<String, String> headers = new LinkedHashMap<>();
+        headers.put(headerName, headerValue);
+        return connectSendReceive(wsUrl, headers, message, awaitClose);
+    }
+
     /** Multi-header variant (e.g. Authorization + Origin for CORS). Sets each header on the WS upgrade request. */
     private String connectSendReceive(String wsUrl, Map<String, String> headers, String message)
             throws Exception {
+        return connectSendReceive(wsUrl, headers, message, false);
+    }
+
+    private String connectSendReceive(String wsUrl, Map<String, String> headers, String message, boolean awaitClose)
+            throws Exception {
         HttpClient client = HttpClient.newBuilder().sslContext(trustAllSslContext()).build();
         CompletableFuture<String> response = new CompletableFuture<>();
+        CompletableFuture<Void> closeReceived = new CompletableFuture<>();
         WebSocket.Builder builder = client.newWebSocketBuilder();
         for (Map.Entry<String, String> e : headers.entrySet()) {
             builder.header(e.getKey(), e.getValue());
@@ -1322,6 +1373,12 @@ public class WebSocketInvocationSteps {
                             webSocket.request(1);
                             return null;
                         }
+
+                        @Override
+                        public CompletionStage<?> onClose(WebSocket webSocket, int statusCode, String reason) {
+                            closeReceived.complete(null);
+                            return null;
+                        }
                     })
                     .get(20, TimeUnit.SECONDS);
             ws.sendText(message, true);
@@ -1329,8 +1386,15 @@ public class WebSocketInvocationSteps {
         } finally {
             if (ws != null) {
                 try {
-                    ws.sendClose(WebSocket.NORMAL_CLOSURE, "done");
+                    CompletableFuture<WebSocket> closeSent = ws.sendClose(WebSocket.NORMAL_CLOSURE, "done");
+                    if (awaitClose) {
+                        closeSent.get(5, TimeUnit.SECONDS);
+                        closeReceived.get(5, TimeUnit.SECONDS);
+                    }
                 } catch (Exception closeFailure) {
+                    if (awaitClose) {
+                        throw closeFailure;
+                    }
                     log.warn("Ignoring failure to send WebSocket close frame: " + closeFailure.getMessage());
                 }
             }

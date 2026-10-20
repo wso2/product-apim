@@ -57,7 +57,10 @@ public class WorkflowRedirectSteps {
 
         HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
         Assert.assertNotNull(response, "No subscription workflow response is available");
-        Assert.assertNotNull(response.getData(), "Subscription workflow returned no response body");
+        Assert.assertTrue(response.getResponseCode() >= 200 && response.getResponseCode() < 300
+                        && response.getData() != null && !response.getData().isBlank(),
+                "Expected a 2xx subscription workflow response with a body, got " + response.getResponseCode()
+                        + " / " + response.getData());
         JSONObject body = new JSONObject(response.getData());
         // The DevPortal REST API returns the custom executor's HttpWorkflowResponse JSON payload as the subscription
         // DTO's redirectionParams string (SubscriptionsApiServiceImpl#subscriptionsPost).

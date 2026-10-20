@@ -14,11 +14,19 @@ Feature: Publisher Network Access Control - tenant-configuration policy source
   Scenario: A tenant-configuration deny policy blocks a reference for that tenant only
     Given The system is ready
     And I have valid access tokens as "admin@tenant1.com"
-    And The system is ready and I have valid publisher access tokens as "publisherUser@tenant1.com"
+    And The system is ready and I have valid access tokens as "publisherUser@tenant1.com"
     And The system is ready and I have valid publisher access tokens as "publisherUser"
     And I act as "admin@tenant1.com"
     And I capture the tenant configuration as "nacTenantConfOriginal"
     And I register tenant configuration "nacTenantConfOriginal" for cleanup
+    # Establish the same-tenant allowed control before changing policy; the later denial must be attributable
+    # to this tenant's configuration rather than a malformed or unreachable remote reference.
+    When I act as "publisherUser@tenant1.com"
+    And I validate the openapi definition from file "artifacts/payloads/networkAccessControl/oas30_nodebackend_ref.json"
+    Then The response status code should be 200
+    And The value of response field "isValid" should be "true"
+
+    When I act as "admin@tenant1.com"
     And I capture the tenant configuration as "nacTenantConf"
     And I set the JSON object field "NetworkSecurityAccessControl" from file "artifacts/payloads/networkAccessControl/nac_tenant_deny_nodebackend.json" in the payload "nacTenantConf"
     And I update the tenant configuration from "nacTenantConf"
@@ -26,12 +34,19 @@ Feature: Publisher Network Access Control - tenant-configuration policy source
     When I act as "publisherUser@tenant1.com"
     And I validate the openapi definition from file "artifacts/payloads/networkAccessControl/oas30_nodebackend_ref.json"
     Then The response status code should be 400
+    And The value of error response field "code" should be "400"
+    And The value of error response field "message" should be "Bad Request"
+    And The error response field "description" should contain "remote reference in the definition could not be resolved"
     And The response should contain "could not be resolved"
     And The response should contain "remote reference in the definition could not be resolved"
     When I act as "publisherUser"
     And I validate the openapi definition from file "artifacts/payloads/networkAccessControl/oas30_nodebackend_ref.json"
     Then The response status code should be 200
-    And The response should not contain "could not be resolved"
+    And The value of response field "isValid" should be "true"
     When I act as "admin@tenant1.com"
     And I update the tenant configuration from "nacTenantConfOriginal"
     Then The response status code should be 200
+    When I act as "publisherUser@tenant1.com"
+    And I validate the openapi definition from file "artifacts/payloads/networkAccessControl/oas30_nodebackend_ref.json"
+    Then The response status code should be 200
+    And The value of response field "isValid" should be "true"

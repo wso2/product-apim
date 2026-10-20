@@ -13,6 +13,7 @@ Feature: Key Manager API Key
     When I retrieve the "apis" resource with id "createdApiId"
     Then The response status code should be 200
     And I put the response payload in context as "createdApiPayload"
+    And I extract response field "name" and store it as "createdApiName"
 
     # Enable the api_key security scheme
     When I update the "apis" resource "createdApiId" and "createdApiPayload" with configuration type "securityScheme" and value:
@@ -27,9 +28,13 @@ Feature: Key Manager API Key
     Then The response field "securityScheme[*]" should be exactly the list "api_key,oauth_basic_auth_api_key_mandatory,oauth2"
     And I extract response field "context" and store it as "apiContext"
 
+    And I mark the current end of the server log file "wso2carbon.log"
     When I deploy the API with id "createdApiId"
     Then The response status code should be 201
     And I wait until "apis" "createdApiId" revision is deployed in the gateway
+    And The server log file "wso2carbon.log" should gain a line containing all of the following within 60 seconds
+      | {{createdApiName}}                                  |
+      | was added to the Synapse configuration successfully |
     When I publish the "apis" resource with id "createdApiId"
     Then The lifecycle status of API "createdApiId" should be "Published"
 
@@ -65,6 +70,7 @@ Feature: Key Manager API Key
     # the key only in the configured header. Ports CustomHeaderTestCase#testInvokeAPIWIthDefaultApiKeyHeaderWithOpaqueKey.
     When I invoke the API at gateway context "{{apiContext}}/1.0.0/customers/123/" with method "GET" using api key "apiKey" in header "Unconfigured-ApiKey-Header" until response status code becomes 401 within 60 seconds
     Then The response status code should be 401
+    And The error response should have code "900902" message "Missing Credentials" and description containing "Make sure your API invocation call has a header"
 
     # JWT-formatted API keys must follow the same default-header contract as opaque keys: accept ApiKey and
     # reject an unconfigured header. This specifically exercises the legacy CustomHeaderTestCase JWT path.
@@ -75,6 +81,7 @@ Feature: Key Manager API Key
     And The value of response field "name" should be "John"
     When I invoke the API at gateway context "{{apiContext}}/1.0.0/customers/123/" with method "GET" using api key "jwtApiKey" in header "Unconfigured-ApiKey-Header" until response status code becomes 401 within 60 seconds
     Then The response status code should be 401
+    And The error response should have code "900902" message "Missing Credentials" and description containing "Make sure your API invocation call has a header"
 
     Examples:
       | actor             |
@@ -118,6 +125,7 @@ Feature: Key Manager API Key
     """
     And I invoke the API at gateway context "{{apiContext}}/1.0.0/customers/123/" with method "GET" using api key "invalidApiKey" until response status code becomes 401 within 60 seconds
     Then The response status code should be 401
+    And The error response should have code "900901" message "Invalid Credentials" and description containing "Make sure you have provided the correct security credentials"
 
     Examples:
       | actor             |
@@ -136,6 +144,7 @@ Feature: Key Manager API Key
     When I retrieve the "apis" resource with id "createdApiId"
     Then The response status code should be 200
     And I put the response payload in context as "createdApiPayload"
+    And I extract response field "name" and store it as "createdApiName"
     When I update the "apis" resource "createdApiId" and "createdApiPayload" with configuration type "securityScheme" and value:
       """
       ["api_key", "oauth_basic_auth_api_key_mandatory", "oauth2"]
@@ -143,9 +152,13 @@ Feature: Key Manager API Key
     Then The response status code should be 200
     When I retrieve the "apis" resource with id "createdApiId"
     And I extract response field "context" and store it as "apiContext"
+    And I mark the current end of the server log file "wso2carbon.log"
     When I deploy the API with id "createdApiId"
     Then The response status code should be 201
     And I wait until "apis" "createdApiId" revision is deployed in the gateway
+    And The server log file "wso2carbon.log" should gain a line containing all of the following within 60 seconds
+      | {{createdApiName}}                                  |
+      | was added to the Synapse configuration successfully |
     When I publish the "apis" resource with id "createdApiId"
     Then The lifecycle status of API "createdApiId" should be "Published"
     # Subscribe an application and generate an API key restricted to permittedIP 1.2.3.4
@@ -172,6 +185,7 @@ Feature: Key Manager API Key
     # A non-matching X-Forwarded-For is forbidden (403)
     When I invoke the API at gateway context "{{apiContext}}/1.0.0/customers/123/" with method "GET" using api key "apiKey" and forwarded-for "5.6.7.8" until response status code becomes 403 within 60 seconds
     Then The response status code should be 403
+    And The error response should have code "900908" message "Resource forbidden " and description containing "Access forbidden for the invocations"
 
     # A permittedIP list carrying a CIDR RANGE and an IPv6 range — the three matching forms legacy exercises and
     # which a single exact-address key cannot: an exact IPv4 literal, an IPv4 inside a /24 CIDR, and an IPv6 inside
@@ -192,12 +206,14 @@ Feature: Key Manager API Key
     # An IPv4 OUTSIDE that /24 → 403
     When I invoke the API at gateway context "{{apiContext}}/1.0.0/customers/123/" with method "GET" using api key "apiKey" and forwarded-for "192.168.5.6" until response status code becomes 403 within 60 seconds
     Then The response status code should be 403
+    And The error response should have code "900908" message "Resource forbidden " and description containing "Access forbidden for the invocations"
     # An IPv6 INSIDE the 2001:c00::/23 range → 200
     When I invoke the API at gateway context "{{apiContext}}/1.0.0/customers/123/" with method "GET" using api key "apiKey" and forwarded-for "2001:c00:0:0:0:0:c:4" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
     # An IPv6 OUTSIDE that range → 403
     When I invoke the API at gateway context "{{apiContext}}/1.0.0/customers/123/" with method "GET" using api key "apiKey" and forwarded-for "2061:c00:0:0:0:0:0:0" until response status code becomes 403 within 60 seconds
     Then The response status code should be 403
+    And The error response should have code "900908" message "Resource forbidden " and description containing "Access forbidden for the invocations"
 
     # The same permittedIP list carried as the permittedIP claim of a locally signed JWT-format API key
     # (the JWT half of testInvocationWithApiKeysWithIPCondition): the same five addresses, the same verdicts.
@@ -210,10 +226,12 @@ Feature: Key Manager API Key
     Then The response status code should be 200
     When I invoke the API at gateway context "{{apiContext}}/1.0.0/customers/123/" with method "GET" using api key "ipJwtApiKey" and forwarded-for "192.168.5.6" until response status code becomes 403 within 60 seconds
     Then The response status code should be 403
+    And The error response should have code "900908" message "Resource forbidden " and description containing "Access forbidden for the invocations"
     When I invoke the API at gateway context "{{apiContext}}/1.0.0/customers/123/" with method "GET" using api key "ipJwtApiKey" and forwarded-for "2001:c00:0:0:0:0:c:4" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
     When I invoke the API at gateway context "{{apiContext}}/1.0.0/customers/123/" with method "GET" using api key "ipJwtApiKey" and forwarded-for "2061:c00:0:0:0:0:0:0" until response status code becomes 403 within 60 seconds
     Then The response status code should be 403
+    And The error response should have code "900908" message "Resource forbidden " and description containing "Access forbidden for the invocations"
 
     Examples:
       | actor             |
@@ -266,6 +284,7 @@ Feature: Key Manager API Key
     When I retrieve the "apis" resource with id "createdApiId"
     Then The response status code should be 200
     And I put the response payload in context as "createdApiPayload"
+    And I extract response field "name" and store it as "createdApiName"
     When I update the "apis" resource "createdApiId" and "createdApiPayload" with configuration type "securityScheme" and value:
       """
       ["api_key", "oauth_basic_auth_api_key_mandatory", "oauth2"]
@@ -273,9 +292,13 @@ Feature: Key Manager API Key
     Then The response status code should be 200
     When I retrieve the "apis" resource with id "createdApiId"
     And I extract response field "context" and store it as "apiContext"
+    And I mark the current end of the server log file "wso2carbon.log"
     When I deploy the API with id "createdApiId"
     Then The response status code should be 201
     And I wait until "apis" "createdApiId" revision is deployed in the gateway
+    And The server log file "wso2carbon.log" should gain a line containing all of the following within 60 seconds
+      | {{createdApiName}}                                  |
+      | was added to the Synapse configuration successfully |
     When I publish the "apis" resource with id "createdApiId"
     Then The lifecycle status of API "createdApiId" should be "Published"
     When I put JSON payload from file "artifacts/payloads/create_apim_test_app.json" in context as "createAppPayload"
@@ -301,6 +324,7 @@ Feature: Key Manager API Key
     # A non-matching referer is forbidden (403)
     When I invoke the API at gateway context "{{apiContext}}/1.0.0/customers/123/" with method "GET" using api key "apiKey" and referer "www.abc.com/path2" until response status code becomes 403 within 60 seconds
     Then The response status code should be 403
+    And The error response should have code "900908" message "Resource forbidden " and description containing "Access forbidden for the invocations"
     # A SPECIFIC-subdomain wildcard ("sub.cds.com/*") matches any path UNDER that exact host — a distinct pattern
     # form from the any-subdomain "*.gef.com/*" below, and a multi-segment path at that (200).
     When I invoke the API at gateway context "{{apiContext}}/1.0.0/customers/123/" with method "GET" using api key "apiKey" and referer "sub.cds.com/path1/path2" until response status code becomes 200 within 60 seconds
@@ -320,6 +344,7 @@ Feature: Key Manager API Key
     And The value of response field "name" should be "John"
     When I invoke the API at gateway context "{{apiContext}}/1.0.0/customers/123/" with method "GET" using api key "refJwtApiKey" and referer "www.abc.com/path2" until response status code becomes 403 within 60 seconds
     Then The response status code should be 403
+    And The error response should have code "900908" message "Resource forbidden " and description containing "Access forbidden for the invocations"
     When I invoke the API at gateway context "{{apiContext}}/1.0.0/customers/123/" with method "GET" using api key "refJwtApiKey" and referer "sub.cds.com/path1/path2" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
     When I invoke the API at gateway context "{{apiContext}}/1.0.0/customers/123/" with method "GET" using api key "refJwtApiKey" and referer "example.gef.com/path1" until response status code becomes 200 within 60 seconds
@@ -340,6 +365,7 @@ Feature: Key Manager API Key
     When I retrieve the "apis" resource with id "createdApiId"
     Then The response status code should be 200
     And I put the response payload in context as "createdApiPayload"
+    And I extract response field "name" and store it as "createdApiName"
     When I update the "apis" resource "createdApiId" and "createdApiPayload" with configuration type "securityScheme" and value:
       """
       ["api_key", "oauth_basic_auth_api_key_mandatory", "oauth2"]
@@ -347,9 +373,13 @@ Feature: Key Manager API Key
     Then The response status code should be 200
     When I retrieve the "apis" resource with id "createdApiId"
     And I extract response field "context" and store it as "apiContext"
+    And I mark the current end of the server log file "wso2carbon.log"
     When I deploy the API with id "createdApiId"
     Then The response status code should be 201
     And I wait until "apis" "createdApiId" revision is deployed in the gateway
+    And The server log file "wso2carbon.log" should gain a line containing all of the following within 60 seconds
+      | {{createdApiName}}                                  |
+      | was added to the Synapse configuration successfully |
     When I publish the "apis" resource with id "createdApiId"
     Then The lifecycle status of API "createdApiId" should be "Published"
     When I put JSON payload from file "artifacts/payloads/create_apim_test_app.json" in context as "createAppPayload"
@@ -383,6 +413,7 @@ Feature: Key Manager API Key
     # The same key is now rejected at the gateway (401)
     When I invoke the API at gateway context "{{apiContext}}/1.0.0/customers/123/" with method "GET" using api key "apiKey" until response status code becomes 401 within 60 seconds
     Then The response status code should be 401
+    And The error response should have code "900901" message "Invalid Credentials" and description containing "Make sure you have provided the correct security credentials"
 
     # A locally signed JWT-format API key is revoked BY VALUE (the JWT half of testInvocationWithRevokedApiKeys):
     # it works first, the revoke endpoint accepts the key itself as the body, then the gateway refuses it (401).
@@ -410,6 +441,7 @@ Feature: Key Manager API Key
     When I retrieve the "apis" resource with id "createdApiId"
     Then The response status code should be 200
     And I put the response payload in context as "createdApiPayload"
+    And I extract response field "name" and store it as "createdApiName"
 
     # Enable the api_key security scheme
     When I update the "apis" resource "createdApiId" and "createdApiPayload" with configuration type "securityScheme" and value:
@@ -429,9 +461,13 @@ Feature: Key Manager API Key
     #  here — the gateway invocation below is the real proof the header took effect.)
     When I retrieve the "apis" resource with id "createdApiId"
     And I extract response field "context" and store it as "apiContext"
+    And I mark the current end of the server log file "wso2carbon.log"
     When I deploy the API with id "createdApiId"
     Then The response status code should be 201
     And I wait until "apis" "createdApiId" revision is deployed in the gateway
+    And The server log file "wso2carbon.log" should gain a line containing all of the following within 60 seconds
+      | {{createdApiName}}                                  |
+      | was added to the Synapse configuration successfully |
     When I publish the "apis" resource with id "createdApiId"
     Then The lifecycle status of API "createdApiId" should be "Published"
 
@@ -460,6 +496,7 @@ Feature: Key Manager API Key
     # The same key in the default ApiKey header -> rejected (401).
     When I invoke the API at gateway context "{{apiContext}}/1.0.0/customers/123/" with method "GET" using api key "apiKey" in header "ApiKey" until response status code becomes 401 within 60 seconds
     Then The response status code should be 401
+    And The error response should have code "900902" message "Missing Credentials" and description containing "Make sure your API invocation call has a header"
 
     # JWT-formatted keys must be accepted by the configured header and rejected by the default ApiKey header too.
     When I generate locally signed JWT API key for application id "createdAppId" as "customHeaderJwtApiKey"
@@ -469,6 +506,7 @@ Feature: Key Manager API Key
     And The value of response field "name" should be "John"
     When I invoke the API at gateway context "{{apiContext}}/1.0.0/customers/123/" with method "GET" using api key "customHeaderJwtApiKey" in header "ApiKey" until response status code becomes 401 within 60 seconds
     Then The response status code should be 401
+    And The error response should have code "900902" message "Missing Credentials" and description containing "Make sure your API invocation call has a header"
 
     Examples:
       | actor             |
@@ -530,20 +568,25 @@ Feature: Key Manager API Key
     Then The response status code should be 201
     And I wait until "apis" "slApiId" revision is deployed in the gateway
     And the "apis" resource "slApiId" should be live on the gateway, redeploying if propagation is lost
-    And the Gateway key-manager consumer is ready within 180 seconds
 
     # An application that is NEVER subscribed to this API — generate an API key on it.
+    # The invocation below uses this exact newly issued key as the functional readiness barrier; a historical JMS
+    # startup log marker cannot prove that this key-created event reached the gateway.
     When I put JSON payload from file "artifacts/payloads/create_apim_test_app.json" in context as "slAppPayload"
     And I create an application with payload "slAppPayload"
     Then The response status code should be 201
+    When I retrieve all subscriptions of application "createdAppId"
+    Then The response status code should be 200
+    And The response array field "list" should have exactly 0 entries
     When I put the following JSON payload in context as "slApiKeyPayload"
     """
     {"keyName": "SubscriptionlessKey", "validityPeriod": 3600, "additionalProperties": {"permittedIP": "", "permittedReferer": ""}}
     """
     And I request an api key for application id "createdAppId" using payload "slApiKeyPayload"
     Then The response status code should be 200
+    And The response field "apikey" should be non-blank
 
-    # The API key invokes the subscriptionless API with NO subscription -> 200 (gateway checks key->API, not a sub).
+    # The same issued key must become usable at the Gateway without adding a subscription or regenerating it.
     When I invoke the API at gateway context "{{slApiContext}}/1.0.0/customers/123/" with method "GET" using api key "apiKey" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
     And The value of response field "id" should be "123"
@@ -575,6 +618,7 @@ Feature: Key Manager API Key
     When I retrieve the "apis" resource with id "nsApiId"
     Then The response status code should be 200
     And I put the response payload in context as "nsApiPayload"
+    And I extract response field "name" and store it as "nsApiName"
     When I update the "apis" resource "nsApiId" and "nsApiPayload" with configuration type "securityScheme" and value:
       """
       ["api_key", "oauth_basic_auth_api_key_mandatory", "oauth2"]
@@ -582,9 +626,13 @@ Feature: Key Manager API Key
     Then The response status code should be 200
     When I retrieve the "apis" resource with id "nsApiId"
     And I extract response field "context" and store it as "nsApiContext"
+    And I mark the current end of the server log file "wso2carbon.log"
     When I deploy the API with id "nsApiId"
     Then The response status code should be 201
     And I wait until "apis" "nsApiId" revision is deployed in the gateway
+    And The server log file "wso2carbon.log" should gain a line containing all of the following within 60 seconds
+      | {{nsApiName}}                                       |
+      | was added to the Synapse configuration successfully |
     When I publish the "apis" resource with id "nsApiId"
     Then The lifecycle status of API "nsApiId" should be "Published"
 
@@ -618,6 +666,7 @@ Feature: Key Manager API Key
     # The same key now settles on 403 (subscription validation failed), not 401.
     When I invoke the API at gateway context "{{nsApiContext}}/1.0.0/customers/123/" with method "GET" using api key "apiKey" until response status code becomes 403 within 60 seconds
     Then The response status code should be 403
+    And The error response should have code "900908" message "Resource forbidden " and description containing "Resource forbidden "
 
     Examples:
       | actor             |
@@ -627,7 +676,9 @@ Feature: Key Manager API Key
   # An api_key-ONLY API (no oauth2, no basic_auth) exercised with BOTH key types, plus the Basic-scheme negative.
   # Ports testInvocationWithApiKeysOnly — where legacy asserts a PRODUCTION api key 200 AND a SANDBOX api key 200
   # whose body carries the expected customer payload (the key type is part of the generate path and decides which
-  # endpoint the gateway routes to, so a sandbox key is a different credential, not a naming variant) — and
+  # endpoint the gateway routes to, so a sandbox key is a different credential, not a naming variant). A second
+  # API on the same application has distinct echo/prod and echo/sandbox endpoints; each of the four key forms is
+  # invoked there too and must identify the selected route, not just return a successful customer response.
   # testInvocationWithBasicAuthFoAPIKeyNegative, whose legacy form is hollow: it sent "Authorization: Basic abcce",
   # which is not valid base64 of any user:password, so its 401 only proved "a garbage header is refused" and never
   # that the Basic SCHEME is refused where it is not permitted. Here the Basic credential is a WELL-FORMED base64
@@ -649,6 +700,23 @@ Feature: Key Manager API Key
     When I have set up application with keys, subscribed to API "koApiId", and obtained access token for "koSubId"
     Then The response status code should be 200
 
+    # Add a second API to the same application so the same key material must route to observably different
+    # production and sandbox backends. The existing customer-response checks below remain intact.
+    When I put JSON payload from file "artifacts/payloads/create_apim_apikey_routing_api.json" in context as "koRoutingApiPayload"
+    And I create an "apis" resource with payload "koRoutingApiPayload" as "koRoutingApiId"
+    And I deploy the API with id "koRoutingApiId"
+    Then The response status code should be 201
+    When I publish the "apis" resource with id "koRoutingApiId"
+    Then The lifecycle status of API "koRoutingApiId" should be "Published"
+    When I retrieve the "apis" resource with id "koRoutingApiId"
+    And I extract response field "context" and store it as "koRoutingContext"
+    When I put the following JSON payload in context as "koRoutingSubscriptionPayload"
+    """
+    {"applicationId": "{{applicationId}}", "apiId": "{{koRoutingApiId}}", "throttlingPolicy": "Unlimited"}
+    """
+    And I subscribe to API "koRoutingApiId" using application "createdAppId" with payload "koRoutingSubscriptionPayload" as "koRoutingSubscriptionId"
+    Then The response status code should be 201
+
     # A PRODUCTION api key invokes the API, and the body is the backend's customer payload (not merely a 200).
     When I put the following JSON payload in context as "koApiKeyGenPayload"
     """
@@ -659,6 +727,9 @@ Feature: Key Manager API Key
     When I invoke the API at gateway context "{{koContext}}/1.0.0/customers/123/" with method "GET" using api key "apiKey" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
     And The response should contain "\"name\":\"John\""
+    When I invoke the API at gateway context "{{koRoutingContext}}/1.0.0/x" with method "GET" using api key "apiKey" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    And The value of response field "received" should be "/jaxrs_basic/services/customers/customerservice/echo/prod/x"
 
     # A SANDBOX api key on the SAME application also invokes it (routed to the sandbox endpoint), same body.
     When I put the following JSON payload in context as "koSandboxKeyGenPayload"
@@ -670,6 +741,9 @@ Feature: Key Manager API Key
     When I invoke the API at gateway context "{{koContext}}/1.0.0/customers/123/" with method "GET" using api key "apiKey" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
     And The response should contain "\"name\":\"John\""
+    When I invoke the API at gateway context "{{koRoutingContext}}/1.0.0/x" with method "GET" using api key "apiKey" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    And The value of response field "received" should be "/jaxrs_basic/services/customers/customerservice/echo/sandbox/x"
 
     # Locally signed JWT-format API keys of BOTH key types on the same application (the JWT half of
     # testInvocationWithApiKeysOnly), each answered with the backend's customer payload.
@@ -677,10 +751,16 @@ Feature: Key Manager API Key
     When I invoke the API at gateway context "{{koContext}}/1.0.0/customers/123/" with method "GET" using api key "koProdJwtKey" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
     And The response should contain "\"name\":\"John\""
+    When I invoke the API at gateway context "{{koRoutingContext}}/1.0.0/x" with method "GET" using api key "koProdJwtKey" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    And The value of response field "received" should be "/jaxrs_basic/services/customers/customerservice/echo/prod/x"
     When I generate locally signed JWT API key of type "SANDBOX" for application id "createdAppId" with permitted IP "" and permitted referer "" as "koSandJwtKey"
     When I invoke the API at gateway context "{{koContext}}/1.0.0/customers/123/" with method "GET" using api key "koSandJwtKey" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
     And The response should contain "\"name\":\"John\""
+    When I invoke the API at gateway context "{{koRoutingContext}}/1.0.0/x" with method "GET" using api key "koSandJwtKey" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    And The value of response field "received" should be "/jaxrs_basic/services/customers/customerservice/echo/sandbox/x"
 
     # A WELL-FORMED Basic credential for a real user, on an API that does not permit basic_auth → refused (401).
     When I invoke the API at gateway context "{{koContext}}/1.0.0/customers/123/" with method "GET" using basic auth for actor "<actor>" until response status code becomes 401 within 60 seconds

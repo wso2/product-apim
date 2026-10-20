@@ -19,18 +19,11 @@ Feature: Gateway WebSub API Invocation
   sleeping; a delivery COUNT is always settled (Utils.awaitSettledCount) before it is asserted, so an OVER-delivery
   is catchable rather than invisible. Teardown via the per-scenario cleanup hook.
 
-  RESIDUE NOTE (known, bounded): a webhook registration lands in AM_WEBHOOKS_SUBSCRIPTION, whose API_UUID carries
-  NO foreign key, so deleting the API does not remove the row and there is no REST delete for it — the only
-  interface is the hub's own unsubscribe, which needs the API still deployed and the subscriber's token. Each
-  scenario therefore unsubscribes as part of its arc (that is also the asserted behaviour), and a scenario that
-  fails earlier leaves a row keyed to a uniquely-named, now-deleted API/application/callback that nothing else can
-  observe. Registering it for the standard sweep is not possible in the current ordering (applications and APIs are
-  deleted before any bespoke sweep could still address the hub), and a bespoke hook is deliberately NOT added: the
-  store is this block's own in-container H2, so the row dies with the container, and it is keyed to a unique,
-  already-deleted API, so it cannot collide with anything. §5's zero-residue rule targets cross-test interference
-  and leaks into a SHARED or PERSISTENT store; a container-scoped, unreachable row is neither. It is also why every
-  persisted-count assertion below is scoped to ONE API's uuid rather than to a whole-tenant delta: an absolute
-  per-API count cannot be satisfied — or broken — by another scenario's residual row.
+  WebSub registrations are persisted independently of their APIs and are not cascade-deleted. Every successful
+  subscribe is registered with its owner, token, API context, callback and topic; the cleanup hook unsubscribes
+  remaining owned rows before deleting applications or APIs and verifies the persisted rows are gone. Scenarios
+  still assert their explicit unsubscribe behavior.
+  Persisted-count assertions remain scoped to one API UUID, so concurrent scenarios cannot affect them.
 
   # Registration arc: subscribe (form-urlencoded body — the legacy's primary encoding), the hub's verification
   # handshake at the callback, then unsubscribe. Uses a SILENT callback (records the handshake, answers with an empty
@@ -254,10 +247,9 @@ Feature: Gateway WebSub API Invocation
 
   # HMAC correctness (the whole subject of SecretValidationTestCase): the hub validates the INBOUND content against
   # the API's own secret, then RE-SIGNS each fan-out delivery with THAT SUBSCRIBER's hub.secret. The two secrets are
-  # deliberately different here, so a hub that echoed the API's secret instead would fail this assertion. The
-  # INBOUND half is covered by every publish step in this file signing with the API's own secret and asserting 200;
-  # there is deliberately no inbound-rejection negative, because a mis-signed post is <drop/>ped with no response at
-  # all (it presents as a client timeout, not a status), so it cannot be asserted with the status-based publish step.
+  # deliberately different here, so a hub that echoed the API's secret instead would fail this assertion. A valid
+  # event proves the inbound route and callback work; a deliberately mis-signed event must then produce the
+  # product's signature-failure log and leave the settled callback count unchanged.
   # The OUTBOUND half — the hub re-signing each delivery with the SUBSCRIBER's own hub.secret rather than the
   # API's — is what this asserts, and it is the whole subject of the legacy SecretValidationTestCase, which is why
   # the two secrets differ in this scenario.
@@ -292,6 +284,10 @@ Feature: Gateway WebSub API Invocation
     When I publish the WebSub event "websubEventBody" to the event receiver at gateway context "{{websubContext}}/1.0.0" topic "_default" signed with secret "{{websubApiSecret}}" until response status code becomes 200 within 60 seconds
     Then The WebSub receiver "websubReceiver" should have received 1 event within 60 seconds
     And The last WebSub event delivered to receiver "websubReceiver" should have body "websubEventBody" signed with "SHA1" using secret "{{websubSubscriberSecret}}"
+    When I mark the current end of the server log file "wso2carbon.log"
+    And I publish the WebSub event "websubEventBody" to the event receiver at gateway context "{{websubContext}}/1.0.0" topic "_default" with an invalid signature using secret "{{websubApiSecret}}" once with timeout 5000 milliseconds
+    Then The server log file "wso2carbon.log" should gain a line containing "The signature validation failed" within 30 seconds
+    And The WebSub receiver "websubReceiver" should have received 1 event within 60 seconds
     When I send a WebSub "unsubscribe" request as form data to gateway context "{{websubContext}}/1.0.0" with callback "{{websubReceiverCallback}}" topic "_default" secret "{{websubSubscriberSecret}}" lease seconds "50000000" using access token "generatedAccessToken" until response status code becomes 202 within 60 seconds
     Examples:
       | actor             |
@@ -689,6 +685,7 @@ Feature: Gateway WebSub API Invocation
     this-is-an-invalid-websub-token
     """
     When I send a WebSub "subscribe" request as form data to gateway context "{{websubContext}}/1.0.0" with callback "{{websubReceiverCallback}}" topic "_default" secret "{{websubSubscriberSecret}}" lease seconds "50000000" using access token "websubBadToken" until response status code becomes 401 within 30 seconds
+    Then The error response should have code "900901" message "Invalid Credentials" and description containing "Make sure you have provided the correct security credentials"
     Then The response should not contain "invalid_access_token"
 
     Examples:
@@ -787,6 +784,7 @@ Feature: Gateway WebSub API Invocation
     # overwrites generatedAccessToken, so the order here is load-bearing.
     When I have set up application with keys, subscribed to API "websubApiId" with plan "{{subThrottlePolicyName}}", and obtained access token for "websubQuotaSubId"
     Then The response status code should be 200
+    And I copy context value "generatedAccessToken" to "websubQuotaAccessToken"
     # PRECONDITION, not ceremony: a subscription silently landing on another plan delivers every event, which is
     # indistinguishable from an unenforced quota. Pin it here so that failure is named where it happens.
     When I get the subscription with id "websubQuotaSubId"
@@ -796,6 +794,7 @@ Feature: Gateway WebSub API Invocation
     # The CONTROL subscriber, on the unlimited plan.
     When I have set up application with keys, subscribed to API "websubApiId" with plan "AsyncWHUnlimited", and obtained access token for "websubControlSubId"
     Then The response status code should be 200
+    And I copy context value "generatedAccessToken" to "websubControlAccessToken"
     When I send a WebSub "subscribe" request as form data to gateway context "{{websubContext}}/1.0.0" with callback "{{websubControlCallback}}" topic "_default" secret "{{websubSubscriberSecret}}" lease seconds "50000000" using access token "generatedAccessToken" until response status code becomes 202 within 60 seconds
     # BARRIER: a form-data subscribe answers 202 from FORCE_SC_ACCEPTED BEFORE the persist mediator runs, so
     # publishing straight after it races the registration and fans out to nobody.
@@ -805,6 +804,13 @@ Feature: Gateway WebSub API Invocation
     # received some before it was cut off (its callback genuinely worked), so neither a dead callback nor a broken
     # fan-out can satisfy this.
     When I publish the WebSub event "websubEventBody" to the event receiver at gateway context "{{websubContext}}/1.0.0" topic "_default" signed with secret "{{websubApiSecret}}" until receiver "websubQuota" is throttled out while control receiver "websubControl" keeps receiving, within 120 seconds
+    # Tear down both accepted hub registrations explicitly; the cleanup hook is the failure-safe backstop.
+    When I send a WebSub "unsubscribe" request as form data to gateway context "{{websubContext}}/1.0.0" with callback "{{websubQuotaCallback}}" topic "_default" secret "{{websubSubscriberSecret}}" lease seconds "50000000" using access token "websubQuotaAccessToken" until response status code becomes 202 within 60 seconds
+    Then The response status code should be 202
+    And The internal webhooks subscription list should hold exactly 1 subscription for API "websubApiId" within 60 seconds
+    When I send a WebSub "unsubscribe" request as form data to gateway context "{{websubContext}}/1.0.0" with callback "{{websubControlCallback}}" topic "_default" secret "{{websubSubscriberSecret}}" lease seconds "50000000" using access token "websubControlAccessToken" until response status code becomes 202 within 60 seconds
+    Then The response status code should be 202
+    And The internal webhooks subscription list should hold exactly 0 subscriptions for API "websubApiId" within 60 seconds
 
     Examples:
       | actor             |

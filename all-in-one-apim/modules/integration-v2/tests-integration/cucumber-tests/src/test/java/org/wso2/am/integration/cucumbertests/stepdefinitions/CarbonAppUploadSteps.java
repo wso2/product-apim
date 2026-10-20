@@ -41,7 +41,9 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.Paths;
 import java.rmi.RemoteException;
 import java.security.SecureRandom;
 import java.security.MessageDigest;
@@ -64,7 +66,11 @@ public class CarbonAppUploadSteps {
     public void theLegacyCarFixtureIsAvailable() throws IOException {
         URL resource = getClass().getClassLoader().getResource(CAR_FILE);
         Assert.assertNotNull(resource, "CAR fixture is missing from test resources: " + CAR_FILE);
-        carFile = new File(resource.getFile());
+        try {
+            carFile = Paths.get(resource.toURI()).toFile();
+        } catch (URISyntaxException e) {
+            throw new IOException("Invalid CAR fixture URI: " + resource, e);
+        }
         Assert.assertTrue(carFile.isFile() && carFile.length() > 0,
                 "CAR fixture is missing or empty: " + carFile.getAbsolutePath());
     }
