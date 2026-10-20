@@ -71,11 +71,8 @@ Feature: Publisher GraphQL API Design
       | publisherUser             |
       | publisherUser@tenant1.com |
 
-  # An interface-type schema validates, imports, and the imported API's schema comes back in full. ×2 tenant.
-  # (Legacy createAndPublishGraphQLAPIUsingSchemaWithInterfaces also "published and waited", but its wait step
-  # polled for the OTHER API created in its @BeforeClass, so the publish it appeared to assert was never
-  # confirmed for this API. Publish/deploy of a GraphQL API is covered by the first scenario in this file, so the
-  # bogus step is not reproduced.)
+  # An interface-type schema validates, imports, round-trips in full, deploys and publishes. The same
+  # least-privileged Publisher actor creates and publishes the API in both tenant contexts.
   @cap:publisher @feat:graphql-design @type:regression @legacy:GraphqlServerRestartTestCase @legacy:GraphqlTestCase
   Scenario Outline: Validate and create a GraphQL API from an interface-type schema as <actor>
     Given The system is ready and I have valid publisher access tokens as "<actor>"
@@ -87,9 +84,22 @@ Feature: Publisher GraphQL API Design
     When I retrieve the "apis" resource with id "gqlInterfaceApiId"
     Then The response status code should be 200
     And The response should contain "GRAPHQL"
+    And I put the response payload in context as "gqlInterfaceRetrievedPayload"
     When I retrieve the GraphQL schema of API "gqlInterfaceApiId"
     Then The response status code should be 200
     And The GraphQL schema definition in the response should equal the schema file "artifacts/payloads/graphql_schema_with_interface.graphql"
+
+    When I put the following JSON payload in context as "gqlInterfaceRevPayload"
+    """
+    {"description":"interface schema revision"}
+    """
+    And I make a request to create a revision for "apis" resource "gqlInterfaceApiId" with payload "gqlInterfaceRevPayload"
+    And I deploy revision "revisionId" of "apis" resource "gqlInterfaceApiId"
+    Then The response status code should be 201
+    And I wait for deployment of the resource in "gqlInterfaceRetrievedPayload"
+    And the "apis" resource "gqlInterfaceApiId" should be live on the gateway, redeploying if propagation is lost
+    When I publish the "apis" resource with id "gqlInterfaceApiId"
+    Then The lifecycle status of API "gqlInterfaceApiId" should be "Published"
 
     Examples:
       | actor                     |

@@ -31,8 +31,9 @@ Feature: Gateway Throttling Enforcement
   apiThrottlingPolicy, making the bandwidth policy the only binding limit.
   Each runs in BOTH the super tenant and tenant1.com to prove enforcement is tenant-agnostic (every row creates
   its own uniquely-named policy/app/API in its tenant, so the time-sensitive throttle windows never overlap).
-  Teardown via the per-scenario cleanup hook (API, application, and admin throttling policies are all
-  registered).
+  The generic runner executes this complete feature in both standard-username and email-username blocks; only the
+  physical identity changes, selected by block-aware actor resolution. Teardown via the per-scenario cleanup hook
+  (API, application, and admin throttling policies are all registered).
 
   # The legacy BurstControlTestCase tier-swap (5/min -> 25/min, re-verifying the RAISED limit) IS covered — see the
   # burst-tier-swap scenario below. Legacy's 60s window-reset sleep is replaced by polling: an until-403 probe proves
@@ -45,7 +46,7 @@ Feature: Gateway Throttling Enforcement
     Given The system is ready
     And the Traffic Manager throttleData publisher and Gateway throttleData consumer are ready within 180 seconds
 
-  @cap:gateway @feat:throttling-enforcement @type:regression @dep:admin @dep:publisher @dep:devportal @legacy:APIThrottlingTestCase
+  @cap:gateway @feat:throttling-enforcement @type:regression @dep:admin @dep:publisher @dep:devportal
   Scenario Outline: An application is throttled with 429 once it exceeds its request-count limit as <actor>
     And I have valid access tokens as "<actor>"
 
@@ -90,10 +91,75 @@ Feature: Gateway Throttling Enforcement
 
     Examples:
       | actor             |
-      | admin             |
+      | superTenantAdmin  |
       | admin@tenant1.com |
 
-  @cap:gateway @feat:throttling-enforcement @type:regression @dep:admin @dep:publisher @dep:devportal @legacy:BurstControlServerRestartTestCase
+  # Structural regression probe for ThrottleHandler's per-principal application bucket key. The two synthetic
+  # super-tenant usernames deliberately share a base (plain and email-shaped); a third distinct principal is the
+  # control. Keep the post-poll plain-user 429 check so a quota-window rollover cannot make an accidental 200 look
+  # like evidence of isolation. This is a synthetic carbon.super edge, not a claim that this collision is reachable
+  # with ordinary tenant email usernames.
+  @cap:gateway @feat:throttling-enforcement @rule:email-username @type:regression @dep:admin @dep:devportal
+  Scenario: An email-shaped principal does not share an application throttle bucket with the plain user of the same base
+    Given The system is ready
+    And I have valid access tokens as "superTenantAdmin"
+    When I generate a unique alphanumeric value and store it as "bBase"
+    And I provision a user with exact name "bc{{bBase}}" password "Password@123" and roles "Internal/subscriber" storing the username as "uPlain"
+    And I provision a user with exact name "bc{{bBase}}@carbon.super" password "Password@123" and roles "Internal/subscriber" storing the username as "uEmail"
+    When I generate a unique alphanumeric value and store it as "bOther"
+    And I provision a user with exact name "bo{{bOther}}" password "Password@123" and roles "Internal/subscriber" storing the username as "uOther"
+
+    When I create an application throttling policy "${UNIQUE:bLow3}" allowing 3 requests per minute
+    Then The response status code should be 201
+    And I copy context value "appThrottlePolicyName" to "bPolicy"
+    And I have created an api from "artifacts/payloads/create_apim_test_api.json" as "bApiId" and deployed it
+    When I publish the "apis" resource with id "bApiId"
+    Then The lifecycle status of API "bApiId" should be "Published"
+    When I retrieve the "apis" resource with id "bApiId"
+    And I extract response field "context" and store it as "bCtx"
+    And the "apis" resource "bApiId" should be live on the gateway, redeploying if propagation is lost
+    And I wait until "apis" "bApiId" revision is deployed in the gateway
+
+    When I put the following JSON payload in context as "bAppPayload"
+    """
+    {"name":"${UNIQUE:BProbeApp}","throttlingPolicy":"{{bPolicy}}","description":"B probe"}
+    """
+    And I create an application with payload "bAppPayload"
+    Then The response status code should be 201
+    When I put the following JSON payload in context as "bKeysPayload"
+    """
+    {"keyType": "PRODUCTION", "grantTypesToBeSupported": ["client_credentials", "password"]}
+    """
+    And I generate client credentials for application id "createdAppId" with payload "bKeysPayload"
+    Then The response status code should be 200
+    When I put the following JSON payload in context as "bSubPayload"
+    """
+    {"applicationId": "{{applicationId}}", "apiId": "{{apiId}}", "throttlingPolicy": "Unlimited"}
+    """
+    And I subscribe to API "bApiId" using application "createdAppId" with payload "bSubPayload" as "bSubId"
+    Then The response status code should be 201
+
+    When I request an OAuth access token using password grant as user "{{uEmail}}" with password "Password@123"
+    Then The response status code should be 200
+    And I copy context value "generatedAccessToken" to "tokenEmail"
+    When I request an OAuth access token using password grant as user "{{uPlain}}" with password "Password@123"
+    Then The response status code should be 200
+    And I copy context value "generatedAccessToken" to "tokenPlain"
+    When I request an OAuth access token using password grant as user "{{uOther}}" with password "Password@123"
+    Then The response status code should be 200
+    And I copy context value "generatedAccessToken" to "tokenOther"
+
+    When I invoke the API at gateway context "{{bCtx}}/1.0.0/customers/123/" with method "GET" using access token "tokenPlain" and payload "" until response status code becomes 429 within 60 seconds
+    Then The response status code should be 429
+    When I invoke the API at gateway context "{{bCtx}}/1.0.0/customers/123/" with method "GET" using access token "tokenOther" and payload "" until response status code becomes 200 within 20 seconds
+    Then The response status code should be 200
+    When I invoke the API at gateway context "{{bCtx}}/1.0.0/customers/123/" with method "GET" using access token "tokenEmail" and payload "" until response status code becomes 200 within 20 seconds
+    Then The response status code should be 200
+    # Confirm the original one-minute window remains exhausted; otherwise the successful calls above are inconclusive.
+    When I invoke the API at gateway context "{{bCtx}}/1.0.0/customers/123/" with method "GET" using access token "tokenPlain" and payload "" until response status code becomes 429 within 5 seconds
+    Then The response status code should be 429
+
+  @cap:gateway @feat:throttling-enforcement @type:regression @dep:admin @dep:publisher @dep:devportal @legacy:JWTRequestCountThrottlingTestCase
   Scenario Outline: An application is throttled with 429 once it exceeds its SUBSCRIPTION request-count limit as <actor>
     And I have valid access tokens as "<actor>"
 
@@ -148,10 +214,10 @@ Feature: Gateway Throttling Enforcement
 
     Examples:
       | actor             |
-      | admin             |
+      | superTenantAdmin  |
       | admin@tenant1.com |
 
-  @cap:gateway @feat:throttling-enforcement @type:regression @dep:admin @dep:publisher @dep:devportal @legacy:BurstControlServerRestartTestCase
+  @cap:gateway @feat:throttling-enforcement @type:regression @dep:admin @dep:publisher @dep:devportal @legacy:BurstControlTestCase
   Scenario Outline: An application is throttled with 429 by SUBSCRIPTION burst control as <actor>
     And I have valid access tokens as "<actor>"
 
@@ -228,7 +294,7 @@ Feature: Gateway Throttling Enforcement
 
     Examples:
       | actor             |
-      | admin             |
+      | superTenantAdmin  |
       | admin@tenant1.com |
 
   # BURST TIER SWAP — ports BurstControlTestCase#testBurstLimitChange (disabled in legacy): a subscription on a LOW
@@ -338,10 +404,10 @@ Feature: Gateway Throttling Enforcement
 
     Examples:
       | actor             |
-      | admin             |
+      | superTenantAdmin  |
       | admin@tenant1.com |
 
-  @cap:gateway @feat:throttling-enforcement @type:regression @dep:admin @dep:publisher @dep:devportal @legacy:JWTBandwidthThrottlingServerRestartTestCase
+  @cap:gateway @feat:throttling-enforcement @type:regression @dep:admin @dep:publisher @dep:devportal @legacy:JWTRequestCountThrottlingTestCase
   Scenario Outline: An API is throttled with 429 once it exceeds its API-LEVEL (advanced) request-count limit as <actor>
     And I have valid access tokens as "<actor>"
 
@@ -358,6 +424,10 @@ Feature: Gateway Throttling Enforcement
     {{advThrottlePolicyName}}
     """
     Then The response status code should be 200
+    When I retrieve the "apis" resource with id "advThrottleApiId"
+    Then The value of response field "apiThrottlingPolicy" should be "{{advThrottlePolicyName}}"
+    And The response array field "operations[*].throttlingPolicy" should have exactly 2 entries
+    And The response field "operations[*].throttlingPolicy" should be exactly the list "Unlimited"
     When I deploy the API with id "advThrottleApiId"
     Then The response status code should be 201
     When I publish the "apis" resource with id "advThrottleApiId"
@@ -396,10 +466,10 @@ Feature: Gateway Throttling Enforcement
 
     Examples:
       | actor             |
-      | admin             |
+      | superTenantAdmin  |
       | admin@tenant1.com |
 
-  @cap:gateway @feat:throttling-enforcement @type:regression @dep:admin @dep:publisher @dep:devportal @legacy:JWTBandwidthThrottlingServerRestartTestCase
+  @cap:gateway @feat:throttling-enforcement @type:regression @dep:admin @dep:publisher @dep:devportal @legacy:JWTBandwidthThrottlingTestCase
   Scenario Outline: An application is throttled with 429 once it exceeds its BANDWIDTH quota as <actor>
     And I have valid access tokens as "<actor>"
 
@@ -452,7 +522,7 @@ Feature: Gateway Throttling Enforcement
 
     Examples:
       | actor             |
-      | admin             |
+      | superTenantAdmin  |
       | admin@tenant1.com |
 
   # SUBSCRIPTION-level BANDWIDTH: a BANDWIDTHLIMIT policy of subscription type bound at the subscription tier — a
@@ -526,7 +596,7 @@ Feature: Gateway Throttling Enforcement
 
     Examples:
       | actor             |
-      | admin             |
+      | superTenantAdmin  |
       | admin@tenant1.com |
 
   # API-LEVEL (advanced) BANDWIDTH: a BANDWIDTHLIMIT advanced policy set as the API's apiThrottlingPolicy — enforced
@@ -599,15 +669,15 @@ Feature: Gateway Throttling Enforcement
 
     Examples:
       | actor             |
-      | admin             |
+      | superTenantAdmin  |
       | admin@tenant1.com |
 
   # SUPER-TENANT ONLY (not a Scenario Outline like the others): custom Siddhi rules are an admin-global feature
   # — a tenant admin (admin@tenant1.com) gets 403 "not allowed" creating one (verified). So this dimension can
   # only run in the super tenant, unlike the per-app/subscription/API dimensions above.
-  @cap:gateway @feat:throttling-enforcement @type:regression @dep:admin @dep:publisher @dep:devportal @legacy:CustomThrottlingPolicyServerRestartTestCase
+  @cap:gateway @feat:throttling-enforcement @type:regression @dep:admin @dep:publisher @dep:devportal @legacy:CustomThrottlingPolicyTestCase
   Scenario: An API is throttled with 429 by a custom (Siddhi) throttling rule
-    And I have valid access tokens as "admin"
+    And I have valid access tokens as "superTenantAdmin"
 
     And I have created an api from "artifacts/payloads/create_apim_test_api.json" as "custApiId" and deployed it
     When I publish the "apis" resource with id "custApiId"
@@ -637,7 +707,7 @@ Feature: Gateway Throttling Enforcement
   # OPERATION-LEVEL (advanced) request-count: the advanced policy is set on a specific operation (not the whole
   # API via apiThrottlingPolicy), so exceeding it on that operation → 429. Complements the API-LEVEL scenario
   # above — together they port the operation↔API-level change of AdvancedThrottlingPolicyTestCase (#9/#10).
-  @cap:gateway @feat:rest-invocation @type:regression @dep:admin @legacy:AdvancedThrottlingPolicyTestCase
+  @cap:gateway @feat:rest-invocation @type:regression @dep:admin @legacy:AdvancedThrottlingPolicyTestCase @legacy:APIThrottlingTestCase
   Scenario Outline: An operation is throttled with 429 once it exceeds its OPERATION-LEVEL advanced limit as <actor>
     And I have valid access tokens as "<actor>"
 
@@ -653,6 +723,10 @@ Feature: Gateway Throttling Enforcement
     [{"target":"/customers/{id}","verb":"GET","authType":"Application & Application User","throttlingPolicy":"{{advThrottlePolicyName}}","scopes":[],"operationPolicies":{"request":[],"response":[],"fault":[]}}]
     """
     Then The response status code should be 200
+    When I retrieve the "apis" resource with id "opThrottleApiId"
+    Then The response field "apiThrottlingPolicy" should be null
+    And The response array field "operations[*].throttlingPolicy" should have exactly 1 entries
+    And The response field "operations[*].throttlingPolicy" should be exactly the list "{{advThrottlePolicyName}}"
     When I deploy the API with id "opThrottleApiId"
     Then The response status code should be 201
     When I publish the "apis" resource with id "opThrottleApiId"
@@ -691,7 +765,7 @@ Feature: Gateway Throttling Enforcement
 
     Examples:
       | actor             |
-      | admin             |
+      | superTenantAdmin  |
       | admin@tenant1.com |
 
   # Reset-throttle-policy: after an application trips its low request-count limit (429), the DevPortal
@@ -700,6 +774,8 @@ Feature: Gateway Throttling Enforcement
   @cap:gateway @feat:throttling-enforcement @rule:throttle-reset @type:regression @dep:admin @dep:publisher @dep:devportal @legacy:ApplicationThrottlingResetTestCase
   Scenario Outline: Resetting an application's throttle counter clears the 429 as <actor>
     And I have valid access tokens as "<actor>"
+    When I store the acting actor credentials as "resetOwnerUsername" and "resetOwnerPassword"
+    Then the actual value of "resetOwnerUsername" should match standard-mode value "<standardUsername>" and email-mode value "<emailUsername>"
 
     # A bespoke application policy allowing only 3 requests/min, so the limit is reachable in a test.
     When I create an application throttling policy "${UNIQUE:resetThrottle3}" allowing 3 requests per minute
@@ -735,6 +811,13 @@ Feature: Gateway Throttling Enforcement
     Then The response status code should be 429
     And The value of error response field "code" should be "900803"
 
+    # Keep a fresh pre-reset quota expiry: if the first 429 landed near minute-end, let that window roll over and
+    # re-establish the same 429 so reset propagation is tested before a full new expiry.
+    When I wait until the current application throttle window has at least 45 seconds remaining
+    And I invoke the API at gateway context "{{resetContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 429 within 10 seconds
+    Then The response status code should be 429
+    And The value of error response field "code" should be "900803"
+
     # Reset the application's throttle counter -> invocation succeeds again.
     When I reset the application throttle policy for "createdAppId" owned by "<actor>"
     Then The response status code should be 200
@@ -749,9 +832,9 @@ Feature: Gateway Throttling Enforcement
     And The value of error response field "code" should be "900803"
 
     Examples:
-      | actor             |
-      | admin             |
-      | admin@tenant1.com |
+      | actor            | standardUsername  | emailUsername                      |
+      | superTenantAdmin | admin             | emailAdmin@email.com@carbon.super |
+      | admin@tenant1.com | admin@tenant1.com | admin@email.com@tenant1.com       |
 
   # Bandwidth reset: the same reset arc, but the application is bound to a low BANDWIDTH policy (1 KB/min) rather
   # than a request-count policy — the reset endpoint clears the bandwidth counter too, so the next invocation
@@ -760,6 +843,8 @@ Feature: Gateway Throttling Enforcement
   @cap:gateway @feat:throttling-enforcement @rule:throttle-reset @type:regression @dep:admin @dep:publisher @dep:devportal @legacy:ApplicationThrottlingResetTestCase
   Scenario Outline: Resetting an application's BANDWIDTH throttle counter clears the 429 as <actor>
     And I have valid access tokens as "<actor>"
+    When I store the acting actor credentials as "resetBwOwnerUsername" and "resetBwOwnerPassword"
+    Then the actual value of "resetBwOwnerUsername" should match standard-mode value "<standardUsername>" and email-mode value "<emailUsername>"
 
     # A bespoke application BANDWIDTH policy: 1 KB/min (the BANDWIDTHLIMIT type) — a BYTE quota, tripped by one
     # oversized POST to the body-echoing /reflect-body resource.
@@ -819,9 +904,9 @@ Feature: Gateway Throttling Enforcement
     And The value of error response field "code" should be "900803"
 
     Examples:
-      | actor             |
-      | admin             |
-      | admin@tenant1.com |
+      | actor            | standardUsername  | emailUsername                      |
+      | superTenantAdmin | admin             | emailAdmin@email.com@carbon.super |
+      | admin@tenant1.com | admin@tenant1.com | admin@email.com@tenant1.com       |
 
   # NON-ADMIN OWNER-RESETS-OWN request-count reset: the throttling policy and API are set up by the tenant admin
   # (both admin-only ops), but the application is created, subscribed, keyed, driven to 429 AND reset by a
@@ -870,6 +955,13 @@ Feature: Gateway Throttling Enforcement
     Then The response status code should be 429
     And The value of error response field "code" should be "900803"
 
+    # Keep a fresh pre-reset quota expiry: if the first 429 landed near minute-end, let that window roll over and
+    # re-establish the same 429 so reset propagation is tested before a full new expiry.
+    When I wait until the current application throttle window has at least 45 seconds remaining
+    And I invoke the API at gateway context "{{xoResetContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 429 within 10 seconds
+    Then The response status code should be 429
+    And The value of error response field "code" should be "900803"
+
     # Reset the SUBSCRIBER's own application counter AS the subscriber (the reset authorizes on the caller's ownership).
     When I reset the application throttle policy for "createdAppId" owned by "<ownerActor>"
     Then The response status code should be 200
@@ -884,14 +976,9 @@ Feature: Gateway Throttling Enforcement
 
     Examples:
       | adminActor        | ownerActor                 |
-      | admin             | subscriberUser             |
+      | superTenantAdmin  | subscriberUser             |
       | admin@tenant1.com | subscriberUser@tenant1.com |
 
-    @email-user-throttle-reset
-    Examples: Email-form subscriber usernames
-      | adminActor        | ownerActor                 |
-      | admin             | subscriberUser             |
-      | admin@tenant1.com | subscriberUser@tenant1.com |
 
   # NON-ADMIN OWNER-RESETS-OWN bandwidth reset: the same non-admin owner-resets-own split as above, but the
   # application is bound to a low BANDWIDTH policy (1 KB/min) rather than a request-count policy — the owner's
@@ -959,14 +1046,9 @@ Feature: Gateway Throttling Enforcement
 
     Examples:
       | adminActor        | ownerActor                 |
-      | admin             | subscriberUser             |
+      | superTenantAdmin  | subscriberUser             |
       | admin@tenant1.com | subscriberUser@tenant1.com |
 
-    @email-user-throttle-reset
-    Examples: Email-form subscriber usernames
-      | adminActor        | ownerActor                 |
-      | admin             | subscriberUser             |
-      | admin@tenant1.com | subscriberUser@tenant1.com |
 
   # Unlimited API tier is NOT throttled: an API whose apiThrottlingPolicy is the built-in Unlimited tier accepts
   # far more traffic than any low tier would allow, with no 429. Ports the first assertion of
@@ -1026,7 +1108,7 @@ Feature: Gateway Throttling Enforcement
 
     Examples:
       | actor             |
-      | admin             |
+      | superTenantAdmin  |
       | admin@tenant1.com |
 
   # A policy change is NOT enforced until the API is REDEPLOYED — the discriminating arm of
@@ -1113,7 +1195,7 @@ Feature: Gateway Throttling Enforcement
 
     Examples:
       | actor             |
-      | admin             |
+      | superTenantAdmin  |
       | admin@tenant1.com |
 
   # An UNAUTHENTICATED (authType None) resource is throttled: a resource whose security is turned OFF still enforces
@@ -1160,5 +1242,5 @@ Feature: Gateway Throttling Enforcement
 
     Examples:
       | actor             |
-      | admin             |
+      | superTenantAdmin  |
       | admin@tenant1.com |

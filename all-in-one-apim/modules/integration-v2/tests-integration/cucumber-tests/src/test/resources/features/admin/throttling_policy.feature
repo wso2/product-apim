@@ -13,7 +13,7 @@ Feature: Admin Throttling Policy CRUD
   export/import is in throttle_policy_export_import.feature. Deferred to a later increment: advanced
   op↔API-level enforcement (gateway) + cross-admin permission, subscription permission-visibility.
 
-  @cap:admin @feat:throttling-policies @type:regression @legacy:ApplicationThrottlingPolicyTestCase @legacy:ApplicationThrottlingPolicyServerRestartTestCase
+  @cap:admin @feat:throttling-policies @type:regression @legacy:ApplicationThrottlingPolicyTestCase
   Scenario Outline: Application throttling policy CRUD as <actor>
     Given The system is ready
     And I have valid access tokens as "<actor>"
@@ -74,20 +74,56 @@ Feature: Admin Throttling Policy CRUD
     And I have valid access tokens as "<actor>"
     When I create an advanced throttling policy "${UNIQUE:advCrud}" allowing 20 requests per minute
     Then The response status code should be 201
-    And The response should contain "REQUESTCOUNTLIMIT"
+    And The value of response field "policyName" should be "{{advThrottlePolicyName}}"
+    And The value of response field "displayName" should be "{{advThrottlePolicyName}}"
+    And The value of response field "description" should be "Throttle-enforcement test: 20 req/min"
+    And The value of response field "type" should be "AdvancedThrottlePolicy"
+    And The value of response field "defaultLimit.type" should be "REQUESTCOUNTLIMIT"
+    And The value of response field "defaultLimit.requestCount.timeUnit" should be "min"
+    And The value of response field "defaultLimit.requestCount.unitTime" should be "1"
+    And The value of response field "defaultLimit.requestCount.requestCount" should be "20"
+    And The response array field "conditionalGroups" should have exactly 0 entries
     When I retrieve the "advanced" throttling policy with id "advThrottlePolicyId"
     Then The response status code should be 200
-    And The response should contain "{{advThrottlePolicyName}}"
+    And The value of response field "policyName" should be "{{advThrottlePolicyName}}"
+    And The value of response field "displayName" should be "{{advThrottlePolicyName}}"
+    And The value of response field "description" should be "Throttle-enforcement test: 20 req/min"
+    And The value of response field "type" should be "AdvancedThrottlePolicy"
+    And The value of response field "defaultLimit.type" should be "REQUESTCOUNTLIMIT"
+    And The value of response field "defaultLimit.requestCount.timeUnit" should be "min"
+    And The value of response field "defaultLimit.requestCount.unitTime" should be "1"
+    And The value of response field "defaultLimit.requestCount.requestCount" should be "20"
+    And The response array field "conditionalGroups" should have exactly 0 entries
     When I update the "advanced" throttling policy "advThrottlePolicyId" setting its description to "updated advanced policy"
     Then The response status code should be 200
-    And The response should contain "updated advanced policy"
+    And The value of response field "policyName" should be "{{advThrottlePolicyName}}"
+    And The value of response field "displayName" should be "{{advThrottlePolicyName}}"
+    And The value of response field "description" should be "updated advanced policy"
+    And The value of response field "defaultLimit.type" should be "REQUESTCOUNTLIMIT"
+    And The value of response field "defaultLimit.requestCount.requestCount" should be "20"
+    When I retrieve the "advanced" throttling policy with id "advThrottlePolicyId"
+    Then The response status code should be 200
+    And The value of response field "description" should be "updated advanced policy"
+    And The value of response field "defaultLimit.requestCount.requestCount" should be "20"
     # Bandwidth + conditional-group limit-type variants.
     When I create an advanced throttling policy "${UNIQUE:advCrudBw}" allowing 5 KB per minute
     Then The response status code should be 201
-    And The response should contain "BANDWIDTHLIMIT"
+    And The value of response field "policyName" should be "{{advThrottlePolicyName}}"
+    And The value of response field "type" should be "AdvancedThrottlePolicy"
+    And The value of response field "defaultLimit.type" should be "BANDWIDTHLIMIT"
+    And The value of response field "defaultLimit.bandwidth.timeUnit" should be "min"
+    And The value of response field "defaultLimit.bandwidth.unitTime" should be "1"
+    And The value of response field "defaultLimit.bandwidth.dataAmount" should be "5"
+    And The value of response field "defaultLimit.bandwidth.dataUnit" should be "KB"
     When I create an advanced throttling policy "${UNIQUE:advCrudCond}" allowing 20 requests per minute with a header conditional group
     Then The response status code should be 201
-    And The response should contain "HEADERCONDITION"
+    And The value of response field "policyName" should be "{{advThrottlePolicyName}}"
+    And The value of response field "type" should be "AdvancedThrottlePolicy"
+    And The value of response field "defaultLimit.requestCount.requestCount" should be "20"
+    And The response array field "conditionalGroups" should have exactly 1 entries
+    And The response field "conditionalGroups[0].conditions[*].type" should be exactly the list "HEADERCONDITION"
+    And The value of response field "conditionalGroups[0].conditions[0].headerCondition.headerName" should be "X-Tier"
+    And The value of response field "conditionalGroups[0].conditions[0].headerCondition.headerValue" should be "gold"
     When I delete the "advanced" throttling policy with id "advThrottlePolicyId"
     Then The response status code should be 200
     When I delete the "advanced" throttling policy with id "advThrottlePolicyId"
@@ -102,7 +138,7 @@ Feature: Admin Throttling Policy CRUD
   # ×2-tenant Examples table. Custom (Siddhi) throttling rules are an admin-global capability that APIM
   # supports for the super tenant only; a tenant admin is refused (403) when creating one. That 403 is
   # deliberately not asserted — if you want it pinned, add its own @type:negative scenario.
-  @cap:admin @feat:throttling-policies @type:regression @legacy:CustomThrottlingPolicyTestCase @legacy:CustomThrottlingPolicyServerRestartTestCase
+  @cap:admin @feat:throttling-policies @type:regression @legacy:CustomThrottlingPolicyTestCase
   Scenario: Custom (Siddhi) throttling rule CRUD
     Given The system is ready
     And I have valid access tokens as "admin"
@@ -120,6 +156,21 @@ Feature: Admin Throttling Policy CRUD
     # Confirm it is gone via a GET → 404 (parity with the legacy CRUD assertion).
     When I retrieve the "custom" throttling policy with id "customThrottlePolicyId"
     Then The response status code should be 404
+
+  @cap:admin @feat:throttling-policies @type:regression @legacy:CustomThrottlingPolicyTestCase
+  Scenario: Custom (Siddhi) throttling rule keyed by authenticated user ID
+    Given The system is ready
+    And I have valid access tokens as "admin"
+    When I create a custom throttling policy "${UNIQUE:customUserId}" throttling user id "v2CustomUser${UNIQUE:User}@carbon.super" after 10 requests per minute
+    Then The response status code should be 201
+    And The value of response field "keyTemplate" should be "$userId"
+    And The response should contain "{{customThrottleUserId}}"
+    When I retrieve the "custom" throttling policy with id "customThrottlePolicyId"
+    Then The response status code should be 200
+    And The value of response field "keyTemplate" should be "$userId"
+    And The response should contain "{{customThrottleUserId}}"
+    When I delete the "custom" throttling policy with id "customThrottlePolicyId"
+    Then The response status code should be 200
 
   # --- Duplicate-name → 409 (increment-2 Group A). Create, then re-create with the captured name. ---
   @cap:admin @feat:throttling-policies @type:negative @legacy:ApplicationThrottlingPolicyTestCase
@@ -173,6 +224,14 @@ Feature: Admin Throttling Policy CRUD
     Then The response status code should be 201
     When I create a custom throttling policy "{{customThrottlePolicyName}}" throttling API context "/dc2${UNIQUE:C}" after 1000 requests per minute
     Then The response status code should be 409
+
+  @cap:admin @feat:throttling-policies @type:negative @legacy:CustomThrottlingPolicyTestCase
+  Scenario: Deleting a custom throttling policy with an unknown ID returns not found
+    Given The system is ready
+    And I have valid access tokens as "admin"
+    When I generate a random UUID and store it as "unknownCustomPolicyId"
+    And I delete the "custom" throttling policy with id "unknownCustomPolicyId"
+    Then The response status code should be 404
 
   # --- Delete-of-an-in-use advanced policy → 403 (increment-2 Group C #5). ---
   @cap:admin @feat:throttling-policies @type:negative @dep:publisher @legacy:AdvancedThrottlingPolicyTestCase

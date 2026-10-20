@@ -21,7 +21,7 @@ import io.cucumber.testng.CucumberOptions;
 
 /**
  * Runner for tenant-creation domain validation (the tenant-creation half of the legacy
- * TenantDomainValidationTestCase port). Runs in the concurrent IntegrationV2-Admin block: the single scenario
+ * TenantDomainValidationTestCase port). Runs in the IntegrationV2-DevPortal block: the single scenario
  * only ATTEMPTS a create with an illegal domain, which the product rejects, so it creates no resource, mutates
  * no tenant state and needs no block parameter beyond the block's existing tenant/user seeding.
  */

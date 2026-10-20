@@ -102,14 +102,22 @@ Feature: DevPortal Subscription Management
     And I subscribe to API "brHealthyApi" using application "brAppId" with payload "brSubHealthy" as "brHealthySubId"
     Then The response status code should be 201
 
+    # Baseline the Store visibility before mutation so the later 404 proves the role update took effect, rather than
+    # passing because the API was already hidden from this subscriber.
+    When I retrieve the devportal "api" of API "brBrokenApi" until the response status code becomes 200 within 60 seconds
+    Then The value of response field "id" should be "{{brBrokenApi}}"
+
     # Admin changes the broken API's visibility to a role the subscriber does NOT hold, breaking their access to it.
     When I act as "admin<suffix>"
     And I set the visibility roles of API "brBrokenApi" to "{{brotherrole}}"
     Then The response status code should be 200
 
-    # The subscriber's full subscription list still returns the healthy API (the broken one no longer resolving
-    # must not fail the whole listing). Poll until the state settles.
+    # Prove Store visibility has propagated: the same subscriber who could read this API above now receives 404.
+    # Only after this precondition settles do we check that its stale/broken subscription does not break the list.
     When I act as "brSub<suffix>"
+    Then I retrieve the devportal "api" of API "brBrokenApi" until the response status code becomes 404 within 60 seconds
+
+    # The subscription list still returns the healthy API after the other subscribed API has become inaccessible.
     And I retrieve all subscriptions of application "brAppId"
     Then The response status code should be 200
     And The response should contain "{{brHealthyApiName}}"
@@ -185,9 +193,9 @@ Feature: DevPortal Subscription Management
   # ChangeSubscriptionBusinessPlanForcefullyTestCase#testUpdateSubscriptionBusinessPlanWithValidTiers, which
   # verifies the new plan through the PUBLISHER's subscription list rather than the devportal's.
   @cap:devportal @feat:subscription-management @rule:force-change @type:regression @dep:publisher @legacy:ChangeSubscriptionBusinessPlanForcefullyTestCase
-  Scenario Outline: A publisher can force-change a subscription to an allowed business plan as <actor>
+  Scenario Outline: A least-privileged publisher can force-change a subscription to an allowed business plan in <tenant>
     Given The system is ready
-    And I have valid access tokens as "<actor>"
+    And I have valid access tokens as "<adminActor>"
     And I have created an api from "artifacts/payloads/create_apim_test_api.json" as "createdApiId" and deployed it
     When I publish the "apis" resource with id "createdApiId"
     Then The lifecycle status of API "createdApiId" should be "Published"
@@ -197,15 +205,19 @@ Feature: DevPortal Subscription Management
     # restatement of what was already there.
     And The publisher subscription "subscriptionId" of API "createdApiId" should have business plan "Bronze"
 
-    # Force-change to a plan the API DOES offer, and confirm the publisher's view reflects it.
+    # Admin provisions the API and subscription; only the force-change request switches to the least-privileged
+    # publisher identity. This proves the endpoint works for a Publisher role without granting it admin setup rights.
+    Given I have valid publisher access tokens as "<publisherActor>"
     When I change the subscription business plan of "subscriptionId" to "Gold"
     Then The response status code should be 200
+    And I act as "<adminActor>"
+    # Confirm the operation changed the persisted subscription plan, rather than only returning success.
     And The publisher subscription "subscriptionId" of API "createdApiId" should have business plan "Gold"
 
     Examples:
-      | actor             |
-      | admin             |
-      | admin@tenant1.com |
+      | tenant       | adminActor       | publisherActor                |
+      | carbon.super | admin            | publisherUser                 |
+      | tenant1.com  | admin@tenant1.com | publisherUser@tenant1.com     |
 
   # Listing subscriptions by application id and by API id. Ports APIM710AllSubscriptionsByApplicationTestCase.
   # Topology: two published APIs and two applications, cross-subscribed so both listings return exactly two:

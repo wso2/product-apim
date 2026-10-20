@@ -4,7 +4,7 @@ Feature: Admin Tenant Domain Validation
   outside the allowed set (lower-case letters, digits, '.', '-' and '_') must be REJECTED, not silently
   accepted. Ports the tenant-creation half of TenantDomainValidationTestCase. The gateway half - a mis-cased
   tenant domain in the invocation path is rejected and leaves the tenant's routing intact - is covered by the
-  "mis-cased tenant domain" scenario in gateway/rest_invocation, which is where its assertions belong.
+  "mis-cased tenant domain" scenario in gateway/rest_request_dispatch, which is where its assertions belong.
 
   The domain "Abc.com" is the legacy constant, mis-cased on purpose: the upper-case "A" is the illegal
   character. It is written literally rather than uniquely generated because a REJECTED create leaves no

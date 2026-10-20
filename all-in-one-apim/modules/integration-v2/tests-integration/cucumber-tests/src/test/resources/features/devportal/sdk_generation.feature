@@ -14,12 +14,12 @@ Feature: DevPortal Client SDK Generation
   (devportal REST has no t/<tenant> route; see the scenario comment).
   Teardown is the runner's AfterClass sweep (the setup API is deleted once after all scenarios).
 
-  @cap:devportal @feat:sdk-generation @type:regression @dep:publisher @legacy:CORSAccessControlAllowCredentialsHeaderTestCase
+  @cap:devportal @feat:sdk-generation @type:regression @dep:publisher @legacy:CORSAccessControlAllowCredentialsHeaderTestCase @legacy:SDKGenerationTestCase
   Scenario Outline: Generate a client SDK in <language> for a published API as <actor>
     Given The system is ready and I have valid devportal access token as "<actor>"
     When I generate a client SDK in language "<language>" for API "<apiId>"
-    # 200 = a downloadable SDK zip is returned (confirmed against 4.7.0 for every supported language).
-    Then The response status code should be 200
+    # The observed application/octet-stream response, attachment header, and actual ZIP archive are checked for every language.
+    Then The generated SDK should be a non-empty ZIP attachment
 
     Examples:
       | language   | actor                      | apiId                    |
@@ -61,15 +61,15 @@ Feature: DevPortal Client SDK Generation
     # tenant1.com consumer: own tenant's API succeeds, the super tenant's API is 404.
     Given The system is ready and I have valid devportal access token as "subscriberUser@tenant1.com"
     When I generate a client SDK in language "java" for API "publishedApiId@tenant1.com"
-    Then The response status code should be 200
+    Then The generated SDK should be a non-empty ZIP attachment
     When I generate a client SDK in language "java" for API "publishedApiId"
-    Then The response status code should be 404
+    Then The SDK generation response status should be 404
     # Super-tenant consumer: own tenant's API succeeds, tenant1.com's API is 404.
     Given The system is ready and I have valid devportal access token as "subscriberUser"
     When I generate a client SDK in language "java" for API "publishedApiId"
-    Then The response status code should be 200
+    Then The generated SDK should be a non-empty ZIP attachment
     When I generate a client SDK in language "java" for API "publishedApiId@tenant1.com"
-    Then The response status code should be 404
+    Then The SDK generation response status should be 404
 
   # Ports SDKGenerationTestCase#testSDKGenerationForPrivateAPIs. A PRIVATE-visibility API is visible to any
   # AUTHENTICATED user of its own tenant but to nobody outside it, and SDK generation follows that visibility: a
@@ -90,9 +90,9 @@ Feature: DevPortal Client SDK Generation
     When I retrieve the devportal API "sdkPrivApiId" until it contains "PUBLISHED" within 60 seconds
     Then The response status code should be 200
     When I generate a client SDK in language "java" for API "sdkPrivApiId"
-    Then The response status code should be 200
+    Then The generated SDK should be a non-empty ZIP attachment
 
     # Another tenant's consumer: the API is not in their organization at all.
     Given The system is ready and I have valid devportal access token as "subscriberUser@tenant1.com"
     When I generate a client SDK in language "java" for API "sdkPrivApiId"
-    Then The response status code should be 404
+    Then The SDK generation response status should be 404

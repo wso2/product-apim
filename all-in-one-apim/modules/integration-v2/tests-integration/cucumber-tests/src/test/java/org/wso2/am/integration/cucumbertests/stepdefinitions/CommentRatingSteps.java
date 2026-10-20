@@ -107,7 +107,7 @@ public class CommentRatingSteps {
      */
     private static final String DEVPORTAL_COMMENT_SCOPES = "apim:app_manage apim:sub_manage apim:subscribe";
 
-    /** The extra scope that authorises editing/deleting a comment owned by ANOTHER user. */
+    /** The extra scope that authorises deleting a comment owned by ANOTHER user. */
     private static final String MODERATOR_SCOPE = "apim:admin";
 
     /** Context key for a cached comment token of an actor, keyed by the exact scope set it was minted with. */
@@ -361,6 +361,10 @@ public class CommentRatingSteps {
         String apiId = TestContext.resolve(apiKey).toString();
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
+        // The legacy Store client always supplied tenantDomain on rating mutations. Preserve that contract here:
+        // the user-rating resource is tenant-scoped, and relying on the token's implicit tenant leaves the Store
+        // endpoint unauthenticated on some key-manager/topology combinations.
+        headers.put("X-WSO2-Tenant", Identity.actingTenantDomain());
         Requests.put(Utils.getAPIUserRating(Utils.getBaseUrl(), apiId), headers,
                 new JSONObject().put("rating", rating).toString(), Constants.CONTENT_TYPES.APPLICATION_JSON);
     }
@@ -371,6 +375,7 @@ public class CommentRatingSteps {
         String apiId = TestContext.resolve(apiKey).toString();
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
+        headers.put("X-WSO2-Tenant", Identity.actingTenantDomain());
         Requests.delete(Utils.getAPIUserRating(Utils.getBaseUrl(), apiId), headers);
     }
 

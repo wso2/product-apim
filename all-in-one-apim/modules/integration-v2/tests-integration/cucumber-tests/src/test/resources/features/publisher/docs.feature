@@ -117,22 +117,24 @@ Feature: Publisher API Documentation
   # Parameter tampering on the document-content path. Ports DocAPIParameterTamperingTest: a request for document
   # content whose apiId path segment carries an injected value must be REJECTED, and must not echo the injected
   # payload or leak a stack trace. The API/document ids here are deliberately literals, not context references —
-  # the point is that they are not real ids. The rejection is 401 because ';' opens a JAX-RS matrix parameter, so
-  # the apiId segment resolves to empty and the request matches no protected publisher resource, which the auth
-  # handler answers as an unauthenticated request rather than a 404.
+  # the point is that they are not real ids. Exercise both a raw semicolon (which opens a JAX-RS matrix parameter)
+  # and the percent-encoded form sent by the legacy generated client, since URL parsing can treat those forms
+  # differently.
   @cap:publisher @feat:docs @rule:parameter-tampering @type:negative @legacy:DocAPIParameterTamperingTest
-  Scenario Outline: A tampered API id on the document-content path is rejected without leaking a stack trace as <actor>
+  Scenario Outline: A <pattern> semicolon in the tampered API id is rejected without leaking a stack trace as <actor>
     Given The system is ready and I have valid publisher access tokens as "<actor>"
-    When I attempt to retrieve publisher document content with tampered API id ";alert(1)" and document id "daf732d3-bda2-46da-b381-2c39d901ea61"
+    When I attempt to retrieve publisher document content with tampered API id "<tamperedApiId>" and document id "daf732d3-bda2-46da-b381-2c39d901ea61"
     Then The response status code should be 401
-    And The response should not contain "alert(1)"
+    And The response should not contain "alert"
     And The response should not contain "java.lang."
     And The response should not contain "org.wso2.carbon"
 
     Examples:
-      | actor                     |
-      | publisherUser             |
-      | publisherUser@tenant1.com |
+      | actor                     | pattern | tamperedApiId      |
+      | publisherUser             | raw     | ;alert(1)          |
+      | publisherUser             | encoded | %3Balert%281%29    |
+      | publisherUser@tenant1.com | raw     | ;alert(1)          |
+      | publisherUser@tenant1.com | encoded | %3Balert%281%29    |
 
   @cap:publisher @feat:docs @type:negative @legacy:APIM611AddDocumentationToAnAPIWithDocTypeHowToThroughPublisherRestAPITestCase
   Scenario Outline: A subscriber-role user cannot create an API to document as <actor>
@@ -181,9 +183,9 @@ Feature: Publisher API Documentation
       | publisherUser@tenant1.com |
 
   # Doc-source breadth — a document can be sourced inline, from a URL, or from an uploaded file. Ports the
-  # inline/url variants (APIM611) and the file-source variant (APIM614). The file document is created as
+  # inline/url variants (APIM611/APIM620/APIM623) and the file-source variant (APIM614). The file document is created as
   # metadata (sourceType FILE) then its content is uploaded via multipart.
-  @cap:publisher @feat:docs @type:regression @legacy:APIM611AddDocumentationToAnAPIWithDocTypeHowToThroughPublisherRestAPITestCase @legacy:APIM614AddDocumentationToAnAPIWithDocTypeSampleAndSDKThroughPublisherRestAPITestCase
+  @cap:publisher @feat:docs @type:regression @legacy:APIM611AddDocumentationToAnAPIWithDocTypeHowToThroughPublisherRestAPITestCase @legacy:APIM614AddDocumentationToAnAPIWithDocTypeSampleAndSDKThroughPublisherRestAPITestCase @legacy:APIM620AddDocumentationToAnAPIWithDocTypeSampleAndSDKThroughPublisherRestAPITestCase @legacy:APIM623AddDocumentationToAnAPIWithDocTypePublicForumThroughPublisherRestAPITestCase
   Scenario Outline: A document can be added from inline, url and file sources as <actor>
     Given The system is ready and I have valid publisher access tokens as "<actor>"
     And I put JSON payload from file "artifacts/payloads/create_apim_test_api.json" in context as "docSrcApiPayload"
@@ -222,7 +224,7 @@ Feature: Publisher API Documentation
   # verbatim proves the store-qualified identity survives the whole subscribe → publisher-read round trip. The
   # row stays in the super tenant: it is the store identity, not the tenant, that is the variable here, and the
   # ×2-tenant rows above already vary the tenant.
-  @cap:publisher @feat:docs @type:regression @rule:api-overview @dep:devportal @legacy:UsersAndDocsInAPIOverviewTestCase
+  @cap:publisher @feat:docs @type:regression @rule:api-overview @dep:devportal @legacy:UsersAndDocsInAPIOverviewTestCase @legacy:APIM614AddDocumentationToAnAPIWithDocTypeSampleAndSDKThroughPublisherRestAPITestCase
   Scenario Outline: An API overview reflects its subscription and documentation counts as <actor> for <subscriber>
     Given The system is ready
     And I have valid access tokens as "<actor>"
@@ -285,11 +287,32 @@ Feature: Publisher API Documentation
 
     # Add two documents; the documents list carries both (count 2).
     When I prepare a document named "${UNIQUE:OverviewDoc1}" of type "HOWTO" with sourceType "INLINE" and content "test doc 1"
+    And I extract field "name" from json payload "newDocumentPayload" and store it as "ovDoc1Name"
     And I add the document to API "ovApiId"
     Then The response status code should be 201
+    And I put value "documentID" in context as "ovDoc1Id"
     When I prepare a document named "${UNIQUE:OverviewDoc2}" of type "HOWTO" with sourceType "INLINE" and content "test doc 2"
     And I add the document to API "ovApiId"
     Then The response status code should be 201
+    When I retrieve all available documents for "ovApiId"
+    Then The response status code should be 200
+    And The value of response field "count" should be "2"
+
+    # The API is already published. Update the first document's metadata on that published API, then retrieve that
+    # same document and verify the update persisted without creating a third document.
+    When I put the following JSON payload in context as "newDocumentPayload"
+    """
+    {"name":"{{ovDoc1Name}}","type":"SAMPLES","summary":"updated after API publish","sourceType":"INLINE","visibility":"API_LEVEL"}
+    """
+    And I update the document with "ovDoc1Id" for API "ovApiId"
+    Then The response status code should be 200
+    When I retrieve document with "ovDoc1Id" for "ovApiId"
+    Then The response status code should be 200
+    And The value of response field "documentId" should be "{{ovDoc1Id}}"
+    And The value of response field "name" should be "{{ovDoc1Name}}"
+    And The value of response field "type" should be "SAMPLES"
+    And The value of response field "summary" should be "updated after API publish"
+    And The value of response field "sourceType" should be "INLINE"
     When I retrieve all available documents for "ovApiId"
     Then The response status code should be 200
     And The value of response field "count" should be "2"

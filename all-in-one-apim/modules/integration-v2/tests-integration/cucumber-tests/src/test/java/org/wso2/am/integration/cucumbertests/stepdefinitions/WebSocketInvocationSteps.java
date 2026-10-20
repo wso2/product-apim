@@ -117,6 +117,20 @@ public class WebSocketInvocationSteps {
     }
 
     /**
+     * Measures one WebSocket connection without retrying the handshake or echo. A retry here creates another
+     * backend connection and can inflate proxy CONNECT counts; readiness must be established before this step.
+     */
+    @When("I invoke the WebSocket API once at gateway ws context {string} with message {string} using access token {string} expecting echo {string}")
+    public void invokeWebSocketOnce(String context, String message, String accessToken, String expectedEcho)
+            throws Exception {
+
+        String token = TestContext.resolve(accessToken).toString();
+        String received = connectSendReceive(buildWsUrl(context), token, message);
+        Assert.assertEquals(received, expectedEcho,
+                "Single WebSocket invocation did not return the expected echo; the connection is not retried.");
+    }
+
+    /**
      * As {@link #invokeWebSocket} but authenticates with an API KEY in the {@code apikey} header (the WS api-key
      * auth mode — {@code wscat -H "apikey: <key>"} in the docs) instead of an OAuth token.
      */

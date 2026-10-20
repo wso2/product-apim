@@ -78,19 +78,10 @@ Feature: Publisher SOAP API Design
   # extension — then retrieve the imported API's WSDL definition from the publisher (GET /apis/{id}/wsdl).
   # Ports WSDLImportTestCase#testWsdlDefinitionImport (zip arm) + testGetWsdlDefinitions.
   #
-  # NOT COVERED HERE — the ARCHIVE arm of WSDLImportTestCase#testDownloadWsdlDefinitionsFromStore. It was
-  # written (deploy + publish + GET /devportal/apis/{id}/wsdl?environmentName=Default) and MEASURED against a
-  # 4.7.0-SNAPSHOT container: for a zip-imported API the devportal store download answers
-  #   500 {"code":900967,"message":"General Error","description":"Server Error Occurred","moreInfo":"","error":[]}
-  # deterministically (both tenants, all 3 client retries), with the server logging
-  #   [Fatal Error] :1:1: Content is not allowed in prolog.
-  #   ERROR - GlobalThrowableMapper Error occurs when change the address URL of the WSDL   (APIMWSDLReader)
-  # i.e. the store-side gateway-address rewrite fails on the archive. The single-file arm (scenario below) and
-  # the URL arm (gateway/soap_invocation.feature) both return 200 on the same build, so this is specific to the
-  # archive. The fixture is not at fault: hello.zip has the same shape as legacy's PhoneVerification.zip (one
-  # .wsdl at the archive root). The assertion is deliberately NOT committed pinned to the 500 — that would bless
-  # the failure as expected and break again when it is fixed. Reinstate the three steps once the product serves
-  # an archive-imported API's WSDL from the devportal store.
+  # Publisher v4 documents file uploads as multipart file, additionalProperties, and optional implementationType;
+  # archive uploads use application/zip. The HTTP client selects that media type for .zip files. After deploy and
+  # publish, the DevPortal v3 endpoint accepts environmentName; omitting format requests the archive form, which
+  # the Store download step exercises below.
   @cap:publisher @feat:soap-design @rule:wsdl-import @type:regression @legacy:WSDLImportTestCase
   Scenario Outline: An API can be imported from a WSDL archive and its WSDL retrieved as <actor>
     Given The system is ready and I have valid publisher access tokens as "<actor>"
@@ -112,6 +103,15 @@ Feature: Publisher SOAP API Design
     # directory names the WSDL entry, so pin that rather than status alone (backend-address XML pinning lives on
     # the single-file scenario below, whose served copy IS raw XML).
     And The response should contain "hello.wsdl"
+
+    # Complete the Store-download behavior for the archive-imported API: only a deployed, published API appears in
+    # the Store. This expected 200 currently exposes the known product failure documented above.
+    When I deploy the API with id "wsdlZipId"
+    Then The response status code should be 201
+    When I publish the "apis" resource with id "wsdlZipId"
+    Then The lifecycle status of API "wsdlZipId" should be "Published"
+    When I download the WSDL definition of API "wsdlZipId" from the devportal store
+    Then The response status code should be 200
 
     Examples:
       | actor                     |
@@ -276,19 +276,28 @@ Feature: Publisher SOAP API Design
     And I generate a unique value and store it as "rpuApiName"
     And I generate a unique value and store it as "rpuApiCtx"
     And I generate a unique value and store it as "rpuMarker"
+    And I generate a unique value and store it as "rpuOutMarker"
     When I put the following JSON payload in context as "rpuAddProps"
     """
     {"name":"{{rpuApiName}}","context":"{{rpuApiCtx}}","version":"1.0.0","policies":["Unlimited"],"endpointConfig":{"endpoint_type":"http","production_endpoints":{"url":"http://nodebackend:3019/service"},"sandbox_endpoints":{"url":"http://nodebackend:3019/service"}}}
     """
     And I import a WSDL API from file "artifacts/wsdl/hello.wsdl" with additional properties "rpuAddProps" and implementation type "SOAPTOREST" as "rpuApiId"
     Then The response status code should be 201
-    When I update the in-sequence resource policy of API "rpuApiId" inserting marker "rpuMarker"
+    When I update the "in"-sequence resource policy of API "rpuApiId" inserting marker "rpuMarker"
     Then The response status code should be 200
     # Re-retrieve: the marker must be present in the stored sequence (the change genuinely persisted).
     When I retrieve the "in" sequence resource policies of API "rpuApiId"
     Then The response status code should be 200
     And The response array field "list" should have exactly 1 entries
     And The response should contain "{{rpuMarker}}"
+
+    # Exercise the independent SOAP-response (out-sequence) policy update path and verify persisted readback too.
+    When I update the "out"-sequence resource policy of API "rpuApiId" inserting marker "rpuOutMarker"
+    Then The response status code should be 200
+    When I retrieve the "out" sequence resource policies of API "rpuApiId"
+    Then The response status code should be 200
+    And The response array field "list" should have exactly 1 entries
+    And The response should contain "{{rpuOutMarker}}"
 
     Examples:
       | actor                     |

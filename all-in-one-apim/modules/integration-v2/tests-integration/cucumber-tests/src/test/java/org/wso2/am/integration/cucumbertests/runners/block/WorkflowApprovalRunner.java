@@ -29,8 +29,8 @@ import org.wso2.am.integration.cucumbertests.stepdefinitions.WorkflowAdminSteps;
  * API state change, revision deploy, DevPortal self sign-up, ...) and assert it parks pending until an admin
  * approves/rejects it.
  *
- * <p>Runs in its own {@code thread-count=1} block: the executor selection is server-global and persists in the
- * shared registry DB, so no sibling block may share the container while it is flipped, and the flip is restored
+ * <p>Runs in a {@code thread-count=1} block: the executor selection is server-global and persists in the shared
+ * registry DB, so no class may run concurrently in the container while it is flipped, and the flip is restored
  * after all scenarios by {@link #restoreWorkflowExecutors()} below (a runner-scoped {@code @AfterClass}, so it
  * runs once even on scenario failure — a per-scenario hook would delete the shared fixture out from under the
  * following scenarios).

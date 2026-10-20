@@ -21,8 +21,8 @@ import io.cucumber.testng.CucumberOptions;
 
 /**
  * Runner for admin-plane deny (blocking-condition) policies — the port of the legacy APIDenyPolicyTestCase +
- * DenyPolicySearchTestCase (self-contained IP / IP-range / USER types). Runs in the concurrent
- * IntegrationV2-Admin block; each scenario uses distinct IPs, so it is parallel-safe.
+ * DenyPolicySearchTestCase (self-contained IP / IP-range / USER types). Runs in the IntegrationV2-DevPortal
+ * block; each scenario uses distinct IPs, so it is parallel-safe.
  */
 @CucumberOptions(
         features = {

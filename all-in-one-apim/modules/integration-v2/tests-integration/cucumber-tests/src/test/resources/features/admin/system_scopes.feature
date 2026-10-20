@@ -105,6 +105,7 @@ Feature: Admin System Scope Role-Alias Mapping
     And I act as "aliasSubOwner"
     When I create an application "${UNIQUE:AliasOwnedApp}" with visibility "PRIVATE" as "aliasOwnedAppId"
     Then The response status code should be 201
+    And I extract response field "name" and store it as "aliasOwnedAppName"
 
     # The target needs its own DevPortal subscriber row before it can receive ownership (see the first scenario of
     # admin/application_owner_change.feature); creating a throwaway application as the target initialises it.
@@ -121,6 +122,7 @@ Feature: Admin System Scope Role-Alias Mapping
     When I retrieve the admin applications owned by "aliasSubTarget"
     Then The response status code should be 200
     And The response should contain "{{aliasOwnedAppId}}"
+    And The searched applications should include "{{aliasOwnedAppName}}" owned by "aliasSubTarget"
 
     # Restore the shared (tenant-global) alias configuration.
     When I clear all role aliases

@@ -35,14 +35,16 @@ Feature: Admin Key Manager Configuration
     Then The response status code should be 201
     When I retrieve the key manager "kmId"
     Then The response status code should be 200
+    And The key manager response should match payload "<payload>" with id "kmId" and write-only secrets masked
     And The value of response field "type" should be "<type>"
     And The value of response field "name" should be "{{kmIdName}}"
     And The response field "availableGrantTypes" should be exactly the list "<grantTypes>"
-    When I update the key manager "kmId" setting its description to "Updated KM description"
+    When I update the key manager "kmId" from payload "<payload>" setting its description to "Updated KM description"
     Then The response status code should be 200
     And The value of response field "description" should be "Updated KM description"
     When I retrieve the key manager "kmId"
     Then The response status code should be 200
+    And The key manager response should match payload "<payload>" with id "kmId", description "Updated KM description", and write-only secrets masked
     And The value of response field "description" should be "Updated KM description"
     When I delete the key manager "kmId"
     Then The response status code should be 200
@@ -71,8 +73,9 @@ Feature: Admin Key Manager Configuration
 
   # The optional-parameter create path (legacy testAddKeyManagerWith<T>WithOptionalParams + the DTO comparison of
   # verifyKeyManagerDTO): each *-optional.json adds description, issuer, a NON-EMPTY availableGrantTypes list and
-  # a JWKS certificates block on top of the mandatory set. Every one of those must come back from the GET as the
-  # exact value that was posted — grant types as a set-equality so an added/dropped grant cannot slip through.
+  # a JWKS certificates block on top of the mandatory set. Every request field must come back from GET as posted,
+  # with write-only secrets masked, and the optional connector configuration must survive a description update.
+  # Grant types and nested connector objects are compared exactly so additions/drops cannot slip through.
   @cap:admin @feat:key-manager-config @type:regression @legacy:KeyManagersTestCase
   Scenario Outline: A <type> key manager round-trips its optional parameters exactly as <actor>
     Given The system is ready
@@ -81,12 +84,19 @@ Feature: Admin Key Manager Configuration
     Then The response status code should be 201
     When I retrieve the key manager "optKmId"
     Then The response status code should be 200
+    And The key manager response should match payload "<payload>" with id "optKmId" and write-only secrets masked
     And The value of response field "type" should be "<type>"
     And The value of response field "description" should be "This is a test key manager"
     And The value of response field "issuer" should be "<issuer>"
     And The response field "availableGrantTypes" should be exactly the list "<grantTypes>"
     And The value of response field "certificates.type" should be "JWKS"
     And The value of response field "certificates.value" should be "<jwks>"
+    When I update the key manager "optKmId" from payload "<payload>" setting its description to "Updated optional key manager"
+    Then The response status code should be 200
+    And The value of response field "description" should be "Updated optional key manager"
+    When I retrieve the key manager "optKmId"
+    Then The response status code should be 200
+    And The key manager response should match payload "<payload>" with id "optKmId", description "Updated optional key manager", and write-only secrets masked
     When I delete the key manager "optKmId"
     Then The response status code should be 200
 

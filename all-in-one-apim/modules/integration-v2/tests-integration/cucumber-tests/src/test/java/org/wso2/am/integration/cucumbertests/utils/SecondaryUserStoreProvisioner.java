@@ -54,10 +54,10 @@ public final class SecondaryUserStoreProvisioner {
      * Framework-seeded store-user actor keys. The key deliberately carries the store domain so a feature's
      * {@code Examples} table is self-documenting — a reader sees the actor lives in the secondary store. It is
      * ALSO the store-local username, so the two never drift; the auth layer appends {@code @<tenant>} to form the
-     * full login name. Resolvable per tenant via {@code Identity.resolveActor}, e.g.
-     * {@code "SECONDARY.COM/publisherUser1@tenant1.com"} (resolveActor splits on {@code @}, which follows the key)
-     * — giving the ×4 matrix axis (2 tenants × 2 store users). The same store-local names are seeded into BOTH
-     * tenants; the shared store DB keeps them distinct by UM_TENANT_ID.
+     * full login name. In email-user mode the provisioner email-qualifies the store-local part as well, e.g.
+     * {@code SECONDARY.COM/publisherUser1@email.com@tenant1.com}; the actor key itself remains unchanged for
+     * {@code Identity.resolveActor}. The same store-local names are seeded into BOTH tenants; the shared store DB
+     * keeps them distinct by UM_TENANT_ID.
      */
     // The seeded set MIRRORS the primary store's least-privilege archetypes (kept SEPARATE, one role each) so the
     // actor vocabulary is parallel across stores — a test targets either store by swapping the key prefix.

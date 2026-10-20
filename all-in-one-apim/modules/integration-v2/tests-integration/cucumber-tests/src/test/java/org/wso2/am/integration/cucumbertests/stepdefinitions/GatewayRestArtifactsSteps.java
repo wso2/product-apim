@@ -45,10 +45,10 @@ import java.util.regex.Pattern;
  * deployed API's synapse artifacts — the API artifact, its endpoints, its local entry and its mediation sequences —
  * from {@code api/am/gateway/v2/{api-artifact|end-points|local-entry|sequence}?apiName=&version=&tenantDomain=}.
  *
- * <p>Pinned live: this gateway REST API authenticates with BASIC admin credentials (a Bearer token is rejected
- * 401). The all-in-one and distributed runtimes use the local super-tenant management administrator. The tenant is
- * selected independently by the {@code tenantDomain} query
- * parameter. The response is published as {@code httpResponse} for the generic assertion steps.
+ * <p>This gateway REST API authenticates with BASIC credentials (a Bearer token is rejected 401). The default
+ * overload uses the local super-tenant management administrator; the explicit-actor overload supports the legacy
+ * tenant/email admin credential modes. The target tenant is selected independently by the {@code tenantDomain}
+ * query parameter. The response is published as {@code httpResponse} for the generic assertion steps.
  */
 public class GatewayRestArtifactsSteps {
 
@@ -56,8 +56,16 @@ public class GatewayRestArtifactsSteps {
 
     /** Basic-auth header for the Gateway management admin appropriate to the active topology. */
     private Map<String, String> gatewayBasicAuthHeaders() {
-        User admin = Identity.gatewayManagementAdmin();
-        String creds = admin.getUserName() + ":" + admin.getPassword();
+        return gatewayBasicAuthHeaders(Identity.gatewayManagementAdmin());
+    }
+
+    /** Basic-auth header for an explicitly selected actor, used to port the legacy tenant/email user modes. */
+    private Map<String, String> gatewayBasicAuthHeaders(String actorRef) {
+        return gatewayBasicAuthHeaders(Identity.resolveActor(actorRef));
+    }
+
+    private Map<String, String> gatewayBasicAuthHeaders(User actor) {
+        String creds = actor.getUserName() + ":" + actor.getPassword();
         String encoded = Base64.getEncoder().encodeToString(creds.getBytes(StandardCharsets.UTF_8));
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Basic " + encoded);
@@ -76,6 +84,15 @@ public class GatewayRestArtifactsSteps {
         String resolvedVersion = Utils.resolveContextPlaceholders(version);
         Requests.get(Utils.getGatewayArtifactURL(Utils.getBaseGatewayManagementUrl(), kind, resolvedName, resolvedVersion, tenantDomain),
                 gatewayBasicAuthHeaders());
+    }
+
+    @When("I retrieve the gateway {string} for API {string} version {string} in tenant {string} using Basic auth as {string}")
+    public void iRetrieveGatewayArtifactAs(String kind, String apiName, String version, String tenantDomain,
+                                           String reader) throws IOException {
+        String resolvedName = Utils.resolveContextPlaceholders(apiName);
+        String resolvedVersion = Utils.resolveContextPlaceholders(version);
+        Requests.get(Utils.getGatewayArtifactURL(Utils.getBaseGatewayManagementUrl(), kind, resolvedName,
+                resolvedVersion, tenantDomain), gatewayBasicAuthHeaders(reader));
     }
 
     /**
@@ -111,6 +128,76 @@ public class GatewayRestArtifactsSteps {
         Assert.assertEquals(response.getResponseCode(), 200,
                 "Gateway artifact '" + kind + "' for " + resolvedName + " did not become available within "
                         + timeoutSeconds + "s; last: " + response.getData());
+    }
+
+    @When("I retrieve the gateway {string} for API {string} version {string} in tenant {string} using Basic auth as {string} until it is available within {int} seconds")
+    public void iRetrieveGatewayArtifactAsUntilAvailable(String kind, String apiName, String version,
+            String tenantDomain, String reader, int timeoutSeconds) throws InterruptedException {
+        String resolvedName = Utils.resolveContextPlaceholders(apiName);
+        String resolvedVersion = Utils.resolveContextPlaceholders(version);
+        String url = Utils.getGatewayArtifactURL(Utils.getBaseGatewayManagementUrl(), kind, resolvedName,
+                resolvedVersion, tenantDomain);
+        Map<String, String> headers = gatewayBasicAuthHeaders(reader);
+        long start = System.currentTimeMillis();
+        long end = start + Math.max(timeoutSeconds * 1000L, Constants.RUNTIME_PROPAGATION_TIMEOUT);
+        HttpResponse response = null;
+        do {
+            try {
+                response = Requests.get(url, headers);
+                if (response.getResponseCode() == 200) {
+                    return;
+                }
+            } catch (IOException transientFailure) {
+                // Keep polling while the gateway finishes materialising the deployed artifact.
+            }
+            Utils.pollPause(start, 2000);
+        } while (System.currentTimeMillis() < end);
+        Assert.assertNotNull(response, "Gateway artifact '" + kind + "' for " + resolvedName
+                + " returned no response within " + timeoutSeconds + "s (every poll attempt failed)");
+        Assert.assertEquals(response.getResponseCode(), 200,
+                "Gateway artifact '" + kind + "' for " + resolvedName + " did not become available within "
+                        + timeoutSeconds + "s; last: " + response.getData());
+    }
+
+    @Then("The gateway API artifact field {string} should contain name {string} and id {string}")
+    public void theGatewayApiArtifactShouldContainNameAndId(String field, String apiName, String apiId) {
+        HttpResponse response = successfulBody();
+        String artifact = new JSONObject(response.getData()).getString(field);
+        Assert.assertTrue(artifact.contains(Utils.resolveContextPlaceholders(apiName)),
+                "Gateway API artifact field '" + field + "' did not contain the exact API name: " + artifact);
+        Assert.assertTrue(artifact.contains(Utils.resolveContextPlaceholders(apiId)),
+                "Gateway API artifact field '" + field + "' did not contain the exact API id: " + artifact);
+    }
+
+    @Then("The gateway endpoints should be exactly production then sandbox at URL {string}")
+    public void theGatewayEndpointsShouldBeProductionThenSandbox(String backendUrl) {
+        JSONArray endpoints = new JSONObject(successfulBody().getData()).getJSONArray("endpoints");
+        Assert.assertEquals(endpoints.length(), 2, "Expected exactly production and sandbox endpoint artifacts");
+        String expectedUrl = Utils.resolveContextPlaceholders(backendUrl);
+        String production = endpoints.getString(0);
+        String sandbox = endpoints.getString(1);
+        Assert.assertTrue(production.contains("production") && production.contains(expectedUrl),
+                "Endpoint at index 0 should be the production endpoint pointing at " + expectedUrl + ": "
+                        + production);
+        Assert.assertTrue(sandbox.contains("sandbox") && sandbox.contains(expectedUrl),
+                "Endpoint at index 1 should be the sandbox endpoint pointing at " + expectedUrl + ": " + sandbox);
+    }
+
+    @Then("The gateway local entry at index {int} should contain API id {string}")
+    public void theGatewayLocalEntryShouldContainApiId(int index, String apiId) {
+        JSONArray entries = new JSONObject(successfulBody().getData()).getJSONArray("localEntries");
+        Assert.assertEquals(entries.length(), 1, "Expected exactly one gateway local-entry artifact");
+        Assert.assertTrue(entries.getString(index).contains(Utils.resolveContextPlaceholders(apiId)),
+                "Gateway local entry at index " + index + " did not contain API id " + apiId + ": " + entries);
+    }
+
+    private HttpResponse successfulBody() {
+        HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
+        Assert.assertTrue(response != null && response.getResponseCode() == 200
+                        && response.getData() != null && !response.getData().isBlank(),
+                "Expected a 200 gateway artifact response with a body, got: "
+                        + (response == null ? "null" : response.getResponseCode() + " / " + response.getData()));
+        return response;
     }
 
     /**

@@ -21,7 +21,7 @@ import io.cucumber.testng.CucumberOptions;
 
 /**
  * Runner for gateway/rest_artifacts — retrieval of a deployed API's synapse artifacts via the gateway internal
- * REST API (the port of GatewayRestAPITestCase). Runs in the Gateway block (a deployed API + the gateway REST API).
+ * REST API (the port of GatewayRestAPITestCase). Runs the complete actor matrix in standard and email-user blocks.
  * Self-contained {@code @cleanup} scenarios.
  */
 @CucumberOptions(

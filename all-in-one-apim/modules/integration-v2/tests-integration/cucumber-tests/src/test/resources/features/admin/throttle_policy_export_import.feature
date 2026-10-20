@@ -86,7 +86,7 @@ Feature: Admin Throttling Policy Export / Import
   Scenario Outline: Export and re-import an advanced throttling policy as <actor>
     Given The system is ready
     And I have valid access tokens as "<actor>"
-    When I create an advanced throttling policy "eiAdv${UNIQUE:Pol}" allowing 1000 requests per minute
+    When I create an advanced throttling policy "eiAdv${UNIQUE:Pol}" allowing 1000 requests per minute with a header conditional group
     Then The response status code should be 201
     When I export the "advanced" throttling policy named "advThrottlePolicyName" as "eiAdvExport"
     Then The response status code should be 200
@@ -100,12 +100,24 @@ Feature: Admin Throttling Policy Export / Import
     And The value of response field "data.defaultLimit.requestCount.requestCount" should be "1000"
     And The value of response field "data.defaultLimit.requestCount.timeUnit" should be "min"
     And The value of response field "data.defaultLimit.requestCount.unitTime" should be "1"
-    And The response array field "data.conditionalGroups" should have exactly 0 entries
-    And The response field "data.conditionalGroups[*].description" should be exactly the list ""
+    And The response array field "data.conditionalGroups" should have exactly 1 entries
+    And The response field "data.conditionalGroups[*].description" should be exactly the list "gold-header group"
+    And The response field "data.conditionalGroups[0].conditions[*].type" should be exactly the list "HEADERCONDITION"
+    And The value of response field "data.conditionalGroups[0].conditions[0].headerCondition.headerName" should be "X-Tier"
+    And The value of response field "data.conditionalGroups[0].conditions[0].headerCondition.headerValue" should be "gold"
+    And The value of response field "data.conditionalGroups[0].limit.requestCount.requestCount" should be "1000"
     When I import the throttling policy from "eiAdvExport" with overwrite "false"
     Then The response status code should be 409
     When I import the throttling policy from "eiAdvExport" with overwrite "true"
     Then The response status code should be 200
+    When I retrieve the "advanced" throttling policy with id "advThrottlePolicyId"
+    Then The response status code should be 200
+    And The response array field "conditionalGroups" should have exactly 1 entries
+    And The response field "conditionalGroups[*].description" should be exactly the list "gold-header group"
+    And The response field "conditionalGroups[0].conditions[*].type" should be exactly the list "HEADERCONDITION"
+    And The value of response field "conditionalGroups[0].conditions[0].headerCondition.headerName" should be "X-Tier"
+    And The value of response field "conditionalGroups[0].conditions[0].headerCondition.headerValue" should be "gold"
+    And The value of response field "conditionalGroups[0].limit.requestCount.requestCount" should be "1000"
     When I delete the "advanced" throttling policy with id "advThrottlePolicyId"
     Then The response status code should be 200
     When I import the throttling policy from "eiAdvExport" with overwrite "false"

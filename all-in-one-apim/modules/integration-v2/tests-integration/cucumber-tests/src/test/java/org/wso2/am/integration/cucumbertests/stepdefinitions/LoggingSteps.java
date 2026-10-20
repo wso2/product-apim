@@ -383,6 +383,105 @@ public class LoggingSteps {
                         + "\nAppended since the mark:\n" + appended);
     }
 
+    /**
+     * Asserts one structured ELK analytics event by parsing its JSON properties, so callers can check exact
+     * identity/status values and numeric latency fields without pinning serialized JSON field order. Expected
+     * values are exact strings, {@code <number>}, or {@code <present>}.
+     */
+    @Then("The server log file {string} should gain event {string} for API {string} with these fields within {int} seconds")
+    public void logFileShouldGainAnalyticsEvent(String fileName, String event, String apiName, int seconds,
+                                                DataTable expectedTable) throws InterruptedException {
+        String expectedApiName = Utils.resolveContextPlaceholders(apiName);
+        Map<String, String> expectedFields = new HashMap<>();
+        List<List<String>> rows = expectedTable.asLists(String.class);
+        Assert.assertTrue(rows.size() > 1 && rows.get(0).equals(Arrays.asList("field", "expected")),
+                "Analytics event expectations must have a 'field | expected' header.");
+        for (int i = 1; i < rows.size(); i++) {
+            Assert.assertEquals(rows.get(i).size(), 2, "Each analytics expectation must have two columns.");
+            expectedFields.put(rows.get(i).get(0), Utils.resolveContextPlaceholders(rows.get(i).get(1)));
+        }
+        Assert.assertFalse(expectedFields.isEmpty(), "No analytics event fields supplied.");
+
+        String eventPrefix = "apimMetrics: " + event + ", properties :";
+        String appended = Utils.retryUntil(seconds * 1000L,
+                () -> appendedSinceMark(fileName),
+                text -> matchingAnalyticsEvent(text, eventPrefix, expectedApiName, expectedFields) != null);
+        JSONObject actual = matchingAnalyticsEvent(appended, eventPrefix, expectedApiName, expectedFields);
+        Assert.assertNotNull(actual, "No " + event + " analytics event for API '" + expectedApiName
+                + "' with expected fields " + expectedFields + " was appended to " + fileName + " within "
+                + seconds + "s. Appended since the mark:\n" + appended);
+    }
+
+    private static JSONObject matchingAnalyticsEvent(String text, String eventPrefix, String apiName,
+                                                      Map<String, String> expectedFields) {
+        if (text == null) {
+            return null;
+        }
+        for (String line : text.split("\\R")) {
+            int prefixIndex = line.indexOf(eventPrefix);
+            if (prefixIndex < 0) {
+                continue;
+            }
+            try {
+                JSONObject event = new JSONObject(line.substring(prefixIndex + eventPrefix.length()).trim());
+                if (!apiName.equals(event.optString("apiName", null))) {
+                    continue;
+                }
+                boolean matches = true;
+                for (Map.Entry<String, String> expected : expectedFields.entrySet()) {
+                    String field = expected.getKey();
+                    String value = Utils.resolveContextPlaceholders(expected.getValue());
+                    if ("eventType".equals(field)) {
+                        String actualEventType = eventPrefix.endsWith("apim:response, properties :") ? "response"
+                                : eventPrefix.endsWith("apim:faulty, properties :") ? "fault" : null;
+                        if (!value.equals(actualEventType)) {
+                            matches = false;
+                            break;
+                        }
+                        continue;
+                    }
+                    Object actual = jsonField(event, field);
+                    if (actual == null || JSONObject.NULL.equals(actual)) {
+                        matches = false;
+                        break;
+                    }
+                    if ("<number>".equals(value)) {
+                        if (!(actual instanceof Number number) || !Double.isFinite(number.doubleValue())
+                                || number.doubleValue() < 0) {
+                            matches = false;
+                            break;
+                        }
+                    } else if ("<present>".equals(value)) {
+                        if (actual.toString().isEmpty()) {
+                            matches = false;
+                            break;
+                        }
+                    } else if (!value.equals(actual.toString())) {
+                        matches = false;
+                        break;
+                    }
+                }
+                if (matches) {
+                    return event;
+                }
+            } catch (RuntimeException ignored) {
+                // Keep polling while the log write is in progress; malformed lines appear in the final diagnostics.
+            }
+        }
+        return null;
+    }
+
+    private static Object jsonField(JSONObject object, String fieldPath) {
+        Object current = object;
+        for (String segment : fieldPath.split("\\.")) {
+            if (!(current instanceof JSONObject currentObject) || !currentObject.has(segment)) {
+                return null;
+            }
+            current = currentObject.opt(segment);
+        }
+        return current;
+    }
+
     /** True when at least one appended line contains every marker (order-independent). */
     private static boolean containsAllOnOneLine(String appended, List<String> markers) {
         if (appended == null) {

@@ -21,7 +21,7 @@ import io.cucumber.testng.CucumberOptions;
 
 /**
  * Runner for gateway/rest-endpoint-routing — routing of a published REST API to its production, sandbox,
- * swapped and custom-sequence backends, across both tenants.
+ * swapped, custom-sequence and static Synapse backends, across both tenants.
  * Self-contained {@code @cleanup} scenario outlines. Extends {@link BaseBlockRunner} for the block boot-failure
  * guard and runner-scoped cleanup safety net.
  */
