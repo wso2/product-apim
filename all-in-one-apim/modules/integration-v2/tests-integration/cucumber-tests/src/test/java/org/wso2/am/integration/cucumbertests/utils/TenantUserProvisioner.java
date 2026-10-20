@@ -939,7 +939,7 @@ public final class TenantUserProvisioner {
      * Retrieves the domains of all existing tenants via the Tenant Management Admin Service. Copied from
      * the {@code "I retrieve existing tenant details"} step, returning the parsed domains directly.
      */
-    private static List<String> retrieveExistingTenantDomains() throws IOException, JaxenException {
+    public static List<String> retrieveExistingTenantDomains() throws IOException, JaxenException {
 
         HttpResponse response = sendRetrieveTenants();
         Assert.assertEquals(response.getResponseCode(), 200, response.getData());
@@ -969,7 +969,7 @@ public final class TenantUserProvisioner {
      * service. Copied from the {@code "I retrieve all existing users in the tenant domain ..."} step,
      * returning the parsed usernames directly.
      */
-    private static List<String> retrieveExistingUsers(Tenant tenant) throws IOException, JaxenException {
+    public static List<String> retrieveExistingUsers(Tenant tenant) throws IOException, JaxenException {
 
         String payload =
                 "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" " +

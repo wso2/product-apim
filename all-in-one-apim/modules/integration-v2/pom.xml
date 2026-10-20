@@ -210,6 +210,7 @@
                                 <javax.net.ssl.keyStorePassword>${keystore.password}</javax.net.ssl.keyStorePassword>
                                 <testcontainers.reuse.enable>true</testcontainers.reuse.enable>
                                 <module.dir>${project.basedir}</module.dir>
+                                <apim.product.zip.path>${project.basedir}/../../../../modules/distribution/product/target/${apim.server.name}.zip</apim.product.zip.path>
                                 <apim.server.name>${apim.server.name}</apim.server.name>
                                 <apim.docker.image.name>${apim.docker.image.name}</apim.docker.image.name>
                                 <node.docker.image.name>${node.docker.image.name}</node.docker.image.name>
@@ -283,6 +284,7 @@
                                 <javax.net.ssl.keyStorePassword>${keystore.password}</javax.net.ssl.keyStorePassword>
                                 <testcontainers.reuse.enable>true</testcontainers.reuse.enable>
                                 <module.dir>${project.basedir}</module.dir>
+                                <apim.product.zip.path>${project.basedir}/../../../../modules/distribution/product/target/${apim.server.name}.zip</apim.product.zip.path>
                                 <apim.server.name>${apim.server.name}</apim.server.name>
                                 <apim.docker.image.name>${apim.docker.image.name}</apim.docker.image.name>
                                 <node.docker.image.name>${node.docker.image.name}</node.docker.image.name>

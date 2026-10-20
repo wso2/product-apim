@@ -438,22 +438,35 @@ distribution defaults. Only reach for an overlay when a feature genuinely needs 
   `DynamicApimContainer` directly. Only literal leaf values can be set: an overlay path must match exactly one
   plain-text element, and a value the template renders from `deployment.toml` is rejected — set that with a TOML
   overlay. The distributed lane applies `distributed-apim/templates/` the same way to each component's own template.
-  - `basic/templates/repository/conf/registry.xml.j2` turns the registry resource cache off for the whole suite:
+  - `basic/templates/repository/conf/registry.xml.j2` turns the root registry resource cache off for the suite:
     under the suite's concurrent CRUD load a read that lands while an API artifact is being written re-caches the
     previous version, and the write can then commit that stale copy (a publish that leaves the API `Created`, an
-    edit that is lost). The product default is `true`, so v2 does not exercise registry-cache behaviour.
+    edit that is lost). The product default is `true`. The same root override is applied to all three distributed
+    components. It does not disable JDBCPathCache's separate local `REG_PATH_CACHE`. Distributed base overlays also
+    disable the mounted resource caches with `governance_data.enable_cache=false` and `config_data.enable_cache=false`.
+- **Distributed throttle-data startup.** The distributed lifecycle initializes the shared supertenant registry
+  hierarchy after CP's registry SOAP service becomes available and before TM/Gateway start. This is a broker
+  infrastructure prerequisite for every distributed block: both brokers would otherwise create the same path
+  with independent local caches when Gateway starts its two asynchronous subscriptions. The later block option
+  retains tenant-specific setup and readiness, with no distributed bootstrap restart. Readiness queries CP and TM
+  independently through `AndesAdminService.getSubscriptions`, requires active `throttledata` subscriptions from the
+  current Gateway, and checks enabled primary publisher configurations. Disabled HA secondary publishers and
+  polling-task slow-start warnings are not readiness evidence. Existing feature steps use the same public gate.
 - **CPU cap per block.** `<parameter name="apimCpuLimit" value="1"/>` caps that block's APIM container at the
   given number of CPUs (Docker `--cpus`; fractions such as `1.5` allowed). Without the parameter the container is
   uncapped. It caps only APIM; a block that boots an external IS caps that container with
   `<parameter name="isCpuLimit" value="1"/>` (valid only with `bootExternalIdentityServer`). The Squid proxy
   (`initProxy`) is always capped at 0.5 CPU (`SquidProxyServer.CPU_LIMIT`) and the shared node backend at 1 CPU
   for all blocks together (`NodeAppServer.CPU_LIMIT`); Solace is not capped. A malformed or non-positive value
-  fails the block's boot, and the distributed lane rejects `apimCpuLimit`. APIM and IS both run with a `-Xms1g -Xmx1536m` server heap. A cap slows boot and
+  fails the block's boot. In the distributed lane, `apimCpuLimit` applies to each CP/TM/Gateway container, with a
+  default of 1 CPU per component. CP uses a `-Xms1g -Xmx1g` server heap; TM and Gateway use
+  `-Xms512m -Xmx750m`. All-in-one APIM and IS use
+  `-Xms1g -Xmx1536m`. A cap slows boot and
   CPU-heavy runners (Publisher-style CRUD) far more than wait-bound gateway runners, so set it from measurement.
 - **Browser cap.** The Playwright browser runs on the host, not in a container. On Linux hosts where
   `src/test/resources/browser-cgroup/setup-browser-cgroup.sh` has created the `/sys/fs/cgroup/pw-browser` group
   (CI runs it with sudo before the suite), `PlaywrightSsoClient` launches Chromium through
-  `chromium-cgroup-wrapper.sh`, so the whole browser tree shares 1 CPU and 2.5 GiB; each launch logs
+  `chromium-cgroup-wrapper.sh`, so the whole browser tree shares 1 CPU and 2.5 GiB in all-in-one or 1 GiB in distributed CI; each launch logs
   `Browser launched capped: cgroup … cpu.max=[…] memory.max=[…] pids=[…]`. Elsewhere (macOS has no cgroups) it
   logs `Browser launched uncapped` and runs as before.
 - **Browser network namespace.** On a Linux host the browser shares the network namespace in which Docker creates

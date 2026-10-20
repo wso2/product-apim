@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+<suite name="Framework Verification - HTTP Client" parallel="false">
+    <test name="Management concurrency and mutation retries">
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.utils.clients.SimpleHTTPClientConcurrencyTest"/>
+        </classes>
+    </test>
+</suite>

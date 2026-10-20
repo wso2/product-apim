@@ -65,6 +65,7 @@ public class SquidProxyServer {
 
     /** Both Squid instances together use a few percent of one core at peak (measured), so half a CPU is ample. */
     public static final CpuLimit CPU_LIMIT = CpuLimit.of(0.5);
+    public static final long DISTRIBUTED_MEMORY_LIMIT_BYTES = 50L * 1024 * 1024;
 
     private final GenericContainer<?> container;
     private final String blockLabel;
@@ -72,13 +73,31 @@ public class SquidProxyServer {
     private Set<String> authBaselinePorts = Set.of();
 
     public SquidProxyServer(String blockLabel, Network network) {
+        this(blockLabel, network, null);
+    }
+
+    public SquidProxyServer(String blockLabel, Network network, Long memoryLimitBytes) {
+        this(blockLabel, network, memoryLimitBytes, memoryLimitBytes);
+    }
+
+    public SquidProxyServer(String blockLabel, Network network, Long memoryLimitBytes, Long memoryAndSwapLimitBytes) {
+        if (memoryLimitBytes != null
+                && (memoryAndSwapLimitBytes == null || memoryAndSwapLimitBytes < memoryLimitBytes)) {
+            throw new IllegalArgumentException("Squid memory-plus-swap limit must be at least its memory limit");
+        }
         this.blockLabel = blockLabel;
         logger.info("Initializing SquidProxyServer for block '" + blockLabel + "'...");
         container = new GenericContainer<>(System.getProperty("squid.docker.image.name", "squid-proxy:latest"))
                 .withExposedPorts(ANON_PORT, AUTH_PORT)
                 .withNetwork(network)
                 .withNetworkAliases("squid-proxy")
-                .withCreateContainerCmdModifier(CPU_LIMIT::applyTo)
+                .withCreateContainerCmdModifier(cmd -> {
+                    CPU_LIMIT.applyTo(cmd);
+                    if (memoryLimitBytes != null) {
+                        cmd.getHostConfig().withMemory(memoryLimitBytes)
+                                .withMemorySwap(memoryAndSwapLimitBytes);
+                    }
+                })
                 .waitingFor(Wait.forListeningPort().withStartupTimeout(Duration.ofMinutes(2)));
 
         container.withLogConsumer(new JclLogConsumer(logger));

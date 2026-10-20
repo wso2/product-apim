@@ -1,6 +1,6 @@
 # Overlay for the IntegrationV2-SecurityAuditCorsDisabledAndSecretRotation block (the publisher security-audit runner,
 # the AllowedScopesTestWithCorsDisabled runner, the consumer-secret rotation runner and the WebSocket catch-all proxy
-# runner). The distributed suite's token-exchange/security-audit block uses the distributed-*-overlay.toml files
+# runner). The distributed twin uses the distributed-*-overlay.toml files
 # beside this one.
 #
 # The three tables below are disjoint and mutually inert:
@@ -38,7 +38,7 @@ base_url = "http://nodebackend:3002/auditapi"
 global = true
 
 # ---------------------------------------------------------------------------------------------
-# From allowedScopesCorsDisabled/deployment.toml (the exact legacy AllowedScopesTestWithCorsDisabled config)
+# Legacy AllowedScopesTestWithCorsDisabled configuration
 # ---------------------------------------------------------------------------------------------
 # Gateway-global CORS disabled plus the allowed-scopes whitelist. The security-audit runner never invokes the gateway.
 [oauth]
@@ -66,7 +66,7 @@ allow_headers = ["authorization", "Access-Control-Allow-Origin", "Content-Type",
 enable = false
 
 # ---------------------------------------------------------------------------------------------
-# GatewayWebSocketProxyCatchAllRunner (WebSocketProxyProfileTestCase), from wsProxyCatchAll/deployment.toml. [[transport.ws.proxy_profile]] only
+# GatewayWebSocketProxyCatchAllRunner (WebSocketProxyProfileTestCase). [[transport.ws.proxy_profile]] only
 # routes the gateway's OUTBOUND WebSocket connections; no other runner in this block invokes a WebSocket API,
 # so the proxy sees only this runner's traffic and its exact Squid CONNECT counts stay valid.
 # ---------------------------------------------------------------------------------------------

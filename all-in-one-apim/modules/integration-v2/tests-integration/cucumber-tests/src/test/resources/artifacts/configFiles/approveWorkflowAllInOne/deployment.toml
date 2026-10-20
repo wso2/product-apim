@@ -1,6 +1,6 @@
-# All-in-one overlay for the IntegrationV2-ApprovalWorkflow block: the approveWorkflow/ keys plus the
-# wsProxyAuthRouting WebSocket proxy profile and the networkAccessControlAllow allow-mode policy. The distributed
-# suite keeps using approveWorkflow/ and wsProxyAuthRouting/ separately.
+# Combined overlay for the IntegrationV2-ApprovalWorkflow block: application attributes, the authenticated
+# WebSocket proxy profile, and the network access allow-mode policy. The distributed twin uses
+# distributed-cp-overlay.toml for CP and wsProxyAuthRouting/deployment.toml for Gateway.
 #
 # Extra TOML overlay for the approval-workflow block (merged on top of the shared `basic` overlay).
 # Declares the three custom devportal application attributes the legacy WorkflowApprovalExecutorTest

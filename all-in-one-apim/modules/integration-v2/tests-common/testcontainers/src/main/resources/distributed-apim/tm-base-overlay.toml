@@ -1,9 +1,13 @@
 # Distributed TM delta from the product ZIP default. Runtime values are supplied by the composite container.
 
-[server]
-# Allow the integration framework to perform a bounded, ordered recovery after repairing
-# registry-backed throttle-data infrastructure.
-enable_restart_from_api = true
+[diagnostic_tool.server_configuration]
+diagnostic_tool_enabled = false
+
+[governance_data]
+enable_cache = false
+
+[config_data]
+enable_cache = false
 
 [database.apim_db]
 type = "mysql"

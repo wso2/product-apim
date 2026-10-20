@@ -19,6 +19,7 @@ package org.wso2.am.testcontainers;
 import org.testcontainers.containers.Container;
 
 import java.io.IOException;
+import java.util.Set;
 
 /**
  * Block-facing APIM runtime contract.
@@ -63,6 +64,9 @@ public interface ApimRuntime {
     String getWebSubEventReceiverUrl();
 
     String getGatewayClientIp();
+
+    /** Addresses owned by the current Gateway as seen by its broker, distinct from the host test client's IP. */
+    Set<String> getGatewayBrokerClientAddresses();
 
     String getContainerTomlPath();
 

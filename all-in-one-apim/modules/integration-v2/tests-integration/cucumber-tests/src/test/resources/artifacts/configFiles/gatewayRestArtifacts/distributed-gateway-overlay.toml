@@ -1,4 +1,4 @@
-# Isolated distributed-Gateway configuration for Gateway REST artifact retrieval scenarios only.
+# Distributed Gateway configuration for blocks containing GatewayRestArtifactsRunner.
 # The Gateway REST API authenticates tenant-qualified Basic-auth actors and needs resident IdP metadata from APIM_DB.
 # The distributed Gateway image otherwise uses only SHARED_DB. Runtime URL values are injected by the container
 # because this overlay declares database.apim_db.

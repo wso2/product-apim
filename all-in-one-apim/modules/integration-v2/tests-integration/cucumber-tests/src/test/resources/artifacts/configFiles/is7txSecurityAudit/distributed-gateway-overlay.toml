@@ -1,3 +1,16 @@
-# Distributed Gateway portion of the token-exchange/security-audit overlay.
-[apim.token.validation]
-enforce_type_header_validation = true
+# Gateway configuration for the SecurityAuditCorsDisabledAndSecretRotation block.
+# Allowed scopes, disabled CORS, and the WebSocket catch-all bypass profile mirror the all-in-one block.
+[oauth]
+allowed_scopes = ["^device_.*", "openid", "scope1", "scope2"]
+
+[apim.cors]
+enable = false
+allow_origins = "*"
+allow_methods = ["GET", "PUT", "POST", "DELETE", "PATCH", "OPTIONS"]
+allow_headers = ["authorization", "Access-Control-Allow-Origin", "Content-Type", "SOAPAction"]
+
+[[transport.ws.proxy_profile]]
+target_hosts = ["*"]
+proxy_host = "squid-proxy"
+proxy_port = 3128
+bypass_hosts = ["nodebackend"]

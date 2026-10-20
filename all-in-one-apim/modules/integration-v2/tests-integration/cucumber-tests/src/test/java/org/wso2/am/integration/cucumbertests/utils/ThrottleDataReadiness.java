@@ -17,6 +17,7 @@
 package org.wso2.am.integration.cucumbertests.utils;
 
 import org.wso2.am.testcontainers.ApimRuntime;
+import org.wso2.am.testcontainers.DistributedDynamicApimContainer;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,6 +33,9 @@ import java.util.regex.Pattern;
  * recent {@code Starting WSO2 Carbon} onwards, because the log file survives a graceful restart: every marker must
  * come from the server's current start. Within that section a marker is accepted only when it is newer than any
  * registry/binding failure, so a successful start that later fails cannot hide the failure.</p>
+ *
+ * <p>Distributed runtimes inspect the enabled primary publishers and independently query CP and TM for active
+ * Gateway subscriptions. The log-based consumer checks below apply only to the all-in-one runtime.</p>
  *
  * <p>The Gateway starts its {@code throttleData} consumers in {@code JMSListener.start()}, which logs
  * {@code Started to listen on destination : throttleData} only when the consumers are running within three
@@ -94,6 +98,10 @@ public final class ThrottleDataReadiness {
         String controlPlaneLog = currentStart(runtime.readControlPlaneLogFile(SERVER_LOG));
         String trafficManagerLog = currentStart(runtime.readTrafficManagerLogFile(SERVER_LOG));
         String gatewayLog = currentStart(runtime.readGatewayLogFile(SERVER_LOG));
+
+        if (runtime instanceof DistributedDynamicApimContainer distributed) {
+            return DistributedThrottleDataReadiness.inspect(distributed, controlPlaneLog, trafficManagerLog, gatewayLog);
+        }
 
         boolean controlPlaneHealthy = markerIsCurrent(controlPlaneLog, CONTROL_PLANE_RECOVERED);
         boolean publisherReady = markerIsCurrent(trafficManagerLog, TM_PUBLISHER_READY);

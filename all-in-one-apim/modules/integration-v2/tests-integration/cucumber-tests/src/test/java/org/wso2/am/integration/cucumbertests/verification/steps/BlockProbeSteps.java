@@ -18,6 +18,7 @@
 package org.wso2.am.integration.cucumbertests.verification.steps;
 
 import io.cucumber.java.en.Then;
+import io.cucumber.java.en.When;
 import org.jaxen.JaxenException;
 import org.testcontainers.containers.Container;
 import org.testng.Assert;
@@ -29,7 +30,6 @@ import org.wso2.am.integration.test.utils.Constants;
 import org.wso2.am.testcontainers.ApimRuntime;
 import org.wso2.carbon.automation.engine.context.beans.Tenant;
 import org.wso2.carbon.automation.engine.context.beans.User;
-import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -191,32 +191,41 @@ public class BlockProbeSteps {
 
     /**
      * 5.3: the freshly booted container actually has the tenant - asserted against the live server, by
-     * parsing the response of the legacy {@code "I retrieve existing tenant details"} step (same SOAP).
+     * parsing the response from {@link #iRetrieveExistingTenantDetails()} (same Tenant Management Admin SOAP).
      */
     @Then("the retrieved tenants include {string}")
     public void theRetrievedTenantsInclude(String tenantDomain) throws Exception {
-        HttpResponse response = (HttpResponse) TestContext.get("existingTenantsResponse");
-        Assert.assertNotNull(response,
-                "no tenant-retrieval response in context - run 'I retrieve existing tenant details' first");
-        List<String> domains = Utils.getNodeTextsByXPath(response.getData(),
-                "//*[local-name()='tenantDomain']");
+        @SuppressWarnings("unchecked")
+        List<String> domains = (List<String>) TestContext.get("existingTenantDomains");
+        Assert.assertNotNull(domains,
+                "no tenant-retrieval result in context - run 'I retrieve existing tenant details' first");
         Assert.assertTrue(domains.contains(tenantDomain),
                 "freshly booted container is missing provisioned tenant '" + tenantDomain + "': " + domains);
     }
 
+    @When("I retrieve existing tenant details")
+    public void iRetrieveExistingTenantDetails() throws IOException, JaxenException {
+        TestContext.set("existingTenantDomains", TenantUserProvisioner.retrieveExistingTenantDomains());
+    }
+
     /**
      * 5.3: the freshly booted container actually has the user - asserted against the live server, by
-     * parsing the response of the legacy {@code "I retrieve all existing users ..."} step (same SOAP).
+     * reading the response from {@link #iRetrieveAllExistingUsers(String)} (same RemoteUserStoreManager SOAP).
      */
     @Then("the retrieved users include {string}")
     public void theRetrievedUsersInclude(String username) throws Exception {
-        HttpResponse response = (HttpResponse) TestContext.get("existingTenantUsersResponse");
-        Assert.assertNotNull(response,
-                "no user-retrieval response in context - run 'I retrieve all existing users ...' first");
-        List<String> users = Utils.getNodeTextsByXPath(response.getData(),
-                "//*[local-name()='listUsersResponse']/*[local-name()='return']");
+        @SuppressWarnings("unchecked")
+        List<String> users = (List<String>) TestContext.get("existingTenantUsers");
+        Assert.assertNotNull(users,
+                "no user-retrieval result in context - run 'I retrieve all existing users ...' first");
         Assert.assertTrue(users.contains(username),
                 "freshly booted container is missing provisioned user '" + username + "': " + users);
+    }
+
+    @When("I retrieve all existing users in the tenant domain {string}")
+    public void iRetrieveAllExistingUsers(String tenantDomain) throws IOException, JaxenException {
+        Tenant tenant = Utils.getTenantFromContext(tenantDomain);
+        TestContext.set("existingTenantUsers", TenantUserProvisioner.retrieveExistingUsers(tenant));
     }
 
     /**
@@ -244,11 +253,10 @@ public class BlockProbeSteps {
      */
     @Then("the retrieved users include {string} exactly once")
     public void theRetrievedUsersIncludeExactlyOnce(String username) throws Exception {
-        HttpResponse response = (HttpResponse) TestContext.get("existingTenantUsersResponse");
-        Assert.assertNotNull(response,
-                "no user-retrieval response in context - run 'I retrieve all existing users ...' first");
-        List<String> users = Utils.getNodeTextsByXPath(response.getData(),
-                "//*[local-name()='listUsersResponse']/*[local-name()='return']");
+        @SuppressWarnings("unchecked")
+        List<String> users = (List<String>) TestContext.get("existingTenantUsers");
+        Assert.assertNotNull(users,
+                "no user-retrieval result in context - run 'I retrieve all existing users ...' first");
         long count = users.stream().filter(username::equals).count();
         Assert.assertEquals(count, 1L,
                 "expected user '" + username + "' to exist exactly once after re-provisioning, saw " + count

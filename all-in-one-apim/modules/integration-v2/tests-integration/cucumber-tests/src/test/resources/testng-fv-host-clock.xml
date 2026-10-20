@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+<suite name="Framework Verification - Docker Host Clock" parallel="false">
+    <test name="Clock detection and observer lifecycle">
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.utils.ClockSampleDetectorTest"/>
+            <class name="org.wso2.am.integration.cucumbertests.utils.ClockStabilityVerificationTest"/>
+        </classes>
+    </test>
+</suite>

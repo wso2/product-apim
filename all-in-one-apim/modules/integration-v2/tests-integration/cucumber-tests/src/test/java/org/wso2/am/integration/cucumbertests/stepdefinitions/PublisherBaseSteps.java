@@ -1691,6 +1691,20 @@ public class PublisherBaseSteps {
     }
 
     /**
+     * Sets a scenario-unique document name in the prepared payload. This lets unified-search readiness checks
+     * identify the exact document metadata entry without reusing the unique body token whose presence is the
+     * behavior under test.
+     */
+    @When("I set the prepared document name to {string}")
+    public void iSetThePreparedDocumentName(String name) throws IOException {
+
+        String resolvedName = Utils.resolveContextPlaceholders(name);
+        JSONObject payload = new JSONObject(TestContext.resolve("<newDocumentPayload>").toString());
+        payload.put("name", resolvedName);
+        TestContext.set(Utils.normalizeContextKey("<newDocumentPayload>"), payload.toString());
+    }
+
+    /**
      * Adds a document to an API using the prepared document payload.
      *
      * @param apiID Context key containing the API ID to which the document will be added
