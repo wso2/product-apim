@@ -20,9 +20,10 @@ package org.wso2.am.integration.cucumbertests.runners.block;
 import io.cucumber.testng.CucumberOptions;
 
 /**
- * Consumer-secret ROTATION, which is a capability of the single-client-secret model only. Rides the
- * IntegrationV2-SingleClientSecret block because [oauth.multiple_client_secrets] enable = false selects a
- * container-wide credential model, not a per-scenario option.
+ * Consumer-secret ROTATION, which is a capability of the single-client-secret model only. Rides blocks whose overlay
+ * sets [oauth.multiple_client_secrets] enable = false (IntegrationV2-SecurityAuditCorsDisabledAndSecretRotation,
+ * IntegrationV2-Distributed-SingleClientSecret), because that key selects a container-wide credential model, not a
+ * per-scenario option.
  */
 @CucumberOptions(
         features = "src/test/resources/features/key-manager/consumer_secret_rotation.feature",

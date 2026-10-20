@@ -21,8 +21,8 @@ package org.wso2.am.integration.cucumbertests.runners.block;
 import io.cucumber.testng.CucumberOptions;
 
 /**
- * Runner for WS proxy profile — catch-all profile bypass. Runs in the IntegrationV2-WsProxyCatchAll
- * block whose deployment.toml overlay (wsProxyCatchAll) loads a single catch-all
+ * Runner for WS proxy profile — catch-all profile bypass. Runs in IntegrationV2-SecurityAuditCorsDisabledAndSecretRotation (all-in-one) and
+ * IntegrationV2-Distributed-Gateway-WsProxyCatchAll, whose overlay (wsProxyCatchAll) loads a single catch-all
  * [[transport.ws.proxy_profile]] with target_hosts = ["*"] and bypass_hosts = ["nodebackend"].
  * nodebackend falls through to the catch-all and is bypassed — gateway connects directly.
  * Ports WebSocketProxyProfileTestCase#testBypassHostInCatchAllProfileGosDirect.

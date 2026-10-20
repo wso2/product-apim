@@ -148,6 +148,9 @@ public final class ResourceCleanup {
     /** Generated application key mappings, swept before their owning applications. */
     public static final String CREATED_APPLICATION_KEY_MAPPINGS = "createdApplicationKeyMappings";
 
+    /** WebSub hub registrations, unsubscribed before their owning application subscriptions and APIs. */
+    public static final String CREATED_WEBSUB_SUBSCRIPTIONS = WebSubSubscriptionCleanup.REGISTRATIONS;
+
     /** DevPortal subscriptions, swept before their owning applications. */
     public static final String CREATED_SUBSCRIPTION_IDS = "createdSubscriptionIds";
 
@@ -356,6 +359,7 @@ public final class ResourceCleanup {
             CREATED_SIGNUP_USERNAMES,
             CREATED_APPLICATION_KEY_MAPPINGS,
             CREATED_SUBSCRIPTION_IDS,
+            CREATED_WEBSUB_SUBSCRIPTIONS,
             ORIGINAL_TENANT_CONFIGURATIONS,
             ORIGINAL_KEY_MAPPINGS);
 
@@ -449,6 +453,9 @@ public final class ResourceCleanup {
         if (registration instanceof ApplicationKeyMapping mapping) {
             return mapping.applicationId() + "/" + mapping.keyMappingId();
         }
+        if (registration instanceof WebSubSubscriptionCleanup.Registration webhook) {
+            return webhook.identity();
+        }
         return registration;
     }
 
@@ -483,6 +490,9 @@ public final class ResourceCleanup {
         String baseUrl = baseUrlObj.toString();
 
         try {
+            // WebSub registrations are persisted outside APIM's resource hierarchy, so unsubscribe them while
+            // both the API route and the subscriber's DevPortal subscription are still available.
+            WebSubSubscriptionCleanup.sweep();
             restoreKeyMappings();
             deleteApplicationKeyMappings(baseUrl);
             deleteSubscriptions(baseUrl);

@@ -21,7 +21,7 @@ import io.cucumber.testng.CucumberOptions;
 
 /**
  * Runner for gateway lifecycle-stage invocation semantics: CREATED (internal key) / PUBLISHED / BLOCKED (503) /
- * DEPRECATED (200) / RETIRED (404). Runs in the IntegrationV2-Gateway block (backend started); parallel-safe
+ * DEPRECATED (200) / RETIRED (404). Runs in an IntegrationV2-Gateway-* block (backend started); parallel-safe
  * (own uniquely-created API/app).
  */
 @CucumberOptions(

@@ -131,6 +131,7 @@ Feature: Gateway Subscriptionless Invocation (subscription-validation disabling)
     Then The response status code should be 200
     And I invoke the API at gateway context "{{subValApiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 403 within 120 seconds
     Then The response status code should be 403
+    And The error response should have code "900908" message "Resource forbidden " and description containing "User is NOT authorized to access the Resource. API Subscription validation failed."
 
     # The FIRST application's token STILL invokes successfully: it holds the internal subscription created while
     # validation was disabled, so re-enabling enforcement does not retroactively revoke it. Asserted, not merely
@@ -159,6 +160,7 @@ Feature: Gateway Subscriptionless Invocation (subscription-validation disabling)
     And I extract response field "access_token" and store it as "subValExternalTokenAfterReEnable"
     When I invoke the API at gateway context "{{subValApiContext}}/1.0.0/customers/123/" with method "GET" using access token "subValExternalTokenAfterReEnable" and payload "" until response status code becomes 403 within 120 seconds
     Then The response status code should be 403
+    And The error response should have code "900908" message "Resource forbidden " and description containing "Access failure for API: {{subValApiContext}}/1.0.0, version: 1.0.0 status: (900908) - Resource forbidden"
 
     # Restore the tenant configuration.
     When I update the tenant configuration from "originalTenantConf"

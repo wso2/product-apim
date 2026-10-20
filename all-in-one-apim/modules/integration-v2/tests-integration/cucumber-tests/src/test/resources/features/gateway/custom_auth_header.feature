@@ -2,11 +2,13 @@
 Feature: Gateway Custom Authorization Header
 
   Gateway-plane invocation where the container reads the OAuth token from a custom header instead of the
-  standard Authorization one (the IntegrationV2-CustomAuthHeaderAndAppSharing block overlay sets
+  standard Authorization one (the IntegrationV2-GatewayAuthAndApplicationConfig block overlay sets
   `[apim.oauth_config] auth_header = "Test-Custom-Header"`). A published API invoked with the token in the
   configured custom header succeeds; the same token in the standard Authorization header is not recognised and
   is rejected. Runs in both the super tenant and tenant1.com as the tenant admin (the flow spans publish +
   subscribe + invoke). Teardown via the per-scenario cleanup hook.
+  Applications here are created from create_apim_test_app_with_external_ref.json: the block's overlay declares the required application attribute
+  "External Reference Id", which every application create and update must carry.
 
   @cap:gateway @feat:custom-auth-header @type:smoke @dep:publisher @legacy:CustomAuthHeaderTestCase
   Scenario Outline: Invoke a published API using the configured custom auth header as <actor>

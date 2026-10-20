@@ -1,0 +1,53 @@
+# Overlay for rerunning the FederatedUserJWTTestCase and ExternalIDPJWTTestCase backend-JWT coverage with OAuth token
+# persistence enabled (IntegrationV2-FederatedBackendJwt-TokenPersistence; CP and Gateway of its distributed twin).
+#
+# It combines the backend-JWT and application-attribute settings required by the federated feature, the
+# excluded_claims entry the external-IdP feature asserts, and the token-persistence setting used by the
+# token-persistence suites. Every application attribute has a default, so applications created without
+# attributes are accepted. The External Reference Id default differs from the value the backend-JWT scenarios send,
+# so their exact applicationAttributes assertion proves the sent value, not the default, reaches the claim.
+
+[apim.jwt]
+enable = true
+encoding = "base64"
+claim_dialect = "http://wso2.org/claims"
+header = "X-JWT-Assertion"
+signing_algorithm = "SHA256withRSA"
+
+# The gateway JWT generator copies every claim of a validated external-IdP token into the backend JWT except a
+# restricted set and this list; ExternalIDPJWTTestCase asserts this unmapped remote claim is absent.
+[apim.jwt.gateway_generator]
+excluded_claims = ["http://idp.org/claims/mobileno"]
+
+[apim.devportal]
+enable_empty_values_in_application_attributes = true
+
+[[apim.devportal.application_attributes]]
+required = true
+hidden = false
+default = "unset-external-reference"
+name = "External Reference Id"
+description = "External Reference Id"
+
+[[apim.devportal.application_attributes]]
+required = false
+hidden = false
+name = "Optional attribute"
+description = "Description of Optional attribute"
+
+[[apim.devportal.application_attributes]]
+required = true
+hidden = false
+default = "Yes"
+name = "Sandbox access required"
+description = "Does this Application require access to APIs in the Sandbox environment ? (Yes or No)"
+
+[[apim.devportal.application_attributes]]
+required = true
+hidden = false
+default = "Yes"
+name = "Production access required"
+description = "Does this Application require access to APIs in the Production environment ? (Yes or No)"
+
+[oauth.token_persistence]
+enable = true
