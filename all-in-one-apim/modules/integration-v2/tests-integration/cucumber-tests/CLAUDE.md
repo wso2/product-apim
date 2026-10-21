@@ -452,6 +452,11 @@ distribution defaults. Only reach for an overlay when a feature genuinely needs 
   independently through `AndesAdminService.getSubscriptions`, requires active `throttledata` subscriptions from the
   current Gateway, and checks enabled primary publisher configurations. Disabled HA secondary publishers and
   polling-task slow-start warnings are not readiness evidence. Existing feature steps use the same public gate.
+- **Registry log precision per block.** `registryLogMillisecondPrecision` is boolean, default `false`.
+  On MySQL it changes the block's shared `REG_LOG.REG_LOGGED_TIME` to `TIMESTAMP(3) NOT NULL` after
+  schema seeding and verifies `DATETIME_PRECISION = 3` before APIM/CP boots. It is scoped to the four
+  DevPortal blocks running unified-search indexing assertions; all other blocks retain the shipped schema.
+  Other database types log that it does not apply. See the [parameter reference](../../README.md#registry-activity-timestamp-precision).
 - **CPU cap per block.** `<parameter name="apimCpuLimit" value="1"/>` caps that block's APIM container at the
   given number of CPUs (Docker `--cpus`; fractions such as `1.5` allowed). Without the parameter the container is
   uncapped. It caps only APIM; a block that boots an external IS caps that container with

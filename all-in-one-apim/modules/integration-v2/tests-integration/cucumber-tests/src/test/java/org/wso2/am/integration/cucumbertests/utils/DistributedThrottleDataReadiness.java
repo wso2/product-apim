@@ -39,6 +39,8 @@ final class DistributedThrottleDataReadiness {
                 runtime.getServletHttpsUrl(), "throttleData", gatewayAddresses);
         BrokerSubscriptionReadiness.Result tmConsumer = BrokerSubscriptionReadiness.inspect(
                 runtime.getTrafficManagerManagementHttpsUrl(), "throttleData", gatewayAddresses);
+        BrokerSubscriptionReadiness.Result policyConsumer = BrokerSubscriptionReadiness.inspect(
+                runtime.getServletHttpsUrl(), "notification", runtime.getTrafficManagerBrokerClientAddresses());
         Check blockingPublisher = inspectPublisher(runtime, Component.CP, "blockingEventJMSPublisher.xml",
                 "blockingEventJMSPublisher", "org.wso2.blocking.request.stream", "1.0.0", cpLog);
         Check throttlePublisher = inspectPublisher(runtime, Component.TM, "jmsEventPublisher.xml",
@@ -50,13 +52,14 @@ final class DistributedThrottleDataReadiness {
         boolean registryHealthy = !cpLog.contains("REG_RESOURCE_FK_BY_PATH_ID")
                 && !tmLog.contains("REG_RESOURCE_FK_BY_PATH_ID")
                 && !gatewayLog.contains("REG_RESOURCE_FK_BY_PATH_ID");
-        return new ThrottleDataReadiness.Result(registryHealthy && blockingPublisher.ready(),
+        return new ThrottleDataReadiness.Result(registryHealthy && blockingPublisher.ready() && policyConsumer.ready(),
                 throttlePublisher.ready() && throttlePublisherV11.ready(),
                 cpConsumer.ready() && tmConsumer.ready(), false,
                 "distributed throttle-data: registryHealthy=" + registryHealthy + " gatewayAddresses=" + gatewayAddresses
                         + "\nCP blocking publisher: " + blockingPublisher.diagnostics()
                         + "\nTM primary publisher: " + throttlePublisher.diagnostics()
                         + "\nTM stream 1.1 publisher: " + throttlePublisherV11.diagnostics()
+                        + "\nCP Traffic Manager policy subscription: " + policyConsumer.diagnostics()
                         + "\nCP Gateway subscription: " + cpConsumer.diagnostics()
                         + "\nTM Gateway subscription: " + tmConsumer.diagnostics());
     }

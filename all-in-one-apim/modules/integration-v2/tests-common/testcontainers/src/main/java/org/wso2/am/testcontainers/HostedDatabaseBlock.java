@@ -6,6 +6,9 @@
  */
 package org.wso2.am.testcontainers;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -29,14 +32,17 @@ import java.util.zip.ZipFile;
  */
 public final class HostedDatabaseBlock implements AutoCloseable {
 
+    private static final Logger logger = LoggerFactory.getLogger(HostedDatabaseBlock.class);
+
     public static final String PROFILE_SYSTEM_PROPERTY = "apim.test.db.profile";
     public static final String ENV_FILE_SYSTEM_PROPERTY = "apim.test.db.envFile";
 
     private static final String MYSQL_PROFILE = "mysql";
     private static final String POSTGRESQL_PROFILE = "postgresql";
     private static final String MSSQL_PROFILE = "mssql";
-    private static final String ORACLE_PROFILE = "oracle";
+    private static final String ORACLE_23C_PROFILE = "oracle_23c";
     private static final String ORACLE_RAC_PROFILE = "oracle-rac";
+    private static final String ORACLE_DATABASE_TYPE = "oracle";
     private static final String DB2_PROFILE = "db2";
     private static final String POSTGRESQL_DATABASE_TYPE = "postgre";
     private static final int MYSQL_IDENTIFIER_LIMIT = 64;
@@ -71,7 +77,7 @@ public final class HostedDatabaseBlock implements AutoCloseable {
         databaseType = required(properties, "database.type");
         String expectedType = MYSQL_PROFILE.equals(databaseProfile) ? MYSQL_PROFILE
                 : POSTGRESQL_PROFILE.equals(databaseProfile) ? POSTGRESQL_DATABASE_TYPE
-                : isOracleProfile() ? ORACLE_PROFILE : databaseProfile;
+                : isOracleProfile() ? ORACLE_DATABASE_TYPE : databaseProfile;
         if (!expectedType.equalsIgnoreCase(databaseType)) {
             throw new IllegalArgumentException("Hosted database profile '" + databaseProfile
                     + "' requires database.type=" + expectedType + "; got: " + databaseType);
@@ -146,8 +152,13 @@ public final class HostedDatabaseBlock implements AutoCloseable {
 
     /** Provisions a fresh pair of block-specific databases, refusing to overwrite any existing database. */
     public static HostedDatabaseBlock provision(String label, Path envFile, Path productZip) throws Exception {
+        return provision(label, envFile, productZip, false);
+    }
+
+    public static HostedDatabaseBlock provision(String label, Path envFile, Path productZip,
+                                                boolean registryLogMillisecondPrecision) throws Exception {
         HostedDatabaseBlock block = new HostedDatabaseBlock(label, envFile, productZip);
-        block.createAndSeed();
+        block.createAndSeed(label, registryLogMillisecondPrecision);
         return block;
     }
 
@@ -159,7 +170,7 @@ public final class HostedDatabaseBlock implements AutoCloseable {
     public static String normalizeProfile(String profile) {
         if (profile == null || profile.isBlank()) {
             throw new IllegalArgumentException("Hosted database profile must be set to mysql, postgresql, mssql, "
-                    + "oracle, oracle-rac, or db2");
+                    + "oracle_23c, oracle-rac, or db2");
         }
         String normalized = profile.trim().toLowerCase(Locale.ROOT);
         if ("postgres".equals(normalized) || POSTGRESQL_DATABASE_TYPE.equals(normalized)) {
@@ -169,11 +180,11 @@ public final class HostedDatabaseBlock implements AutoCloseable {
             normalized = ORACLE_RAC_PROFILE;
         }
         if (!MYSQL_PROFILE.equals(normalized) && !POSTGRESQL_PROFILE.equals(normalized)
-                && !MSSQL_PROFILE.equals(normalized) && !ORACLE_PROFILE.equals(normalized)
+                && !MSSQL_PROFILE.equals(normalized) && !ORACLE_23C_PROFILE.equals(normalized)
                 && !ORACLE_RAC_PROFILE.equals(normalized)
                 && !DB2_PROFILE.equals(normalized)) {
             throw new IllegalArgumentException("Unsupported hosted database profile '" + profile
-                    + "'; supported profiles: mysql, postgresql, mssql, oracle, oracle-rac, db2");
+                    + "'; supported profiles: mysql, postgresql, mssql, oracle_23c, oracle-rac, db2");
         }
         return normalized;
     }
@@ -192,10 +203,12 @@ public final class HostedDatabaseBlock implements AutoCloseable {
         return sharedDatabase;
     }
 
-    private void createAndSeed() throws Exception {
+    private void createAndSeed(String label, boolean registryLogMillisecondPrecision) throws Exception {
         Class.forName(databaseDriver);
         List<String> created = new ArrayList<>();
+        String schemaProfile;
         try (Connection connection = DriverManager.getConnection(adminUrl, provisionUsername, provisionPassword)) {
+            schemaProfile = schemaProfileName();
             createDatabase(connection, apimDatabase, created);
             createDatabase(connection, sharedDatabase, created);
         } catch (Exception failure) {
@@ -203,9 +216,15 @@ public final class HostedDatabaseBlock implements AutoCloseable {
             throw failure;
         }
         try {
-            String schemaProfile = schemaProfileName();
+            logger.info("Hosted database '{}' selected APIM schema scripts '{}' for profile '{}'",
+                    apimDatabase, schemaProfile, databaseProfile);
+            logger.info("Hosted database '{}' selected shared schema scripts '{}' for profile '{}'",
+                    sharedDatabase, schemaProfile, databaseProfile);
             executeSchema(apimDatabase, "/dbscripts/apimgt/" + schemaProfile + ".sql");
             executeSchema(sharedDatabase, "/dbscripts/" + schemaProfile + ".sql");
+            RegistryLogTimestampPrecision.configure(registryLogMillisecondPrecision, databaseType, label,
+                    sharedDatabase, () -> DriverManager.getConnection(provisionJdbcUrl(sharedDatabase),
+                            provisionUsername, provisionPassword));
         } catch (Exception failure) {
             dropCreatedDatabases(List.of(apimDatabase, sharedDatabase), failure);
             throw failure;
@@ -230,6 +249,10 @@ public final class HostedDatabaseBlock implements AutoCloseable {
                 String collation = MSSQL_PROFILE.equals(databaseProfile) ? " COLLATE Latin1_General_CS_AS" : "";
                 statement.execute("CREATE DATABASE " + quoteIdentifier(database) + collation);
                 created.add(database);
+                if (MSSQL_PROFILE.equals(databaseProfile)) {
+                    statement.execute("ALTER DATABASE " + quoteIdentifier(database)
+                            + " SET READ_COMMITTED_SNAPSHOT ON");
+                }
             }
         }
     }
@@ -334,11 +357,14 @@ public final class HostedDatabaseBlock implements AutoCloseable {
     }
 
     private boolean isOracleProfile() {
-        return ORACLE_PROFILE.equals(databaseProfile) || ORACLE_RAC_PROFILE.equals(databaseProfile);
+        return ORACLE_23C_PROFILE.equals(databaseProfile) || ORACLE_RAC_PROFILE.equals(databaseProfile);
     }
 
     private String schemaProfileName() {
-        return ORACLE_RAC_PROFILE.equals(databaseProfile) ? "oracle_rac" : databaseProfile;
+        if (ORACLE_RAC_PROFILE.equals(databaseProfile)) {
+            return "oracle_rac";
+        }
+        return databaseProfile;
     }
 
     private String provisionJdbcUrl(String database) {

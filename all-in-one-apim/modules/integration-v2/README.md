@@ -17,7 +17,7 @@ Supported hosted profiles are:
 | `mysql` | `mysql` | MySQL 8.4 in Testgrid |
 | `postgresql` | `postgre` | PostgreSQL 16 in Testgrid |
 | `mssql` | `mssql` | SQL Server 2022 in Testgrid |
-| `oracle` | `oracle` | Oracle Free in Testgrid |
+| `oracle_23c` | `oracle` | Oracle Free 23 in Testgrid, using native BOOLEAN schema scripts |
 | `oracle-rac` | `oracle` | Uses an externally managed Oracle RAC SCAN/service endpoint |
 | `db2` | `db2` | Db2 LUW; the Testgrid profile provisions Db2 Community Edition |
 
@@ -32,6 +32,23 @@ without rebuilding the product images.
 See the [hosted MSSQL guide](docs/devs/hosted-mssql.md) for SQL Server setup and local amd64 Ubuntu notes, the
 [hosted Db2 guide](docs/devs/hosted-db2.md) for Db2 setup and local Colima notes, and the
 [Oracle RAC guide](docs/devs/hosted-oracle-rac.md) for external RAC configuration and its verification limits.
+
+## Registry activity timestamp precision
+
+The TestNG block parameter `registryLogMillisecondPrecision` is boolean and defaults to `false`.
+On MySQL, opting in changes the block's shared-database `REG_LOG.REG_LOGGED_TIME` to
+`TIMESTAMP(3) NOT NULL` after schema seeding and before APIM/CP boots. Provisioning reads
+`INFORMATION_SCHEMA.COLUMNS` back and requires `DATETIME_PRECISION = 3`. Other database types
+log that the parameter does not apply and retain their schema.
+
+The shipped MySQL script uses second-precision `TIMESTAMP`, while the registry indexer advances
+an activity timestamp cursor and queries with a strict `>` lower bound. Separate flushes can store
+different caller timestamps in the same second and exclude a later activity. Millisecond precision
+preserves those distinct timestamps; it does not prevent independently reordered producer events.
+
+The parameter is enabled only on the regular and email-username DevPortal blocks in both V2 suites,
+which run `DevPortalUnifiedSearchRunner` and assert registry indexing. It applies to hosted MySQL
+profiles and the distributed block-owned MySQL database. All other blocks use the shipped schema.
 
 ## JaCoCo coverage
 

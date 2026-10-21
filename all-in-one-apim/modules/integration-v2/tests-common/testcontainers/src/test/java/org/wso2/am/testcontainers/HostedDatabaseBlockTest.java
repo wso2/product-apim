@@ -22,6 +22,16 @@ public class HostedDatabaseBlockTest {
     }
 
     @Test
+    public void acceptsOracle23cProfile() {
+        Assert.assertEquals(HostedDatabaseBlock.normalizeProfile("oracle_23c"), "oracle_23c");
+    }
+
+    @Test(expectedExceptions = IllegalArgumentException.class)
+    public void rejectsUnqualifiedOracleProfile() {
+        HostedDatabaseBlock.normalizeProfile("oracle");
+    }
+
+    @Test
     public void splitsDb2SuffixTerminatorsWithoutSplittingTriggerBodies() throws Exception {
         List<String> statements = splitDb2("CREATE TABLE ITEMS (ID INTEGER)/\n"
                 + "CREATE SEQUENCE ITEMS_SEQ START WITH 1\n/\n"

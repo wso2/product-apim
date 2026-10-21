@@ -13,6 +13,8 @@
     <!-- Keep UnifiedSearch first and throttling enforcement last to isolate their runtime state. -->
     <test name="IntegrationV2-EmailUserName-DevPortal" parallel="classes" thread-count="1">
         <parameter name="blockLabel" value="email-username-devportal"/>
+        <!-- Millisecond MySQL registry activity timestamps for indexing assertions. -->
+        <parameter name="registryLogMillisecondPrecision" value="true"/>
         <parameter name="apimCpuLimit" value="1"/>
         <parameter name="initTenantUsers" value="true"/>
         <parameter name="emailUserMode" value="true"/>
@@ -155,6 +157,8 @@
          tags each tenant admin with an organization; neither is removed when the runner finishes. -->
     <test name="IntegrationV2-DevPortal" parallel="classes" thread-count="1">
         <parameter name="blockLabel" value="devportal"/>
+        <!-- Millisecond MySQL registry activity timestamps for indexing assertions. -->
+        <parameter name="registryLogMillisecondPrecision" value="true"/>
         <parameter name="apimCpuLimit" value="1"/>
         <parameter name="initTenantUsers" value="true"/>
         <parameter name="initSecondaryUserStore" value="true"/>

@@ -68,7 +68,9 @@ public class DistributedLifecycleListener extends BlockLifecycleListener {
         // Every distributed Gateway starts both broker consumers, independently of the block's readiness flag.
         // Establish the throttle topic and Andes subscription collection while CP is the only broker writer, before
         // TM and Gateway can concurrently create the jms.subscriptions collection on first subscription.
-        DistributedDynamicApimContainer runtime = new DistributedDynamicApimContainer(label, blockNetwork);
+        DistributedDynamicApimContainer runtime = new DistributedDynamicApimContainer(label, blockNetwork)
+                .withRegistryLogMillisecondPrecision(
+                        Boolean.parseBoolean(param(context, PARAM_REGISTRY_LOG_MILLISECOND_PRECISION)));
         return runtime.withControlPlaneInitializer(baseUrl -> {
             TenantUserProvisioner.addSuperTenant();
             User actor = Identity.resolveActor("admin");

@@ -3,7 +3,10 @@
 The all-in-one `BlockLifecycleListener` accepts `-Dapim.test.db.profile=mssql`. Start the SQL Server instance
 before Maven; the framework owns only the block databases. It creates separate APIM and Shared databases with
 the case-sensitive `Latin1_General_CS_AS` collation, loads the matching schema scripts from the supplied APIM
-distribution ZIP, and drops the databases at block teardown. The distributed suite does not consume this profile.
+distribution ZIP, enables `READ_COMMITTED_SNAPSHOT` on both databases, and drops the databases at block teardown.
+Row-versioned reads prevent readers from waiting on concurrent writers at the default `READ COMMITTED` isolation
+level while control-plane requests and background tasks update API metadata. The distributed suite does not consume
+this profile.
 
 Copy `tests-integration/cucumber-tests/src/test/resources/artifacts/configFiles/basic/database-mssql.env.example`
 to a private file and replace its credentials and endpoints. The provisioning account needs permission to create

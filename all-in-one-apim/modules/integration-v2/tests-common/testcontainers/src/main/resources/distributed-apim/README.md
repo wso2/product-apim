@@ -230,6 +230,12 @@ initialization, backend initialization, external identity-server startup, and
 email mode remain lifecycle concerns and are handled by the distributed
 listener/composite.
 
+`registryLogMillisecondPrecision` is a boolean block parameter, default `false`. The two DevPortal
+blocks asserting registry indexing enable it to provision and verify `TIMESTAMP(3)` on the shared
+MySQL `REG_LOG.REG_LOGGED_TIME` before CP starts. All other blocks keep the shipped schema. See the
+[integration-v2 parameter reference](../../../../../../README.md#registry-activity-timestamp-precision)
+for the strict timestamp-cursor rationale and hosted database behavior.
+
 ## Suite layout
 
 `tests-integration/cucumber-tests/src/test/resources/testng-v2.xml` defines the block and runner layout for both

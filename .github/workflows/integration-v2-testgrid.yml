@@ -13,7 +13,7 @@ on:
           - mysql
           - postgresql
           - mssql
-          - oracle
+          - oracle_23c
           - oracle-rac
           - db2
 
@@ -278,7 +278,7 @@ jobs:
           database.runtime.password=$runtime_password
           database.validationQuery=SELECT 1 FROM DUAL
           ENV
-          elif [[ "$DATABASE_PROFILE" == oracle ]]; then
+          elif [[ "$DATABASE_PROFILE" == oracle_23c ]]; then
             # Oracle user passwords require mixed case, digits, and special characters by default.
             root_password="Aa1!$(openssl rand -hex 28)"
             runtime_password="Bb2!$(openssl rand -hex 28)"

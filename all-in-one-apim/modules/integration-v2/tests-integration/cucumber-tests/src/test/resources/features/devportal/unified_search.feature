@@ -65,6 +65,7 @@ Feature: DevPortal Unified Search
     When I retrieve the "apis" resource with id "usApiId"
     And I extract response field "name" and store it as "usApiName"
     And I wait until the DevPortal API index contains API "usApiId" named "{{usApiName}}" within 120 seconds
+    And I unified-search the "publisher" plane for "name:{{usApiName}}" until API "usApiId" is present within 120 seconds
     # Legacy ContentSearchTestCase first warmed the Publisher API index in its preceding search test. Keep that
     # prerequisite explicit here so document-content indexing is not started while the Publisher index is still cold.
     And I search Publisher APIs with content query "name:{{usApiName}}" until the result count is 1 within 120 seconds
@@ -78,6 +79,12 @@ Feature: DevPortal Unified Search
     And I set the prepared document name to "{{usDocName}}"
     And I add the document to API "usApiId"
     Then The response status code should be 201
+    When I retrieve document with "documentID" for "usApiId"
+    Then The response status code should be 200
+    And The value of response field "documentId" should be "{{documentID}}"
+    And The value of response field "name" should be "{{usDocName}}"
+    And The value of response field "type" should be "HOWTO"
+    And The value of response field "sourceType" should be "INLINE"
     # Wait for document creation to reach the Publisher index before submitting its content update.
     And I unified-search the "publisher" plane for "content:{{usDocName}}" until document "documentID" of API "usApiId" is present within 120 seconds
     When I add inline content "This is a sample API to test unified search feature - {{usDocToken}}" to document "documentID" of API "usApiId"
@@ -201,6 +208,12 @@ Feature: DevPortal Unified Search
     And I set the prepared document name to "{{ssDocIndexName}}"
     And I add the document to API "ssDocApiId"
     Then The response status code should be 201
+    When I retrieve document with "documentID" for "ssDocApiId"
+    Then The response status code should be 200
+    And The value of response field "documentId" should be "{{documentID}}"
+    And The value of response field "name" should be "{{ssDocIndexName}}"
+    And The value of response field "type" should be "HOWTO"
+    And The value of response field "sourceType" should be "INLINE"
     # Let the metadata-only registry index update settle before posting inline content, which triggers a second
     # update for the same document. This keeps the two asynchronous index events from racing each other.
     And I unified-search the "publisher" plane for "content:{{ssDocIndexName}}" until document "documentID" of API "ssDocApiId" is present within 120 seconds
@@ -263,6 +276,12 @@ Feature: DevPortal Unified Search
     And I set the prepared document name to "{{docVisDocName}}"
     And I add the document to API "docVisApiId"
     Then The response status code should be 201
+    When I retrieve document with "documentID" for "docVisApiId"
+    Then The response status code should be 200
+    And The value of response field "documentId" should be "{{documentID}}"
+    And The value of response field "name" should be "{{docVisDocName}}"
+    And The value of response field "type" should be "HOWTO"
+    And The value of response field "sourceType" should be "INLINE"
     # Serialize document creation and the subsequent content update through the Publisher index.
     And I unified-search the "publisher" plane for "content:{{docVisDocName}}" until document "documentID" of API "docVisApiId" is present within 120 seconds
     When I add inline content "Restricted document content {{docVisToken}}" to document "documentID" of API "docVisApiId"
@@ -301,6 +320,12 @@ Feature: DevPortal Unified Search
     And I set the prepared document name to "{{usShapeDocName}}"
     And I add the document to API "usShapeApiId"
     Then The response status code should be 201
+    When I retrieve document with "documentID" for "usShapeApiId"
+    Then The response status code should be 200
+    And The value of response field "documentId" should be "{{documentID}}"
+    And The value of response field "name" should be "{{usShapeDocName}}"
+    And The value of response field "type" should be "HOWTO"
+    And The value of response field "sourceType" should be "INLINE"
     # Wait for this exact document's metadata to be indexed before posting its content, so the two writes cannot
     # race in the asynchronous document indexer.
     And I unified-search the "publisher" plane for "content:{{usShapeDocName}}" until document "documentID" of API "usShapeApiId" is present within 120 seconds
@@ -352,6 +377,12 @@ Feature: DevPortal Unified Search
     And I set the prepared document name to "{{usDelDocIndexName}}"
     And I add the document to API "usDelApiId"
     Then The response status code should be 201
+    When I retrieve document with "documentID" for "usDelApiId"
+    Then The response status code should be 200
+    And The value of response field "documentId" should be "{{documentID}}"
+    And The value of response field "name" should be "{{usDelDocIndexName}}"
+    And The value of response field "type" should be "HOWTO"
+    And The value of response field "sourceType" should be "INLINE"
     # Wait for the created metadata entry before the inline-content update to avoid overlapping index events.
     And I unified-search the "devportal" plane for "content:{{usDelDocIndexName}}" until document "documentID" of API "usDelApiId" is present within 120 seconds
     When I add inline content "delete probe body {{usDelToken}}" to document "documentID" of API "usDelApiId"

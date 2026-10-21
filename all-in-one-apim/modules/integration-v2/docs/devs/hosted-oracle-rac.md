@@ -24,8 +24,9 @@ The Testgrid workflow adds an `oracle-rac` database choice. Configure these repo
 * `ORACLE_RAC_PROVISION_PASSWORD`: its password.
 
 The Testgrid runner uses the supplied endpoint and does not launch or own the RAC server. Make sure the selected
-GitHub runner has network access to the RAC listener. The ordinary `oracle` choice continues to provision the
-Oracle Free container and uses `oracle.sql` scripts.
+GitHub runner has network access to the RAC listener. The `oracle_23c` choice provisions Oracle Free 23 and applies
+`oracle_23c.sql` and `apimgt/oracle_23c.sql`, which define Oracle 23 native `BOOLEAN` columns. The `oracle-rac`
+profile remains separate and always uses its RAC-specific `oracle_rac.sql` scripts.
 
 The local RAC-profile smoke test can use an Oracle Free container as a practical way to exercise the framework's
 per-block schema creation, RAC-specific product scripts, APIM startup, and cleanup. It does not verify RAC SCAN

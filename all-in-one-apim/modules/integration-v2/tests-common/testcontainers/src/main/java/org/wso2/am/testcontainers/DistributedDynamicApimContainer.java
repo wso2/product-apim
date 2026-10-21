@@ -223,6 +223,11 @@ public class DistributedDynamicApimContainer implements ApimRuntime {
         return this;
     }
 
+    public DistributedDynamicApimContainer withRegistryLogMillisecondPrecision(boolean enabled) {
+        mysql.withRegistryLogMillisecondPrecision(label, enabled);
+        return this;
+    }
+
     @Override
     public void start() {
         try {
@@ -478,14 +483,23 @@ public class DistributedDynamicApimContainer implements ApimRuntime {
 
     /** Gateway's address seen by this block's brokers, distinct from the host client's bridge address. */
     public String getGatewayBrokerClientAddress() {
+        return getBrokerClientAddress(gateway, "Gateway");
+    }
+
+    /** Traffic Manager addresses used to identify its policy-notification subscriptions on CP. */
+    public Set<String> getTrafficManagerBrokerClientAddresses() {
+        return Set.of(getBrokerClientAddress(tm, "Traffic Manager"));
+    }
+
+    private String getBrokerClientAddress(GenericContainer<?> component, String name) {
         for (com.github.dockerjava.api.model.ContainerNetwork value
-                : gateway.getContainerInfo().getNetworkSettings().getNetworks().values()) {
+                : component.getContainerInfo().getNetworkSettings().getNetworks().values()) {
             if (network.getId().equals(value.getNetworkID())
                     && value.getIpAddress() != null && !value.getIpAddress().isBlank()) {
                 return value.getIpAddress();
             }
         }
-        throw new IllegalStateException("Could not determine Gateway address on the block's private network");
+        throw new IllegalStateException("Could not determine " + name + " address on the block's private network");
     }
 
     /** Reads the effective configuration of one component for infrastructure readiness checks. */

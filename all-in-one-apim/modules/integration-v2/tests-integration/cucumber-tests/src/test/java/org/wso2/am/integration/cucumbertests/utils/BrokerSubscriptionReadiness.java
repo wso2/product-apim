@@ -40,7 +40,7 @@ final class BrokerSubscriptionReadiness {
     private BrokerSubscriptionReadiness() {
     }
 
-    static Result inspect(String brokerBaseUrl, String topic, Set<String> gatewayAddresses) {
+    static Result inspect(String brokerBaseUrl, String topic, Set<String> consumerAddresses) {
         User actor = Identity.gatewayManagementAdmin();
         try {
             SimpleHTTPClient client = SimpleHTTPClient.getInstance();
@@ -48,20 +48,20 @@ final class BrokerSubscriptionReadiness {
                     brokerBaseUrl + "services/AndesAdminService", ENVELOPE, "urn:getSubscriptions",
                     actor.getUserName(), actor.getPassword()));
             Result result = inspectResponse(response == null ? 0 : response.getResponseCode(),
-                    response == null ? null : response.getData(), topic, gatewayAddresses);
+                    response == null ? null : response.getData(), topic, consumerAddresses);
             return new Result(result.ready(), "broker=" + brokerBaseUrl + " " + result.diagnostics());
         } catch (IOException e) {
             return new Result(false, "broker=" + brokerBaseUrl + " topic=" + topic + ": " + e.getMessage());
         }
     }
 
-    static Result inspectResponse(int status, String body, String topic, Set<String> gatewayAddresses) {
+    static Result inspectResponse(int status, String body, String topic, Set<String> consumerAddresses) {
         if (status != 200) {
             return new Result(false, "topic=" + topic + " HTTP " + status + " " + abbreviate(body));
         }
-        if (topic == null || topic.isBlank() || gatewayAddresses == null || gatewayAddresses.isEmpty()
-                || gatewayAddresses.stream().anyMatch(address -> address == null || address.isBlank())) {
-            return new Result(false, "Missing expected topic or Gateway broker-client addresses");
+        if (topic == null || topic.isBlank() || consumerAddresses == null || consumerAddresses.isEmpty()
+                || consumerAddresses.stream().anyMatch(address -> address == null || address.isBlank())) {
+            return new Result(false, "Missing expected topic or consumer broker-client addresses");
         }
         try {
             Document document = ReadinessXml.parse(body);
@@ -72,7 +72,7 @@ final class BrokerSubscriptionReadiness {
             }
             NodeList subscriptions = ((Element) responses.item(0)).getElementsByTagNameNS("*", "return");
             List<String> activeOrigins = new ArrayList<>();
-            List<String> gatewayOrigins = new ArrayList<>();
+            List<String> consumerOrigins = new ArrayList<>();
             for (int i = 0; i < subscriptions.getLength(); i++) {
                 Element subscription = (Element) subscriptions.item(i);
                 // The shipped MBean merges active and inactive sets despite its isActive argument.
@@ -84,13 +84,13 @@ final class BrokerSubscriptionReadiness {
                 }
                 String origin = ReadinessXml.childText(subscription, "originHostAddress");
                 activeOrigins.add(origin);
-                if (gatewayAddresses.stream().anyMatch(address -> origin.startsWith("/" + address + ":")
+                if (consumerAddresses.stream().anyMatch(address -> origin.startsWith("/" + address + ":")
                         || origin.startsWith("/[" + address + "]:"))) {
-                    gatewayOrigins.add(origin);
+                    consumerOrigins.add(origin);
                 }
             }
-            return new Result(!gatewayOrigins.isEmpty(), "topic=" + topic + " active origins=" + activeOrigins
-                    + " expected Gateway=" + gatewayAddresses + " matched Gateway=" + gatewayOrigins);
+            return new Result(!consumerOrigins.isEmpty(), "topic=" + topic + " active origins=" + activeOrigins
+                    + " expected consumer=" + consumerAddresses + " matched consumer=" + consumerOrigins);
         } catch (IOException e) {
             return new Result(false, "topic=" + topic + " invalid broker response: " + e.getMessage());
         }

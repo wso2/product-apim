@@ -209,6 +209,7 @@ The distributed base overlays must cover database settings, CP event publishing,
 |---|---|
 | blockLabel | Same block label and scope |
 | initTenantUsers | Provision through CP management URL |
+| registryLogMillisecondPrecision | Boolean, default `false`; verifies `TIMESTAMP(3)` for shared MySQL REG_LOG before CP boot. Enabled only on the two DevPortal blocks asserting registry indexing; other blocks retain the shipped schema. See the [parameter reference](../../README.md#registry-activity-timestamp-precision). |
 | initSecondaryUserStore | Same behavior through ApimRuntime |
 | initBackend | Attach or route the shared backend so Universal Gateway can reach it |
 | bootExternalIdentityServer | Start external IS on the block network and configure CP trust |

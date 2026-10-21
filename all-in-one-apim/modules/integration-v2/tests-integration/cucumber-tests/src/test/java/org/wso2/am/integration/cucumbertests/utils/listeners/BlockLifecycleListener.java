@@ -25,6 +25,7 @@ import org.testng.ITestListener;
 import org.testng.xml.XmlTest;
 import org.wso2.am.integration.cucumbertests.utils.CoverageSupport;
 import org.wso2.am.integration.cucumbertests.utils.GracefulServerRestart;
+import org.wso2.am.integration.cucumbertests.utils.GatewayTenantLoadGate;
 import org.wso2.am.integration.cucumbertests.utils.Identity;
 import org.wso2.am.integration.cucumbertests.utils.IntegrationActors;
 import org.wso2.am.integration.cucumbertests.utils.ModulePathResolver;
@@ -41,12 +42,14 @@ import org.wso2.am.integration.test.utils.Constants;
 import org.testcontainers.containers.Network;
 import org.wso2.am.testcontainers.DynamicApimContainer;
 import org.wso2.am.testcontainers.ApimRuntime;
+import org.wso2.am.testcontainers.DistributedDynamicApimContainer;
 import org.wso2.am.testcontainers.CpuLimit;
 import org.wso2.am.testcontainers.DynamicISContainer;
 import org.wso2.am.testcontainers.DynamicPlatformGatewayContainer;
 import org.wso2.am.testcontainers.JacocoCoverage;
 import org.wso2.am.testcontainers.DynamicSolaceBroker;
 import org.wso2.am.testcontainers.HostedDatabaseBlock;
+import org.wso2.am.testcontainers.RegistryLogTimestampPrecision;
 import org.wso2.am.testcontainers.NodeAppServer;
 import org.wso2.am.testcontainers.SquidProxyServer;
 
@@ -56,6 +59,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Map;
 import java.util.Optional;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Semaphore;
 
@@ -79,7 +83,10 @@ public class BlockLifecycleListener implements ITestListener {
     /** Must match {@code BaseBlockRunner.BOOT_ERROR_ATTRIBUTE}. */
     static final String BOOT_ERROR_ATTRIBUTE = "bootError";
 
-    static final String CONTAINER_KEY = "blockApimContainer";
+    public static final String CONTAINER_KEY = "blockApimContainer";
+    static final String GATEWAY_TENANTS_KEY = "blockGatewayTenants";
+    private static final String THROTTLE_DATA_READINESS_SECONDS_KEY = "blockThrottleDataReadinessSeconds";
+    static final String BLOCK_LABEL_KEY = "blockLabel";
     private static final String HOSTED_DATABASE_KEY = "blockHostedDatabase";
     static final String BASE_URL_KEY = "baseUrl";
     static final String BASE_GATEWAY_URL_KEY = "baseGatewayUrl";
@@ -116,6 +123,8 @@ public class BlockLifecycleListener implements ITestListener {
             "src/test/resources/artifacts/configFiles/emailUserName/deployment.toml";
     /** When {@code true}, onStart provisions tenants/users into the block's own container after readiness. */
     static final String PARAM_INIT_TENANT_USERS = "initTenantUsers";
+    /** Opt-in millisecond precision for the block's MySQL registry activity timestamps. */
+    static final String PARAM_REGISTRY_LOG_MILLISECOND_PRECISION = "registryLogMillisecondPrecision";
     /** When {@code true}, provisions a second non-super tenant for cross-tenant subscription coverage. */
     static final String PARAM_INIT_CROSS_TENANT_PEER = "initCrossTenantPeer";
     /**
@@ -402,7 +411,7 @@ public class BlockLifecycleListener implements ITestListener {
                         + " but does not set " + PARAM_BOOT_EXTERNAL_IS + "=true");
             }
 
-            provisionHostedDatabaseIfSelected(label);
+            provisionHostedDatabaseIfSelected(label, context);
             container = createApimContainer(label, context, blockNetwork);
             configureServerFiles(context, container);
             if (apimCpuLimit.isPresent()) {
@@ -470,6 +479,18 @@ public class BlockLifecycleListener implements ITestListener {
             if (Boolean.parseBoolean(param(context, PARAM_INIT_CROSS_TENANT_PEER))) {
                 provisionCrossTenantPeer();
             }
+            List<String> gatewayTenants = new java.util.ArrayList<>();
+            if (Boolean.parseBoolean(param(context, PARAM_INIT_TENANT_USERS))) {
+                gatewayTenants.add("tenant1.com");
+            }
+            if (Boolean.parseBoolean(param(context, PARAM_INIT_CROSS_TENANT_PEER))) {
+                gatewayTenants.add("crossconsumer.com");
+            }
+            if (!gatewayTenants.isEmpty()) {
+                TestContext.setShared(GATEWAY_TENANTS_KEY, List.copyOf(gatewayTenants));
+                TestContext.setShared(BLOCK_LABEL_KEY, label);
+                GatewayTenantLoadGate.await(container, label, gatewayTenants);
+            }
             // Runtime secondary user store (replaces the seeded .mv.db fixture). After tenant provisioning so the
             // tenant admin SOAP credentials exist. Registered + seeded for BOTH tenants — one shared H2 DB,
             // isolated by UM_TENANT_ID — so scenarios exercise the ×4 matrix (2 tenants × 2 store-user actors).
@@ -489,6 +510,7 @@ public class BlockLifecycleListener implements ITestListener {
                     throw new IllegalStateException("Throttle-data infrastructure for block '" + label
                             + "' did not become ready within " + timeoutSeconds + "s: " + readiness.diagnostics());
                 }
+                TestContext.setShared(THROTTLE_DATA_READINESS_SECONDS_KEY, timeoutSeconds);
             }
 
             String listenerSslReloadSeconds = param(context, PARAM_LISTENER_SSL_RELOAD_READINESS_SECONDS);
@@ -916,6 +938,35 @@ public class BlockLifecycleListener implements ITestListener {
         logger.info("Provisioned cross-tenant peer tenant '" + tenantDomain + "' and subscriber actor");
     }
 
+    /** Re-establishes tenant readiness after a Gateway JVM restart when this block provisions tenants. */
+    public static void awaitGatewayTenantsAfterRestart() {
+
+        Object runtime = TestContext.get(CONTAINER_KEY);
+        Object tenants = TestContext.get(GATEWAY_TENANTS_KEY);
+        if (runtime instanceof ApimRuntime apimRuntime && tenants instanceof List<?> tenantList
+                && !tenantList.isEmpty()) {
+            List<String> domains = tenantList.stream().map(String::valueOf).toList();
+            Object label = TestContext.get(BLOCK_LABEL_KEY);
+            GatewayTenantLoadGate.await(apimRuntime, label == null ? "unknown" : label.toString(), domains);
+        }
+    }
+
+    /** Re-establishes the block's configured distributed throttle-data readiness after a component restart. */
+    public static void awaitThrottleDataAfterRestart() throws InterruptedException {
+        Object runtime = TestContext.get(CONTAINER_KEY);
+        Object timeout = TestContext.get(THROTTLE_DATA_READINESS_SECONDS_KEY);
+        if (runtime instanceof DistributedDynamicApimContainer distributed && timeout instanceof Integer seconds) {
+            ThrottleDataReadiness.Result readiness = ThrottleDataReadiness.await(distributed, seconds);
+            if (readiness == null || !readiness.ready()) {
+                throw new IllegalStateException("Distributed throttle-data restart gate failed for block '"
+                        + TestContext.get(BLOCK_LABEL_KEY) + "' within " + seconds + "s: "
+                        + (readiness == null ? "no readiness sample" : readiness.diagnostics()));
+            }
+            logger.info("Distributed throttle-data restart gate passed for block '"
+                    + TestContext.get(BLOCK_LABEL_KEY) + "': " + readiness.diagnostics());
+        }
+    }
+
     /**
      * Starts THIS block's own external WSO2 IS container on the block's private network (alias {@code wso2is}),
      * waits for its OIDC discovery to serve 200, and publishes its host-mapped base URL under
@@ -1003,12 +1054,16 @@ public class BlockLifecycleListener implements ITestListener {
         return true;
     }
 
-    private void provisionHostedDatabaseIfSelected(String label) throws Exception {
+    private void provisionHostedDatabaseIfSelected(String label, ITestContext context) throws Exception {
         if (!supportsHostedDatabaseProfile()) {
             return;
         }
         String profile = System.getProperty(HostedDatabaseBlock.PROFILE_SYSTEM_PROPERTY);
+        boolean registryLogMillisecondPrecision =
+                Boolean.parseBoolean(param(context, PARAM_REGISTRY_LOG_MILLISECOND_PRECISION));
         if (profile == null || profile.isBlank()) {
+            RegistryLogTimestampPrecision.configure(registryLogMillisecondPrecision, "h2", label,
+                    "default shared database", null);
             return;
         }
         String normalizedProfile = HostedDatabaseBlock.normalizeProfile(profile);
@@ -1022,7 +1077,8 @@ public class BlockLifecycleListener implements ITestListener {
             throw new IllegalStateException("Hosted database profile requires -Dapim.product.zip.path pointing to the "
                     + "APIM distribution ZIP used by this test run");
         }
-        HostedDatabaseBlock database = HostedDatabaseBlock.provision(label, envFile, Path.of(productZipArgument));
+        HostedDatabaseBlock database = HostedDatabaseBlock.provision(label, envFile, Path.of(productZipArgument),
+                registryLogMillisecondPrecision);
         TestContext.setShared(HOSTED_DATABASE_KEY, database);
         logger.info("Block '" + label + "' provisioned hosted " + normalizedProfile + " databases APIM='"
                 + database.apimDatabaseName() + "' Shared='" + database.sharedDatabaseName() + "'");

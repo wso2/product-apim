@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.sql.DriverManager;
 import java.time.Duration;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -51,6 +52,8 @@ public class DistributedMySqlContainer extends GenericContainer<DistributedMySql
 
     private final Map<String, Path> schemaFiles = new LinkedHashMap<>();
     private boolean initialized;
+    private boolean registryLogMillisecondPrecision;
+    private String blockLabel;
 
     public DistributedMySqlContainer(Network network) {
         this(DEFAULT_IMAGE, network);
@@ -111,11 +114,20 @@ public class DistributedMySqlContainer extends GenericContainer<DistributedMySql
         }
     }
 
+    public DistributedMySqlContainer withRegistryLogMillisecondPrecision(String label, boolean enabled) {
+        blockLabel = Objects.requireNonNull(label, "label");
+        registryLogMillisecondPrecision = enabled;
+        return this;
+    }
+
     @Override
     public void start() {
         super.start();
         try {
             initializeDatabases();
+            RegistryLogTimestampPrecision.configure(registryLogMillisecondPrecision, "mysql", blockLabel,
+                    SHARED_DATABASE, () -> DriverManager.getConnection(getHostJdbcUrl(SHARED_DATABASE),
+                            DATABASE_USER, DATABASE_PASSWORD));
             initialized = true;
         } catch (Exception e) {
             stop();

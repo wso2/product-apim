@@ -207,6 +207,91 @@ public class WebSocketInvocationSteps {
         expectRejection(buildWsUrl(context), "Authorization", "Bearer " + token, timeoutSeconds);
     }
 
+    @When("I wait until WebSocket API at gateway ws context {string} echoes message {string} with access token {string} as {string} within {int} seconds")
+    public void waitUntilWebSocketEchoWithToken(String context, String message, String accessToken,
+                                                String expectedEcho, int timeoutSeconds) throws Exception {
+        String token = TestContext.resolve(accessToken).toString();
+        Map<String, String> headers = Map.of("Authorization", "Bearer " + token);
+        waitUntilWebSocketEcho(buildWsUrl(context), headers, message, expectedEcho, timeoutSeconds);
+    }
+
+    @When("I wait until WebSocket API at gateway ws context {string} echoes message {string} with api key {string} as {string} within {int} seconds")
+    public void waitUntilWebSocketEchoWithApiKey(String context, String message, String apiKey,
+                                                 String expectedEcho, int timeoutSeconds) throws Exception {
+        String key = TestContext.resolve(apiKey).toString();
+        Map<String, String> headers = Map.of("apikey", key);
+        waitUntilWebSocketEcho(buildWsUrl(context), headers, message, expectedEcho, timeoutSeconds);
+    }
+
+    @When("I wait until WebSocket API at gateway ws context {string} echoes message {string} with api key {string} and referer {string} as {string} within {int} seconds")
+    public void waitUntilWebSocketEchoWithApiKeyAndReferer(String context, String message, String apiKey,
+                                                           String referer, String expectedEcho,
+                                                           int timeoutSeconds) throws Exception {
+        waitUntilWebSocketEcho(buildWsUrl(context), apiKeyAndReferer(apiKey, referer), message, expectedEcho,
+                timeoutSeconds);
+    }
+
+    @When("I wait until WebSocket API at gateway wss context {string} echoes message {string} with api key {string} as {string} within {int} seconds")
+    public void waitUntilSecureWebSocketEchoWithApiKey(String context, String message, String apiKey,
+                                                       String expectedEcho, int timeoutSeconds) throws Exception {
+        String key = TestContext.resolve(apiKey).toString();
+        waitUntilWebSocketEcho(buildWssUrl(context), Map.of("apikey", key), message, expectedEcho, timeoutSeconds);
+    }
+
+    private void waitUntilWebSocketEcho(String wsUrl, Map<String, String> headers, String message,
+                                        String expectedEcho, int timeoutSeconds) throws Exception {
+        AtomicReference<String> lastEcho = new AtomicReference<>();
+        AtomicReference<Throwable> lastFailure = new AtomicReference<>();
+        String readyEcho = Utils.retryUntilWithInterval(timeoutSeconds * 1000L, Constants.RETRY_INTERVAL_TIME, () -> {
+            try {
+                String echo = connectSendReceive(wsUrl, headers, message);
+                lastEcho.set(echo);
+                return echo;
+            } catch (InterruptedException interrupted) {
+                Thread.currentThread().interrupt();
+                return null;
+            } catch (Exception unavailable) {
+                lastFailure.set(unavailable);
+                return null;
+            }
+        }, expectedEcho::equals);
+        Assert.assertEquals(readyEcho, expectedEcho,
+                "Gateway WebSocket route did not return the readiness echo within " + timeoutSeconds + "s; lastEcho="
+                        + lastEcho.get() + ", lastError=" + lastErrorOf(lastFailure));
+    }
+
+    /**
+     * Waits for the gateway to reject a valid token at the WebSocket handshake with exactly the given HTTP status. The
+     * gateway reports a failed scope check as HTTP 401 ({@code HandshakeErrorConstants.API_AUTH_ERROR}). A successful
+     * WebSocket echo means the current gateway revision still permits this token; other failures (including a missing
+     * route during a redeploy) are inconclusive and do not satisfy the gate.
+     */
+    @When("I wait until the gateway rejects WebSocket access token {string} with HTTP {int} at context {string} within {int} seconds")
+    public void waitUntilWsScopeIsEnforced(String accessToken, int expectedStatus, String context,
+                                           int timeoutSeconds) throws Exception {
+        String token = TestContext.resolve(accessToken).toString();
+        String wsUrl = buildWsUrl(context);
+        AtomicBoolean observedEcho = new AtomicBoolean(false);
+        AtomicReference<Throwable> lastFailure = new AtomicReference<>();
+        Boolean rejected = Utils.retryUntilWithInterval(timeoutSeconds * 1000L, Constants.RETRY_INTERVAL_TIME, () -> {
+            try {
+                String echo = connectSendReceive(wsUrl, token, "readiness-probe");
+                observedEcho.set(true);
+                lastFailure.set(new AssertionError("Gateway accepted the token and returned: " + echo));
+                return null;
+            } catch (InterruptedException interrupted) {
+                Thread.currentThread().interrupt();
+                return null;
+            } catch (Exception rejectedOrUnavailable) {
+                lastFailure.set(rejectedOrUnavailable);
+                return handshakeStatus(rejectedOrUnavailable) == expectedStatus ? Boolean.TRUE : null;
+            }
+        }, outcome -> outcome != null);
+        Assert.assertEquals(rejected, Boolean.TRUE,
+                "Gateway did not return HTTP " + expectedStatus + " for the scope-less WebSocket token within "
+                        + timeoutSeconds + "s; observedEcho=" + observedEcho.get() + ", last outcome=" + lastErrorOf(lastFailure));
+    }
+
     /** As above but the rejected credential is an API KEY in the {@code apikey} header (e.g. expired / not enabled). */
     @When("I invoke the WebSocket API at gateway ws context {string} using api key {string} expecting rejection within {int} seconds")
     public void invokeWsExpectRejectionApiKey(String context, String apiKey, int timeoutSeconds) throws Exception {
@@ -1032,8 +1117,13 @@ public class WebSocketInvocationSteps {
                 return handshake.getResponse().statusCode();
             }
             String message = cause.getMessage();
-            if (message != null && (message.contains("status code 401") || message.contains("401 Unauthorized"))) {
-                return 401;
+            if (message != null) {
+                if (message.contains("status code 401") || message.contains("401 Unauthorized")) {
+                    return 401;
+                }
+                if (message.contains("status code 403") || message.contains("403 Forbidden")) {
+                    return 403;
+                }
             }
         }
         return 0;

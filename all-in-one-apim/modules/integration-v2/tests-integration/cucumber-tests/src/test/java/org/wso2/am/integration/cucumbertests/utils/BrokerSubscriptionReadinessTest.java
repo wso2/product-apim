@@ -30,7 +30,7 @@ public class BrokerSubscriptionReadinessTest {
     public void acceptsOnlyAnActiveGatewaySubscriptionToTheRequestedTopic() {
         var result = check(200, envelope(subscription("true", "keymanager", "AMQP", "TOPIC", "/" + GATEWAY + ":51590/1")));
         Assert.assertTrue(result.ready(), result.diagnostics());
-        Assert.assertTrue(result.diagnostics().contains("matched Gateway=[/" + GATEWAY));
+        Assert.assertTrue(result.diagnostics().contains("matched consumer=[/" + GATEWAY));
     }
 
     @DataProvider
@@ -59,6 +59,21 @@ public class BrokerSubscriptionReadinessTest {
         String cp = subscription("true", "keymanager", "AMQP", "TOPIC", "/192.168.42.4:40000/1");
         String gateway = subscription("false", "keymanager", "AMQP", "TOPIC", "/" + GATEWAY + ":51590/1");
         Assert.assertFalse(check(200, envelope(cp + gateway)).ready());
+    }
+
+    @Test
+    public void gatewayNotificationsCannotHideADisconnectedTrafficManagerPolicyConsumer() {
+        String tmAddress = "192.168.42.5";
+        String gateway = subscription("true", "notification", "AMQP", "TOPIC", "/" + GATEWAY + ":51590/1");
+        String inactiveTm = subscription("false", "notification", "AMQP", "TOPIC", "/" + tmAddress + ":40000/1");
+        var disconnected = BrokerSubscriptionReadiness.inspectResponse(200, envelope(gateway + inactiveTm),
+                "notification", Set.of(tmAddress));
+        Assert.assertFalse(disconnected.ready(), disconnected.diagnostics());
+
+        String activeTm = subscription("true", "notification", "AMQP", "TOPIC", "/" + tmAddress + ":40001/1");
+        var connected = BrokerSubscriptionReadiness.inspectResponse(200, envelope(gateway + inactiveTm + activeTm),
+                "notification", Set.of(tmAddress));
+        Assert.assertTrue(connected.ready(), connected.diagnostics());
     }
 
     @Test
