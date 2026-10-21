@@ -66,6 +66,7 @@ Feature: Deny Policy Enforcement At The Gateway
     # different 4xx here would be a real change in how a blocked API is reported.
     When I invoke the API at gateway context "{{denyEnfCtx}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 403 within 60 seconds
     Then The response status code should be 403
+    And The error response should have code "900805" message "Message blocked" and description containing "You have been blocked from accessing the resource"
     # And the backend was never reached.
     And The response should not contain "\"name\":\"John\""
 

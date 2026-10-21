@@ -83,10 +83,10 @@ Feature: Gateway WebSocket API Invocation
       | admin             |
       | admin@tenant1.com |
 
-  # API-key auth: a WS API whose securityScheme includes api_key is invoked with an application API key in the
-  # `apikey` header (the WS api-key auth mode).
-  @cap:gateway @feat:streaming-invocation @rule:api-key @type:regression @dep:publisher @legacy:WebSocketAPITestCase
-  Scenario Outline: Invoke a WS API with an application API key as <actor>
+  # API-key auth: exercise opaque DevPortal keys and locally signed JWT-format keys through the WS handshake.
+  # Each credential is tested in the apikey header and query parameter; the OAuth query check remains as a control.
+  @cap:gateway @feat:streaming-invocation @rule:api-key @rule:query-param-auth @type:regression @dep:publisher @legacy:WebSocketAPITestCase
+  Scenario Outline: Invoke a WS API with a <keyFormat> application API key as <actor>
     Given The system is ready
     And I have valid access tokens as "<actor>"
     And I have created an api from "artifacts/payloads/create_apim_ws_apikey_api.json" as "wsApiId" and deployed it
@@ -100,14 +100,17 @@ Feature: Gateway WebSocket API Invocation
     """
     {"keyName": "WsTestAPIKey", "validityPeriod": 3600, "additionalProperties": {"permittedIP": "", "permittedReferer": ""}}
     """
-    And I request an api key for application id "createdAppId" using payload "wsApiKeyGenPayload"
-    Then The response status code should be 200
+    And I obtain a "<keyFormat>" API key for application id "createdAppId" using payload "wsApiKeyGenPayload"
     When I invoke the WebSocket API at gateway ws context "{{wsContext}}/1.0.0" with message "hello ws" using api key "apiKey" expecting echo "HELLO WS" within 60 seconds
+    And I invoke the WebSocket API at gateway ws context "{{wsContext}}/1.0.0" with message "hello ws" using api key query param "apiKey" expecting echo "HELLO WS" within 60 seconds
+    And I invoke the WebSocket API at gateway ws context "{{wsContext}}/1.0.0" with message "hello ws" using access token query param "generatedAccessToken" expecting echo "HELLO WS" within 60 seconds
 
     Examples:
-      | actor             |
-      | admin             |
-      | admin@tenant1.com |
+      | actor             | keyFormat          |
+      | admin             | opaque             |
+      | admin             | locally signed JWT |
+      | admin@tenant1.com | opaque             |
+      | admin@tenant1.com | locally signed JWT |
 
   # Negative: an API whose securityScheme is oauth2-only rejects an api-key invocation (api-key auth not enabled).
   @cap:gateway @feat:streaming-invocation @rule:security-negative @type:negative @dep:publisher @legacy:WebSocketAPITestCase
@@ -355,9 +358,9 @@ Feature: Gateway WebSocket API Invocation
       | admin@tenant1.com |
 
   # Gateway-URL shape: the DevPortal advertises the WebSocket gateway invocation URL (ws:// on the WS inbound
-  # port 9099) for a published WS API. Ports the enabled half of APIMANAGER5869WSGatewayURLTestCase (the disabled
+  # port 9099) for a published WS API. Ports the enabled half of APIMANAGER5869WSGayewatURLTestCase (the disabled
   # after-config-change half is skipped). Devportal read only — no WebSocket connection.
-  @cap:gateway @feat:streaming-invocation @rule:gateway-url @type:regression @dep:publisher @legacy:APIMANAGER5869WSGatewayURLTestCase
+  @cap:gateway @feat:streaming-invocation @rule:gateway-url @type:regression @dep:publisher @legacy:APIMANAGER5869WSGayewatURLTestCase
   Scenario Outline: The DevPortal advertises the WebSocket gateway URL for a WS API as <actor>
     Given The system is ready
     And I have valid access tokens as "<actor>"
@@ -467,36 +470,6 @@ Feature: Gateway WebSocket API Invocation
     When I invoke the WebSocket API at gateway ws context "{{wsContext}}/1.0.0" with message "hello ws" using api key "apiKey" expecting echo "HELLO WS" within 60 seconds
     # An OAuth token is rejected because the API only enables api_key auth
     When I invoke the WebSocket API at gateway ws context "{{wsContext}}/1.0.0" using access token "generatedAccessToken" expecting rejection within 30 seconds
-
-    Examples:
-      | actor             |
-      | admin             |
-      | admin@tenant1.com |
-
-  # Query-parameter auth (WS): the credential is presented as a query parameter on the WS URL instead of a header
-  # (?apikey=<key> for an API key, ?access_token=<token> for an OAuth token) — the AUTH_IN.*_QUERY modes legacy
-  # exercised. Both echo. Ports the query-param invocations of WebSocketAPITestCase.
-  @cap:gateway @feat:streaming-invocation @rule:query-param-auth @type:regression @dep:publisher @legacy:WebSocketAPITestCase
-  Scenario Outline: Invoke a WS API authenticating via a query parameter as <actor>
-    Given The system is ready
-    And I have valid access tokens as "<actor>"
-    And I have created an api from "artifacts/payloads/create_apim_ws_apikey_api.json" as "wsApiId" and deployed it
-    When I publish the "apis" resource with id "wsApiId"
-    Then The lifecycle status of API "wsApiId" should be "Published"
-    When I retrieve the "apis" resource with id "wsApiId"
-    And I extract response field "context" and store it as "wsContext"
-    When I have set up application with keys, subscribed to API "wsApiId" with plan "AsyncUnlimited", and obtained access token for "wsSubId"
-    Then The response status code should be 200
-    When I put the following JSON payload in context as "wsApiKeyGenPayload"
-    """
-    {"keyName": "WsTestAPIKey", "validityPeriod": 3600, "additionalProperties": {"permittedIP": "", "permittedReferer": ""}}
-    """
-    And I request an api key for application id "createdAppId" using payload "wsApiKeyGenPayload"
-    Then The response status code should be 200
-    # API key as a query parameter
-    When I invoke the WebSocket API at gateway ws context "{{wsContext}}/1.0.0" with message "hello ws" using api key query param "apiKey" expecting echo "HELLO WS" within 60 seconds
-    # OAuth token as a query parameter
-    When I invoke the WebSocket API at gateway ws context "{{wsContext}}/1.0.0" with message "hello ws" using access token query param "generatedAccessToken" expecting echo "HELLO WS" within 60 seconds
 
     Examples:
       | actor             |
@@ -731,7 +704,7 @@ Feature: Gateway WebSocket API Invocation
   # advertised gateway host/port and re-assert) is covered by devportal/environment_urls.feature, which drives the
   # override through the live vhost mechanism and asserts all four URL flavours exactly.
   # Devportal read only — no WebSocket connection.
-  @cap:gateway @feat:streaming-invocation @rule:gateway-url @type:regression @dep:publisher @legacy:APIMANAGER5869WSGatewayURLTestCase
+  @cap:gateway @feat:streaming-invocation @rule:gateway-url @type:regression @dep:publisher @legacy:APIMANAGER5869WSGayewatURLTestCase
   Scenario Outline: The DevPortal advertises the full gateway URL shape for a WS API and a REST API as <actor>
     Given The system is ready
     And I have valid access tokens as "<actor>"

@@ -20,11 +20,10 @@ package org.wso2.am.integration.cucumbertests.runners.block;
 import io.cucumber.testng.CucumberOptions;
 
 /**
- * Runner for gateway/subscription-validation-disable. Belongs to its own IntegrationV2-SubscriptionValidationDisable
- * block (thread-count=1, initBackend): the scenario flips the container-global tenant-conf flag
- * AllowSubscriptionValidationDisabling at runtime (captured and restored), so no sibling class may share the
- * container. Each scenario creates and registers its own resources; teardown restores the tenant config and the
- * per-scenario {@code @cleanup} hook removes the API/application.
+ * Runner for gateway/subscription-validation-disable in IntegrationV2-GatewayIsolatedRuntime-Eventing. Its scenarios
+ * temporarily change the tenant-global AllowSubscriptionValidationDisabling setting and restore the original value.
+ * Keep this block sequential so no sibling runner executes while that setting is changed; preserve its ordering
+ * before KeyManagerApiKeyRunner, which also changes the setting. The {@code @cleanup} hook removes scenario resources.
  */
 @CucumberOptions(
         features = {

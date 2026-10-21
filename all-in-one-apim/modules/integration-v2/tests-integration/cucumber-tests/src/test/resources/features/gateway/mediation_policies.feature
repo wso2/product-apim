@@ -7,7 +7,7 @@ Feature: Gateway Mediation Policies
   the injected header is observed on the backend request. Runs in the gateway block (backend + invocation), in
   both tenants. Ports the attach-and-invoke runtime slice of OperationPolicyTestCase.
 
-  @cap:gateway @feat:mediation-policies @rule:add-header @type:regression @dep:publisher @legacy:OperationPolicyTestCase
+  @cap:gateway @feat:mediation-policies @rule:add-header @type:regression @dep:publisher @legacy:OperationPolicyTestCase @legacy:ESBJAVA3447PreserveCharsetInContentTypeTestCase @legacy:ESBJAVA5121CheckAuthHeaderOrderTestCase
   Scenario Outline: A request-flow operation policy injects a header towards the backend as <actor>
     Given The system is ready
     And I have valid access tokens as "<actor>"
@@ -25,10 +25,22 @@ Feature: Gateway Mediation Policies
     When I have set up application with keys, subscribed to API "medApiId", and obtained access token for "medSubId"
     Then The response status code should be 200
 
-    # The reflecting backend echoes the headers it received; the operation policy must have injected ours.
-    When I invoke the API at gateway context "{{medContext}}/1.0.0/reflect-headers" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
+    # The reflecting backend echoes the headers it received; the operation policy must have injected ours. The
+    # caller-supplied Content-Type is independent of that custom header and must reach the backend with its charset.
+    When I invoke the API at gateway context "{{medContext}}/1.0.0/reflect-headers" with method "GET" using access token "generatedAccessToken" and payload "" with request header "Content-Type" set to "text/xml; charset=UTF-8" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
     And The response should contain "x-common-value"
+    And The value of response field "$.headers['content-type']" should be "text/xml; charset=UTF-8"
+
+    # The reflection backend exposes Node's rawHeaders array (name/value pairs), preserving repeated header order.
+    When I invoke the API at gateway context "{{medContext}}/1.0.0/reflect-headers" once with access token "generatedAccessToken" and repeated request header "WWW-Authenticate" values in order:
+      | NTLM                                    |
+      | Basic realm="BasicSecurityFilterProvider" |
+      | ANTLM3                                  |
+    Then The backend request's repeated "WWW-Authenticate" header values should be in this order:
+      | NTLM                                    |
+      | Basic realm="BasicSecurityFilterProvider" |
+      | ANTLM3                                  |
 
     Examples:
       | actor             |

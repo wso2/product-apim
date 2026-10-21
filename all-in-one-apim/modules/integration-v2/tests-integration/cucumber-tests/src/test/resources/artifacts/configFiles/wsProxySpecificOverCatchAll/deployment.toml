@@ -1,4 +1,5 @@
-# Extra overlay for the IntegrationV2-WsProxySpecificOverCatchAll block.
+# Extra overlay for the IntegrationV2-Distributed-Gateway-WsProxySpecificOverCatchAll block (Gateway overlay). The all-in-one suite
+# carries this profile in the IntegrationV2-NewVersionNotification overlay.
 #
 # Tests that a specific profile takes precedence over a catch-all profile when both match the
 # backend hostname. Two profiles are loaded:

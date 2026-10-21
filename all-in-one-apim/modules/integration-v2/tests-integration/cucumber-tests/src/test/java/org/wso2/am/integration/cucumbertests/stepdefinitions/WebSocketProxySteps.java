@@ -69,6 +69,14 @@ public class WebSocketProxySteps {
         log.debug("Squid access logs cleared");
     }
 
+    @Then("the anonymous proxy CONNECT activity should settle before the access-log baseline is reset")
+    public void awaitAnonConnectActivityBeforeReset() throws InterruptedException {
+        Utils.SettledCount settled = Utils.awaitSettledCount(QUIET_MILLIS, SETTLE_TIMEOUT_MILLIS,
+                () -> sample(getProxy()::getAnonConnectCount));
+        Assert.assertTrue(settled.settled(), "Anonymous proxy CONNECT activity did not settle before measurement "
+                + "(last=" + settled.value() + " after " + settled.samples() + " samples).");
+    }
+
     @Then("the anonymous proxy should have received exactly {int} CONNECT request\\(s)")
     public void assertAnonConnectCount(int expected) throws InterruptedException {
         assertSettledConnectCount("Anonymous", expected,

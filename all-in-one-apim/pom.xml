@@ -1328,10 +1328,10 @@
         <carbon.analytics.common.version>5.4.9</carbon.analytics.common.version>
 
         <!-- APIM Portals Component Version -->
-        <carbon.apimgt.ui.version>9.3.194</carbon.apimgt.ui.version>
+        <carbon.apimgt.ui.version>9.4.2</carbon.apimgt.ui.version>
 
         <!-- APIM Component Version -->
-        <carbon.apimgt.version>9.33.180</carbon.apimgt.version>
+        <carbon.apimgt.version>9.34.8</carbon.apimgt.version>
 
         <carbon.apimgt.imp.pkg.version>[9.0.0, 10.0.0)</carbon.apimgt.imp.pkg.version>
 
@@ -1504,7 +1504,7 @@
         <diagnostics.tool.version>1.0.19</diagnostics.tool.version>
 
         <!-- Authenticator Properties -->
-        <identity.outbound.auth.oidc.version>5.14.2</identity.outbound.auth.oidc.version>
+        <identity.outbound.auth.oidc.version>5.14.3</identity.outbound.auth.oidc.version>
         <swagger-parser-version>2.0.14</swagger-parser-version>
         <nimbus.jwt.version>7.3.0.wso2v1</nimbus.jwt.version>
         <json-smart.version>2.6.0</json-smart.version>

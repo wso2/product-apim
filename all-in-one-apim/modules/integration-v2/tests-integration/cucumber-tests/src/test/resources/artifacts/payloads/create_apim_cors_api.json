@@ -19,7 +19,7 @@
   "policies": ["Gold", "Bronze", "Unlimited"],
   "corsConfiguration": {
     "corsConfigurationEnabled": true,
-    "accessControlAllowOrigins": ["http://localhost"],
+    "accessControlAllowOrigins": ["{{corsAllowedOrigin}}"],
     "accessControlAllowCredentials": true,
     "accessControlAllowHeaders": ["authorization", "Access-Control-Allow-Origin", "Content-Type", "apikey", "X-BrowserSessionID"],
     "accessControlAllowMethods": ["GET", "PUT", "POST", "DELETE", "PATCH", "OPTIONS"]

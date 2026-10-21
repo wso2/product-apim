@@ -53,7 +53,16 @@ public final class DistributedApimTomlBuilder {
                                String extraOverlay, Map<String, ?> finalRuntimeValues) throws IOException {
         ObjectNode result = mergedConfiguration(productDefaults, distributedBaseOverlay, extraOverlay);
         applyRuntimeValues(result, finalRuntimeValues == null ? Collections.emptyMap() : finalRuntimeValues);
-        return TOML.writerWithDefaultPrettyPrinter().writeValueAsString(result);
+        JsonNode encryption = result.remove("encryption");
+        String serialized = TOML.writerWithDefaultPrettyPrinter().writeValueAsString(result);
+        if (encryption != null && encryption.isObject() && !encryption.isEmpty()) {
+            // Jackson's TOML writer flattens a one-property table to `encryption.key = ...`. APIM's startup
+            // EncryptionKeyGenerator recognizes the explicit [encryption] table and otherwise appends its own
+            // random key, causing a duplicate-table parse error. Preserve this table explicitly.
+            String encryptionValues = TOML.writerWithDefaultPrettyPrinter().writeValueAsString(encryption);
+            return serialized + "\n[encryption]\n" + encryptionValues;
+        }
+        return serialized;
     }
 
     /** Returns whether the merged defaults and overlays declare the supplied dotted TOML path. */

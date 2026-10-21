@@ -31,6 +31,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wso2.am.integration.test.utils.Constants;
 import org.wso2.am.testcontainers.ApimRuntime;
+import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -40,6 +41,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Logging glue — the two devops logging APIs and the server log files they drive. Ports
@@ -100,6 +102,7 @@ public class LoggingSteps {
 
     /** Context key prefix under which {@link #iRecordLogFileLength} stores a file's marked length. */
     private static final String LOG_MARK_PREFIX = "logFileMark::";
+    private static final long LOG_EFFECT_POLL_MILLIS = 1000L;
 
     // ---------------------------------------------------------------------------------------------
     // Correlation logging configuration
@@ -176,29 +179,134 @@ public class LoggingSteps {
         }
     }
 
-    /**
-     * Waits for a configuration change to reach the gateway — correlation logging or per-API logging.
-     * Both are devops PUTs propagated the same way, so they share this step; {@code what} names which
-     * one for readability in the scenario and in the log line.
-     *
-     * <p>The devops PUT is acknowledged as soon as the row is written to {@code AM_CORRELATION_CONFIGS}; the
-     * running gateway is updated SEPARATELY and asynchronously, by an event published
-     * on the event hub. So a 200 from the PUT — and even a GET that reads the new state straight back — does
-     * not yet mean the emitters have been switched.
-     *
-     * <p>This wait is therefore load-bearing rather than defensive, and it was established empirically: a
-     * first run asserted immediately after a 200 from the disable and the very next invocation still produced
-     * a full set of synapse and method-calls lines. It cannot be replaced by polling the assertion, because
-     * the traffic that would produce the lines is driven ONCE, before the check — by the time a poll noticed,
-     * the lines would already have been written.
-     */
-    @When("I wait {int} seconds for the {string} configuration to reach the gateway")
-    public void iWaitForConfigToPropagate(int seconds, String what) throws InterruptedException {
+    /** Waits for an enabled gateway logging configuration to emit its marker on successful API traffic. */
+    @When("I wait until the gateway log file {string} records marker {string} for API context {string} using access token {string} within {int} seconds")
+    public void waitForGatewayLogEffect(String fileName, String marker, String context, String accessToken,
+                                        int timeoutSeconds) throws InterruptedException, IOException {
 
-        // Logged because this is an UNCONDITIONAL wait: without it a run sits silent for the whole window and
-        // reads as a hang in CI. The label also names WHICH propagation is being waited on.
-        logger.info("Waiting {}s for the {} configuration to reach the gateway", seconds, what);
-        Thread.sleep(seconds * 1000L);
+        String expected = Utils.resolveContextPlaceholders(marker);
+        String resolvedContext = Utils.resolveContextPlaceholders(context);
+        LogProbe result = Utils.retryUntilWithInterval(timeoutSeconds * 1000L, LOG_EFFECT_POLL_MILLIS,
+                () -> gatewayLogProbe(fileName, expected, resolvedContext, accessToken),
+                probe -> probe.markerPresent);
+        Assert.assertTrue(result != null && result.responseCode == 200 && result.markerPresent,
+                "Gateway log marker '" + expected + "' did not become effective for context " + resolvedContext
+                        + " within " + timeoutSeconds + "s; last probe: " + result);
+    }
+
+    /**
+     * Waits until real, successful requests observe the disabled state for a complete quiet interval. A marker
+     * resets the interval; the feature's separate measured request and full negative observation window remain.
+     */
+    @When("I verify the gateway log file {string} has no marker {string} for API context {string} using access token {string} for {int} seconds within {int} seconds")
+    public void verifyGatewayLogEffectAbsent(String fileName, String marker, String context, String accessToken,
+                                             int quietSeconds, int timeoutSeconds)
+            throws InterruptedException, IOException {
+
+        String expected = Utils.resolveContextPlaceholders(marker);
+        String resolvedContext = Utils.resolveContextPlaceholders(context);
+        AtomicLong quietSince = new AtomicLong(0L);
+        LogProbe result = Utils.retryUntilWithInterval(timeoutSeconds * 1000L, LOG_EFFECT_POLL_MILLIS, () -> {
+            LogProbe probe = gatewayLogProbe(fileName, expected, resolvedContext, accessToken);
+            if (probe.markerPresent) {
+                quietSince.set(0L);
+            } else if (quietSince.get() == 0L) {
+                quietSince.set(System.currentTimeMillis());
+            }
+            return new LogProbe(probe.responseCode, probe.markerPresent, quietSince.get());
+        }, probe -> !probe.markerPresent && probe.quietSince > 0L
+                && System.currentTimeMillis() - probe.quietSince >= quietSeconds * 1000L);
+        Assert.assertTrue(result != null && result.responseCode == 200 && !result.markerPresent
+                        && result.quietSince > 0L
+                        && System.currentTimeMillis() - result.quietSince >= quietSeconds * 1000L,
+                "Gateway log marker '" + expected + "' did not remain absent for " + quietSeconds
+                        + "s within " + timeoutSeconds + "s; last probe: " + result);
+    }
+
+    /** Waits for the Tomcat HTTP marker on successful Publisher REST traffic. */
+    @When("I wait until the control-plane log file {string} records marker {string} through Publisher API reads within {int} seconds")
+    public void waitForControlPlaneLogEffect(String fileName, String marker, int timeoutSeconds)
+            throws InterruptedException, IOException {
+
+        String expected = Utils.resolveContextPlaceholders(marker);
+        LogProbe result = Utils.retryUntilWithInterval(timeoutSeconds * 1000L, LOG_EFFECT_POLL_MILLIS,
+                () -> controlPlaneLogProbe(fileName, expected), probe -> probe.markerPresent);
+        Assert.assertTrue(result != null && result.responseCode == 200 && result.markerPresent,
+                "Control-plane log marker '" + expected + "' did not become effective within " + timeoutSeconds
+                        + "s; last probe: " + result);
+    }
+
+    /** Establishes a marker-free interval using successful Publisher REST reads. */
+    @When("I verify the control-plane log file {string} has no marker {string} through Publisher API reads for {int} seconds within {int} seconds")
+    public void verifyControlPlaneLogEffectAbsent(String fileName, String marker, int quietSeconds,
+                                                  int timeoutSeconds)
+            throws InterruptedException, IOException {
+
+        String expected = Utils.resolveContextPlaceholders(marker);
+        AtomicLong quietSince = new AtomicLong(0L);
+        LogProbe result = Utils.retryUntilWithInterval(timeoutSeconds * 1000L, LOG_EFFECT_POLL_MILLIS, () -> {
+            LogProbe probe = controlPlaneLogProbe(fileName, expected);
+            if (probe.markerPresent) {
+                quietSince.set(0L);
+            } else if (quietSince.get() == 0L) {
+                quietSince.set(System.currentTimeMillis());
+            }
+            return new LogProbe(probe.responseCode, probe.markerPresent, quietSince.get());
+        }, probe -> !probe.markerPresent && probe.quietSince > 0L
+                && System.currentTimeMillis() - probe.quietSince >= quietSeconds * 1000L);
+        Assert.assertTrue(result != null && result.responseCode == 200 && !result.markerPresent
+                        && result.quietSince > 0L
+                        && System.currentTimeMillis() - result.quietSince >= quietSeconds * 1000L,
+                "Control-plane log marker '" + expected + "' did not remain absent for " + quietSeconds
+                        + "s within " + timeoutSeconds + "s; last probe: " + result);
+    }
+
+    private LogProbe gatewayLogProbe(String fileName, String marker, String context, String accessToken)
+            throws IOException {
+
+        int offset = readLogFile(fileName).length();
+        new APIInvocationSteps().invokeApiByContextOnce(context, "GET", accessToken, "");
+        HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
+        Assert.assertTrue(response != null && response.getResponseCode() == 200,
+                "Readiness traffic to " + context + " must succeed while checking logging propagation; got "
+                        + (response == null ? "no response" : response.getResponseCode() + " / "
+                        + response.getData()));
+        return new LogProbe(response.getResponseCode(),
+                containsMarker(appendedFromOffset(readLogFile(fileName), offset), marker), 0L);
+    }
+
+    private LogProbe controlPlaneLogProbe(String fileName, String marker) throws IOException {
+
+        int offset = readControlPlaneLogFile(fileName).length();
+        new PublisherBaseSteps().iRetrieveAllApis();
+        HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
+        Assert.assertTrue(response != null && response.getResponseCode() == 200,
+                "Publisher API read used as logging readiness traffic must succeed; got "
+                        + (response == null ? "no response" : response.getResponseCode() + " / "
+                        + response.getData()));
+        return new LogProbe(response.getResponseCode(),
+                containsMarker(appendedFromOffset(readControlPlaneLogFile(fileName), offset), marker), 0L);
+    }
+
+    private static String appendedFromOffset(String content, int offset) {
+        return offset <= content.length() ? content.substring(offset) : content;
+    }
+
+    private static final class LogProbe {
+        private final int responseCode;
+        private final boolean markerPresent;
+        private final long quietSince;
+
+        private LogProbe(int responseCode, boolean markerPresent, long quietSince) {
+            this.responseCode = responseCode;
+            this.markerPresent = markerPresent;
+            this.quietSince = quietSince;
+        }
+
+        @Override
+        public String toString() {
+            return "HTTP " + responseCode + ", markerPresent=" + markerPresent + ", quietSince=" + quietSince;
+        }
     }
 
     // ---------------------------------------------------------------------------------------------

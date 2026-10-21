@@ -1,4 +1,5 @@
-# Feature-specific TOML overlay for the IntegrationV2-EndpointCertificateTls block, merged ON TOP of the shared
+# Feature-specific TOML overlay for the IntegrationV2-Distributed-EndpointCertificateTls block (testng-v2.xml
+# carries the same keys in the mtlsWsCors overlay), merged ON TOP of the shared
 # `basic` overlay via tomlExtraOverlayPath — only the keys the endpoint-certificate INVOCATION arc needs.
 #
 # Why this overlay is unavoidable (measured against the product defaults, do not "simplify" it away):

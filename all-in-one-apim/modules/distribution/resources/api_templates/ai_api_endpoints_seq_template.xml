@@ -52,6 +52,18 @@
     #end
 </class>
         #end
+        #if($endpoint.authenticationType == "gcp" || $endpoint.authenticationType == "GCP")
+        ## The GCP service-account key is delivered as a single base64 property the mediator base64-decodes.
+        ## Secure-vault mode: a concat of vault-lookups (pipe-separated chunks). Normal mode: the base64 literal.
+        ## Keyless (no key): neither is set, so no property is emitted and the mediator uses the metadata server.
+<class name="org.wso2.carbon.apimgt.gateway.mediators.GCPOAuth2Mediator">
+        #if($endpoint.serviceAccountKeyVaultExpression)
+    <property name="serviceAccountKey" expression="$endpoint.serviceAccountKeyVaultExpression" type="STRING"/>
+        #elseif($endpoint.serviceAccountKeyBase64)
+    <property name="serviceAccountKey" value="$endpoint.serviceAccountKeyBase64" type="STRING"/>
+        #end
+</class>
+        #end
         #if( $endpoint.authenticationType == "APIKEY" || $endpoint.authenticationType == "apikey")
 <class name="org.wso2.carbon.apimgt.gateway.mediators.ApiKeyMediator">
 <property name="apiKeyIdentifier" value="$endpoint.apiKeyIdentifier" type="STRING"/>
@@ -76,6 +88,12 @@
 <call>
 <endpoint xmlns="http://ws.apache.org/ns/synapse" key="$ep_key"/>
 </call>
+        ## GCP (Vertex) only: if the backend rejects the injected token with 401, invalidate the cached GCP
+        ## token so the next request re-mints a fresh one. Emitted only for GCP-auth endpoints, so the generated
+        ## sequence for every non-GCP AI provider is unchanged.
+        #if($endpoint.endpointSecurityEnabled && ($endpoint.authenticationType == "gcp" || $endpoint.authenticationType == "GCP"))
+<class name="org.wso2.carbon.apimgt.gateway.mediators.GCPOAuth2ResponseMediator"/>
+        #end
         #end
 
         #macro ( fail_scenario )

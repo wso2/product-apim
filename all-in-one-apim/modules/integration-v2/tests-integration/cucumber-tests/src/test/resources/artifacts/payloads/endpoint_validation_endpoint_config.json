@@ -1,0 +1,13 @@
+{
+  "endpoint_type": "http",
+  "production_endpoints": {
+    "url": "http://nodebackend:3001/am/sample/calculator/v1",
+    "config": null,
+    "template_not_supported": false
+  },
+  "sandbox_endpoints": {
+    "url": "http://nodebackend:3001/am/sample/calculator/v1",
+    "config": null,
+    "template_not_supported": false
+  }
+}

@@ -14,9 +14,9 @@ Feature: Gateway Mutual-SSL Certificate Chain Validation
     cert_chain_client.jks            chain length 3 — leaf + intermediate + root presented on the handshake
     cert_chain_client_head_only.jks  chain length 1 — the SAME leaf exported ALONE, no chain
 
-  This block therefore exists solely to carry `[apimgt.mutual_ssl] enable_certificate_chain_validation = true`,
-  which selects a different authenticator code path and so cannot share a container with the default-mode
-  mutual-SSL feature without destroying that feature's meaning.
+  The blocks running this feature carry `[apimgt.mutual_ssl] enable_certificate_chain_validation = true`, which
+  selects a different authenticator code path and so cannot share a container with the default-mode mutual-SSL
+  feature without destroying that feature's meaning.
 
   About the legacy source: the class is COMMENTED OUT of the legacy testng.xml (line 411), so none of this was
   ever actually verified upstream.
@@ -75,7 +75,14 @@ Feature: Gateway Mutual-SSL Certificate Chain Validation
     Then The response status code should be 200
 
     # The DEFAULT-VERSION (versionless) context dispatches through a different gateway routing path, so it gets
-    # its own chance to skip the check — asserted for the chain case too.
+    # its own checks too. First prove a certificate uploaded directly to this API still succeeds there.
+    When I invoke the API at gateway context "{{chainContext}}/customers/123" presenting client certificate "artifacts/certs/mutualssl/cert_chain_root.p12" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    # Then prove the versionless route still rejects a certificate whose issuer path never reaches the uploaded
+    # root, just like the versioned route below.
+    When I invoke the API at gateway context "{{chainContext}}/customers/123" presenting client certificate "artifacts/certs/mutualssl/test.p12" until response status code becomes 401 within 60 seconds
+    Then The response status code should be 401
+    # It must also accept a leaf presented with its full chain.
     When I invoke the API at gateway context "{{chainContext}}/customers/123" presenting client certificate "artifacts/certs/mutualssl/cert_chain_client.p12" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
 

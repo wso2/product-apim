@@ -25,9 +25,10 @@ import java.io.IOException;
 /**
  * Narrow wrapper for the Carbon registry admin SOAP operations that have no REST equivalent.
  *
- * <p>This is intentionally called by an explicit setup step, as required by the integration-v2 provisioning
- * boundary. It is not a container-listener mutation and it never uses a side-channel token: the caller supplies
- * the actor whose tenant registry is being repaired.</p>
+ * <p>{@link org.wso2.am.integration.cucumbertests.utils.listeners.BlockLifecycleListener} calls this during
+ * block startup to ensure the throttle-data registry hierarchy exists before the event subscription is
+ * initialized. The listener supplies each tenant administrator's credentials; this utility performs the SOAP
+ * registry operations using that actor rather than a side-channel identity.</p>
  */
 public final class RegistryAdminService {
 
