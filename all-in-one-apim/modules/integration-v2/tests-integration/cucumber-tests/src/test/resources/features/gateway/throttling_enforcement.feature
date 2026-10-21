@@ -23,7 +23,8 @@ Feature: Gateway Throttling Enforcement
        committing (trips at the 5th request, sticky). NOTE: custom rules are an admin-global feature — a tenant
        admin gets 403 creating one (verified) — so this dimension runs SUPER-TENANT ONLY, not ×2 like the others.
     7. OPERATION-LEVEL (advanced) request-count (the advanced policy is set on one operation rather than on the
-       whole API) — code 900802.
+       whole API) — code 900802. An API PRODUCT's product-level policy applied to an unauthenticated resource is
+       enforced the same way.
   Every 429 additionally asserts the throttle `code` in the fault body, so a scenario cannot pass on a 429 raised
   by a DIFFERENT limit than the one it configures — the status alone cannot tell the seven dimensions apart.
   900803 is shared by application request-count and application bandwidth, so the code does NOT prove which of the
@@ -1237,6 +1238,75 @@ Feature: Gateway Throttling Enforcement
     And I invoke the API at gateway context "{{noAuthApiContext}}/1.0.0/customers/123/" with method "GET" without authentication until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
     When I invoke the API at gateway context "{{noAuthApiContext}}/1.0.0/customers/123/" with method "GET" without authentication until response status code becomes 429 within 90 seconds
+    Then The response status code should be 429
+    And The value of error response field "code" should be "900802"
+
+    Examples:
+      | actor             |
+      | superTenantAdmin  |
+      | admin@tenant1.com |
+
+  # An API product is throttled with the rate limit of its DEPLOYED revision, and a product-level rate limit
+  # reaches every resource, the unauthenticated ones included. Revision 1 is
+  # operation level, every resource Unlimited. Setting a 3/min product-level policy changes the working copy only:
+  # the gateway keeps revision 1, so a burst of 12 token-bearing calls is still served. Once revision 2 is deployed
+  # every resource carries the policy, and token-less traffic to the unauthenticated /open is refused with 429. An
+  # unauthenticated request carries no API-level tier, so the limit fires at resource level — 900802, as for the
+  # unauthenticated API above. (Which resource stores which policy on create, update, copy and import is asserted
+  # on the publisher plane in publisher/api_products; the gateway serves those stored values.)
+  @cap:gateway @feat:throttling-enforcement @rule:product @type:regression @dep:admin @dep:publisher @dep:devportal
+  Scenario Outline: An API product is throttled with the product-level rate limit of its deployed revision as <actor>
+    And I have valid access tokens as "<actor>"
+    When I create an advanced throttling policy "${UNIQUE:productRevision3perMin}" allowing 3 requests per minute
+    Then The response status code should be 201
+    And I have created an api from "artifacts/payloads/create_apim_product_member_wildcard_api.json" as "trApiId" and deployed it
+    When I create an API product "${UNIQUE:RevisionThrottleProduct}" with context "${UNIQUE:revisionThrottleCtx}" from API "trApiId" as "trProductId"
+    Then The response status code should be 201
+    And I extract response field "context" and store it as "trProductContext"
+    When I put the following JSON payload in context as "trRev1"
+    """
+    {"description":"operation-level rate limits"}
+    """
+    And I make a request to create a revision for "api-products" resource "trProductId" with payload "trRev1"
+    Then The response status code should be 201
+    When I deploy revision "revisionId" of "api-products" resource "trProductId"
+    Then The response status code should be 201
+    And the "api-products" resource "trProductId" should be live on the gateway, redeploying if propagation is lost
+    When I publish the "api-products" resource with id "trProductId"
+    Then The response status code should be 200
+    When I have set up application with keys, subscribed to API "trProductId" with plan "Unlimited", and obtained access token for "trSubId"
+    Then The response status code should be 200
+    # A product-level policy set on the working copy is not in the deployed revision.
+    When I retrieve the "api-products" resource with id "trProductId"
+    And I put the response payload in context as "trProductPayload"
+    When I update the "api-products" resource "trProductId" and "trProductPayload" with configuration type "apiThrottlingPolicy" and value:
+      """
+      {{advThrottlePolicyName}}
+      """
+    Then The response status code should be 200
+    When I retrieve the gateway API info of "trProductId" until the response field "urlMappings[*].throttlingPolicy" is exactly the list "Unlimited" within 10 seconds
+    Then The response array field "urlMappings[*].throttlingPolicy" should have exactly 2 entries
+    # The update notifies the gateway asynchronously; hold /secured at 200 across a settle window (a gateway that
+    # took the working copy's 3/min limit would refuse it within it), then require a burst of 12 — four times the
+    # product-level quota — to be served.
+    When I invoke the API at gateway context "{{trProductContext}}/1.0.0/secured" with method "GET" using access token "generatedAccessToken" and the response status code should remain 200 for 10 seconds
+    When I invoke the API at gateway context "{{trProductContext}}/1.0.0/secured" with method "GET" using access token "generatedAccessToken" and payload "" 12 times expecting status 200
+    # Revision 2 carries the product-level policy to every resource; the unauthenticated /open is throttled.
+    When I put the following JSON payload in context as "trRev2"
+    """
+    {"description":"product-level rate limit"}
+    """
+    And I make a request to create a revision for "api-products" resource "trProductId" with payload "trRev2"
+    Then The response status code should be 201
+    When I deploy revision "revisionId" of "api-products" resource "trProductId"
+    Then The response status code should be 201
+    And the "api-products" resource "trProductId" should be live on the gateway, redeploying if propagation is lost
+    When I retrieve the gateway API info of "trProductId" until the response field "urlMappings[*].throttlingPolicy" is exactly the list "{{advThrottlePolicyName}}" within 120 seconds
+    Then The response array field "urlMappings[*].throttlingPolicy" should have exactly 2 entries
+    And The response field "urlMappings[?(@.authScheme=='None')].urlPattern" should be exactly the list "/open"
+    When I invoke the API at gateway context "{{trProductContext}}/1.0.0/open" with method "GET" without authentication until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    When I invoke the API at gateway context "{{trProductContext}}/1.0.0/open" with method "GET" without authentication until response status code becomes 429 within 90 seconds
     Then The response status code should be 429
     And The value of error response field "code" should be "900802"
 
