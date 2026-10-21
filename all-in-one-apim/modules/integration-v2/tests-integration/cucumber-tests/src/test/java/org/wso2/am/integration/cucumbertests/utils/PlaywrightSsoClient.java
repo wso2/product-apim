@@ -100,8 +100,21 @@ public final class PlaywrightSsoClient implements AutoCloseable {
     private final Page page;
     /** Whether the browser proxy has a route to the gateway's internal localhost:8243 endpoint. */
     private boolean gatewayRouted;
+    /** The external IS as the browser reaches it (internal host, tunnelled by the CONNECT proxy). */
+    private static final String EXTERNAL_IS_BASE = "https://wso2is:9443/";
+    /** The external IS's authorize endpoint as the APIM-side OIDC IdP is registered with it. */
+    private static final String EXTERNAL_IS_AUTHORIZE = EXTERNAL_IS_BASE + "oauth2/authorize";
     /** Document-navigation trail ("status url") recorded from responses — the browser equivalent of walk hops. */
     private final java.util.List<String> docTrail = java.util.Collections.synchronizedList(new java.util.ArrayList<>());
+    /**
+     * Every top-level document REQUEST url, oldest first. Unlike {@link #docTrail} (responses), each hop of a 302
+     * chain is its own request here, so a redirect the browser merely passes through — the federated
+     * {@code /oauth2/authorize} at the external IS, or the IS's error redirect back to {@code /commonauth} — is
+     * always recorded with its exact query string. Kept as request handles so a hop's redirect chain and final
+     * response can be followed.
+     */
+    private final java.util.List<com.microsoft.playwright.Request> docRequests =
+            java.util.Collections.synchronizedList(new java.util.ArrayList<>());
     /** Management-plane XHR/fetch calls (status method path) — diagnostic for stuck SPA form validation. */
     private final java.util.List<String> apiCalls = java.util.Collections.synchronizedList(new java.util.ArrayList<>());
     /** Browser console errors/warnings — a JS error can wedge a React form's async validation. */
@@ -232,6 +245,15 @@ public final class PlaywrightSsoClient implements AutoCloseable {
                 }
             } catch (RuntimeException ignored) {
                 // response object may be gone; ignore
+            }
+        });
+        page.onRequest(req -> {
+            try {
+                if ("document".equals(req.resourceType())) {
+                    docRequests.add(req);
+                }
+            } catch (RuntimeException ignored) {
+                // request object may be gone; ignore
             }
         });
     }
@@ -519,6 +541,17 @@ public final class PlaywrightSsoClient implements AutoCloseable {
     /** Fills and submits the federated user's credentials on the external IS login form. */
     public void authenticateAtExternalIs(String username, String password) {
         // The click above redirected through /commonauth to the external IS; wait for its login form to appear.
+        // Wait for the IS host FIRST: APIM's own multi-option page also has a password input, so a selector-only
+        // wait is satisfied by the page the click started from, or by the page APIM falls back to when the IS
+        // rejects the authorization request - and the federated credentials would be typed into APIM instead.
+        try {
+            page.waitForURL(url -> url.startsWith(EXTERNAL_IS_BASE),
+                    new Page.WaitForURLOptions().setTimeout(25000));
+        } catch (com.microsoft.playwright.TimeoutError e) {
+            assertNot17744();
+            throw new AssertionError("the browser never reached the external IS login page after selecting the "
+                    + "IdP. " + pageDiagnostic());
+        }
         try {
             page.waitForSelector("input[type=password]",
                     new Page.WaitForSelectorOptions().setTimeout(25000));
@@ -1726,6 +1759,113 @@ public final class PlaywrightSsoClient implements AutoCloseable {
                     .setPath(java.nio.file.Paths.get("/tmp", "snap-" + label + ".png")).setFullPage(true));
         } catch (RuntimeException ignored) {
         }
+    }
+
+    /**
+     * The federated authorization request APIM's OIDC authenticator sent the browser to: the first document
+     * request to the external IS's {@code /oauth2/authorize}. The resident IS's own authorize hop (the console's
+     * first leg) is on APIM's host, so the host prefix keeps the two apart. Fails if the browser never got there.
+     */
+    public String externalAuthorizeRequestUrl() {
+        com.microsoft.playwright.Request authorize = firstDocRequest(u -> u.startsWith(EXTERNAL_IS_AUTHORIZE), 0);
+        if (authorize == null) {
+            throw new AssertionError("the browser never reached the external IS authorize endpoint "
+                    + EXTERNAL_IS_AUTHORIZE + ". " + pageDiagnostic());
+        }
+        return authorize.url();
+    }
+
+    /**
+     * The OAuth 2.0 error response the external IS returned for the federated authorization request: the first
+     * document request AFTER the external authorize hop that carries an {@code error} parameter (RFC 6749
+     * 4.1.2.1 delivers it to the client's redirect_uri, APIM's {@code /commonauth}). Waits up to
+     * {@code timeoutMs} for the redirect chain to get there; null if no error response arrived.
+     */
+    public String externalAuthorizeErrorResponseUrl(int timeoutMs) {
+        com.microsoft.playwright.Request error = externalAuthorizeErrorRequest(timeoutMs);
+        return error == null ? null : error.url();
+    }
+
+    private com.microsoft.playwright.Request externalAuthorizeErrorRequest(int timeoutMs) {
+        String authorize = externalAuthorizeRequestUrl();
+        int from = firstDocRequestIndex(u -> u.equals(authorize), 0) + 1;
+        long deadline = System.currentTimeMillis() + timeoutMs;
+        // CHECKSTYLE:OFF deadlineLoop - browser request-trail poll (Playwright); Utils.retryUntil is HTTP-only, N/A here
+        while (true) {
+            // CHECKSTYLE:ON
+            com.microsoft.playwright.Request error = firstDocRequest(u -> Utils.queryParam(u, "error") != null, from);
+            if (error != null || System.currentTimeMillis() >= deadline) {
+                return error;
+            }
+            try {
+                page.waitForTimeout(500);
+            } catch (RuntimeException e) {
+                return firstDocRequest(u -> Utils.queryParam(u, "error") != null, from);
+            }
+        }
+    }
+
+    /**
+     * Asserts the console issued NO session of its own: the external IS's error callback has run to completion
+     * and no {@code AM_ACC_TOKEN} part-1 cookie exists at the console's path.
+     */
+    public void assertNoConsoleSession(String consoleContext) {
+        awaitErrorCallbackOutcome(30000);
+        if (hasAccessTokenCookie(consoleContext)) {
+            throw new AssertionError("the '" + consoleContext + "' console issued a session token cookie although "
+                    + "the federated authentication was expected to fail. " + pageDiagnostic());
+        }
+    }
+
+    /**
+     * Waits for the outcome of the external IS's error callback: follows the redirect chain its error response
+     * started at APIM's {@code /commonauth} to the last hop, waits for that hop's non-redirect response, then for
+     * the page to load. A console session cookie can only arrive as a {@code Set-Cookie} on that chain, so reading
+     * the cookie store before the chain ends would miss a session issued at its end.
+     */
+    private void awaitErrorCallbackOutcome(int timeoutMs) {
+        com.microsoft.playwright.Request hop = externalAuthorizeErrorRequest(timeoutMs);
+        if (hop == null) {
+            throw new AssertionError("the external IS returned no OAuth error response, so there is no failed "
+                    + "federated callback to check for a console session. " + pageDiagnostic());
+        }
+        long deadline = System.currentTimeMillis() + timeoutMs;
+        // CHECKSTYLE:OFF deadlineLoop - browser redirect-chain poll (Playwright); Utils.retryUntil is HTTP-only, N/A here
+        while (true) {
+            // CHECKSTYLE:ON
+            while (hop.redirectedTo() != null) {
+                hop = hop.redirectedTo();
+            }
+            // Blocks until the hop's response headers arrive; null when the hop failed outright (also an end).
+            com.microsoft.playwright.Response resp = hop.response();
+            if (resp == null || resp.status() < 300 || resp.status() >= 400) {
+                break;
+            }
+            if (System.currentTimeMillis() >= deadline) {
+                throw new AssertionError("the redirect chain after the external IS's error response did not finish "
+                        + "within " + timeoutMs + "ms; last hop: " + resp.status() + " " + hop.url() + ". "
+                        + pageDiagnostic());
+            }
+            // The redirected request is linked on the next event dispatch.
+            page.waitForTimeout(250);
+        }
+        settle();
+    }
+
+    private com.microsoft.playwright.Request firstDocRequest(java.util.function.Predicate<String> match,
+            int fromIndex) {
+        int index = firstDocRequestIndex(match, fromIndex);
+        return index < 0 ? null : docRequests.get(index);
+    }
+
+    private int firstDocRequestIndex(java.util.function.Predicate<String> match, int fromIndex) {
+        List<com.microsoft.playwright.Request> snapshot = new java.util.ArrayList<>(docRequests);
+        for (int i = Math.max(0, fromIndex); i < snapshot.size(); i++) {
+            if (match.test(snapshot.get(i).url())) {
+                return i;
+            }
+        }
+        return -1;
     }
 
     // ─────────────────────────── helpers ───────────────────────────
