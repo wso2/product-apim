@@ -121,7 +121,7 @@ public final class SsoProvisioner {
     /**
      * Creates the IS OIDC application the APIM consoles federate to (authorization_code, callback = APIM's
      * {@code commonauth}, groups claim requested, JIT subject = username), skips login/logout consent, and
-     * returns {@code [clientId, clientSecret]}.
+     * returns {@code [clientId, clientSecret, appId]}.
      */
     public static String[] createIsSsoApp(String appName) throws IOException {
         return createIsSsoApp(appName, false);
@@ -215,7 +215,38 @@ public final class SsoProvisioner {
                 "IS SSO app skip-consent PATCH failed: got=" + (patch == null ? "null"
                         : patch.getResponseCode() + "/" + patch.getData()));
 
-        return new String[]{oidc.getString("clientId"), oidc.getString("clientSecret")};
+        return new String[]{oidc.getString("clientId"), oidc.getString("clientSecret"), appId};
+    }
+
+    /**
+     * Makes PKCE mandatory on the IS OIDC application {@code appId} (S256 only, plain refused), so IS rejects any
+     * authorization request without a {@code code_challenge} and any token request without the matching
+     * {@code code_verifier}. Reads the setting back, so a silently ignored update fails here rather than letting
+     * a federated-PKCE scenario pass against an IS that never enforced PKCE.
+     */
+    public static void mandateIsAppPkce(String appId) throws IOException {
+        String url = isBrowserBase() + "api/server/v1/applications/" + appId + "/inbound-protocols/oidc";
+        HttpResponse current = SimpleHTTPClient.getInstance().doGet(url, isAuthHeaders());
+        Assert.assertTrue(current != null && current.getResponseCode() == 200 && current.getData() != null
+                        && !current.getData().isBlank(),
+                "IS OIDC inbound fetch failed for app " + appId + ": got=" + (current == null ? "null"
+                        : current.getResponseCode() + "/" + current.getData()));
+        JSONObject oidc = new JSONObject(current.getData());
+        oidc.put("pkce", new JSONObject().put("mandatory", true).put("supportPlainTransformAlgorithm", false));
+        HttpResponse put = SimpleHTTPClient.getInstance().doPut(url, isAuthHeaders(), oidc.toString(),
+                Constants.CONTENT_TYPES.APPLICATION_JSON);
+        Assert.assertTrue(put != null && put.getResponseCode() >= 200 && put.getResponseCode() < 300,
+                "IS OIDC inbound PKCE update failed for app " + appId + ": got=" + (put == null ? "null"
+                        : put.getResponseCode() + "/" + put.getData()));
+
+        HttpResponse stored = SimpleHTTPClient.getInstance().doGet(url, isAuthHeaders());
+        Assert.assertTrue(stored != null && stored.getResponseCode() == 200 && stored.getData() != null
+                        && !stored.getData().isBlank(),
+                "IS OIDC inbound re-fetch failed for app " + appId + ": got=" + (stored == null ? "null"
+                        : stored.getResponseCode() + "/" + stored.getData()));
+        JSONObject pkce = new JSONObject(stored.getData()).optJSONObject("pkce");
+        Assert.assertTrue(pkce != null && pkce.optBoolean("mandatory", false),
+                "IS app " + appId + " did not retain pkce.mandatory=true: " + stored.getData());
     }
 
     /** Adds a custom OIDC claim mapping on the external IS that issues the federated token. */
@@ -454,9 +485,75 @@ public final class SsoProvisioner {
         Assert.assertFalse(getIdpExists(tenantDomain, idpName),
                 "OIDC identity provider '" + idpName + "' still exists after deletion");
 
+        String idpXml = oidcIdpXml(idpName, isClientId, isClientSecret, requestProfileClaims, false);
+        String envelope = idpOpsEnvelope();
+        String payload = envelope + "<soapenv:Body><ns:addIdP>" + idpXml
+                + "</ns:addIdP></soapenv:Body></soapenv:Envelope>";
+
+        // addIdP faults with HTTP 500 even on success — do NOT assert on status; verify with getIdPByName.
+        idpSoap("urn:addIdP", payload, tenantDomain);
+        Assert.assertTrue(getIdpExists(tenantDomain, idpName),
+                "OIDC identity provider '" + idpName + "' was not created on APIM (addIdP verify failed)");
+
+        // APIM's addIdP operation stores the provider but silently drops its claim mappings (and may return a SOAP
+        // fault saying there are no claim URIs). Reapply the same complete provider before any service provider
+        // references it; updateIdP persists the mappings correctly, as the established multi-tenant SSO fixture
+        // does. This is required for the external groups/profile claims to be available on the callback.
+        String update = envelope + "<soapenv:Body><ns:updateIdP><ns:oldIdPName>"
+                + Utils.escapeXml(idpName) + "</ns:oldIdPName>" + idpXml
+                + "</ns:updateIdP></soapenv:Body></soapenv:Envelope>";
+        idpSoap("urn:updateIdP", update, tenantDomain);
+        String verifyPayload = envelope + "<soapenv:Body><ns:getIdPByName><ns:idPName>"
+                + Utils.escapeXml(idpName) + "</ns:idPName></ns:getIdPByName></soapenv:Body></soapenv:Envelope>";
+        HttpResponse storedIdp = idpSoap("urn:getIdPByName", verifyPayload, tenantDomain);
+        Assert.assertTrue(storedIdp != null && storedIdp.getResponseCode() >= 200
+                        && storedIdp.getResponseCode() < 300 && storedIdp.getData() != null
+                        && storedIdp.getData().contains("claimMappings"),
+                "OIDC provider '" + idpName + "' did not retain claim mappings after updateIdP");
+    }
+
+    /**
+     * Ticks "Enable PKCE" on the super-tenant OIDC IdP {@code idpName} registered by {@link #registerOidcIdp}.
+     * Updated in place with {@code updateIdP} (the console service providers already reference the IdP, so it
+     * cannot be deleted and re-added), restating the full provider so nothing registration set is lost. The
+     * persisted value is read back, so a store that silently drops the property fails here, not as a confusing
+     * login failure later.
+     */
+    public static void enableOidcIdpPkce(String idpName, String isClientId, String isClientSecret)
+            throws IOException {
+        String envelope = idpOpsEnvelope();
+        String update = envelope + "<soapenv:Body><ns:updateIdP><ns:oldIdPName>"
+                + Utils.escapeXml(idpName) + "</ns:oldIdPName>"
+                + oidcIdpXml(idpName, isClientId, isClientSecret, false, true)
+                + "</ns:updateIdP></soapenv:Body></soapenv:Envelope>";
+        idpSoap("urn:updateIdP", update, Constants.SUPER_TENANT_DOMAIN);
+        String verifyPayload = envelope + "<soapenv:Body><ns:getIdPByName><ns:idPName>"
+                + Utils.escapeXml(idpName) + "</ns:idPName></ns:getIdPByName></soapenv:Body></soapenv:Envelope>";
+        HttpResponse stored = idpSoap("urn:getIdPByName", verifyPayload, Constants.SUPER_TENANT_DOMAIN);
+        Assert.assertTrue(stored != null && stored.getResponseCode() >= 200 && stored.getResponseCode() < 300
+                        && stored.getData() != null && !isSoapFault(stored.getData()),
+                "Could not read back OIDC provider '" + idpName + "' after enabling PKCE: got "
+                        + (stored == null ? "no response" : "HTTP " + stored.getResponseCode()));
+        // Within one <properties> element: name IsPKCEEnabled, then (after any sibling fields) value true.
+        Assert.assertTrue(stored.getData().matches(
+                        "(?s).*IsPKCEEnabled</[^>]*name>(?:(?!properties>).)*?value>true</.*"),
+                "OIDC provider '" + idpName + "' did not persist IsPKCEEnabled=true after updateIdP");
+    }
+
+    private static String idpOpsEnvelope() {
+        return "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" "
+                + "xmlns:ns=\"" + NS_IDP_OPS + "\" xmlns:m=\"" + NS_MODEL + "\">";
+    }
+
+    /**
+     * The complete {@code identityProvider} element for the APIM-side OIDC IdP federating to the external IS,
+     * shared by {@code addIdP} and every {@code updateIdP} so an update never drops a setting registration made.
+     */
+    private static String oidcIdpXml(String idpName, String isClientId, String isClientSecret,
+            boolean requestProfileClaims, boolean pkceEnabled) {
         String isServer = isServerBase();
 
-        String idpXml = "<ns:identityProvider>"
+        return "<ns:identityProvider>"
                 + "<m:claimConfig><m:localClaimDialect>false</m:localClaimDialect>"
                 // APIM only accepts mappings whose remote claim has first been declared as an IdP claim. The
                 // claimId links each mapping to that declaration; omitting it makes addIdP silently discard every
@@ -501,6 +598,11 @@ public final class SsoProvisioner {
                 // token exchange fails and the federated login bounces back to login.do. Basic-header-only keeps
                 // the body free of client_id so exactly one authenticator engages.
                 + idpAuthProperty("IsBasicAuthEnabled", "true")
+                // "Enable PKCE" on the federated OIDC authenticator (the property the carbon console's IdP
+                // checkbox persists): the authorize request then carries code_challenge (S256) and the token
+                // request the matching code_verifier. Omitted when off, so the default fixture stays the
+                // documented setup, which never mentions the property.
+                + (pkceEnabled ? idpAuthProperty("IsPKCEEnabled", "true") : "")
                 + "</m:federatedAuthenticatorConfigs>"
                 + "<m:federationHub>false</m:federationHub>"
                 + "<m:identityProviderName>" + Utils.escapeXml(idpName) + "</m:identityProviderName>"
@@ -519,31 +621,6 @@ public final class SsoProvisioner {
                 + roleMapping("Internal/subscriber", "subscriber")
                 + "</m:permissionAndRoleConfig>"
                 + "</ns:identityProvider>";
-        String envelope = "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" "
-                + "xmlns:ns=\"" + NS_IDP_OPS + "\" xmlns:m=\"" + NS_MODEL + "\">";
-        String payload = envelope + "<soapenv:Body><ns:addIdP>" + idpXml
-                + "</ns:addIdP></soapenv:Body></soapenv:Envelope>";
-
-        // addIdP faults with HTTP 500 even on success — do NOT assert on status; verify with getIdPByName.
-        idpSoap("urn:addIdP", payload, tenantDomain);
-        Assert.assertTrue(getIdpExists(tenantDomain, idpName),
-                "OIDC identity provider '" + idpName + "' was not created on APIM (addIdP verify failed)");
-
-        // APIM's addIdP operation stores the provider but silently drops its claim mappings (and may return a SOAP
-        // fault saying there are no claim URIs). Reapply the same complete provider before any service provider
-        // references it; updateIdP persists the mappings correctly, as the established multi-tenant SSO fixture
-        // does. This is required for the external groups/profile claims to be available on the callback.
-        String update = envelope + "<soapenv:Body><ns:updateIdP><ns:oldIdPName>"
-                + Utils.escapeXml(idpName) + "</ns:oldIdPName>" + idpXml
-                + "</ns:updateIdP></soapenv:Body></soapenv:Envelope>";
-        idpSoap("urn:updateIdP", update, tenantDomain);
-        String verifyPayload = envelope + "<soapenv:Body><ns:getIdPByName><ns:idPName>"
-                + Utils.escapeXml(idpName) + "</ns:idPName></ns:getIdPByName></soapenv:Body></soapenv:Envelope>";
-        HttpResponse storedIdp = idpSoap("urn:getIdPByName", verifyPayload, tenantDomain);
-        Assert.assertTrue(storedIdp != null && storedIdp.getResponseCode() >= 200
-                        && storedIdp.getResponseCode() < 300 && storedIdp.getData() != null
-                        && storedIdp.getData().contains("claimMappings"),
-                "OIDC provider '" + idpName + "' did not retain claim mappings after updateIdP");
     }
 
     /** Deletes the named IdP if present (idempotency helper and teardown). */

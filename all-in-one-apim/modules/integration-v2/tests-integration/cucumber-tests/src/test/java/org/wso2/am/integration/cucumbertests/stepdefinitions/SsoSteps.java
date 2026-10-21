@@ -31,6 +31,7 @@ import org.wso2.am.integration.cucumbertests.utils.PlaywrightSsoClient;
 import org.wso2.am.integration.cucumbertests.utils.ResourceCleanup;
 import org.wso2.am.integration.cucumbertests.utils.SsoProvisioner;
 import org.wso2.am.integration.cucumbertests.utils.TestContext;
+import org.wso2.am.integration.cucumbertests.utils.Utils;
 
 import java.util.List;
 
@@ -104,9 +105,32 @@ public class SsoSteps {
         String[] creds = SsoProvisioner.createIsSsoApp(Names.unique("APIM_SSO"));
         TestContext.set("ssoIsClientId", creds[0]);
         TestContext.set("ssoIsClientSecret", creds[1]);
+        TestContext.set("ssoIsAppId", creds[2]);
         String uniqueIdp = Names.unique(idpName);
         TestContext.set("ssoIdpName", uniqueIdp);
         SsoProvisioner.registerOidcIdp(uniqueIdp, creds[0], creds[1]);
+    }
+
+    /**
+     * Ticks "Enable PKCE" on the scenario's OIDC identity provider (the {@code IsPKCEEnabled} property the carbon
+     * console's IdP page persists), so APIM's OIDC authenticator sends a {@code code_challenge} on the federated
+     * authorization request and the matching {@code code_verifier} on the token request.
+     */
+    @And("PKCE is enabled on the {string} identity provider")
+    public void pkceIsEnabledOnTheIdentityProvider(String idpName) throws Exception {
+        // idpName is the readable handle; update the actual (unique) IdP the Background registered.
+        SsoProvisioner.enableOidcIdpPkce(TestContext.resolve("ssoIdpName").toString(),
+                TestContext.resolve("ssoIsClientId").toString(),
+                TestContext.resolve("ssoIsClientSecret").toString());
+    }
+
+    /**
+     * Makes PKCE mandatory on the external IS application the {@code idpName} IdP federates to, so the IS refuses
+     * any federated authorization request without a {@code code_challenge}.
+     */
+    @And("the external Identity Server application behind {string} mandates PKCE")
+    public void theExternalIdentityServerApplicationMandatesPkce(String idpName) throws Exception {
+        SsoProvisioner.mandateIsAppPkce(TestContext.resolve("ssoIsAppId").toString());
     }
 
     /**
@@ -228,11 +252,72 @@ public class SsoSteps {
      */
     @Then("the {string} console session should belong to {string}")
     public void theConsoleSessionShouldBelongTo(String console, String actorRef) {
-        String expected = qualified(Identity.resolveActor(actorRef).getUserName());
+        assertSessionPrincipal(console, Identity.resolveActor(actorRef).getUserName(),
+                "the local authenticator resolved the wrong principal/tenant.");
+    }
+
+    /** The federated counterpart: the session must be the JIT-provisioned user who authenticated at the IS. */
+    @Then("the {string} console session should belong to the federated user {string}")
+    public void theConsoleSessionShouldBelongToTheFederatedUser(String console, String user) {
+        // user is the readable handle; the actual IS user was uniquely named by the Background.
+        assertSessionPrincipal(console, TestContext.resolve("ssoUser").toString(),
+                "the federated login resolved the wrong principal/tenant.");
+    }
+
+    private void assertSessionPrincipal(String console, String expectedUser, String why) {
+        String expected = qualified(expectedUser);
         String actual = qualified(browser.sessionPrincipal(consoleContext(console)));
         Assert.assertEquals(actual.toLowerCase(java.util.Locale.ROOT), expected.toLowerCase(java.util.Locale.ROOT),
                 "the '" + console + "' console session belongs to '" + actual + "' but the login was performed as '"
-                        + expected + "' — the local authenticator resolved the wrong principal/tenant.");
+                        + expected + "' — " + why);
+    }
+
+    /**
+     * The federated authorization request carried a PKCE challenge: {@code code_challenge_method} is exactly the
+     * given method and {@code code_challenge} is an unpadded base64url SHA-256 digest (43 characters, RFC 7636
+     * 4.2). That the login then completes against an IS mandating PKCE proves the matching verifier was sent.
+     */
+    @Then("the authorization request sent to {string} must carry a PKCE code challenge with method {string}")
+    public void theAuthorizationRequestMustCarryAPkceCodeChallenge(String idpName, String method) {
+        String authorize = browser.externalAuthorizeRequestUrl();
+        Assert.assertEquals(Utils.queryParam(authorize, "code_challenge_method"), method,
+                "unexpected code_challenge_method on the federated authorization request " + authorize);
+        String challenge = Utils.queryParam(authorize, "code_challenge");
+        Assert.assertNotNull(challenge, "the federated authorization request carries no code_challenge although "
+                + "PKCE is enabled on the identity provider: " + authorize);
+        Assert.assertTrue(challenge.matches("[A-Za-z0-9_-]{43}"),
+                "code_challenge '" + challenge + "' is not an unpadded base64url SHA-256 digest: " + authorize);
+    }
+
+    /** The default path: with PKCE off on the identity provider, no PKCE parameter goes out at all. */
+    @Then("the authorization request sent to {string} must not carry a PKCE code challenge")
+    public void theAuthorizationRequestMustNotCarryAPkceCodeChallenge(String idpName) {
+        String authorize = browser.externalAuthorizeRequestUrl();
+        Assert.assertNull(Utils.queryParam(authorize, "code_challenge"),
+                "the federated authorization request carries a code_challenge with PKCE disabled: " + authorize);
+        Assert.assertNull(Utils.queryParam(authorize, "code_challenge_method"),
+                "the federated authorization request carries a code_challenge_method with PKCE disabled: "
+                        + authorize);
+    }
+
+    /**
+     * The external IS refused the federated authorization request: it answered with an OAuth error response whose
+     * {@code error} is exactly {@code error} and whose {@code error_description} is exactly {@code description}.
+     */
+    @Then("the external Identity Server must reject the authorization request with error {string} and description {string}")
+    public void theExternalIdentityServerMustRejectTheAuthorizationRequest(String error, String description) {
+        String response = browser.externalAuthorizeErrorResponseUrl(30000);
+        Assert.assertNotNull(response, "the external IS returned no OAuth error response for the federated "
+                + "authorization request. " + browser.pageDiagnostic());
+        Assert.assertEquals(Utils.queryParam(response, "error"), error,
+                "unexpected OAuth error from the external IS: " + response);
+        Assert.assertEquals(Utils.queryParam(response, "error_description"), description,
+                "unexpected OAuth error_description from the external IS: " + response);
+    }
+
+    @Then("the {string} console must not have issued a session")
+    public void theConsoleMustNotHaveIssuedASession(String console) {
+        browser.assertNoConsoleSession(consoleContext(console));
     }
 
     /** A username in its tenant-qualified form; an unqualified name belongs to the super tenant. */
