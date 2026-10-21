@@ -1518,6 +1518,40 @@ public class Utils {
         return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "apis/import";
     }
 
+    /**
+     * Publisher REST API — export an API product as an archive, addressed by name/version/provider (GET, returns a
+     * zip). Products have no export-by-id form.
+     */
+    public static String getApiProductExportURL(String baseUrl, String name, String version, String provider,
+                                                String format) {
+        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "api-products/export?name="
+                + URLEncoder.encode(name, StandardCharsets.UTF_8) + "&version="
+                + URLEncoder.encode(version, StandardCharsets.UTF_8) + "&providerName="
+                + URLEncoder.encode(provider, StandardCharsets.UTF_8) + "&format="
+                + URLEncoder.encode(format, StandardCharsets.UTF_8);
+    }
+
+    /**
+     * Publisher REST API — import an API product archive (POST multipart, the zip as the "file" part). The
+     * archive's provider is kept and its dependent APIs are neither imported nor updated, so only the product
+     * itself is under test.
+     */
+    public static String getApiProductImportURL(String baseUrl, boolean overwriteAPIProduct) {
+        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "api-products/import?preserveProvider=true"
+                + "&importAPIs=false&overwriteAPIs=false&overwriteAPIProduct=" + overwriteAPIProduct;
+    }
+
+    /**
+     * Gateway internal REST API — the in-memory API info the gateway holds for a deployed API or API product
+     * ({@code api/am/gateway/v2/apis/{apiId}?tenantDomain=}, Basic admin auth): its context, API-level policy and
+     * the per-resource {@code urlMappings} (auth scheme, rate limit, scopes) the gateway enforces. 404 once the
+     * gateway holds nothing for the id.
+     */
+    public static String getGatewayApiInfoURL(String baseUrl, String apiId, String tenantDomain) {
+        return baseUrl + Constants.GATEWAY + "apis/" + URLEncoder.encode(apiId, StandardCharsets.UTF_8)
+                + "?tenantDomain=" + URLEncoder.encode(tenantDomain, StandardCharsets.UTF_8);
+    }
+
     /** Publisher REST API — upload a custom Synapse sequence backend for an API (PUT multipart: sequence + type). */
     public static String getSequenceBackendURL(String baseUrl, String apiId) {
         return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "apis/" + apiId + "/sequence-backend";
@@ -2511,6 +2545,40 @@ public class Utils {
             return null;
         }
         return null;
+    }
+
+    /**
+     * Copies {@code zipFile} into a NEW delete-on-exit zip in which the first entry whose base file name is
+     * {@code fileName} has its UTF-8 content replaced by {@code edit.apply(oldContent)}; every other entry, and the
+     * directory layout, is copied byte for byte. Used to change a field of an exported archive's definition
+     * ({@code api_product.json}) before importing it again, without re-creating the archive's structure by hand.
+     * Fails when no entry has that name, so a mistyped name cannot import the archive unchanged.
+     */
+    public static File rewriteZipEntry(File zipFile, String fileName, java.util.function.UnaryOperator<String> edit)
+            throws IOException {
+        File edited = File.createTempFile("edited-archive", ".zip");
+        edited.deleteOnExit();
+        boolean rewritten = false;
+        try (ZipInputStream zis = new ZipInputStream(new BufferedInputStream(new FileInputStream(zipFile)));
+             ZipOutputStream zos = new ZipOutputStream(new BufferedOutputStream(new FileOutputStream(edited)))) {
+            ZipEntry entry;
+            while ((entry = zis.getNextEntry()) != null) {
+                String name = entry.getName();
+                byte[] content = zis.readAllBytes();
+                String base = name.substring(name.lastIndexOf('/') + 1);
+                if (!rewritten && !entry.isDirectory() && base.equals(fileName)) {
+                    content = edit.apply(new String(content, StandardCharsets.UTF_8))
+                            .getBytes(StandardCharsets.UTF_8);
+                    rewritten = true;
+                }
+                zos.putNextEntry(new ZipEntry(name));
+                zos.write(content);
+                zos.closeEntry();
+                zis.closeEntry();
+            }
+        }
+        Assert.assertTrue(rewritten, "Archive " + zipFile + " has no entry named " + fileName + " to edit");
+        return edited;
     }
 
     /**
