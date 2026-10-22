@@ -162,13 +162,19 @@ public final class HostedDatabaseBlock implements AutoCloseable {
 
     /** Provisions a fresh pair of block-specific databases, refusing to overwrite any existing database. */
     public static HostedDatabaseBlock provision(String label, Path envFile, Path productZip) throws Exception {
-        return provision(label, envFile, productZip, false);
+        return provision(label, envFile, productZip, false, false);
     }
 
     public static HostedDatabaseBlock provision(String label, Path envFile, Path productZip,
                                                 boolean registryLogMillisecondPrecision) throws Exception {
+        return provision(label, envFile, productZip, registryLogMillisecondPrecision, false);
+    }
+
+    public static HostedDatabaseBlock provision(String label, Path envFile, Path productZip,
+                                                boolean registryLogMillisecondPrecision,
+                                                boolean hybridUserRoleKeyIncludesDomain) throws Exception {
         HostedDatabaseBlock block = new HostedDatabaseBlock(label, envFile, productZip);
-        block.createAndSeed(label, registryLogMillisecondPrecision);
+        block.createAndSeed(label, registryLogMillisecondPrecision, hybridUserRoleKeyIncludesDomain);
         return block;
     }
 
@@ -213,7 +219,8 @@ public final class HostedDatabaseBlock implements AutoCloseable {
         return sharedDatabase;
     }
 
-    private void createAndSeed(String label, boolean registryLogMillisecondPrecision) throws Exception {
+    private void createAndSeed(String label, boolean registryLogMillisecondPrecision,
+                               boolean hybridUserRoleKeyIncludesDomain) throws Exception {
         Class.forName(databaseDriver);
         List<String> created = new ArrayList<>();
         String schemaProfile;
@@ -233,6 +240,9 @@ public final class HostedDatabaseBlock implements AutoCloseable {
             executeSchema(apimDatabase, "/dbscripts/apimgt/" + schemaProfile + ".sql");
             executeSchema(sharedDatabase, "/dbscripts/" + schemaProfile + ".sql");
             RegistryLogTimestampPrecision.configure(registryLogMillisecondPrecision, databaseType, label,
+                    sharedDatabase, () -> DriverManager.getConnection(provisionJdbcUrl(sharedDatabase),
+                            provisionUsername, provisionPassword));
+            HybridUserRoleKeyIncludesDomain.configure(hybridUserRoleKeyIncludesDomain, databaseType, label,
                     sharedDatabase, () -> DriverManager.getConnection(provisionJdbcUrl(sharedDatabase),
                             provisionUsername, provisionPassword));
         } catch (Exception failure) {

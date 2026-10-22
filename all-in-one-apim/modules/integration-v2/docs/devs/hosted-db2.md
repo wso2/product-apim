@@ -84,3 +84,12 @@ wrapper and the additional VM are unnecessary.
 The APIM configuration follows the [WSO2 Db2 setup guide](https://apim.docs.wso2.com/en/latest/install-and-setup/setup/setting-up-databases/changing-default-databases/changing-to-ibm-db2/):
 `type=db2`, the `com.ibm.db2.jcc.DB2Driver` driver, and the validation query
 `SELECT 1 FROM SYSIBM.SYSDUMMY1`. Keep credentials in the private environment file.
+
+The shipped Db2 `UM_HYBRID_USER_ROLE` unique key omits `UM_DOMAIN_ID`, unlike the other supported database
+scripts. Primary and secondary user stores can contain the same username and Internal role in one tenant;
+Carbon stores the username without its user-store domain and records that domain separately. Db2's shipped key
+therefore rejects the secondary user's role row. Blocks that initialize the secondary user store opt in with
+`hybridUserRoleKeyIncludesDomain=true`. After applying `dbscripts/db2.sql` to the block's Shared database, the
+framework replaces the three-column key with the four-column key and verifies the catalog state before APIM
+boots. Other database types already include `UM_DOMAIN_ID` and are not altered. Blocks without the parameter
+retain the shipped Db2 schema.

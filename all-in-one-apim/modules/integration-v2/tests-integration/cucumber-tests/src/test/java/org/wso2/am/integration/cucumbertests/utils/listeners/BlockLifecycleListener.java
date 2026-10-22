@@ -49,6 +49,7 @@ import org.wso2.am.testcontainers.DynamicPlatformGatewayContainer;
 import org.wso2.am.testcontainers.JacocoCoverage;
 import org.wso2.am.testcontainers.DynamicSolaceBroker;
 import org.wso2.am.testcontainers.HostedDatabaseBlock;
+import org.wso2.am.testcontainers.HybridUserRoleKeyIncludesDomain;
 import org.wso2.am.testcontainers.RegistryLogTimestampPrecision;
 import org.wso2.am.testcontainers.NodeAppServer;
 import org.wso2.am.testcontainers.SquidProxyServer;
@@ -125,6 +126,7 @@ public class BlockLifecycleListener implements ITestListener {
     static final String PARAM_INIT_TENANT_USERS = "initTenantUsers";
     /** Opt-in millisecond precision for the block's MySQL registry activity timestamps. */
     static final String PARAM_REGISTRY_LOG_MILLISECOND_PRECISION = "registryLogMillisecondPrecision";
+    static final String PARAM_HYBRID_USER_ROLE_KEY_INCLUDES_DOMAIN = "hybridUserRoleKeyIncludesDomain";
     /** When {@code true}, provisions a second non-super tenant for cross-tenant subscription coverage. */
     static final String PARAM_INIT_CROSS_TENANT_PEER = "initCrossTenantPeer";
     /**
@@ -1061,8 +1063,12 @@ public class BlockLifecycleListener implements ITestListener {
         String profile = System.getProperty(HostedDatabaseBlock.PROFILE_SYSTEM_PROPERTY);
         boolean registryLogMillisecondPrecision =
                 Boolean.parseBoolean(param(context, PARAM_REGISTRY_LOG_MILLISECOND_PRECISION));
+        boolean hybridUserRoleKeyIncludesDomain =
+                Boolean.parseBoolean(param(context, PARAM_HYBRID_USER_ROLE_KEY_INCLUDES_DOMAIN));
         if (profile == null || profile.isBlank()) {
             RegistryLogTimestampPrecision.configure(registryLogMillisecondPrecision, "h2", label,
+                    "default shared database", null);
+            HybridUserRoleKeyIncludesDomain.configure(hybridUserRoleKeyIncludesDomain, "h2", label,
                     "default shared database", null);
             return;
         }
@@ -1078,7 +1084,7 @@ public class BlockLifecycleListener implements ITestListener {
                     + "APIM distribution ZIP used by this test run");
         }
         HostedDatabaseBlock database = HostedDatabaseBlock.provision(label, envFile, Path.of(productZipArgument),
-                registryLogMillisecondPrecision);
+                registryLogMillisecondPrecision, hybridUserRoleKeyIncludesDomain);
         TestContext.setShared(HOSTED_DATABASE_KEY, database);
         logger.info("Block '" + label + "' provisioned hosted " + normalizedProfile + " databases APIM='"
                 + database.apimDatabaseName() + "' Shared='" + database.sharedDatabaseName() + "'");

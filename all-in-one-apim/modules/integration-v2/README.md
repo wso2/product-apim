@@ -50,6 +50,15 @@ The parameter is enabled only on the regular and email-username DevPortal blocks
 which run `DevPortalUnifiedSearchRunner` and assert registry indexing. It applies to hosted MySQL
 profiles and the distributed block-owned MySQL database. All other blocks use the shipped schema.
 
+## Secondary-store hybrid role key
+
+The TestNG block parameter `hybridUserRoleKeyIncludesDomain` is boolean and defaults to `false`.
+When enabled, Db2 hosted blocks replace the shipped three-column unique key on
+`UM_HYBRID_USER_ROLE` with a four-column key that includes `UM_DOMAIN_ID`, then verify the key in
+the Db2 catalog before APIM boots. Other database types already use the four-column key and are
+left unchanged. The parameter is enabled only on all-in-one blocks that initialize the secondary user store;
+the distributed suite omits it, as declared in `docs/devs/suite-alignment.ignore`.
+
 ## Suite checks
 
 From this directory, run the Python-only checks:

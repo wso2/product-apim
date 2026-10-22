@@ -464,6 +464,11 @@ distribution defaults. Only reach for an overlay when a feature genuinely needs 
   schema seeding and verifies `DATETIME_PRECISION = 3` before APIM/CP boots. It is scoped to the four
   DevPortal blocks running unified-search indexing assertions; all other blocks retain the shipped schema.
   Other database types log that it does not apply. See the [parameter reference](../../README.md#registry-activity-timestamp-precision).
+- **Secondary-store hybrid role key per block.** `hybridUserRoleKeyIncludesDomain` is boolean, default `false`.
+  When enabled with the Db2 hosted profile, provisioning replaces `UM_HYBRID_USER_ROLE`'s shipped
+  three-column unique key with one that includes `UM_DOMAIN_ID` and verifies it in the catalog before boot.
+  Other database types already include that column and are unchanged. It is enabled only on all-in-one blocks
+  that initialize the secondary user store; the distributed suite omits it, as declared in `suite-alignment.ignore`. See the [parameter reference](../../README.md#secondary-store-hybrid-role-key).
 - **CPU cap per block.** `<parameter name="apimCpuLimit" value="1"/>` caps that block's APIM container at the
   given number of CPUs (Docker `--cpus`; fractions such as `1.5` allowed). Without the parameter the container is
   uncapped. It caps only APIM; a block that boots an external IS caps that container with
