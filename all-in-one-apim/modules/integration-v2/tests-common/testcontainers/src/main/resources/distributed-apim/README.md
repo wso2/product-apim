@@ -127,7 +127,8 @@ the setting; automatic Diagnostics captures are disabled.
 The existing `apimCpuLimit` block parameter, when present, overrides the CPU cap for all
 three components; the default remains 1 CPU.
 
-Each block's MySQL container is capped at 0.5 CPU and 512 MiB of RAM, with swap disabled. It uses a 64 MiB InnoDB
+Each block's MySQL container is capped at 0.5 CPU and 384 MiB of RAM, with a swap allowance of up to 96 MiB
+(`DistributedMemoryLimits.memoryAndSwapLimitBytes`: 25% of the memory cap). It uses a 64 MiB InnoDB
 buffer pool, a 16 MiB log buffer, a 16 MiB TempTable RAM threshold, and table caches of 512 entries. Performance
 Schema is disabled. Database files use the image's private anonymous disk volume instead of tmpfs;
 Testcontainers removes the volume when it removes the container, keeping database state isolated between blocks.

@@ -1,8 +1,10 @@
 # Docker host clock preparation and monitoring
 
 Both v2 topologies register `ClockStabilityListener`. It starts one small, unprivileged observer container per
-suite using the already-built Node backend image. The observer has no network, a 0.1 CPU cap, 128 MiB memory,
-and no swap. It samples the Docker host's real-time and monotonic clocks every 200 ms. This also observes the
+suite using the already-built Node backend image. The observer has no network and a 0.1 CPU cap. In the
+distributed topology it has a 128 MiB memory limit with up to 32 MiB of swap
+(`DistributedMemoryLimits.memoryAndSwapLimitBytes`); the all-in-one observer has no configured memory limit.
+It samples the Docker host's real-time and monotonic clocks every 200 ms. This also observes the
 correct clock when Maven runs on macOS and Docker runs in an Ubuntu VM.
 
 Before any block starts, the listener requires 20 seconds of healthy samples. Throughout startup, scenarios,
