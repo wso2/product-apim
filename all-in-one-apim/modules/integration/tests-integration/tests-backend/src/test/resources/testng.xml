@@ -67,6 +67,7 @@
             <class name="org.wso2.am.integration.tests.apimGovernance.PolicyMgtTestCase"/>
             <class name="org.wso2.am.integration.tests.apimGovernance.APIComplianceTestCase"/>
             <class name="org.wso2.am.integration.tests.apimGovernance.MCPComplianceTestCase"/>
+            <class name="org.wso2.am.integration.tests.apimGovernance.PolicySeverityFilteringTestCase"/>
         </classes>
     </test>
 

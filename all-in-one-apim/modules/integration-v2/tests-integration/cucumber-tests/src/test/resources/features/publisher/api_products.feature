@@ -9,7 +9,10 @@ Feature: Publisher API Products
   verify the aggregation and the publisher listing fidelity, re-validate the product's own generated definition
   through the OAS validator, reject a malformed context, create a new version (incl. as default), confirm the
   product tracks its underlying API through a re-save, mutual-SSL security + a client certificate on a PRODUCT,
-  and the product revision lifecycle (reusing the generic revision steps with resourceType "api-products").
+  and the product revision lifecycle (reusing the generic revision steps with resourceType "api-products"). It
+  also covers a product's rate limits (a product-level policy on every resource, on create, update, new version and
+  import), its version and context (a versionless create gets 1.0.0; neither an update nor an import changes them)
+  and product archive import.
   Gateway invocation of a product is covered by gateway/api_product_invocation. ×2 tenant where the concern is
   tenant-agnostic. Legacy's SUPER_TENANT_USER_STORE_USER factory mode is ported as a third actor dimension:
   SECONDARY.COM store actors drive the create arc and a dedicated full-lifecycle scenario, which is why this
@@ -144,11 +147,15 @@ Feature: Publisher API Products
       | publisherUser             |
       | publisherUser@tenant1.com |
 
+  # The product carries a product-level rate limit (the shipped 10KPerMin), which the new version keeps on every
+  # resource.
   @cap:publisher @feat:products @type:regression @dep:publisher @legacy:APIProductCreationTestCase
   Scenario Outline: Create a new version of an API product as <actor>
     Given The system is ready and I have valid publisher access tokens as "<actor>"
     And I have created an api from "artifacts/payloads/create_apim_test_api.json" as "verApiId" and deployed it
-    When I create an API product "${UNIQUE:VerProduct}" with context "${UNIQUE:verProductCtx}" from API "verApiId" as "verProductId"
+    When I put an API product payload "${UNIQUE:VerProduct}" with context "${UNIQUE:verProductCtx}" from APIs "verApiId" in context as "verProductPayload"
+    And I set the field "apiThrottlingPolicy" to "10KPerMin" in the payload "verProductPayload"
+    And I create an "api-products" resource with payload "verProductPayload" as "verProductId"
     Then The response status code should be 201
     When I create a new version "2.0.0" of API product "verProductId" with default version "false" as "verProductV2Id"
     Then The response status code should be 201
@@ -156,6 +163,9 @@ Feature: Publisher API Products
     Then The response status code should be 200
     And The response should contain "2.0.0"
     And The value of response field "version" should be "2.0.0"
+    And The value of response field "apiThrottlingPolicy" should be "10KPerMin"
+    And The response array field "apis[*].operations[*].throttlingPolicy" should have exactly 2 entries
+    And The response field "apis[*].operations[*].throttlingPolicy" should be exactly the list "10KPerMin"
 
     Examples:
       | actor                     |
@@ -986,3 +996,372 @@ Feature: Publisher API Products
       | actor                  | standardUsername  | emailUsername                     |
       | superTenantAdmin       | admin             | emailAdmin@email.com@carbon.super |
       | admin@tenant1.com      | admin@tenant1.com | admin@email.com@tenant1.com       |
+
+  # ---------------------------------------------------------------------------------------------------------------
+  # Rate limits, version and context of an API product. Every product below aggregates one
+  # member API on the wildcard backend with a secured resource (/secured) and an UNAUTHENTICATED one (/open), so a
+  # setting that skips unauthenticated resources is caught. The gateway half — the deployed revision's resource
+  # settings, 429 enforcement and the routes a product is served on — is in gateway/api_product_invocation and
+  # gateway/throttling_enforcement.
+  # ---------------------------------------------------------------------------------------------------------------
+
+  # A product-level rate limit is applied to EVERY resource of the product, the unauthenticated one included, in
+  # place of the member API's resource limits, and a later change of the API's resource limits doesn't reach it.
+  # The shipped advanced policies stand in for the product-level (10KPerMin) and resource (20KPerMin) limits: only
+  # which policy each resource stores is asserted here (its enforcement is in gateway/throttling_enforcement).
+  @cap:publisher @feat:products @rule:rate-limit @type:regression
+  Scenario Outline: A product-level rate limit applies to every resource of an API product as <actor>
+    Given The system is ready and I have valid publisher access tokens as "<actor>"
+    And I have created an api from "artifacts/payloads/create_apim_product_member_wildcard_api.json" as "plApiId" and deployed it
+    When I retrieve the "apis" resource with id "plApiId"
+    And I put the response payload in context as "plApiPayload"
+    When I update the "apis" resource "plApiId" and "plApiPayload" with configuration type "operations" and value:
+      """
+      [{"target":"/secured","verb":"GET","authType":"Application & Application User","throttlingPolicy":"20KPerMin","scopes":[],"operationPolicies":{"request":[],"response":[],"fault":[]}},{"target":"/open","verb":"GET","authType":"None","throttlingPolicy":"Unlimited","scopes":[],"operationPolicies":{"request":[],"response":[],"fault":[]}}]
+      """
+    Then The response status code should be 200
+    When I put an API product payload "${UNIQUE:ProdLevelProduct}" with context "${UNIQUE:prodLevelCtx}" from APIs "plApiId" in context as "plProductPayload"
+    And I set the field "apiThrottlingPolicy" to "10KPerMin" in the payload "plProductPayload"
+    And I create an "api-products" resource with payload "plProductPayload" as "plProductId"
+    Then The response status code should be 201
+    When I retrieve the "api-products" resource with id "plProductId"
+    Then The response status code should be 200
+    And The value of response field "apiThrottlingPolicy" should be "10KPerMin"
+    # Both resources carry the product-level policy — the count pins that neither lost its policy.
+    And The response array field "apis[*].operations[*].throttlingPolicy" should have exactly 2 entries
+    And The response field "apis[*].operations[*].throttlingPolicy" should be exactly the list "10KPerMin"
+    And The response field "apis[*].operations[?(@.target=='/open')].authType" should be exactly the list "None"
+    # Changing the member API's resource tier doesn't reach a product with a product-level policy.
+    When I retrieve the "apis" resource with id "plApiId"
+    And I put the response payload in context as "plApiPayload"
+    When I update the "apis" resource "plApiId" and "plApiPayload" with configuration type "operations" and value:
+      """
+      [{"target":"/secured","verb":"GET","authType":"Application & Application User","throttlingPolicy":"20KPerMin","scopes":[],"operationPolicies":{"request":[],"response":[],"fault":[]}},{"target":"/open","verb":"GET","authType":"None","throttlingPolicy":"20KPerMin","scopes":[],"operationPolicies":{"request":[],"response":[],"fault":[]}}]
+      """
+    Then The response status code should be 200
+    When I retrieve the "api-products" resource with id "plProductId"
+    Then The response array field "apis[*].operations[*].throttlingPolicy" should have exactly 2 entries
+    And The response field "apis[*].operations[*].throttlingPolicy" should be exactly the list "10KPerMin"
+
+    Examples:
+      | actor                     |
+      | publisherUser             |
+      | publisherUser@tenant1.com |
+
+  # A product WITHOUT a product-level policy (operation level) takes each resource's rate limit from its member
+  # API; setting a product-level policy by an update replaces them all, and clearing it gives them back.
+  @cap:publisher @feat:products @rule:rate-limit @type:regression
+  Scenario Outline: An operation-level API product takes its API's resource rate limits until a product-level rate limit is set as <actor>
+    Given The system is ready and I have valid publisher access tokens as "<actor>"
+    And I have created an api from "artifacts/payloads/create_apim_product_member_wildcard_api.json" as "olApiId" and deployed it
+    When I retrieve the "apis" resource with id "olApiId"
+    And I put the response payload in context as "olApiPayload"
+    When I update the "apis" resource "olApiId" and "olApiPayload" with configuration type "operations" and value:
+      """
+      [{"target":"/secured","verb":"GET","authType":"Application & Application User","throttlingPolicy":"20KPerMin","scopes":[],"operationPolicies":{"request":[],"response":[],"fault":[]}},{"target":"/open","verb":"GET","authType":"None","throttlingPolicy":"Unlimited","scopes":[],"operationPolicies":{"request":[],"response":[],"fault":[]}}]
+      """
+    Then The response status code should be 200
+    When I create an API product "${UNIQUE:OpLevelProduct}" with context "${UNIQUE:opLevelCtx}" from API "olApiId" as "olProductId"
+    Then The response status code should be 201
+    When I retrieve the "api-products" resource with id "olProductId"
+    Then The response field "apis[*].operations[?(@.target=='/secured')].throttlingPolicy" should be exactly the list "20KPerMin"
+    And The response field "apis[*].operations[?(@.target=='/open')].throttlingPolicy" should be exactly the list "Unlimited"
+    # Set a product-level policy by an update: it replaces the rate limit of every resource.
+    And I put the response payload in context as "olProductPayload"
+    When I update the "api-products" resource "olProductId" and "olProductPayload" with configuration type "apiThrottlingPolicy" and value:
+      """
+      10KPerMin
+      """
+    Then The response status code should be 200
+    When I retrieve the "api-products" resource with id "olProductId"
+    Then The value of response field "apiThrottlingPolicy" should be "10KPerMin"
+    And The response array field "apis[*].operations[*].throttlingPolicy" should have exactly 2 entries
+    And The response field "apis[*].operations[*].throttlingPolicy" should be exactly the list "10KPerMin"
+    # A product-level Unlimited is a product-level policy too: every resource is Unlimited, the secured one included.
+    And I put the response payload in context as "olProductUnlimitedPayload"
+    When I update the "api-products" resource "olProductId" and "olProductUnlimitedPayload" with configuration type "apiThrottlingPolicy" and value:
+      """
+      Unlimited
+      """
+    Then The response status code should be 200
+    When I retrieve the "api-products" resource with id "olProductId"
+    Then The value of response field "apiThrottlingPolicy" should be "Unlimited"
+    And The response array field "apis[*].operations[*].throttlingPolicy" should have exactly 2 entries
+    And The response field "apis[*].operations[*].throttlingPolicy" should be exactly the list "Unlimited"
+    # Clear it again: each resource is back on its member API's own rate limit.
+    And I put the response payload in context as "olProductClearPayload"
+    And I set the field "apiThrottlingPolicy" to null in the payload "olProductClearPayload"
+    When I update "api-products" resource of id "olProductId" with payload "olProductClearPayload"
+    Then The response status code should be 200
+    When I retrieve the "api-products" resource with id "olProductId"
+    Then The response field "apis[*].operations[?(@.target=='/secured')].throttlingPolicy" should be exactly the list "20KPerMin"
+    And The response field "apis[*].operations[?(@.target=='/open')].throttlingPolicy" should be exactly the list "Unlimited"
+
+    Examples:
+      | actor                     |
+      | publisherUser             |
+      | publisherUser@tenant1.com |
+
+  # Product import needs the apim:api_product_import_export scope, which only admin (and Internal/devops) holds, so
+  # the import scenarios run as admin.
+  # Importing a product applies the ARCHIVE's product-level policy to every resource: the archive is edited to
+  # carry another product-level policy and Unlimited on every resource, and the imported product must carry the
+  # archive's product-level policy on all of them, not the resource limits written in the archive.
+  @cap:publisher @feat:products @rule:rate-limit @type:regression
+  Scenario Outline: Importing an API product applies the archive's product-level rate limit to every resource as <actor>
+    Given The system is ready
+    And I have valid access tokens as "<actor>"
+    And I have created an api from "artifacts/payloads/create_apim_product_member_wildcard_api.json" as "ipApiId" and deployed it
+    When I put an API product payload "${UNIQUE:ImportLevelProduct}" with context "${UNIQUE:importLevelCtx}" from APIs "ipApiId" in context as "ipProductPayload"
+    And I set the field "apiThrottlingPolicy" to "10KPerMin" in the payload "ipProductPayload"
+    And I create an "api-products" resource with payload "ipProductPayload" as "ipProductId"
+    Then The response status code should be 201
+    When I export the API product "ipProductId" to an archive as "ipArchive"
+    And I edit the exported API product archive "ipArchive" into "ipEditedArchive" with:
+      """
+      {"apiThrottlingPolicy":"20KPerMin","apis[*].operations[*].throttlingPolicy":"Unlimited"}
+      """
+    And I import the API product archive "ipEditedArchive" with overwrite "true"
+    Then The response status code should be 200
+    When I retrieve the "api-products" resource with id "ipProductId"
+    Then The value of response field "apiThrottlingPolicy" should be "20KPerMin"
+    And The response array field "apis[*].operations[*].throttlingPolicy" should have exactly 2 entries
+    And The response field "apis[*].operations[*].throttlingPolicy" should be exactly the list "20KPerMin"
+
+    Examples:
+      | actor             |
+      | superTenantAdmin  |
+      | admin@tenant1.com |
+
+  # A versionless create resolves to the same name + version 1.0.0 identity as an explicit one, so a second product
+  # with an existing product's name is refused whether or not it names a version — on the existing product's
+  # context (an explicit 1.0.0 conflicting proves the versionless product IS 1.0.0), and without a version on
+  # another context, where the conflict can only be the name and version. A BLANK version is not a missing one:
+  # the request validation refuses it.
+  @cap:publisher @feat:products @rule:context-version @type:negative
+  Scenario Outline: Creating an API product with an existing name or a blank version is rejected as <actor>
+    Given The system is ready and I have valid publisher access tokens as "<actor>"
+    And I have created an api from "artifacts/payloads/create_apim_product_member_wildcard_api.json" as "dupApiId" and deployed it
+    And I generate a unique value and store it as "dupProductName"
+    And I generate a unique value and store it as "dupProductCtx"
+    When I put an API product payload "{{dupProductName}}" with context "{{dupProductCtx}}" from APIs "dupApiId" in context as "dupProductPayload"
+    And I remove the field "version" from the payload "dupProductPayload"
+    And I create an "api-products" resource with payload "dupProductPayload" as "dupProductId"
+    Then The response status code should be 201
+    And The value of response field "version" should be "1.0.0"
+    # The same name and context, without a version and with version 1.0.0.
+    When I attempt to create an "api-products" resource with payload "dupProductPayload"
+    Then The response status code should be 409
+    And The value of error response field "code" should be "900300"
+    When I put an API product payload "{{dupProductName}}" with context "{{dupProductCtx}}" from APIs "dupApiId" in context as "dupSameContextPayload"
+    And I attempt to create an "api-products" resource with payload "dupSameContextPayload"
+    Then The response status code should be 409
+    And The value of error response field "code" should be "900300"
+    # The same name on another context, without a version: the conflict can only be the name and version.
+    When I put an API product payload "{{dupProductName}}" with context "${UNIQUE:dupProductOtherCtx}" from APIs "dupApiId" in context as "dupNoVersionPayload"
+    And I remove the field "version" from the payload "dupNoVersionPayload"
+    And I attempt to create an "api-products" resource with payload "dupNoVersionPayload"
+    Then The response status code should be 409
+    And The value of error response field "code" should be "900300"
+    # A blank version on a new name.
+    When I put an API product payload "${UNIQUE:BlankVersionProduct}" with context "${UNIQUE:blankVersionCtx}" from APIs "dupApiId" in context as "dupBlankVersionPayload"
+    And I set the field "version" to "" in the payload "dupBlankVersionPayload"
+    And I attempt to create an "api-products" resource with payload "dupBlankVersionPayload"
+    Then The response status code should be 400
+    And The response should contain "Validation Error"
+    And The value of error response field "error[0].code" should be "400_version"
+
+    Examples:
+      | actor                     |
+      | publisherUser             |
+      | publisherUser@tenant1.com |
+
+  # The context and version of a product are fixed at create: an update is accepted but keeps both, whatever the
+  # request carries — a changed context, a moved context keeping the {version} template, a version-first context,
+  # the context without its tenant prefix (the stored context itself in the super tenant), a null or absent
+  # context, no version, or another version (which is not created as a product of its own). A blank context or
+  # version is refused by the request validation.
+  @cap:publisher @feat:products @rule:context-version @type:negative @dep:devportal
+  Scenario Outline: Updating an API product never changes its context or version as <actor>
+    Given The system is ready
+    And I have valid access tokens as "<actor>"
+    And I have created an api from "artifacts/payloads/create_apim_product_member_wildcard_api.json" as "updApiId" and deployed it
+    And I generate a unique value and store it as "updProductName"
+    And I generate a unique value and store it as "updProductCtx"
+    When I put an API product payload "{{updProductName}}" with context "{{updProductCtx}}" from APIs "updApiId" in context as "updProductPayload"
+    And I set the field "version" to "2.0.0" in the payload "updProductPayload"
+    And I create an "api-products" resource with payload "updProductPayload" as "updProductId"
+    Then The response status code should be 201
+    And The value of response field "context" should be "<tenantPrefix>/{{updProductCtx}}"
+    When I publish the "api-products" resource with id "updProductId"
+    Then The response status code should be 200
+    When I retrieve the "api-products" resource with id "updProductId"
+    And I put the response payload in context as "updContextPayload"
+    # After every update the stored context and version are pinned exactly; the devportal context is derived from
+    # them, so it is checked once, at the end.
+    And I set the field "context" to "/{{updProductCtx}}changed" in the payload "updContextPayload"
+    When I update "api-products" resource of id "updProductId" with payload "updContextPayload"
+    Then The response status code should be 200
+    And The value of response field "context" should be "<tenantPrefix>/{{updProductCtx}}"
+    And The value of response field "version" should be "2.0.0"
+    When I set the field "context" to "/{{updProductCtx}}moved/{version}" in the payload "updContextPayload"
+    And I update "api-products" resource of id "updProductId" with payload "updContextPayload"
+    Then The response status code should be 200
+    And The value of response field "context" should be "<tenantPrefix>/{{updProductCtx}}"
+    And The value of response field "version" should be "2.0.0"
+    When I set the field "context" to "/{version}/{{updProductCtx}}" in the payload "updContextPayload"
+    And I update "api-products" resource of id "updProductId" with payload "updContextPayload"
+    Then The response status code should be 200
+    And The value of response field "context" should be "<tenantPrefix>/{{updProductCtx}}"
+    And The value of response field "version" should be "2.0.0"
+    When I set the field "context" to "/{{updProductCtx}}" in the payload "updContextPayload"
+    And I update "api-products" resource of id "updProductId" with payload "updContextPayload"
+    Then The response status code should be 200
+    And The value of response field "context" should be "<tenantPrefix>/{{updProductCtx}}"
+    And The value of response field "version" should be "2.0.0"
+    When I set the field "context" to null in the payload "updContextPayload"
+    And I update "api-products" resource of id "updProductId" with payload "updContextPayload"
+    Then The response status code should be 200
+    And The value of response field "context" should be "<tenantPrefix>/{{updProductCtx}}"
+    And The value of response field "version" should be "2.0.0"
+    When I remove the field "context" from the payload "updContextPayload"
+    And I update "api-products" resource of id "updProductId" with payload "updContextPayload"
+    Then The response status code should be 200
+    And The value of response field "context" should be "<tenantPrefix>/{{updProductCtx}}"
+    And The value of response field "version" should be "2.0.0"
+    When I retrieve the "api-products" resource with id "updProductId"
+    And I put the response payload in context as "updVersionPayload"
+    And I set the field "version" to null in the payload "updVersionPayload"
+    When I update "api-products" resource of id "updProductId" with payload "updVersionPayload"
+    Then The response status code should be 200
+    And The value of response field "context" should be "<tenantPrefix>/{{updProductCtx}}"
+    And The value of response field "version" should be "2.0.0"
+    When I set the field "version" to "9.9.9" in the payload "updVersionPayload"
+    And I update "api-products" resource of id "updProductId" with payload "updVersionPayload"
+    Then The response status code should be 200
+    And The value of response field "context" should be "<tenantPrefix>/{{updProductCtx}}"
+    And The value of response field "version" should be "2.0.0"
+    # The product exports at its own version, and the other version was not created as a product of its own.
+    And I attempt to export the API product named "{{updProductName}}" version "2.0.0" expecting status 200
+    And I attempt to export the API product named "{{updProductName}}" version "9.9.9" expecting status 404
+    # A blank context or version is not a missing one: the request validation refuses both.
+    When I retrieve the "api-products" resource with id "updProductId"
+    And I put the response payload in context as "updBlankPayload"
+    And I set the field "context" to "" in the payload "updBlankPayload"
+    And I update "api-products" resource of id "updProductId" with payload "updBlankPayload"
+    Then The response status code should be 400
+    And The response should contain "Validation Error"
+    And The value of error response field "error[0].code" should be "400_context"
+    When I retrieve the "api-products" resource with id "updProductId"
+    And I put the response payload in context as "updBlankPayload"
+    And I set the field "version" to "" in the payload "updBlankPayload"
+    And I update "api-products" resource of id "updProductId" with payload "updBlankPayload"
+    Then The response status code should be 400
+    And The response should contain "Validation Error"
+    And The value of error response field "error[0].code" should be "400_version"
+    When I retrieve the "api-products" resource with id "updProductId"
+    Then The value of response field "context" should be "<tenantPrefix>/{{updProductCtx}}"
+    And The value of response field "version" should be "2.0.0"
+    Then The devportal should report API product "updProductId" exactly once with the same fields
+
+    Examples:
+      | actor             | tenantPrefix   |
+      | superTenantAdmin  |                |
+      | admin@tenant1.com | /t/tenant1.com |
+
+  # Importing an archive of an EXISTING product: with overwrite, the import updates the product but keeps its
+  # context and version — a changed, version-first or unprefixed context in the archive is ignored, and an archive
+  # without a version updates the existing 1.0.0 (its description lands on the same product id); without
+  # overwrite, the import is refused.
+  @cap:publisher @feat:products @rule:import @type:regression @type:negative
+  Scenario Outline: Importing an archive of an existing API product keeps its context and version as <actor>
+    Given The system is ready
+    And I have valid access tokens as "<actor>"
+    And I have created an api from "artifacts/payloads/create_apim_product_member_wildcard_api.json" as "impApiId" and deployed it
+    And I generate a unique value and store it as "impProductCtx"
+    When I create an API product "${UNIQUE:ImportCtxProduct}" with context "{{impProductCtx}}" from API "impApiId" as "impProductId"
+    Then The response status code should be 201
+    When I export the API product "impProductId" to an archive as "impArchive"
+    And I edit the exported API product archive "impArchive" into "impMovedArchive" with:
+      """
+      {"context":"/{{impProductCtx}}moved"}
+      """
+    And I import the API product archive "impMovedArchive" with overwrite "true"
+    Then The response status code should be 200
+    When I retrieve the "api-products" resource with id "impProductId"
+    Then The value of response field "context" should be "<tenantPrefix>/{{impProductCtx}}"
+    And The value of response field "version" should be "1.0.0"
+    When I edit the exported API product archive "impArchive" into "impVersionFirstArchive" with:
+      """
+      {"context":"/{version}/{{impProductCtx}}"}
+      """
+    And I import the API product archive "impVersionFirstArchive" with overwrite "true"
+    Then The response status code should be 200
+    When I retrieve the "api-products" resource with id "impProductId"
+    Then The value of response field "context" should be "<tenantPrefix>/{{impProductCtx}}"
+    And The value of response field "version" should be "1.0.0"
+    When I edit the exported API product archive "impArchive" into "impUnprefixedArchive" with:
+      """
+      {"context":"/{{impProductCtx}}"}
+      """
+    And I import the API product archive "impUnprefixedArchive" with overwrite "true"
+    Then The response status code should be 200
+    When I retrieve the "api-products" resource with id "impProductId"
+    Then The value of response field "context" should be "<tenantPrefix>/{{impProductCtx}}"
+    And The value of response field "version" should be "1.0.0"
+    When I edit the exported API product archive "impArchive" into "impNoVersionArchive" with:
+      """
+      {"version":null,"description":"Imported without a version"}
+      """
+    And I import the API product archive "impNoVersionArchive" with overwrite "true"
+    Then The response status code should be 200
+    When I retrieve the "api-products" resource with id "impProductId"
+    Then The value of response field "description" should be "Imported without a version"
+    And The value of response field "context" should be "<tenantPrefix>/{{impProductCtx}}"
+    And The value of response field "version" should be "1.0.0"
+    # The same archive without overwrite is refused: the product already exists.
+    When I import the API product archive "impArchive" with overwrite "false"
+    Then The response status code should be 409
+    And The value of error response field "code" should be "900300"
+
+    Examples:
+      | actor             | tenantPrefix   |
+      | superTenantAdmin  |                |
+      | admin@tenant1.com | /t/tenant1.com |
+
+  # Importing a NEW product (another name and context, no id, no version) creates it as version 1.0.0 with a
+  # context of its own, carrying the archive's product-level policy on every resource (the shipped 10KPerMin
+  # advanced policy, so no admin is needed). The import answers with a message, not the product, so the product is
+  # found through its export by name and version 1.0.0 — which is itself the proof that it was created as 1.0.0.
+  @cap:publisher @feat:products @rule:import @type:regression
+  Scenario Outline: Importing a new API product without a version creates version 1.0.0 as <actor>
+    Given The system is ready
+    And I have valid access tokens as "<actor>"
+    And I have created an api from "artifacts/payloads/create_apim_product_member_wildcard_api.json" as "impNewApiId" and deployed it
+    When I put an API product payload "${UNIQUE:ImportSourceProduct}" with context "${UNIQUE:importSourceCtx}" from APIs "impNewApiId" in context as "impSourcePayload"
+    And I set the field "apiThrottlingPolicy" to "10KPerMin" in the payload "impSourcePayload"
+    And I create an "api-products" resource with payload "impSourcePayload" as "impSourceProductId"
+    Then The response status code should be 201
+    And I generate a unique value and store it as "impNewProductName"
+    And I generate a unique value and store it as "impNewProductCtx"
+    When I export the API product "impSourceProductId" to an archive as "impSourceArchive"
+    And I edit the exported API product archive "impSourceArchive" into "impNewArchive" with:
+      """
+      {"name":"{{impNewProductName}}","context":"/{{impNewProductCtx}}","id":null,"version":null}
+      """
+    And I import the API product archive "impNewArchive" with overwrite "false"
+    Then The response status code should be 200
+    When I resolve the id of the API product named "{{impNewProductName}}" version "1.0.0" from its export as "impNewProductId"
+    And I retrieve the "api-products" resource with id "impNewProductId"
+    Then The response status code should be 200
+    And The value of response field "name" should be "{{impNewProductName}}"
+    And The value of response field "version" should be "1.0.0"
+    And The value of response field "context" should be "<tenantPrefix>/{{impNewProductCtx}}"
+    And The value of response field "apiThrottlingPolicy" should be "10KPerMin"
+    And The response array field "apis[*].operations[*].throttlingPolicy" should have exactly 2 entries
+    And The response field "apis[*].operations[*].throttlingPolicy" should be exactly the list "10KPerMin"
+
+    Examples:
+      | actor             | tenantPrefix   |
+      | superTenantAdmin  |                |
+      | admin@tenant1.com | /t/tenant1.com |

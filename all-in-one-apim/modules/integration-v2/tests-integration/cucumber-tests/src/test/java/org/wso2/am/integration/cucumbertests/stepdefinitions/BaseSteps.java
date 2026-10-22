@@ -249,7 +249,7 @@ public class BaseSteps {
         json.addProperty("grant_type", "password");
         json.addProperty("username", actor.getUserName());
         json.addProperty("password", actor.getPassword());
-        json.addProperty("scope", "apim:api_view apim:api_create apim:api_publish apim:api_delete apim:api_manage apim:api_import_export apim:subscription_manage apim:client_certificates_add apim:client_certificates_update apim:shared_scope_manage apim:common_operation_policy_manage apim:policies_import_export apim:api_generate_key apim:gateway_policy_manage apim:mcp_server_create apim:mcp_server_manage apim:mcp_server_publish apim:mcp_server_view apim:mcp_server_delete apim:mcp_server_list_view");
+        json.addProperty("scope", "apim:api_view apim:api_create apim:api_publish apim:api_delete apim:api_manage apim:api_import_export apim:api_product_import_export apim:subscription_manage apim:client_certificates_add apim:client_certificates_update apim:shared_scope_manage apim:common_operation_policy_manage apim:policies_import_export apim:api_generate_key apim:gateway_policy_manage apim:mcp_server_create apim:mcp_server_manage apim:mcp_server_publish apim:mcp_server_view apim:mcp_server_delete apim:mcp_server_list_view");
 
         HttpResponse response = SimpleHTTPClient.getInstance().doPost(Utils.getAPIMTokenEndpointURL(getBaseUrl()), headers,
             json.toString(), Constants.CONTENT_TYPES.APPLICATION_JSON);
