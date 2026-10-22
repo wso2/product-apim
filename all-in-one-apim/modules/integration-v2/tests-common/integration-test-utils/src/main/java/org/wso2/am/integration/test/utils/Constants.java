@@ -103,6 +103,7 @@ public class Constants {
     public static final String GATEWAY = "api/am/gateway/v2/";
     public static final String DEFAULT_APIM_TOKEN_EP = "oauth2/token";
     public static final String DEFAULT_DCR_EP = "client-registration/v0.17/register";
+    public static final String DEFAULT_HEALTH_CHECK_EP = "api/health-check/v1.0/health";
 
     public static final String CURRENT_TENANT ="currentTenant";
 

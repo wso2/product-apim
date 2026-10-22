@@ -79,6 +79,12 @@ public class Utils {
         return baseUrl + Constants.DEFAULT_APIM_USERINFO_EP;
     }
 
+    /** The carbon-health-check framework's REST endpoint: {@code GET /api/health-check/v1.0/health}. Unauthenticated. */
+    public static String getHealthCheckEndpointURL(String baseUrl) {
+
+        return baseUrl + Constants.DEFAULT_HEALTH_CHECK_EP;
+    }
+
     public static String getAPICreateEndpointURL(String baseUrl, String resourceType) {
         return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + resourceType;
     }

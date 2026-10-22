@@ -99,3 +99,9 @@ capabilities:
       remote-logging:   { name: Remote server log publishing }
       analytics-events: { name: Analytics events }
       alerts:           { name: Alerts }
+
+  # Server-level operational endpoints, not an APIM product-API plane of their own.
+  platform:
+    name: Platform — server-level operational endpoints
+    features:
+      health-check: { name: carbon-health-check framework /health endpoint, incl. the TM throttle-receiver / message-broker probe }
