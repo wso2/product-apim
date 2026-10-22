@@ -67,6 +67,13 @@ public final class PlaywrightSsoClient implements AutoCloseable {
     /** Internal hostnames the servers emit; the proxy tunnels these to the mapped container ports. */
     private final String apimInternal;
 
+    /**
+     * The origin the external Identity Server advertises ({@code https://wso2is:9443}, or
+     * {@code https://localhost:9444} when the block puts it on APIM's host): where its login page is served and
+     * the host its session cookies are scoped to.
+     */
+    private final String isAdvertised;
+
     /** APIM resident-IS authentication-framework session cookie; its reuse across consoles is single sign-on. */
     private static final String IS_SESSION_COOKIE = "commonAuthId";
 
@@ -175,6 +182,17 @@ public final class PlaywrightSsoClient implements AutoCloseable {
         routes.put("wso2am:9443", apim);       // APIM network alias (if ever emitted)
         routes.put("apim-cp:9443", apim);      // Distributed CP hostname emitted by console redirects
         routes.put("wso2is:9443", is);         // federated IdP authorize/token host
+        Object isContainer = TestContext.get("blockIsContainer");
+        if (isContainer instanceof org.wso2.am.testcontainers.DynamicISContainer blockIs) {
+            // The block may move IS off wso2is:9443 (e.g. onto localhost:9444, APIM's own cookie host).
+            routes.put(URI.create(blockIs.getAdvertisedBaseUrl()).getAuthority(), is);
+            routes.put(URI.create(blockIs.getInternalBaseUrl()).getAuthority(), is);
+            String advertised = blockIs.getAdvertisedBaseUrl();
+            this.isAdvertised = advertised.substring(0, advertised.length() - 1);
+        } else {
+            this.isAdvertised = "https://" + org.wso2.am.testcontainers.DynamicISContainer.NETWORK_ALIAS + ":"
+                    + org.wso2.am.testcontainers.DynamicISContainer.HTTPS_PORT;
+        }
         // Testcontainers normally returns localhost for host-mapped URLs. Some Docker hosts (for example Colima)
         // require TESTCONTAINERS_HOST_OVERRIDE, which changes those URLs to the host IP. The browser can start at
         // that mapped authority before APIM redirects it to the stable internal hostname above, so route both.
@@ -1082,6 +1100,73 @@ public final class PlaywrightSsoClient implements AutoCloseable {
                     + residue + " — these still authorize calls after logout.");
         }
         log.info("[SSO] no session cookie residue remains after logout");
+    }
+
+    /**
+     * Asserts single logout ended the external Identity Server's session too: no {@code commonAuthId} survives
+     * on the host the Identity Server scopes its cookies to, at ANY path.
+     *
+     * <p>{@link #assertNoSessionCookieResidue()} reads only the cookies sent to APIM's root, so it cannot see this
+     * one: the Identity Server sets it under its own host, and a tenant's session under {@code /t/<tenant>/}.
+     * When that host is APIM's own ({@code localhost} on both), the cookies of the two servers are one set, and
+     * this reads all of them.
+     */
+    public void assertNoIdentityServerSessionCookie() {
+        String isHost = URI.create(isAdvertised).getHost();
+        java.util.List<String> residue = new java.util.ArrayList<>();
+        for (Cookie c : context.cookies()) {
+            String domain = c.domain == null ? "" : c.domain.startsWith(".") ? c.domain.substring(1) : c.domain;
+            if (domain.equalsIgnoreCase(isHost) && IS_SESSION_COOKIE.equals(c.name)
+                    && c.value != null && !c.value.isBlank()) {
+                residue.add(c.name + " (path " + c.path + ")");
+            }
+        }
+        if (!residue.isEmpty()) {
+            throw new AssertionError("single logout left the identity server's session cookie on '" + isHost
+                    + "': " + residue + " — the logout never reached the identity server, so its session "
+                    + "survives and the next login through the broker is signed in without credentials.");
+        }
+        log.info("[SSO] no identity server session cookie remains on '" + isHost + "' after logout");
+    }
+
+    /**
+     * Asserts the external Identity Server itself demanded credentials once the broker handed it the login.
+     *
+     * <p>API Manager serving its own login page after a logout proves only that API Manager's sessions ended;
+     * a surviving Identity Server session is invisible there. It shows up only once the flow reaches the
+     * Identity Server, which then signs the user straight back into the console instead of asking for a
+     * password. So this follows the flow to whichever comes first, the Identity Server's login page or an
+     * authenticated console, and requires the former.
+     */
+    public void assertIdentityServerDemandsCredentials() {
+        try {
+            page.waitForURL(url -> isIdentityServerLoginPage(url) || isAnyAuthenticatedConsoleRoute(url),
+                    new Page.WaitForURLOptions().setTimeout(30000));
+        } catch (com.microsoft.playwright.TimeoutError e) {
+            throw new AssertionError("the login through the broker reached neither the identity server's login "
+                    + "page (" + isAdvertised + ") nor a console within 30s. " + pageDiagnostic());
+        }
+        if (!isIdentityServerLoginPage(page.url())) {
+            throw new AssertionError("the identity server did NOT ask for credentials: it still held the user's "
+                    + "session from before the logout and signed them straight back in, landing on "
+                    + shortUrl(page.url()) + ". The logout never reached the identity server. trail:" + trail());
+        }
+        try {
+            page.waitForSelector("input[type=password]", new Page.WaitForSelectorOptions().setTimeout(25000));
+        } catch (com.microsoft.playwright.TimeoutError e) {
+            throw new AssertionError("the identity server served its login page but no credential form. "
+                    + pageDiagnostic());
+        }
+        log.info("[SSO] the identity server demands credentials at " + shortUrl(page.url()));
+    }
+
+    private boolean isIdentityServerLoginPage(String url) {
+        return url.startsWith(isAdvertised + "/") && url.contains(LOGIN_PAGE_PATH);
+    }
+
+    private boolean isAnyAuthenticatedConsoleRoute(String url) {
+        return url.startsWith(apimInternal + "/") && (isAuthenticatedConsoleRoute("publisher", url)
+                || isAuthenticatedConsoleRoute("admin", url) || isAuthenticatedConsoleRoute("devportal", url));
     }
 
     /**
