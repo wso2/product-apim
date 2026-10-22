@@ -107,10 +107,6 @@ public final class PlaywrightSsoClient implements AutoCloseable {
     private final Page page;
     /** Whether the browser proxy has a route to the gateway's internal localhost:8243 endpoint. */
     private boolean gatewayRouted;
-    /** The external IS as the browser reaches it (internal host, tunnelled by the CONNECT proxy). */
-    private static final String EXTERNAL_IS_BASE = "https://wso2is:9443/";
-    /** The external IS's authorize endpoint as the APIM-side OIDC IdP is registered with it. */
-    private static final String EXTERNAL_IS_AUTHORIZE = EXTERNAL_IS_BASE + "oauth2/authorize";
     /** Document-navigation trail ("status url") recorded from responses — the browser equivalent of walk hops. */
     private final java.util.List<String> docTrail = java.util.Collections.synchronizedList(new java.util.ArrayList<>());
     /**
@@ -563,7 +559,7 @@ public final class PlaywrightSsoClient implements AutoCloseable {
         // wait is satisfied by the page the click started from, or by the page APIM falls back to when the IS
         // rejects the authorization request - and the federated credentials would be typed into APIM instead.
         try {
-            page.waitForURL(url -> url.startsWith(EXTERNAL_IS_BASE),
+            page.waitForURL(url -> url.startsWith(externalIsBase()),
                     new Page.WaitForURLOptions().setTimeout(25000));
         } catch (com.microsoft.playwright.TimeoutError e) {
             assertNot17744();
@@ -1852,12 +1848,25 @@ public final class PlaywrightSsoClient implements AutoCloseable {
      * first leg) is on APIM's host, so the host prefix keeps the two apart. Fails if the browser never got there.
      */
     public String externalAuthorizeRequestUrl() {
-        com.microsoft.playwright.Request authorize = firstDocRequest(u -> u.startsWith(EXTERNAL_IS_AUTHORIZE), 0);
+        com.microsoft.playwright.Request authorize = firstDocRequest(u -> u.startsWith(externalIsAuthorize()), 0);
         if (authorize == null) {
             throw new AssertionError("the browser never reached the external IS authorize endpoint "
-                    + EXTERNAL_IS_AUTHORIZE + ". " + pageDiagnostic());
+                    + externalIsAuthorize() + ". " + pageDiagnostic());
         }
         return authorize.url();
+    }
+
+    /**
+     * The external IS as the browser reaches it: the origin it advertises ({@code https://wso2is:9443/}, or
+     * APIM's own host on another port when the block puts it there), tunnelled by the CONNECT proxy.
+     */
+    private String externalIsBase() {
+        return isAdvertised + "/";
+    }
+
+    /** The external IS's authorize endpoint as the APIM-side OIDC IdP is registered with it. */
+    private String externalIsAuthorize() {
+        return externalIsBase() + "oauth2/authorize";
     }
 
     /**
