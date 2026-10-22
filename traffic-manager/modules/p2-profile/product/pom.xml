@@ -203,7 +203,7 @@
                                     org.wso2.carbon.apimgt:org.wso2.carbon.apimgt.throttle.policy.deployer.feature:${carbon.apimgt.version}
                                 </featureArtifactDef>
                                 <featureArtifactDef>
-                                    org.wso2.carbon.apimgt:org.wso2.carbon.apimgt.tm.healthcheck.feature:${carbon.apimgt.tm.healthcheck.feature.version}
+                                    org.wso2.carbon.apimgt:org.wso2.carbon.apimgt.tm.healthcheck.feature:${carbon.apimgt.version}
                                 </featureArtifactDef>
                                 <featureArtifactDef>
                                     org.wso2.carbon.healthcheck:org.wso2.carbon.healthcheck.server.feature:${carbon.healthcheck.version}
@@ -1090,7 +1090,7 @@
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.apimgt.tm.healthcheck.feature.group</id>
-                                    <version>${carbon.apimgt.tm.healthcheck.feature.version}</version>
+                                    <version>${carbon.apimgt.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.healthcheck.server.feature.group</id>

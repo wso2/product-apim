@@ -1315,9 +1315,10 @@
 
         <carbon.apimgt.imp.pkg.version>[9.0.0, 10.0.0)</carbon.apimgt.imp.pkg.version>
 
-        <!-- TM Health Check Component Versions -->
-        <carbon.apimgt.tm.healthcheck.feature.version>9.33.154-SNAPSHOT</carbon.apimgt.tm.healthcheck.feature.version>
-        <carbon.healthcheck.version>1.4.0</carbon.healthcheck.version>
+        <!-- TM Health Check Component Versions. org.wso2.carbon.apimgt.tm.healthcheck.feature releases on the
+             same train as the rest of carbon-apimgt, so it tracks carbon.apimgt.version above; only the
+             carbon-health-check framework (a separate repo/release train) needs its own pin. -->
+        <carbon.healthcheck.version>1.2.16</carbon.healthcheck.version>
 
         <!-- Carbon Registry -->
         <carbon.registry.version>4.9.13</carbon.registry.version>
