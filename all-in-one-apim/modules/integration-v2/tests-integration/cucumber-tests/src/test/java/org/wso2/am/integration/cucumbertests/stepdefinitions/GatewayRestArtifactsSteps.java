@@ -34,9 +34,12 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Base64;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -157,6 +160,84 @@ public class GatewayRestArtifactsSteps {
         Assert.assertEquals(response.getResponseCode(), 200,
                 "Gateway artifact '" + kind + "' for " + resolvedName + " did not become available within "
                         + timeoutSeconds + "s; last: " + response.getData());
+    }
+
+    /**
+     * Reads the gateway's in-memory info for an API or API product ({@code api/am/gateway/v2/apis/{id}} in the acting
+     * actor's tenant) until {@code field} — a field name or JSONPath, e.g.
+     * {@code urlMappings[?(@.urlPattern=='/open')].authScheme} — holds exactly the comma-separated values (set
+     * semantics; a scalar field counts as a one-value set), then publishes the last response for the generic
+     * assertions. This is the data the gateway's security and throttle handlers enforce per resource, so it shows
+     * which revision the gateway serves without inferring it from a status code. The read is polled because a
+     * deploy reaches the gateway asynchronously; the step fails on its own when the field never settles.
+     */
+    @When("I retrieve the gateway API info of {string} until the response field {string} is exactly the list {string} within {int} seconds")
+    public void iRetrieveGatewayApiInfoUntilFieldIs(String idKey, String field, String expectedCsv,
+                                                   int timeoutSeconds) throws InterruptedException {
+        String resolvedField = Utils.resolveContextPlaceholders(field);
+        Set<String> expected = new HashSet<>();
+        for (String value : Utils.resolveContextPlaceholders(expectedCsv).split(",")) {
+            if (!value.isBlank()) {
+                expected.add(value.trim());
+            }
+        }
+        HttpResponse response = pollGatewayApiInfo(idKey, timeoutSeconds,
+                candidate -> expected.equals(fieldValues(candidate, resolvedField)));
+        Assert.assertNotNull(response, "No gateway API info response for " + idKey + " within " + timeoutSeconds
+                + "s (every poll attempt failed)");
+        Assert.assertEquals(fieldValues(response, resolvedField), expected, "Gateway API info field '"
+                + resolvedField + "' of " + idKey + " did not settle within " + timeoutSeconds + "s; last: "
+                + response.getResponseCode() + " / " + response.getData());
+    }
+
+    /**
+     * As above, but polls until the gateway answers the given status — 404 once the gateway holds nothing for the
+     * id (an undeployed API or API product), 200 once it holds it again.
+     */
+    @When("I retrieve the gateway API info of {string} until response status code becomes {int} within {int} seconds")
+    public void iRetrieveGatewayApiInfoUntilStatus(String idKey, int expectedStatus, int timeoutSeconds)
+            throws InterruptedException {
+        HttpResponse response = pollGatewayApiInfo(idKey, timeoutSeconds,
+                candidate -> candidate != null && candidate.getResponseCode() == expectedStatus);
+        Assert.assertNotNull(response, "No gateway API info response for " + idKey + " within " + timeoutSeconds
+                + "s (every poll attempt failed)");
+        Assert.assertEquals(response.getResponseCode(), expectedStatus, "Gateway API info of " + idKey
+                + " did not answer " + expectedStatus + " within " + timeoutSeconds + "s; last body: "
+                + response.getData());
+    }
+
+    private HttpResponse pollGatewayApiInfo(String idKey, int timeoutSeconds, Utils.RetryAccept<HttpResponse> accept)
+            throws InterruptedException {
+        String url = Utils.getGatewayApiInfoURL(Utils.getBaseGatewayManagementUrl(),
+                TestContext.resolve(idKey).toString(), Identity.actingTenantDomain());
+        Map<String, String> headers = gatewayBasicAuthHeaders();
+        TestContext.remove("httpResponse");
+        HttpResponse response = Utils.retryUntil(timeoutSeconds * 1000L, () -> Requests.get(url, headers), accept);
+        Requests.publishPollResult(response);
+        return response;
+    }
+
+    /** The values a successful response holds at {@code field} as a set, or null when it is not readable. */
+    private static Set<String> fieldValues(HttpResponse response, String field) {
+        if (response == null || response.getResponseCode() != 200 || response.getData() == null
+                || response.getData().isBlank()) {
+            return null;
+        }
+        Object value;
+        try {
+            value = Utils.extractValueFromPayload(response.getData(), field);
+        } catch (IOException absent) {
+            return null;
+        }
+        Set<String> values = new HashSet<>();
+        if (value instanceof Collection<?> elements) {
+            elements.forEach(element -> values.add(String.valueOf(element)));
+        } else if (value instanceof JSONArray array) {
+            array.forEach(element -> values.add(String.valueOf(element)));
+        } else if (value != null) {
+            values.add(String.valueOf(value));
+        }
+        return values;
     }
 
     @Then("The gateway API artifact field {string} should contain name {string} and id {string}")

@@ -39,6 +39,12 @@ Feature: Console SSO via an external Identity Server survives the multi-option O
   first federated /commonauth request is rejected and the Publisher login never lands - failing this test.
   Scope: single-tenant (carbon.super), the standard OpenIDConnectAuthenticator federation path.
 
+  The same federation is also covered against an external application that MANDATES PKCE (regression
+  wso2/api-manager 1613). With "Enable PKCE" ticked on the identity provider, the OIDC authenticator must send a S256
+  code_challenge on the federated authorization request and the matching code_verifier on the token request,
+  or the external Identity Server refuses the login. Without PKCE (the documented default) no PKCE parameter
+  is sent at all, and an application that mandates PKCE then rejects the request - the original symptom.
+
   Background:
     Given The system is ready
     And an external Identity Server is registered as OIDC identity provider "ISIDP"
@@ -137,6 +143,8 @@ Feature: Console SSO via an external Identity Server survives the multi-option O
     When I select the "ISIDP" federated identity provider
     And I authenticate at the external Identity Server as "sso_admin"
     Then I should land authenticated in the "devportal" console
+    # The default (PKCE off) federation must not start sending PKCE parameters.
+    And the authorization request sent to "ISIDP" must not carry a PKCE code challenge
     When I open the "publisher" console
     Then I should NOT be prompted to log in again
     And I should land authenticated in the "publisher" console
@@ -161,6 +169,34 @@ Feature: Console SSO via an external Identity Server survives the multi-option O
     And the "admin" console must demand a fresh login
     And the "devportal" console session must no longer authorize its application
     And no console session cookies remain
+
+  @cap:admin @feat:sso @rule:external-idp-sso @type:regression
+  Scenario: A federated user signs in to the DevPortal through an external application that mandates PKCE
+
+    # The identity provider's "Enable PKCE" and the IS application's mandatory PKCE are both read back by their
+    # steps, so the login below runs against a server that really enforces PKCE.
+    Given PKCE is enabled on the "ISIDP" identity provider
+    And the external Identity Server application behind "ISIDP" mandates PKCE
+    When I open the "devportal" console login page
+    And I select the "ISIDP" federated identity provider
+    Then the authorization request sent to "ISIDP" must carry a PKCE code challenge with method "S256"
+    When I authenticate at the external Identity Server as "sso_admin"
+    # The IS refuses the token request without the code_verifier matching that challenge, so landing here also
+    # proves the verifier made the round trip.
+    Then I should land authenticated in the "devportal" console
+    And the "devportal" console session should belong to the federated user "sso_admin"
+
+  @cap:admin @feat:sso @rule:external-idp-sso @type:negative
+  Scenario: An external application that mandates PKCE rejects the federated login when PKCE is not enabled
+
+    # Without this rejection, the scenario above could pass against an IS that never enforced PKCE. It is also
+    # the customer-visible symptom: PKCE off on the provider, mandatory on the IdP application.
+    Given the external Identity Server application behind "ISIDP" mandates PKCE
+    When I open the "devportal" console login page
+    And I select the "ISIDP" federated identity provider
+    Then the authorization request sent to "ISIDP" must not carry a PKCE code challenge
+    And the external Identity Server must reject the authorization request with error "invalid_request" and description "PKCE is mandatory for this application. PKCE Challenge is not provided or is not upto RFC 7636 specification."
+    And the "devportal" console must not have issued a session
 
   @cap:admin @feat:sso @rule:external-idp-sso @type:regression
   Scenario Outline: The multi-option login still authenticates a LOCAL user, in both tenants, as <actor>

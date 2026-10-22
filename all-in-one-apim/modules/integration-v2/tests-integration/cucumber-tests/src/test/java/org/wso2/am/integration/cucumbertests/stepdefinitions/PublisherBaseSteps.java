@@ -17,6 +17,8 @@
 
 package org.wso2.am.integration.cucumbertests.stepdefinitions;
 
+import com.jayway.jsonpath.DocumentContext;
+import com.jayway.jsonpath.JsonPath;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
@@ -3151,6 +3153,18 @@ public class PublisherBaseSteps {
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
         String url = Utils.getApiExportURL(Utils.getBaseUrl(), actualApiId, "JSON");
+        SimpleHTTPClient.DownloadResult result = exportUntilComplete(url, headers, "API export for " + actualApiId,
+                "api.yaml", "api.json");
+        TestContext.set(Utils.normalizeContextKey(archivePathKey), result.getFile().getAbsolutePath());
+    }
+
+    /**
+     * Downloads an export archive, re-exporting until it holds one of {@code definitionNames} (the project
+     * definition), and asserts it did within the propagation window. Shared by the API and API product exports.
+     */
+    private SimpleHTTPClient.DownloadResult exportUntilComplete(String url, Map<String, String> headers, String what,
+                                                                String... definitionNames)
+            throws IOException, InterruptedException {
 
         // Retries the export until the archive is complete. Concurrent exports of the same API by the same user collide
         // in a shared, non-unique temp directory. ExportUtils/CommonUtil.archiveDirectory keys the working dir
@@ -3169,21 +3183,145 @@ public class PublisherBaseSteps {
         while (true) {
             result = Requests.getToFile(url, headers, ".zip");
             if (result.getStatusCode() == 200
-                    && Utils.zipContainsEntryNamed(result.getFile(), "api.yaml", "api.json")) {
+                    && Utils.zipContainsEntryNamed(result.getFile(), definitionNames)) {
                 complete = true;
                 break;
             }
             if (System.currentTimeMillis() >= deadline) {
                 break;
             }
-            logger.warn("API export archive for {} was incomplete (status {}, no api.yaml/api.json — "
-                    + "export/compliance temp-dir race); re-exporting", actualApiId, result.getStatusCode());
+            logger.warn("{} archive was incomplete (status {}, no {} — export/compliance temp-dir race); "
+                    + "re-exporting", what, result.getStatusCode(), String.join("/", definitionNames));
             Utils.pollPause(pollStart, Constants.RETRY_INTERVAL_TIME);
         }
-        Assert.assertTrue(complete, "API export for " + actualApiId + " never produced a complete archive (200 "
-                + "with a project definition) within the window; last status="
-                + (result == null ? "none" : result.getStatusCode()));
+        Assert.assertTrue(complete, what + " never produced a complete archive (200 with a project definition) "
+                + "within the window; last status=" + (result == null ? "none" : result.getStatusCode()));
+        return result;
+    }
+
+    /**
+     * Exports an API product as a JSON-format archive and stores the downloaded file's path under the given
+     * context key. Products are exported by name/version/provider, so they are read from the product first.
+     * Asserts the archive is complete (holds its {@code api_product.json}), with the same re-export accommodation
+     * as the API export.
+     */
+    @When("I export the API product {string} to an archive as {string}")
+    public void iExportApiProductToArchive(String productIdKey, String archivePathKey)
+            throws IOException, InterruptedException {
+
+        String productId = TestContext.resolve(productIdKey).toString();
+        Map<String, String> headers = Identity.publisherHeaders();
+        // Intermediate read: the export is addressed by name/version/provider, not by id.
+        HttpResponse productResp = SimpleHTTPClient.getInstance()
+                .doGet(Utils.getResourceEndpointURL(Utils.getBaseUrl(), "api-products", productId), headers);
+        Assert.assertTrue(productResp != null && productResp.getResponseCode() == 200
+                        && productResp.getData() != null && !productResp.getData().isBlank(),
+                "Could not read API product " + productId + " to export it: got " + (productResp == null
+                        ? "no response" : productResp.getResponseCode() + " / " + productResp.getData()));
+        JSONObject product = new JSONObject(productResp.getData());
+        String url = Utils.getApiProductExportURL(Utils.getBaseUrl(), product.getString("name"),
+                product.getString("version"), product.getString("provider"), "JSON");
+        SimpleHTTPClient.DownloadResult result = exportUntilComplete(url, headers,
+                "API product export for " + productId, API_PRODUCT_DEFINITION);
         TestContext.set(Utils.normalizeContextKey(archivePathKey), result.getFile().getAbsolutePath());
+    }
+
+    private static final String API_PRODUCT_DEFINITION = "api_product.json";
+
+    /**
+     * Writes a copy of an exported API product archive with fields of its definition ({@code data} of
+     * {@code api_product.json}) changed, and stores the copy's path under {@code editedArchiveKey} — the original
+     * archive is left as it is, so one export can seed several imports. The doc string is a JSON object of edits:
+     * a key is a top-level field name or a JSONPath relative to {@code data} (e.g.
+     * {@code apis[*].operations[*].throttlingPolicy}, which must match), and a {@code null} value REMOVES the field
+     * (an archive without a version, or without an id). {@code {{contextKey}}} placeholders are resolved.
+     */
+    @When("I edit the exported API product archive {string} into {string} with:")
+    public void iEditExportedApiProductArchive(String archivePathKey, String editedArchiveKey, String editsJson)
+            throws IOException {
+
+        File archive = new File(TestContext.resolve(archivePathKey).toString());
+        JSONObject edits = new JSONObject(Utils.resolveContextPlaceholders(editsJson));
+        File edited = Utils.rewriteZipEntry(archive, API_PRODUCT_DEFINITION, content -> {
+            JSONObject definition = new JSONObject(content);
+            DocumentContext data = JsonPath.parse(definition.getJSONObject("data").toString());
+            for (String field : edits.keySet()) {
+                Object value = edits.get(field);
+                String path = "$." + field;
+                boolean isPath = field.contains(".") || field.contains("[");
+                if (isPath) {
+                    // An indefinite path that matches nothing would otherwise import the archive unchanged.
+                    Object matched = data.read(path);
+                    Assert.assertFalse(matched instanceof List && ((List<?>) matched).isEmpty(),
+                            "Archive edit path matched nothing: " + field);
+                }
+                if (JSONObject.NULL.equals(value)) {
+                    data.delete(path);
+                } else if (isPath) {
+                    data.set(path, value);
+                } else {
+                    data.put("$", field, value);
+                }
+            }
+            definition.put("data", new JSONObject(data.jsonString()));
+            return definition.toString();
+        });
+        TestContext.set(Utils.normalizeContextKey(editedArchiveKey), edited.getAbsolutePath());
+    }
+
+    /**
+     * Imports an API product archive ({@code POST /api-products/import}, keeping the archive's provider and leaving
+     * its dependent APIs alone), publishing the response for the feature to assert — non-asserting, because the
+     * refused overwrite-less import of an existing product (409) is a case under test. The response is a message,
+     * not the product, so a NEWLY imported product is located afterwards with the resolve-by-export step.
+     */
+    @When("I import the API product archive {string} with overwrite {string}")
+    public void iImportApiProductArchive(String archivePathKey, String overwrite) throws IOException {
+
+        File archive = new File(TestContext.resolve(archivePathKey).toString());
+        Map<String, File> files = new HashMap<>();
+        files.put("file", archive);
+        Requests.postMultipart(Utils.getApiProductImportURL(Utils.getBaseUrl(), Boolean.parseBoolean(overwrite.trim())),
+                Identity.publisherHeaders(), files, null);
+    }
+
+    /**
+     * Resolves the id of the acting actor's API product with the given name and version from the product's own
+     * export (its {@code api_product.json} carries the id), stores it and registers it for teardown. Used for a
+     * product created by an IMPORT, whose response carries no id: the export is read from the product store
+     * directly, whereas the publisher listing is fed by the search index, which lags well behind an import.
+     */
+    @When("I resolve the id of the API product named {string} version {string} from its export as {string}")
+    public void iResolveImportedApiProductId(String nameRef, String version, String productIdKey)
+            throws IOException, InterruptedException {
+
+        String name = Utils.resolveContextPlaceholders(nameRef);
+        String url = Utils.getApiProductExportURL(Utils.getBaseUrl(), name, version,
+                providerOf(Identity.actingActorRef()), "JSON");
+        SimpleHTTPClient.DownloadResult result = exportUntilComplete(url, Identity.publisherHeaders(),
+                "API product export of " + name + " " + version, API_PRODUCT_DEFINITION);
+        String definition = Utils.zipEntryText(result.getFile(), API_PRODUCT_DEFINITION);
+        Assert.assertTrue(definition != null && !definition.isBlank(),
+                "The export of API product " + name + " " + version + " has an empty " + API_PRODUCT_DEFINITION);
+        String productId = new JSONObject(definition).getJSONObject("data").getString("id");
+        TestContext.set(Utils.normalizeContextKey(productIdKey), productId);
+        ResourceCleanup.register(Constants.CREATED_API_PRODUCT_IDS, productId);
+    }
+
+    /**
+     * Exports the acting actor's API product with the given name and version ONCE and asserts the download's
+     * status — e.g. 404 proves no product with that version exists, which the search-indexed publisher listing
+     * cannot prove promptly. Nothing is published to {@code httpResponse}.
+     */
+    @When("I attempt to export the API product named {string} version {string} expecting status {int}")
+    public void iAttemptToExportApiProductByName(String nameRef, String version, int expectedStatus)
+            throws IOException {
+
+        String name = Utils.resolveContextPlaceholders(nameRef);
+        SimpleHTTPClient.DownloadResult result = Requests.getToFile(Utils.getApiProductExportURL(Utils.getBaseUrl(),
+                name, version, providerOf(Identity.actingActorRef()), "JSON"), Identity.publisherHeaders(), ".zip");
+        Assert.assertEquals(result.getStatusCode(), expectedStatus,
+                "API product export status mismatch for " + name + " " + version);
     }
 
     /**
@@ -4951,9 +5089,10 @@ public class PublisherBaseSteps {
 
     private void createApiProduct(String nameBase, String contextBase, String provider, String apiIdKeysCsv,
                                   String productIdKey) throws IOException {
-        // ${UNIQUE:...} is not memoized, so the resolved values are kept for the echo assertions.
-        String name = Utils.resolvePayloadPlaceholders(nameBase);
-        String context = Utils.resolvePayloadPlaceholders(contextBase);
+        // ${UNIQUE:...} is not memoized, so the resolved values are kept for the echo assertions. {{contextKey}}
+        // references are resolved too, for a name or context generated earlier in the scenario.
+        String name = Utils.resolveContextPlaceholders(Utils.resolvePayloadPlaceholders(nameBase));
+        String context = Utils.resolveContextPlaceholders(Utils.resolvePayloadPlaceholders(contextBase));
         String payload = buildApiProductPayload(name, context, provider, resolveApiIds(apiIdKeysCsv));
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
@@ -4982,14 +5121,33 @@ public class PublisherBaseSteps {
     @When("I attempt to create an API product {string} with context {string} from API {string}")
     public void iAttemptToCreateApiProduct(String nameBase, String contextBase, String apiIdKey) throws IOException {
 
-        String payload = buildApiProductPayload(Utils.resolvePayloadPlaceholders(nameBase),
-                Utils.resolvePayloadPlaceholders(contextBase), resolveApiIds(apiIdKey));
+        String payload = buildApiProductPayload(
+                Utils.resolveContextPlaceholders(Utils.resolvePayloadPlaceholders(nameBase)),
+                Utils.resolveContextPlaceholders(Utils.resolvePayloadPlaceholders(contextBase)),
+                resolveApiIds(apiIdKey));
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
 
         ResourceCleanup.registerIfCreated(Constants.CREATED_API_PRODUCT_IDS,
                 Requests.post(Utils.getAPICreateEndpointURL(Utils.getBaseUrl(), "api-products"), headers,
                         payload, Constants.CONTENT_TYPES.APPLICATION_JSON), "id");
+    }
+
+    /**
+     * Builds the same API-product create payload as the create steps (every operation of each member API, version
+     * 1.0.0, the standard business plans) and stores it in context instead of posting it, so a scenario can change
+     * the payload with the generic payload steps first — drop {@code version}, set {@code apiThrottlingPolicy} —
+     * and then send it with the generic (attempt-)create steps for {@code "api-products"}. Name and context resolve
+     * {@code ${UNIQUE:...}} and {@code {{contextKey}}}.
+     */
+    @When("I put an API product payload {string} with context {string} from APIs {string} in context as {string}")
+    public void iPutApiProductPayloadInContext(String nameBase, String contextBase, String apiIdKeysCsv,
+                                               String payloadKey) throws IOException {
+
+        String name = Utils.resolveContextPlaceholders(Utils.resolvePayloadPlaceholders(nameBase));
+        String context = Utils.resolveContextPlaceholders(Utils.resolvePayloadPlaceholders(contextBase));
+        TestContext.set(Utils.normalizeContextKey(payloadKey),
+                buildApiProductPayload(name, context, resolveApiIds(apiIdKeysCsv)));
     }
 
     /** Creates a new version (copy) of an API Product; stores the new product's id and registers it for teardown. */
