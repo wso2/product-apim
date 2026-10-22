@@ -74,7 +74,7 @@ also checks that the generated tree is committed fresh. The standalone suite val
 local parameters. Adding a runner to one suite requires adding it to the matching block in the other, or declaring
 the omission with a reason in [`docs/devs/suite-alignment.ignore`](docs/devs/suite-alignment.ignore). Undeclared
 differences, unsupported execution selectors and stale declarations fail validation with file/line annotations.
-Both the main and Testgrid build jobs run the validator's unit tests and suite check before building images.
+Both the main and Testgrid build jobs run the validator before building images.
 
 ## JaCoCo coverage
 

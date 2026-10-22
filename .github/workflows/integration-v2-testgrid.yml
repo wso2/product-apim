@@ -301,9 +301,15 @@ jobs:
             [[ "$ready" == true ]] || { docker logs apim-hosted-db; exit 1; }
             docker exec -u oracle apim-hosted-db bash -lc \
               'printf "alter system set processes=500 scope=spfile;\nshutdown immediate;\nstartup;\nexit\n" | sqlplus -s / as sysdba'
+            # The health status stays healthy across the restart; readiness is a listener connection to FREEPDB1.
             ready=false
             for attempt in $(seq 1 60); do
-              if [[ "$(docker inspect --format='{{.State.Health.Status}}' apim-hosted-db 2>/dev/null || true)" == healthy ]]; then
+              if docker exec -i apim-hosted-db sqlplus -s -L /nolog 2>/dev/null <<SQL | grep -q '^APIM_READY$'
+          connect system/"$root_password"@//127.0.0.1:1521/FREEPDB1
+          select 'APIM_READY' from dual;
+          exit
+          SQL
+              then
                 ready=true
                 break
               fi

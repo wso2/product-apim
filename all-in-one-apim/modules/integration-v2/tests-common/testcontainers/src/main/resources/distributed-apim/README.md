@@ -248,7 +248,7 @@ the topology. Runner classes and feature files are shared.
 Run `python3 docs/devs/suite_alignment.py` from `integration-v2` to validate the suites without starting containers.
 Adding a runner to either suite requires its registration in the matching block of the other suite, or a block-scoped
 declaration with a reason in [`suite-alignment.ignore`](../../../../../../docs/devs/suite-alignment.ignore).
-The standalone validator checks registrations, order, scheduling and shared local parameters; CI runs its unit tests
+The standalone validator checks registrations, order, scheduling and shared local parameters; CI runs the validator
 and rejects undeclared differences and stale declarations before building images. Solace lifecycle coverage and broker
 initialization are omitted from distributed within the CI resource budget, as declared in that file.
 
