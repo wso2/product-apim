@@ -203,6 +203,13 @@ mvn test -pl tests-integration/cucumber-tests -am -Dsurefire.suite.xml=<suite>.x
 `testng-v2.xml` is the V2 product suite; select it with `-Dsurefire.suite.xml=testng-v2.xml`. Do not add
 placeholder blocks: framework-verification suites cover lane boot, while product runners provide the real
 integration coverage. The suite-level `thread-count` controls how many blocks/containers run concurrently.
+
+`testng-v2_distributed.xml` shares the product block and runner layout. Adding a runner to either suite requires
+adding it to the matching block in the other suite, or declaring a block-scoped omission with a nonblank reason in
+`../../docs/devs/suite-alignment.ignore`. Keep block/runner order, scheduling and shared local parameters aligned.
+From `integration-v2`, run `python3 docs/devs/suite_alignment.py`. The standalone validator writes nothing;
+both CI build workflows run it and reject undeclared differences, unsupported selectors and stale ignores
+with file/line annotations before building images. Component overlay/server-file routing is topology-specific.
 JaCoCo collection is opt-in with `-Dapim.coverage=true`: the all-in-one lane dumps coverage per block and
 merges it into a suite report; distributed-lane coverage is not collected. See the coverage architecture doc.
 

@@ -1,0 +1,5 @@
+# <block> runner:<SimpleOrFqcnRunner> missing-in=<all-in-one|distributed> | <reason>
+# Use parameter:<name> for a missing local parameter. Blocks omit topology prefixes.
+# Reasons are mandatory; entries are block-scoped and literal. Duplicates and stale entries fail.
+Solace  runner:SolaceApiLifecycleRunner  missing-in=distributed  | Resource limitation: running the Solace broker alongside four distributed APIM lanes exceeds the CI runner budget
+Solace  parameter:initSolaceBroker  missing-in=distributed  | Broker not started: its only consumer, SolaceApiLifecycleRunner, is not run in distributed

@@ -33,6 +33,10 @@ jobs:
         run: sudo sh -c 'echo "127.0.0.1 $(hostname)" >> /etc/hosts'
       - name: Checkout
         uses: actions/checkout@v4
+      # Suite registration parity includes block order, provisioning and declared topology omissions.
+      - name: Verify integration-v2 suite alignment
+        working-directory: all-in-one-apim/modules/integration-v2
+        run: python3 docs/devs/suite_alignment.py
       - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:

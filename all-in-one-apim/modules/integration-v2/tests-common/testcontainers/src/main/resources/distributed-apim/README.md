@@ -240,10 +240,17 @@ for the strict timestamp-cursor rationale and hosted database behavior.
 ## Suite layout
 
 `tests-integration/cucumber-tests/src/test/resources/testng-v2.xml` defines the block and runner layout for both
-topologies. `testng-v2_distributed.xml` mirrors its 37 blocks and 199 runner entries in the same order, with four
-concurrent blocks and identical per-block class parallelism, lifecycle locks, user provisioning, and readiness
-parameters. Distributed test names and block labels have a `Distributed-` / `distributed-` prefix so logs and
-reports identify the topology. Runner classes and feature files are shared.
+topologies. `testng-v2_distributed.xml` mirrors its block and runner order, with four concurrent blocks and matching
+per-block class parallelism, lifecycle locks, user provisioning, and readiness parameters except declared omissions.
+Distributed test names and block labels have a `Distributed-` / `distributed-` prefix so logs and reports identify
+the topology. Runner classes and feature files are shared.
+
+Run `python3 docs/devs/suite_alignment.py` from `integration-v2` to validate the suites without starting containers.
+Adding a runner to either suite requires its registration in the matching block of the other suite, or a block-scoped
+declaration with a reason in [`suite-alignment.ignore`](../../../../../../docs/devs/suite-alignment.ignore).
+The standalone validator checks registrations, order, scheduling and shared local parameters; CI runs its unit tests
+and rejects undeclared differences and stale declarations before building images. Solace lifecycle coverage and broker
+initialization are omitted from distributed within the CI resource budget, as declared in that file.
 
 The distributed suite routes the block's configuration to the component that consumes it:
 

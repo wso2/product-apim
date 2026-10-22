@@ -21,9 +21,9 @@
 
 | # | Decision | Choice |
 |---|----------|--------|
-| **A** | How to attach the JaCoCo agent | Runtime injection via the APIM server's `JVM_MEM_OPTS`, opt-in behind `-Dapim.coverage=true`. This keeps the agent off helper JVMs; no image rebuild is needed. |
-| **B** | How to extract the `.exec` | **B1 — `output=tcpserver` + on-demand dump** over a mapped port at block teardown and before supported graceful restarts (no reliance on graceful-stop flush or writable bind mounts). |
-| **C** | How to render the report | Scoped JaCoCo report generation in `CoverageAggregationListener`, using classfiles from the running image in CI or the built distribution zip locally (§4). |
+| **A** | How to attach the JaCoCo agent | **A1 — runtime injection via `JAVA_TOOL_OPTIONS`**, opt-in behind `-Dapim.coverage=true`. No image rebuild, no startup-script edit. |
+| **B** | How to extract the `.exec` | **B1 — `output=tcpserver` + on-demand dump** over a mapped port at block/suite teardown (no reliance on graceful-stop flush or writable bind mounts). |
+| **C** | How to render the report | **C1 — JaCoCo CLI `report`** with classfiles pulled from the built distribution + sources from the product source tree, **with scoping** (§4). |
 | **D** | Distributed lane | **Not a coverage target** (by requirement) — all-in-one only. |
 | **E** | Local verification | Fully local via JaCoCo (no Codecov needed to compute/view). Codecov is CI-only. See §6. |
 | **F** | CI cadence | **per PR** (same trigger as the legacy builder) → product-apim project, flag `integration-v2_tests`, carryforward. Heavy — shard like legacy's group1-4 if needed. |
@@ -36,15 +36,17 @@ Toolchain note: JaCoCo `0.8.12` is already available in the build (`jacoco.agent
 
 ```
 [boot]      DynamicApimContainer starts APIM server JVM with the JaCoCo agent
-            (JVM_MEM_OPTS includes -javaagent:.../jacocoagent.jar=output=tcpserver,address=*,port=6300,includes=...)
+            (JAVA_TOOL_OPTIONS=-javaagent:.../jacocoagent.jar=output=tcpserver,address=*,port=6300,includes=...)
             container exposes 6300 -> Testcontainers maps to an ephemeral host port
 [run]       Cucumber/TestNG blocks drive HTTP/gateway traffic; instrumented server records counters in-JVM
 [dump]      at block teardown (BEFORE stopping the container), pull counters via the mapped port
-            -> tests-integration/cucumber-tests/target/coverage/exec/<block>.exec
-[merge]     at suite end: CoverageAggregationListener merges block and restart dumps in-process
-[report]    CoverageAggregationListener extracts scoped classfiles (§4) and renders
-              target/coverage/output/txt/jacoco-it.xml + target/coverage/output/html
-[CI only]   codecov upload .../target/coverage/output/txt/jacoco-it.xml --flag integration-v2_tests  (-> product-apim project)
+            -> coverage/<block>.exec        (JaCoCo ExecutionDataClient, or `jacococli dump`)
+[merge]     at suite end: jacoco merge coverage/*.exec -> coverage/it.exec
+[report]    jacococli report coverage/it.exec
+              --classfiles <apimgt jars from distribution>   (SCOPED, §4)
+              --sourcefiles <carbon-apimgt / module source>
+              --xml coverage/output/txt/jacoco-it.xml --html coverage/output/html
+[CI only]   codecov upload coverage/output/txt/jacoco-it.xml --flag integration-v2_tests  (-> product-apim project)
 [codecov]   stands alone in the product-apim project (like legacy integration_tests); no unit merge here
 ```
 
@@ -77,8 +79,8 @@ PoC effect of adding webapps: analyzed set grew **2146 → 3005 classes, 68,962 
 **Rule of thumb:** agent includes = perf hygiene; report classfiles = the number. If the classfiles set is right, the % is correct even if the agent instrumented slightly more.
 
 ### 4.3 Where classfiles & sources come from
-- **Class files:** CI extracts the OSGi plugins and webapps from the same Docker image that runs APIM, then passes that directory with `-Dapim.coverage.classfiles`; local runs fall back to the built distribution zip when that property is unset. Both extraction paths share the class-selection logic. Using the running image in CI guarantees byte-identical class-id matching.
-- **Sources:** *version drift is real* — the current `all-in-one-apim/pom.xml` pins `carbon.apimgt.version` to `9.34.8` (the earlier `9.33.141`/observed `9.33.134` values were from the original implementation investigation). Do **not** assume an arbitrary local source checkout matches the classes in a built image. For the alternative **carbon-apimgt Codecov target** (§8), JaCoCo XML carries package-relative paths and Codecov resolves sources from the carbon-apimgt repo at the analyzed ref. The chosen product-apim target is standalone; cross-repo source attribution is not resolved here. Local HTML line-highlighting is best-effort only (`-Dapim.coverage.sources`). The class-count and percentage figures in the original PoC section below are historical measurements; they are not asserted as measurements of the current `9.34.8` image.
+- **Class files:** read out of the **built distribution zip** (the same artifact the image is built from — plugins directly, webapp classes via nested WAR extraction), exactly as `DistributedDbScripts` reads DDL from the zip. This guarantees byte-identical class-id matching.
+- **Sources:** *version drift is real* — the pom pins `carbon.apimgt.version` (currently `9.33.141`), but a given built zip may carry an earlier build (observed `9.33.134`), and a random local checkout differs again. So do **not** rely on a local checkout matching. For the **Codecov (carbon-apimgt) target this is a non-issue**: JaCoCo XML carries package-relative paths and Codecov resolves sources from the carbon-apimgt repo itself at the analyzed ref. Local HTML line-highlighting is best-effort only (`-Dapim.coverage.sources`).
 
 ---
 
@@ -86,40 +88,47 @@ PoC effect of adding webapps: analyzed set grew **2146 → 3005 classes, 68,962 
 
 Mirror api-platform's `common/testutils/coverage` package shape.
 
-1. **`tests-common`: `JacocoCoverage` helper** extracts the bundled JaCoCo agent, builds its `tcpserver` argument, dumps with JaCoCo's `ExecDumpClient`, merges `.exec` files, extracts classfiles, and renders HTML/XML reports in-process.
-2. **`DynamicApimContainer.withCoverage()`** stages the agent at `/opt/cov/jacocoagent.jar`, attaches it to the server JVM through `JVM_MEM_OPTS`, and exposes tcpserver port 6300.
-3. **`BlockLifecycleListener`** — on block finish, **before** stopping the container, calls `JacocoCoverage.dump(...)` into `target/coverage/exec/<block>.exec`.
-4. **`CoverageAggregationListener`** — at suite end, merges block and restart dumps and writes the report and dump summary under `tests-integration/cucumber-tests/target/coverage/output/`.
-5. **`pom.xml`** — property `apim.coverage` defaults to `false`; JaCoCo agent/core/report dependencies are in the testcontainers module.
-6. **`.github/workflows/maven.yml`** — validates the all-in-one report and dump summary, then uploads the XML to Codecov with the `integration-v2_tests` flag.
+1. **`tests-common`: `JacocoCoverage` helper** (analogue of api-platform's coverage collector):
+   - stages `org.jacoco.agent-<ver>-runtime.jar` and `org.jacoco.cli-<ver>-nodeps.jar` (via `maven-dependency-plugin copy`, as the legacy `copy-jacoco-dependencies` did);
+   - builds the `JAVA_TOOL_OPTIONS` agent string (§4.1);
+   - `dump(host, mappedPort, destExec)` (JaCoCo `ExecutionDataClient` in-process, or shell `jacococli dump`);
+   - `merge(dir) -> it.exec`; `report(exec, classfiles, sources, xmlOut, htmlOut)`.
+2. **`DynamicApimContainer.withCoverage()`** — when `-Dapim.coverage=true`: `withCopyToContainer(agentJar, "/opt/cov/jacocoagent.jar")`, `withEnv("JAVA_TOOL_OPTIONS", agentString)`, `withExposedPorts(6300)`; expose `getCoverageMappedPort()`.
+3. **`BlockLifecycleListener`** — on block finish, **before** stopping the container, call `JacocoCoverage.dump(...)` into `coverage/<block>.exec`.
+4. **Suite end / Maven `post-integration-test`** — `merge` all block execs → `report --xml --html` (scoped, §4) → `coverage/output/`.
+5. **`pom.xml`** — property `apim.coverage` (default `false`); dependency-plugin copy of the agent + cli jars; keep the existing unit `jacoco-maven-plugin` untouched.
+6. **`codecov.yml`** (new, repo-level) — flags + carryforward (§6.3).
 
-The report uses the same output layout locally and in CI (`target/coverage/output/…`). CI also extracts classfiles from the already-loaded image, validates the report and dump summary, and uploads the XML to Codecov.
+Layout stays identical between local and CI (`coverage/output/…`), so the CI job's only *extra* line over local is `codecov upload`.
 
 ---
 
 ## 6. Local verification (E) — no Codecov required
 
-**Principle: local report generation uses the same listener as CI.** CI supplies classfiles extracted from the running image and validates the dump summary before upload; local runs use the built distribution zip by default and can inspect the generated HTML/XML without Codecov.
+**Principle: local == CI minus the final upload.** Report *generation* is identical; only `codecov upload` is CI-only (needs the token). If local `jacoco.xml`/HTML is correct, ~95% of the pipeline is verified before CI.
 
 **Do we need to send to Codecov?** For the shared dashboard and PR comments — yes, and that's CI-only. For seeing the (integration) report locally — no; JaCoCo renders the HTML/XML on the box. product-apim's concern is **integration coverage only**; any unit+integration combination is carbon-apimgt's responsibility (§8), not something we reproduce locally here.
 
 ### 6.1 Level 1 — mechanics (no Codecov)
 Prove instrument → dump → report and open the HTML:
 ```bash
-# Run from all-in-one-apim/modules/integration-v2; use built images and staging as for other local suites.
-mvn test -pl tests-integration/cucumber-tests -am \
-    -Dsurefire.suite.xml=testng-v2.xml -Dapim.coverage=true
-open tests-integration/cucumber-tests/target/coverage/output/html/index.html
+mvn -pl tests-integration/cucumber-tests test \
+    -Dapim.topology=allinone -Dapim.coverage=true -Dsurefire.suite.xml=testng-v2.xml
+# framework dumps per-block execs and merges -> coverage/it.exec, then:
+java -jar org.jacoco.cli-0.8.12-nodeps.jar report coverage/it.exec \
+    --classfiles <unpacked-dist>/.../org.wso2.carbon.apimgt.*.jar \
+    --sourcefiles <carbon-apimgt-src> \
+    --xml coverage/output/txt/jacoco-it.xml --html coverage/output/html
+open coverage/output/html/index.html      # total % also printed to stdout
 ```
-The suite listener performs the dump, merge, and report generation. The XML is at
-`tests-integration/cucumber-tests/target/coverage/output/txt/jacoco-it.xml`; an optional
-`-Dapim.coverage.classfiles=<dir>` selects pre-extracted classfiles instead of the built distribution zip.
-Confirms: agent attached, tcpserver dump over mapped port worked, and classfiles/sources map correctly.
+Confirms: agent attached, tcpserver dump over mapped port worked, classfiles/sources map correctly.
 
 ### 6.2 Level 2 — validate the Codecov config offline (nothing sent)
-If evaluating the optional proposed Codecov configuration below, save it as `codecov.yml` first and validate that
-file. The repository does not currently contain `codecov.yml`; the active workflow passes the flag directly to the
-Codecov action. A Codecov CLI dry run can validate a locally generated report path if the CLI is installed.
+```bash
+curl -s --data-binary @codecov.yml https://codecov.io/validate      # validate yaml
+codecovcli do-upload --dry-run --flag integration-v2_tests --file coverage/output/txt/jacoco-it.xml
+```
+`--dry-run` exercises the exact flag/path wiring without the token or sending data.
 
 > Note: there is no local "combined unit+integration" preview to do — product-apim has no unit tests, and the
 > unit+integration merge (if any) is carbon-apimgt's concern (§8). Locally you verify the **integration** report only.
@@ -133,19 +142,19 @@ coverage:
     project: { default: { informational: true } }   # non-blocking to start
 ```
 
-### 6.3 Developer entry point
-There is no dedicated `make coverage-it` target or coverage wrapper script in the current repository. Use the Maven suite command and report output paths above; the local coverage report is generated by `CoverageAggregationListener` during suite completion.
+### 6.3 Suggested developer entry point
+Add a `make coverage-it` (or script) that runs Level 1 end-to-end and opens the HTML — the analogue of api-platform's `gateway/it` `make coverage-report`.
 
 ---
 
 ## 7. Risks & mitigations
-- **Perf/flakiness** — agent instrumentation slows startup & adds memory, and this runs per PR (heavy). Keep coverage opt-in; raise container mem. Dump/report errors do not fail the suite listener, but CI's report and dump-summary checks fail the job for missing coverage data. Shard like legacy's group1-4 if per-PR wall-clock hurts.
-- **Classfile/source skew** — the `.exec` must be reported against the exact jars/sources that ran. CI extracts classfiles from the running image; local runs use the built distribution zip unless `-Dapim.coverage.classfiles` is set. Pin the `carbon-apimgt` source SHA used for `--sourcefiles` when line highlighting matters.
-- **Under-count** — black-box tests + many disabled scenarios ⇒ the % is a floor. The optional Codecov config in §6.2 sets project status to informational; no threshold config is currently committed.
-- **Agent attachment scope** — `JAVA_TOOL_OPTIONS` and `JAVA_OPTS` reach helper JVMs too, so the implementation attaches through `JVM_MEM_OPTS` on the APIM server launch path only.
+- **Perf/flakiness** — agent instrumentation slows startup & adds memory, and this runs per PR (heavy). Keep coverage opt-in; raise container mem; treat coverage failures as non-fatal (don't fail the suite on a dump/report error); shard like legacy's group1-4 if per-PR wall-clock hurts.
+- **Classfile/source skew** — the `.exec` must be reported against the exact jars/sources that ran. Pull classfiles from the same distribution zip the image was built from; pin the `carbon-apimgt` source SHA used for `--sourcefiles`.
+- **Under-count** — black-box tests + many disabled scenarios ⇒ the % is a floor. Keep Codecov status `informational: true` initially.
+- **`JAVA_TOOL_OPTIONS` leakage** — it applies to every JVM in the container and logs a "Picked up JAVA_TOOL_OPTIONS" line; verify no init/bootstrap JVM double-counts or breaks on it.
 - **tcpserver reachability** — must use `address=*` and expose the port, or you hit the classic "connection refused." Dump strictly before `stop()`.
-- **Graceful restarts replace the JVM** — the tcpserver agent keeps counters in the server JVM's memory only and never writes them to a file, and a Carbon `restartGracefully` exits the JVM (`CarbonServerManager Halting JVM`, then `System.exit(121)`) so `api-manager.sh` launches a new one. The supported graceful-restart helpers call `CoverageSupport.dumpBeforeRestart()` first: the outgoing JVM's counters land in `target/coverage/exec/<block>.restart-<n>.exec`, and the suite-end merge unions them with the block-end `<block>.exec` (each JVM is its own JaCoCo session). Any JVM restart not preceded by a dump loses that JVM's counters.
-- **A lost block looks like lower coverage** — a failed block-end dump is a WARN, and the merged report stays valid without it. The aggregator writes `target/coverage/output/txt/coverage-summary.properties` (`blocks.expected`, `blocks.dumped`, `blocks.missing`, `restart.dumps`, `restart.dumps.failed`, `restart.dumps.failedList`) and the CI "Verify coverage report was generated" step fails when `blocks.dumped != blocks.expected`, when `blocks.missing` names any block, or when `restart.dumps.failed` is not `0` (a failed pre-restart dump loses that JVM's counters even when the block-end dump succeeds; the restart itself still proceeds).
+- **Graceful restarts replace the JVM** — the tcpserver agent keeps counters in the server JVM's memory only and never writes them to a file, and a Carbon `restartGracefully` exits the JVM (`CarbonServerManager Halting JVM`, then `System.exit(121)`) so `api-manager.sh` launches a new one. Every restart therefore goes through `GracefulServerRestart`, which calls `CoverageSupport.dumpBeforeRestart()` first: the outgoing JVM's counters land in `coverage/exec/<block>.restart-<n>.exec`, and the suite-end merge unions them with the block-end `<block>.exec` (each JVM is its own JaCoCo session). A restart issued any other way loses its JVM's counters.
+- **A lost block looks like lower coverage** — a failed block-end dump is a WARN, and the merged report stays valid without it. The aggregator writes `coverage/output/txt/coverage-summary.properties` (`blocks.expected`, `blocks.dumped`, `blocks.missing`, `restart.dumps`) and the CI "Verify coverage report" step fails when `blocks.dumped != blocks.expected`.
 
 ---
 
@@ -157,22 +166,20 @@ The v2 integration tests exercise `org.wso2.carbon.apimgt.*` code, so in princip
 **Image-classfile extraction — DONE (was the `v2-dist-zip` follow-up).** Originally the report mined the built distribution zip, shared to `integration-v2` as a ~538 MB `v2-dist-zip` artifact. That artifact is now **gone**: the job extracts class files from the image it already downloads. Mechanism + rationale:
 
 ```bash
-# From the repository root in the integration-v2 job, after `docker load`:
-cd all-in-one-apim/modules/integration-v2
+# integration-v2 job, after `docker load`:
 APIM_IMAGE=$(mvn -q -N help:evaluate -Dexpression=apim.docker.image.name -DforceStdout)
 APIM_SERVER_NAME=$(mvn -q -N help:evaluate -Dexpression=apim.server.name -DforceStdout)
 SRC="$RUNNER_TEMP/cov-classfiles"; mkdir -p "$SRC"
 cid=$(docker create "$APIM_IMAGE")
-trap 'docker rm -f "$cid" >/dev/null 2>&1 || true' EXIT
 docker cp "$cid:/home/wso2carbon/$APIM_SERVER_NAME/repository/components/plugins"        "$SRC/plugins"
 docker cp "$cid:/home/wso2carbon/$APIM_SERVER_NAME/repository/deployment/server/webapps" "$SRC/webapps"
 # suite runs with -Dapim.coverage.classfiles="$SRC"
 ```
 
-- **More correct, not just cheaper.** The image *is* what runs, so its classes are byte-identical to the executed ones by construction — exact JaCoCo class-id match. The original implementation investigation observed `9.33.134` in its image; current class versions must be read from the image used for the run. The original dist zip is *deleted* from the image by the Dockerfile after unpack, so we extract the **unpacked tree**, not a zip.
+- **More correct, not just cheaper.** The image *is* what runs, so its classes are byte-identical to the executed ones by construction — exact JaCoCo class-id match. It also sidesteps the §4.3 "which build did the zip carry" version-drift question (the image's plugins are `9.33.134`, matching the runtime). The original dist zip is *deleted* from the image by the Dockerfile after unpack, so we extract the **unpacked tree**, not a zip.
 - **Code.** `JacocoCoverage.extractApimgtClassfilesFromDir(dir, dest)` mines a directory tree (`Files.walk` matching `org.wso2.carbon.apimgt.*.jar` plugins + `*.war` webapps by NAME — the cp'd tree is already scoped, so no path-substring rule needed); it shares the WAR-mining/dedupe/zip-slip/partial-drift logic with the zip path via the private `ClassfileExtraction` helper, so the apimgt-selection rules live in ONE place. `CoverageSupport.classfilesSourceDir()` reads `-Dapim.coverage.classfiles`; when unset (local dev) the report falls back to the distribution zip.
 - **`v2-build-images` needs no coverage step.** The image it already ships suffices; coverage is purely an `integration-v2`-job concern. (Bonus: the build job's "Resolve APIM artifact names" step dropped to a single `help:evaluate`.)
-- **Historical verification.** In the original implementation run, extracting from the docker-cp'd image tree yielded the *identical* denominator as the zip path — **plugins=31, webapp-classes=983** from both — and the run reported 25.24% at TP=2. These counts and percentage are historical measurements, not a result for the current image. Trade-off: `docker cp` pulls the whole `plugins/` dir + all WARs to the runner's local disk (a few hundred MB, no network); the extractor still filters to apimgt.
+- **Verified parity.** Extracting from the docker-cp'd image tree yields the *identical* denominator as the zip path — **plugins=31, webapp-classes=983** from both — so the coverage number is unchanged (proven-green 25.24% at TP=2). Trade-off: the `docker cp` pulls the whole `plugins/` dir + all WARs to the runner's local disk (a few hundred MB, no network); the extractor still filters to apimgt.
 
 **Consequence (accepted):** there is **no combined unit+integration number** — product-apim has no unit tests, and carbon-apimgt's unit coverage stays in the carbon-apimgt project. v2 integration coverage stands alone (like legacy's ~9.4%).
 
@@ -180,5 +187,8 @@ docker cp "$cid:/home/wso2carbon/$APIM_SERVER_NAME/repository/deployment/server/
 
 ---
 
-## 9. Implemented state
-The spike, all-in-one collector, suite-end report, and CI upload are implemented. `DynamicApimContainer` supports opt-in agent startup; `BlockLifecycleListener` captures block-end dumps, while `GracefulServerRestart` calls `CoverageSupport` to capture pre-restart dumps; `CoverageAggregationListener` merges them, renders the report, and writes a dump summary; `.github/workflows/maven.yml` validates the report and uploads it with the `integration-v2_tests` flag. The distributed lane still has no JaCoCo collection path and is not present in the active CI matrix. The legacy-vs-v2 baseline described in `legacy-coverage-baseline-plan.md` remains a separate, unimplemented proposal.
+## 9. Phased rollout
+1. **Spike (Level 1):** `-Dapim.coverage=true` on `DynamicApimContainer`; tcpserver-dump one block; hand-run `jacococli report`; eyeball HTML. Proves instrumentation + classfile mapping.
+2. **Collector + listener:** generalise into `tests-common`; wire `BlockLifecycleListener` dump; suite-end merge + report; emit `coverage/output/txt/jacoco-it.xml`.
+3. **CI + Codecov:** per-PR workflow (same trigger as legacy) uploads the integration report to the **product-apim** project under flag `integration-v2_tests` (standalone, like legacy); add `codecov.yml`. Unit+integration merge, if ever wanted, is carbon-apimgt's concern (§8).
+4. **Later:** extend the same collector to the distributed lane (per-component dump + `jacoco merge`) — deferred.

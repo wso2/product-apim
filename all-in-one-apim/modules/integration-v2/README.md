@@ -50,6 +50,23 @@ The parameter is enabled only on the regular and email-username DevPortal blocks
 which run `DevPortalUnifiedSearchRunner` and assert registry indexing. It applies to hosted MySQL
 profiles and the distributed block-owned MySQL database. All other blocks use the shipped schema.
 
+## Suite checks
+
+From this directory, run the Python-only checks:
+
+```bash
+python3 docs/devs/render_coverage_tree.py
+python3 docs/devs/suite_alignment.py
+```
+
+The coverage-tree generator validates scenario tags and updates `docs/devs/coverage-tree.md`; the main CI workflow
+also checks that the generated tree is committed fresh. The standalone suite validator writes nothing and compares
+`testng-v2.xml` with `testng-v2_distributed.xml` by block, including runner multiplicity/order, scheduling and shared
+local parameters. Adding a runner to one suite requires adding it to the matching block in the other, or declaring
+the omission with a reason in [`docs/devs/suite-alignment.ignore`](docs/devs/suite-alignment.ignore). Undeclared
+differences, unsupported execution selectors and stale declarations fail validation with file/line annotations.
+Both the main and Testgrid build jobs run the validator's unit tests and suite check before building images.
+
 ## JaCoCo coverage
 
 JaCoCo collection is opt-in with `-Dapim.coverage=true`. In the all-in-one topology, the framework attempts a

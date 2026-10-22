@@ -146,6 +146,10 @@ jobs:
             git --no-pager diff -- docs/devs/coverage-tree.md
             exit 1
           fi
+      # Suite registration parity includes block order, provisioning and declared topology omissions.
+      - name: Verify integration-v2 suite alignment
+        working-directory: all-in-one-apim/modules/integration-v2
+        run: python3 docs/devs/suite_alignment.py
       - name: Verify carbon-apimgt versions are consistent
         run: |
           python3 - <<'PY'
