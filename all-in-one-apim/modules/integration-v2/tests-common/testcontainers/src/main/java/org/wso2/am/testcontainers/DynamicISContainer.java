@@ -95,6 +95,11 @@ public class DynamicISContainer extends GenericContainer<DynamicISContainer> {
      */
     static final String SERVER_HEAP_OPTS = "-Xms1g -Xmx1536m";
 
+    /** The {@code [server] hostname} IS advertises: the host of every URL it emits, its OAuth issuer included. */
+    private final String hostname;
+    /** The HTTPS port IS listens on inside the container: {@link #HTTPS_PORT} plus the {@code [server] offset}. */
+    private final int httpsPort;
+
     /**
      * @param blockLabel          the owning block's label — log prefix and diagnostics only; instances are NOT
      *                            cached by it (one container per IS-booting block)
@@ -103,12 +108,35 @@ public class DynamicISContainer extends GenericContainer<DynamicISContainer> {
      *                            {@code tomlExtraOverlayPath} semantics), or {@code null} for none
      */
     public DynamicISContainer(String blockLabel, String extraOverlayContent) {
+        this(blockLabel, extraOverlayContent, NETWORK_ALIAS, 0);
+    }
+
+    /**
+     * As {@link #DynamicISContainer(String, String)}, with the hostname IS advertises and its port offset chosen
+     * by the caller.
+     *
+     * <p>The default advertises the {@code wso2is} network alias, so a browser holds IS cookies under a different
+     * host from APIM's {@code localhost}. Advertising {@code localhost} with a non-zero offset instead reproduces
+     * the stock single-machine deployment, where both servers run on {@code localhost} on different ports:
+     * cookies are scoped by host and not by port, so the two servers then share one cookie namespace. IS stays
+     * reachable server-to-server as {@code wso2is}, on the offset port.
+     *
+     * @param hostname   the {@code [server] hostname} IS advertises in every URL it emits
+     * @param portOffset the {@code [server] offset}; IS listens on {@link #HTTPS_PORT} plus this
+     */
+    public DynamicISContainer(String blockLabel, String extraOverlayContent, String hostname, int portOffset) {
 
         super(System.getProperty("is.docker.image.name", DEFAULT_IMAGE));
-        logger.info("Initializing DynamicISContainer (WSO2 IS " + IS_VERSION + ", block='" + blockLabel + "')...");
+        logger.info("Initializing DynamicISContainer (WSO2 IS " + IS_VERSION + ", block='" + blockLabel
+                + "', hostname='" + hostname + "', offset=" + portOffset + ")...");
+        if (portOffset < 0) {
+            throw new IllegalArgumentException("IS port offset must not be negative: " + portOffset);
+        }
+        this.hostname = hostname;
+        this.httpsPort = HTTPS_PORT + portOffset;
 
-        String deploymentToml = buildDeploymentToml(extraOverlayContent);
-        withExposedPorts(HTTPS_PORT);
+        String deploymentToml = buildDeploymentToml(extraOverlayContent, hostname, portOffset);
+        withExposedPorts(httpsPort);
         // NOTE: the docker network and the wso2is alias are assigned by the CALLER (BlockLifecycleListener), so
         // each block's IS is reachable as 'wso2is' on that block's private network only — mirroring
         // DynamicApimContainer. This is what lets distinct IS overlays coexist in one JVM.
@@ -143,17 +171,35 @@ public class DynamicISContainer extends GenericContainer<DynamicISContainer> {
 
     /** Host-mapped IS management HTTPS base URL (valid after start), e.g. {@code https://localhost:32771/}. */
     public String getBaseHttpsUrl() {
-        return String.format("https://%s:%d/", getHost(), getMappedPort(HTTPS_PORT));
+        return String.format("https://%s:%d/", getHost(), getMappedPort(httpsPort));
+    }
+
+    /** The HTTPS port IS listens on inside the container ({@link #HTTPS_PORT} plus the configured offset). */
+    public int getHttpsPort() {
+        return httpsPort;
+    }
+
+    /** Server-to-server base URL on the block network, e.g. {@code https://wso2is:9443/}: back-channel calls. */
+    public String getInternalBaseUrl() {
+        return "https://" + NETWORK_ALIAS + ":" + httpsPort + "/";
+    }
+
+    /**
+     * The base URL IS advertises, e.g. {@code https://wso2is:9443/} or {@code https://localhost:9444/}: the
+     * authority of every page, redirect and cookie a browser receives from IS.
+     */
+    public String getAdvertisedBaseUrl() {
+        return "https://" + hostname + ":" + httpsPort + "/";
     }
 
     /**
      * Builds the IS {@code deployment.toml} = IS image default (with {@code [server] hostname} rewritten to the
-     * network alias) + the built-in {@link #DEPLOYMENT_OVERLAY_RESOURCE} + optionally a block-specific EXTRA
-     * overlay appended after it ({@code isTomlExtraOverlayPath}) - additive layering mirroring the APIM
-     * {@code tomlExtraOverlayPath} semantics, since any networked IS still needs the default overlay's
-     * hostname/keystore/oauth config.
+     * advertised hostname, and the port offset added beside it) + the built-in {@link #DEPLOYMENT_OVERLAY_RESOURCE}
+     * + optionally a block-specific EXTRA overlay appended after it ({@code isTomlExtraOverlayPath}) - additive
+     * layering mirroring the APIM {@code tomlExtraOverlayPath} semantics, since any networked IS still needs the
+     * default overlay's hostname/keystore/oauth config.
      */
-    private static String buildDeploymentToml(String extraOverlayContent) {
+    private static String buildDeploymentToml(String extraOverlayContent, String hostname, int portOffset) {
         File base = new File(defaultTomlPath());
         if (!base.isFile()) {
             throw new IllegalStateException("IS default deployment.toml not found at '" + base + "'. It is "
@@ -163,15 +209,20 @@ public class DynamicISContainer extends GenericContainer<DynamicISContainer> {
         }
         try {
             String baseToml = java.nio.file.Files.readString(base.toPath());
-            // Override the single default key we change: [server] hostname = "localhost" -> the network alias,
-            // so the OAuth issuer and endpoints resolve to https://wso2is:9443 on the shared network. Done in
-            // place (not via the overlay) to avoid a duplicate [server] table when the overlay is appended.
-            String withHost = baseToml.replaceFirst("(?m)^(\\s*hostname\\s*=\\s*).*$",
-                    "$1\"" + NETWORK_ALIAS + "\"");
-            if (withHost.equals(baseToml)) {
+            // Override the single default key we change: [server] hostname = "localhost" -> the advertised
+            // hostname (by default the network alias, so the OAuth issuer and endpoints resolve to
+            // https://wso2is:9443 on the shared network). A port offset is added to the same [server] table.
+            // Done in place (not via the overlay) to avoid a duplicate [server] table when the overlay is appended.
+            java.util.regex.Matcher hostLine = java.util.regex.Pattern
+                    .compile("(?m)^(\\s*hostname\\s*=\\s*).*$").matcher(baseToml);
+            if (!hostLine.find()) {
                 throw new IllegalStateException("Could not find a [server] hostname entry to override in the IS "
                         + "default deployment.toml at " + base);
             }
+            String serverKeys = hostLine.group(1) + "\"" + hostname + "\""
+                    + (portOffset == 0 ? "" : System.lineSeparator() + "offset = " + portOffset);
+            String withHost = baseToml.substring(0, hostLine.start()) + serverKeys
+                    + baseToml.substring(hostLine.end());
             StringBuilder toml = new StringBuilder(withHost)
                     .append(System.lineSeparator()).append(System.lineSeparator())
                     .append("# --- integration-v2 IS deployment overlay (appended) ---")

@@ -288,6 +288,20 @@ public class BlockLifecycleListener implements ITestListener {
      * non-positive or IS-less value fails the block's boot.
      */
     static final String PARAM_IS_CPU_LIMIT = "isCpuLimit";
+    /**
+     * Optional hostname the block's external IS advertises (its {@code [server] hostname}): the host of every URL
+     * and cookie a browser receives from IS. Absent leaves the {@code wso2is} network alias, so a browser keeps IS
+     * cookies apart from APIM's {@code localhost}; {@code localhost} (with {@link #PARAM_IS_PORT_OFFSET}) makes
+     * both servers share one cookie host, as a single-machine deployment does. IS stays reachable
+     * server-to-server as {@code wso2is}. Valid only with {@link #PARAM_BOOT_EXTERNAL_IS}.
+     */
+    static final String PARAM_IS_HOSTNAME = "isHostname";
+    /**
+     * Optional {@code [server] offset} for the block's external IS, so it listens on {@code 9443 + offset}. Needed
+     * whenever {@link #PARAM_IS_HOSTNAME} names APIM's own host, where the two servers can only differ by port.
+     * Valid only with {@link #PARAM_BOOT_EXTERNAL_IS}.
+     */
+    static final String PARAM_IS_PORT_OFFSET = "isPortOffset";
     /** Shared-scope key holding the host-mapped external IS base URL (for scenarios requesting a token from IS). */
     static final String IS_BASE_URL_KEY = "isBaseUrl";
 
@@ -397,6 +411,12 @@ public class BlockLifecycleListener implements ITestListener {
                 throw new IllegalArgumentException("Block '" + label + "' sets " + PARAM_IS_CPU_LIMIT
                         + " but does not set " + PARAM_BOOT_EXTERNAL_IS + "=true");
             }
+            String isHostname = param(context, PARAM_IS_HOSTNAME);
+            String isPortOffset = param(context, PARAM_IS_PORT_OFFSET);
+            if (!bootExternalIs && (isHostname != null || isPortOffset != null)) {
+                throw new IllegalArgumentException("Block '" + label + "' sets " + PARAM_IS_HOSTNAME + "/"
+                        + PARAM_IS_PORT_OFFSET + " but does not set " + PARAM_BOOT_EXTERNAL_IS + "=true");
+            }
 
             container = createApimContainer(label, context, blockNetwork);
             configureServerFiles(context, container);
@@ -497,6 +517,9 @@ public class BlockLifecycleListener implements ITestListener {
             // introspection calls trust IS.
             if (bootExternalIs) {
                 bootExternalIdentityServer(label, param(context, PARAM_IS_TOML_EXTRA_OVERLAY), isCpuLimit,
+                        isHostname == null || isHostname.isBlank() ? DynamicISContainer.NETWORK_ALIAS
+                                : isHostname.trim(),
+                        isPortOffset == null || isPortOffset.isBlank() ? 0 : Integer.parseInt(isPortOffset.trim()),
                         (Network) TestContext.get(BLOCK_NETWORK_KEY));
             }
 
@@ -920,18 +943,21 @@ public class BlockLifecycleListener implements ITestListener {
      * @param isTomlExtraOverlayPath module-relative path of an IS EXTRA overlay toml appended after the built-in
      *                               overlay, or {@code null}/blank for none
      * @param cpuLimit               CPU cap for the IS container, or empty to leave it uncapped
+     * @param hostname               the hostname IS advertises (see {@link #PARAM_IS_HOSTNAME})
+     * @param portOffset             IS's port offset (see {@link #PARAM_IS_PORT_OFFSET})
      * @param blockNetwork           the block's private network the IS joins under the {@code wso2is} alias
      * @return the started IS container, for the caller to publish and later stop
      */
     private DynamicISContainer bootExternalIdentityServer(String label, String isTomlExtraOverlayPath,
-            Optional<CpuLimit> cpuLimit, Network blockNetwork) throws java.io.IOException {
+            Optional<CpuLimit> cpuLimit, String hostname, int portOffset, Network blockNetwork)
+            throws java.io.IOException {
 
         String extraContent = null;
         if (isTomlExtraOverlayPath != null && !isTomlExtraOverlayPath.isBlank()) {
             String moduleDir = ModulePathResolver.getModuleDir(BlockLifecycleListener.class);
             extraContent = Files.readString(Paths.get(moduleDir, isTomlExtraOverlayPath).normalize());
         }
-        DynamicISContainer is = new DynamicISContainer(label, extraContent);
+        DynamicISContainer is = new DynamicISContainer(label, extraContent, hostname, portOffset);
         is.withNetwork(blockNetwork).withNetworkAliases(DynamicISContainer.NETWORK_ALIAS);
         if (cpuLimit.isPresent()) {
             is.withCpuLimit(cpuLimit.get());
@@ -953,7 +979,8 @@ public class BlockLifecycleListener implements ITestListener {
                 Constants.SUPER_TENANT_ADMIN_USERNAME, Constants.SUPER_TENANT_ADMIN_PASSWORD, isBaseUrl));
         logger.info("Block '" + label + "' booted its external Identity Server (extra overlay='"
                 + (isTomlExtraOverlayPath == null || isTomlExtraOverlayPath.isBlank() ? "none"
-                        : isTomlExtraOverlayPath) + "'); isBaseUrl=" + isBaseUrl);
+                        : isTomlExtraOverlayPath) + "'); isBaseUrl=" + isBaseUrl + " advertised="
+                + is.getAdvertisedBaseUrl() + " internal=" + is.getInternalBaseUrl());
         return is;
     }
 

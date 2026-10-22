@@ -133,6 +133,36 @@ Feature: Multi-tenant console SSO via an external Identity Server
     And the Admin console must demand a fresh login after multi-tenant logout
     And the DevPortal session must no longer authorize the MT application
 
+  # Logout must end the session at every layer of the broker chain: the broker's, the tenant identity provider's,
+  # and the Identity Server's, where the credentials were checked. If the Identity Server's survives, the next
+  # login through the broker signs the user back in without a password.
+  #
+  # This scenario also runs in the IntegrationV2-MultiTenantSsoSharedHost block (selected by its
+  # @mt-sso-single-logout tag), where the Identity Server shares API Manager's host. Browser cookies are scoped
+  # by host, not port, so there the two servers' session cookies coincide, and API Manager clearing its own ends
+  # the Identity Server's by accident. In THIS block the Identity Server has its own host, so only a logout that
+  # really reaches the Identity Server passes.
+  @cap:admin @feat:sso @rule:multitenant-sso @type:regression @mt-sso-single-logout
+  Scenario: A tenant user who signs out must enter credentials at the identity server again to sign back in
+
+    Given a real browser session for the multi-tenant SSO journey
+    When I open the "publisher" console login page for multi-tenant SSO
+    And I select the multi-tenant broker federated authenticator
+    And I select the tenant "abc.com" on the broker's tenant-selection page
+    And I authenticate at the identity server as the tenant's SSO user
+    Then I should land authenticated in the "publisher" console as a tenant user
+    And the "publisher" console session should belong to the tenant's SSO user
+    When I log out of the "publisher" console for multi-tenant SSO
+    Then the "publisher" multi-tenant logout should return through its callback
+    And no multi-tenant console session cookies should remain
+    When I open the "publisher" console login page for multi-tenant SSO
+    And I select the multi-tenant broker federated authenticator
+    And I select the tenant "abc.com" on the broker's tenant-selection page
+    Then the identity server must demand the tenant user's credentials again
+    When I authenticate at the identity server as the tenant's SSO user
+    Then I should land authenticated in the "publisher" console as a tenant user
+    And the "publisher" console session should belong to the tenant's SSO user
+
   @cap:admin @feat:sso @rule:multitenant-sso @type:regression
   Scenario Outline: The MT multi-option login still authenticates a local administrator in <tenant>
 
