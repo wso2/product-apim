@@ -21,6 +21,7 @@ import org.apache.commons.logging.LogFactory;
 import org.wso2.am.integration.cucumbertests.utils.clients.SimpleHTTPClient;
 import org.wso2.am.integration.test.utils.Constants;
 import org.wso2.am.testcontainers.ApimRuntime;
+import org.wso2.am.testcontainers.ContainerLogHistory;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import java.io.IOException;
@@ -34,7 +35,6 @@ public final class GatewayTenantLoadGate {
 
     private static final Log logger = LogFactory.getLog(GatewayTenantLoadGate.class);
     private static final String SERVER_LOG = "wso2carbon.log";
-    private static final Pattern SERVER_START = Pattern.compile("Starting WSO2 Carbon", Pattern.CASE_INSENSITIVE);
     private static final String DEPLOYMENT_COMPLETE = "Synapse Artifacts deployed Successfully in the Gateway";
     private static final long POLL_INTERVAL_MILLIS = 1000L;
 
@@ -52,13 +52,13 @@ public final class GatewayTenantLoadGate {
     private static void awaitTenant(ApimRuntime runtime, String blockLabel, String tenantDomain) {
 
         String gateway = runtime.getGatewayHttpsUrl();
-        String currentLog;
+        ContainerLogHistory.Snapshot history;
         try {
-            currentLog = currentBootLog(runtime.readGatewayLogFile(SERVER_LOG));
+            history = runtime.readGatewayLogHistory(SERVER_LOG);
         } catch (RuntimeException e) {
             throw failure(gateway, tenantDomain, "could not read the current Gateway boot log: " + e);
         }
-        if (currentLog == null) {
+        if (!history.bootFound()) {
             throw failure(gateway, tenantDomain, "current boot has no 'Starting WSO2 Carbon' marker");
         }
         long startedAt = System.currentTimeMillis();
@@ -98,18 +98,18 @@ public final class GatewayTenantLoadGate {
 
     private static Result inspect(ApimRuntime runtime, String tenantDomain, AtomicReference<String> lastEvidence) {
 
-        String all;
+        ContainerLogHistory.Snapshot history;
         try {
-            all = runtime.readGatewayLogFile(SERVER_LOG);
+            history = runtime.readGatewayLogHistory(SERVER_LOG);
         } catch (RuntimeException e) {
             lastEvidence.set("Gateway log read failed: " + e);
             return new Result(false);
         }
-        String current = currentBootLog(all);
-        if (current == null) {
+        if (!history.bootFound()) {
             lastEvidence.set("current boot has no 'Starting WSO2 Carbon' marker");
             return new Result(false);
         }
+        String current = history.text();
         String loadedLine = null;
         String completedLine = null;
         Pattern loaded = Pattern.compile("Loaded tenant\\s+" + Pattern.quote(tenantDomain) + "\\s+in\\s+\\d+\\s+ms");
@@ -126,19 +126,6 @@ public final class GatewayTenantLoadGate {
                 + "; load-time-deployment=" + (completedLine == null ? "pending" : completedLine);
         lastEvidence.set(evidence);
         return new Result(loadedLine != null && completedLine != null);
-    }
-
-    private static String currentBootLog(String log) {
-
-        if (log == null) {
-            return null;
-        }
-        var matcher = SERVER_START.matcher(log);
-        int start = -1;
-        while (matcher.find()) {
-            start = matcher.start();
-        }
-        return start < 0 ? null : log.substring(start);
     }
 
     private static IllegalStateException failure(String gateway, String tenantDomain, String evidence) {

@@ -64,7 +64,7 @@ public final class TenantPolicyDeployReadiness {
         long[] lastChange = {start};
         int[] lastCount = {-1};
         Result result = Utils.retryUntilWithInterval(timeoutSeconds * 1000L, POLL_INTERVAL_MILLIS, () -> {
-            Sample sample = sample(runtime.readTrafficManagerLogFile(SERVER_LOG), deployed);
+            Sample sample = sample(runtime.readTrafficManagerLogHistory(SERVER_LOG).text(), deployed);
             long now = System.currentTimeMillis();
             if (sample.count() != lastCount[0]) {
                 lastCount[0] = sample.count();
