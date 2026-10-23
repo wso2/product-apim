@@ -626,6 +626,18 @@
             <class name="org.wso2.am.integration.cucumbertests.runners.block.NetworkAccessControlUrlPrivateBlockRunner"/>
         </classes>
     </test>
+    <!-- Opaque-token renewal needs a non-default [oauth.opaque.renew_token_without_revoking_existing];
+         the overlay allows client_credentials only, which doubles as the feature's negative control. -->
+    <test name="IntegrationV2-OpaqueTokenRenewal" parallel="classes" thread-count="1">
+        <parameter name="blockLabel" value="opaque-token-renewal"/>
+        <parameter name="apimCpuLimit" value="1"/>
+        <parameter name="initTenantUsers" value="true"/>
+        <parameter name="tomlExtraOverlayPath" value="src/test/resources/artifacts/configFiles/opaqueTokenRenewal/deployment.toml"/>
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.KeyManagerOpaqueTokenRenewalRunner"/>
+        </classes>
+    </test>
+
 
     <!-- Restart scenarios mutate the shared APIM server. -->
     <test name="IntegrationV2-ServerRestart-Throttling-A" parallel="classes" thread-count="1">
