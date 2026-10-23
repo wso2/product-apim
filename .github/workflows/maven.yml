@@ -11,64 +11,6 @@ concurrency:
   group: ${{ github.event.number }}
   cancel-in-progress: true
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        include:
-          - id: 1
-            segment: group1
-          - id: 2
-            segment: group2
-          - id: 3
-            segment: group3
-          - id: 4
-            segment: group4
-      fail-fast: false
-    steps:
-    - name: Run hostname
-      run: hostname
-    - name: Fix host entry
-      run: sudo echo "127.0.0.1 $(hostname)" | sudo tee -a /etc/hosts
-    - name: Show hosts
-      run: cat /etc/hosts
-    - name: Checkout master
-      uses: actions/checkout@v3
-    - name: Cache Maven packages
-      uses: actions/cache@v3
-      with:
-        path: ~/.m2
-        key: ${{ runner.os }}-m2
-        restore-keys: ${{ runner.os }}-m2
-    - name: Set up JDK 21
-      uses: actions/setup-java@v2
-      with:
-        java-version: 21
-        distribution: 'temurin'
-    - name: Set up Maven
-      uses: ./.github/actions/setup-maven
-    - uses: actions/setup-node@v1
-      with:
-        node-version: '10.x'
-    - name: Build product-apim with Test.
-      run: mvn clean install --file all-in-one-apim/pom.xml -DskipBenchMarkTest=true -DskipRestartTests=true
-      env:
-        PRODUCT_APIM_TEST_GROUPS: ${{ matrix.segment }}
-    - name: Prepare upload testng report
-      if: always()
-      run: mv all-in-one-apim/modules/integration/tests-integration/tests-backend/target/surefire-reports/TEST-TestSuite.xml TEST-TestSuite_${{ matrix.id }}.xml
-    - name: Archive testng report
-      if: always()
-      uses: actions/upload-artifact@v4
-      with:
-        name: TEST-TestSuite_${{ matrix.id }}
-        path: |
-          TEST-TestSuite_${{ matrix.id }}.xml
-        if-no-files-found: warn
-    - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v3
-      with:
-        flags: integration_tests
   run-benchmark-test:
     runs-on: ubuntu-latest
     steps:
@@ -98,21 +40,6 @@ jobs:
           node-version: '10.x'
       - name: Build product-apim with Test.
         run: mvn clean install -U --file all-in-one-apim/pom.xml -DskipIntegrationTests=true
-  show-report:
-    if: ${{ always() && !cancelled() }}
-    needs: build
-    runs-on: 'ubuntu-latest'
-    steps:
-      - uses: actions/download-artifact@v4
-        with:
-          path: reports
-      - name: Publish Test Report
-        if: always()
-        uses: malinthaprasan/action-surefire-report@v1
-        env:
-          NODE_OPTIONS: --max-old-space-size=8192
-        with:
-          report_paths: 'reports/**/TEST-*.xml'
   # Builds the distribution + Docker images ONCE, then shares the non-public images (docker save ->
   # artifact), the testcontainers target/is7 and distributed-apim staging (image defaults + schemas,
   # produced by the same pre-integration-test execs), and the Maven repo (run-scoped cache) with the
@@ -275,13 +202,27 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        # Each suite runs as two jobs selected by the blocks' group parameter (SuiteGroupSelectionListener);
+        # both suites declare the same groups, so each pair covers its complete suite.
         include:
-          - id: v2-all-in-one
+          - id: v2-all-in-one-group1
             suite: testng-v2.xml
+            group: group1
             coverage: true
             topology: all-in-one
-          - id: v2-distributed
+          - id: v2-all-in-one-group2
+            suite: testng-v2.xml
+            group: group2
+            coverage: true
+            topology: all-in-one
+          - id: v2-distributed-group1
             suite: testng-v2_distributed.xml
+            group: group1
+            coverage: false
+            topology: distributed
+          - id: v2-distributed-group2
+            suite: testng-v2_distributed.xml
+            group: group2
             coverage: false
             topology: distributed
     steps:
@@ -386,6 +327,7 @@ jobs:
           --output tests-integration/cucumber-tests/target/logs/host-diagnostics --
           mvn test -pl tests-integration/cucumber-tests -am
           -Dsurefire.suite.xml=${{ matrix.suite }}
+          -Dapim.v2.test.groups=${{ matrix.group }}
           -Dapim.server.version="$APIM_VERSION"
           -Ddistributed.apim.cp.image.name="distributed-apim-cp:${CP_VERSION}-jdk21"
           -Ddistributed.apim.tm.image.name="distributed-apim-tm:${TM_VERSION}-jdk21"
@@ -410,6 +352,7 @@ jobs:
               --output tests-integration/cucumber-tests/target/logs/host-diagnostics -- \
               mvn test -pl tests-integration/cucumber-tests -am \
                 -Dsurefire.suite.xml=${{ matrix.suite }} \
+                -Dapim.v2.test.groups=${{ matrix.group }} \
                 -Dapim.server.version="$APIM_VERSION" \
                 -Ddistributed.apim.cp.image.name="distributed-apim-cp:${CP_VERSION}-jdk21" \
                 -Ddistributed.apim.tm.image.name="distributed-apim-tm:${TM_VERSION}-jdk21" \
@@ -434,6 +377,7 @@ jobs:
           name: integration-v2-reports-${{ matrix.id }}
           path: |
             all-in-one-apim/modules/integration-v2/tests-integration/cucumber-tests/target/surefire-reports/**
+            all-in-one-apim/modules/integration-v2/tests-integration/cucumber-tests/target/block-timeline.json
             all-in-one-apim/modules/integration-v2/tests-integration/cucumber-tests/target/cucumber-report/**
             all-in-one-apim/modules/integration-v2/tests-integration/cucumber-tests/target/logs/**
             all-in-one-apim/modules/integration-v2/tests-integration/cucumber-tests/target/coverage/output/**
@@ -490,4 +434,10 @@ jobs:
           NODE_OPTIONS: --max-old-space-size=8192
         with:
           report_paths: 'all-in-one-apim/modules/integration-v2/tests-integration/cucumber-tests/target/surefire-reports/TEST-*.xml'
-          check_name: 'integration-v2 results'
+          check_name: 'integration-v2 results (${{ matrix.id }})'
+      # The execution map is best effort, including jobs whose test JVM did not finish.
+      - name: Summarize v2 suite execution
+        if: always()
+        continue-on-error: true
+        working-directory: all-in-one-apim/modules/integration-v2
+        run: python3 docs/devs/render_block_timeline.py
