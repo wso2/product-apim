@@ -51,7 +51,6 @@ import org.wso2.carbon.utils.ServerConstants;
     private String correlationId = CORRELATION_ID;
     private static final long LOG_POLL_INTERVAL_MS = 2000;
     private static final long LOG_POLL_TIMEOUT_MS = 30000;
-    private static final long LOG_QUIET_PERIOD_MS = 3000;
     private final String API_END_POINT_POSTFIX_URL = "am/sample/pizzashack/v1/api/menu";
     private final String correlationLogFilePath =
             System.getProperty(ServerConstants.CARBON_HOME) + File.separator + "repository" + File.separator + "logs"
@@ -122,11 +121,11 @@ import org.wso2.carbon.utils.ServerConstants;
         resetAllLogs();
         awaitAllCorrelationCategories();
         assertAllCorrelationCategoriesLogged("after ENABLING all correlation components via the DevOps API");
-        // Skip the rest of the enabling phase's lines so the disabling phase only counts its own.
-        drainUntilQuiet();
 
         // Disabling all the correlation components using the DevOps API and testing whether logs are still logging.
         configureCorrelationLoggingComponent(new String[] { "http", "jdbc", "synapse", "ldap", "method-calls" }, false);
+        // Only count lines written after the components were disabled.
+        skipToEndOfLog();
         correlationId = UUID.randomUUID().toString();
         InvokeTestAPI();
         resetAllLogs();
@@ -172,18 +171,10 @@ import org.wso2.carbon.utils.ServerConstants;
     }
 
     /**
-     * Reads and discards correlation log lines until none arrive for {@link #LOG_QUIET_PERIOD_MS}, or the
-     * timeout expires.
+     * Reads and discards every correlation log line written so far.
      */
-    private void drainUntilQuiet() throws Exception {
-        long deadline = System.currentTimeMillis() + LOG_POLL_TIMEOUT_MS;
-        long lastLineAt = System.currentTimeMillis();
-        while (System.currentTimeMillis() - lastLineAt < LOG_QUIET_PERIOD_MS
-                && System.currentTimeMillis() < deadline) {
-            while (bufferedReader.readLine() != null) {
-                lastLineAt = System.currentTimeMillis();
-            }
-            Thread.sleep(LOG_POLL_INTERVAL_MS / 4);
+    private void skipToEndOfLog() throws Exception {
+        while (bufferedReader.readLine() != null) {
         }
     }
 
