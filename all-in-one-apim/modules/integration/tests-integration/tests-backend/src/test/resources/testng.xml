@@ -105,8 +105,6 @@
             <class name="org.wso2.am.integration.tests.api.lifecycle.EditAPIContextAndCheckAccessibilityTestCase"/>
             <!--&lt;!&ndash;Disable the test case because of APIMANAGER-3229&ndash;&gt;-->
             <class name="org.wso2.am.integration.tests.api.lifecycle.UsersAndDocsInAPIOverviewTestCase"/>
-            <!-- <class name="org.wso2.am.integration.tests.api.lifecycle.APIEndpointCertificateTestCase"/> -->
-            <class name="org.wso2.am.integration.tests.api.lifecycle.APIEndpointCertificateUsageTestCase"/>
             <class name="org.wso2.am.integration.tests.api.lifecycle.UpdateAPINullPointerTestCase"/>
             <class name="org.wso2.am.integration.tests.api.lifecycle.APISecurityTestCase" />
 <!--            <class name="org.wso2.am.integration.tests.api.lifecycle.AudienceValidationTestCase"/>-->
@@ -514,6 +512,19 @@
         <parameter name="group" value="group3"/>
         <classes>
             <class name="org.wso2.am.integration.tests.other.TenantDomainValidationTestCase"/>
+        </classes>
+    </test>
+
+    <!-- Must remain the LAST group3 <test> block. APIEndpointCertificateTestCase
+         deletes all endpoint certificates, which can leave the gateway's HTTPS
+         sender without a trust manager and stall control-plane artifact sync for
+         several minutes. Any class running after it in the same suite can fail
+         with "API deployment sync timed out". -->
+    <test name="apim-endpoint-certificate-tests" preserve-order="true" parallel="false" group-by-instances="true">
+        <parameter name="group" value="group3"/>
+        <classes>
+            <class name="org.wso2.am.integration.tests.api.lifecycle.APIEndpointCertificateTestCase"/>
+            <class name="org.wso2.am.integration.tests.api.lifecycle.APIEndpointCertificateUsageTestCase"/>
         </classes>
     </test>
     <test name="apim-integration-tests-apim-is-tenant-sync" preserve-order="true" parallel="false"
