@@ -1,6 +1,15 @@
 # Distributed Universal Gateway delta from the product ZIP default. Runtime values are supplied by the composite
 # container.
 
+[diagnostic_tool.server_configuration]
+diagnostic_tool_enabled = false
+
+[governance_data]
+enable_cache = false
+
+[config_data]
+enable_cache = false
+
 [database.shared_db]
 type = "mysql"
 username = "wso2carbon"
@@ -14,3 +23,5 @@ password = "$ref{super_admin.password}"
 
 [apim.sync_runtime_artifacts.gateway]
 gateway_labels = ["Default"]
+# Match the all-in-one test lane: artifacts are read from the single CP's database, with no HA replication delay.
+event_waiting_time = 0

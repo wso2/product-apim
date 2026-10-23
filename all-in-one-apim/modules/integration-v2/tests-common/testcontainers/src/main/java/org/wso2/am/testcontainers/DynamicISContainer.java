@@ -70,6 +70,10 @@ import java.time.Duration;
 public class DynamicISContainer extends GenericContainer<DynamicISContainer> {
 
     private static final Log logger = LogFactory.getLog(DynamicISContainer.class);
+    private static final Duration DEFAULT_STARTUP_TIMEOUT = Duration.ofMinutes(4);
+    private CpuLimit cpuLimit;
+    private Long memoryLimitBytes;
+    private Long memoryAndSwapLimitBytes;
 
     /** Network alias APIM and the KM registration payload use to reach IS on the block's private network. */
     public static final String NETWORK_ALIAS = "wso2is";
@@ -106,6 +110,14 @@ public class DynamicISContainer extends GenericContainer<DynamicISContainer> {
 
         super(System.getProperty("is.docker.image.name", DEFAULT_IMAGE));
         logger.info("Initializing DynamicISContainer (WSO2 IS " + IS_VERSION + ", block='" + blockLabel + "')...");
+        withCreateContainerCmdModifier(cmd -> {
+            if (cpuLimit != null) {
+                cpuLimit.applyTo(cmd);
+            }
+            if (memoryLimitBytes != null) {
+                cmd.getHostConfig().withMemory(memoryLimitBytes).withMemorySwap(memoryAndSwapLimitBytes);
+            }
+        });
 
         String deploymentToml = buildDeploymentToml(extraOverlayContent);
         withExposedPorts(HTTPS_PORT);
@@ -129,7 +141,7 @@ public class DynamicISContainer extends GenericContainer<DynamicISContainer> {
         withEnv("JVM_MEM_OPTS", SERVER_HEAP_OPTS);
         withLogConsumer(new JclLogConsumer(logger));
         // IS 7.3.0 is multi-arch and boots natively (well under a minute); allow margin for CI/load.
-        waitingFor(Wait.forListeningPort().withStartupTimeout(Duration.ofMinutes(4)));
+        waitingFor(Wait.forListeningPort().withStartupTimeout(DEFAULT_STARTUP_TIMEOUT));
     }
 
     /**
@@ -137,7 +149,37 @@ public class DynamicISContainer extends GenericContainer<DynamicISContainer> {
      * container creation). Without this call the container is uncapped. Must be called before {@link #start()}.
      */
     public DynamicISContainer withCpuLimit(CpuLimit limit) {
-        withCreateContainerCmdModifier(limit::applyTo);
+        this.cpuLimit = limit;
+        return this;
+    }
+
+    /** Caps the container's memory and disables swap beyond that limit. Must be called before {@link #start()}. */
+    public DynamicISContainer withMemoryLimit(long limitBytes) {
+        return withMemoryLimit(limitBytes, limitBytes);
+    }
+
+    /** Caps memory and allows the supplied bounded combined memory-plus-swap limit. Must be called before start. */
+    public DynamicISContainer withMemoryLimit(long limitBytes, long memoryAndSwapLimitBytes) {
+        if (limitBytes <= 0) {
+            throw new IllegalArgumentException("IS container memory limit must be positive");
+        }
+        if (memoryAndSwapLimitBytes < limitBytes) {
+            throw new IllegalArgumentException("IS container memory-plus-swap limit must be at least its memory limit");
+        }
+        this.memoryLimitBytes = limitBytes;
+        this.memoryAndSwapLimitBytes = memoryAndSwapLimitBytes;
+        logger.info("External Identity Server memory cap: " + (limitBytes / (1024 * 1024)) + " MiB, swap allowance: "
+                + ((memoryAndSwapLimitBytes - limitBytes) / (1024 * 1024)) + " MiB");
+        return this;
+    }
+
+    /** Overrides the port-listening startup timeout. The default applies unless a topology selects another value. */
+    public DynamicISContainer withStartupTimeout(Duration timeout) {
+        if (timeout == null || timeout.isZero() || timeout.isNegative()) {
+            throw new IllegalArgumentException("IS container startup timeout must be positive");
+        }
+        waitingFor(Wait.forListeningPort().withStartupTimeout(timeout));
+        logger.info("External Identity Server port startup timeout: " + timeout);
         return this;
     }
 

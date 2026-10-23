@@ -1,4 +1,4 @@
-# Feature-specific overlay for the IntegrationV2-Distributed-BackendJwtUrlSafe block (CP and Gateway). Enables backend JWT generation with
+# CP overlay for the IntegrationV2-Distributed-BackendJwtUrlSafeAndMtlsChain block. Enables backend JWT generation with
 # URL-SAFE base64 encoding, so the gateway emits the X-JWT-Assertion header base64url-encoded. Ports the config
 # of URLSafeJWTTestCase. Merged on top of the shared `basic` overlay.
 [apim.jwt]

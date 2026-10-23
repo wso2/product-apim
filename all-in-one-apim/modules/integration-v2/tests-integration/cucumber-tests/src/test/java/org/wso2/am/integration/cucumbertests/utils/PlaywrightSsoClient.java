@@ -82,6 +82,20 @@ public final class PlaywrightSsoClient implements AutoCloseable {
      */
     private static final int PAGE_READY_TIMEOUT_MS = 30000;
 
+    /** Observes the console's own OIDC session checks in each top-level document. */
+    private static final String OIDC_SESSION_OBSERVER = "(() => {"
+            + " if (window !== window.top) return;"
+            + " window.__ssoOidcSessionStatus = null;"
+            + " window.addEventListener('message', event => {"
+            + "   const op = document.getElementById('iframeOP');"
+            + "   if (!op || event.source !== op.contentWindow"
+            + "       || event.origin !== new URL(op.src, location.href).origin) return;"
+            + "   if (!['changed', 'unchanged', 'error'].includes(event.data)) return;"
+            + "   window.__ssoOidcSessionStatus = event.data;"
+            + "   console.debug('[SSO-SESSION] ' + event.data + ' at ' + location.pathname);"
+            + " });"
+            + "})();";
+
     /** {@code docTrail} size when the current SSO console open began; later hops belong to that open. */
     private int trailMarkAtConsoleOpen;
     private java.util.List<String> lastLogoutHops = java.util.Collections.emptyList();
@@ -117,11 +131,31 @@ public final class PlaywrightSsoClient implements AutoCloseable {
             java.util.Collections.synchronizedList(new java.util.ArrayList<>());
     /** Management-plane XHR/fetch calls (status method path) — diagnostic for stuck SPA form validation. */
     private final java.util.List<String> apiCalls = java.util.Collections.synchronizedList(new java.util.ArrayList<>());
+    private final java.util.concurrent.atomic.AtomicLong apiRequestSequence =
+            new java.util.concurrent.atomic.AtomicLong();
+    private final java.util.concurrent.ConcurrentMap<com.microsoft.playwright.Request, ApiRequestObservation>
+            apiRequestObservations = new java.util.concurrent.ConcurrentHashMap<>();
+    /** Response body containing the key-manager settings used to choose the key-generation UI path. */
+    private volatile String keyManagersResponseBody;
     /** Browser console errors/warnings — a JS error can wedge a React form's async validation. */
     private final java.util.List<String> consoleMsgs = java.util.Collections.synchronizedList(new java.util.ArrayList<>());
     /** Requests the browser aborted with {@code ERR_NETWORK_CHANGED}; logged at close, 0 with network isolation. */
     private final java.util.concurrent.atomic.AtomicInteger networkChangedFailures =
             new java.util.concurrent.atomic.AtomicInteger();
+
+    private static final class ApiRequestObservation {
+        private final long sequence;
+        private volatile com.microsoft.playwright.Response response;
+        private volatile String failure;
+
+        private ApiRequestObservation(long sequence) {
+            this.sequence = sequence;
+        }
+
+        private boolean isTerminal() {
+            return response != null || failure != null;
+        }
+    }
 
     /**
      * @param apimMappedBase    the APIM host-mapped base URL (e.g. {@code https://localhost:32912/})
@@ -186,6 +220,7 @@ public final class PlaywrightSsoClient implements AutoCloseable {
                     ? "Browser network: private namespace, loopback CONNECT proxy via Unix socket"
                     : "Browser network: host namespace (no setup-browser-network.sh on this host)");
             createdContext = createdBrowser.newContext(new Browser.NewContextOptions().setIgnoreHTTPSErrors(true));
+            createdContext.addInitScript(OIDC_SESSION_OBSERVER);
             createdPage = createdContext.newPage();
         } catch (RuntimeException | Error startupFailure) {
             closeQuietly(createdContext);
@@ -205,11 +240,36 @@ public final class PlaywrightSsoClient implements AutoCloseable {
         // navigation, unlike page.content(). This is the diagnostic trail and the #17744 detector.
         // Capture management-plane XHR/fetch calls + browser console errors, so a stuck SPA form (e.g. the create
         // API form whose async context-uniqueness validation wedges the submit button) can be diagnosed.
+        page.onRequest(req -> {
+            try {
+                String rt = req.resourceType();
+                if (("xhr".equals(rt) || "fetch".equals(rt)) && req.url().contains("/api/am/")) {
+                    apiRequestObservations.put(req, new ApiRequestObservation(apiRequestSequence.incrementAndGet()));
+                    apiCalls.add("REQUEST " + req.method() + " " + shortUrl(req.url()));
+                }
+            } catch (RuntimeException ignored) {
+                // request object may be gone; ignore
+            }
+        });
         page.onResponse(resp -> {
             try {
                 String rt = resp.request().resourceType();
                 if (("xhr".equals(rt) || "fetch".equals(rt)) && resp.url().contains("/api/am/")) {
-                    apiCalls.add(resp.status() + " " + resp.request().method() + " " + shortUrl(resp.url()));
+                    ApiRequestObservation observation = apiRequestObservations.get(resp.request());
+                    if (observation != null) {
+                        observation.response = resp;
+                    }
+                    if ("GET".equalsIgnoreCase(resp.request().method()) && resp.url().contains("/key-managers")) {
+                        keyManagersResponseBody = resp.text();
+                    }
+                    String request = resp.status() + " " + resp.request().method() + " " + shortUrl(resp.url());
+                    if (resp.url().contains("/revisions") || resp.url().contains("/deploy-revision")) {
+                        String body = resp.request().postData();
+                        if (body != null) {
+                            request += " payload=" + (body.length() > 1000 ? body.substring(0, 1000) + "…" : body);
+                        }
+                    }
+                    apiCalls.add(request);
                 }
             } catch (RuntimeException ignored) {
                 // response object may be gone; ignore
@@ -223,6 +283,10 @@ public final class PlaywrightSsoClient implements AutoCloseable {
                 }
                 String rt = req.resourceType();
                 if ("xhr".equals(rt) || "fetch".equals(rt)) {
+                    ApiRequestObservation observation = apiRequestObservations.get(req);
+                    if (observation != null) {
+                        observation.failure = failure == null ? "unknown transport failure" : failure;
+                    }
                     apiCalls.add("FAILED " + req.method() + " " + shortUrl(req.url()) + " (" + failure + ")");
                 }
             } catch (RuntimeException ignored) {
@@ -231,6 +295,9 @@ public final class PlaywrightSsoClient implements AutoCloseable {
         });
         page.onConsoleMessage(m -> {
             try {
+                if (m.text().startsWith("[SSO-SESSION] ")) {
+                    log.info(m.text());
+                }
                 if ("error".equals(m.type()) || "warning".equals(m.type())) {
                     consoleMsgs.add(m.type() + ": " + (m.text().length() > 220 ? m.text().substring(0, 220) : m.text()));
                 }
@@ -595,6 +662,7 @@ public final class PlaywrightSsoClient implements AutoCloseable {
         // The token cookie can be issued by the callback before the browser finishes its final SPA navigation.
         // Do not let the next step start a second navigation while that callback is still redirecting.
         waitForAuthenticatedConsoleRoute(consoleContext, 30000);
+        awaitUnchangedConsoleSession(consoleContext);
     }
 
     /** Waits until the authenticated console has left its authentication callback and finished document loading. */
@@ -1054,113 +1122,72 @@ public final class PlaywrightSsoClient implements AutoCloseable {
      * separate SSO-continuation steps). Waits until the app routes to the new API's overview and captures its id.
      */
     public String createRestApi(String name, String context, String version, String endpoint) {
-        // The create form's mandatory-field validation POSTs two async uniqueness checks
-        // (/api/am/publisher/v4/apis/validate?query=name:… and ?query=context:…). While the publisher REST
-        // webapp is still COLD under boot load those return 404, which the form treats as "not validated" and
-        // keeps the Create button disabled; once the webapp is warm they return 200 and Create enables. So retry
-        // the WHOLE form (fresh navigation re-fires the checks; the webapp warms across attempts) until Create
-        // enables and the app routes to the new API's overview. The Backend Endpoint is left empty here (a
-        // provided endpoint triggers a browser-side reachability test the proxy can't satisfy); it is set on the
-        // Endpoints config page afterwards.
-        for (int attempt = 1; attempt <= 6; attempt++) {
-            try {
-                page.navigate(apimInternal + "/publisher/apis/create/rest",
-                        new Page.NavigateOptions().setWaitUntil(WaitUntilState.DOMCONTENTLOADED));
-            } catch (PlaywrightException e) {
-                // The SSO callback may still be replacing /publisher/ when this step begins. The create form has
-                // not been submitted, so retrying this navigation is side-effect free; unrelated browser errors
-                // must remain visible to the test.
-                if (!isNavigationInterrupted(e)) {
-                    throw e;
-                }
-                log.info("[SSO-WORK] create navigation was interrupted by the SSO callback; waiting for the "
-                        + "Publisher route to settle before retrying");
-                waitForAuthenticatedConsoleRoute("publisher", 30000);
-                continue;
-            }
-            try {
-                page.waitForSelector("[data-testid=default-api-form]",
-                        new Page.WaitForSelectorOptions().setTimeout(30000));
-            } catch (RuntimeException e) {
-                continue; // form did not render this attempt; reload
-            }
-            fillAndBlur("input[name=name]", name);
-            fillAndBlur("input[name=context]", context);
+        page.navigate(apimInternal + "/publisher/apis/create/rest",
+                new Page.NavigateOptions().setWaitUntil(WaitUntilState.DOMCONTENTLOADED));
+        awaitPageElement(page.getByTestId("default-api-form"), "the Create API form", "create-form-missing");
+        try {
+            // Uniqueness callbacks aggregate the API inputs captured on blur. Name is validated last, with all
+            // required inputs present and the earlier context check complete.
             fillAndBlur("input[name=version]", version);
-            // Provide the backend endpoint so the created API has a production endpoint (required for Deploy to
-            // enable and for the gateway to route). We only TYPE it — we never click the "TestEndpoint" button,
-            // whose browser-side reachability probe the CONNECT proxy can't satisfy (it reaches only APIM/IS); the
-            // URL is still saved on the API, and the gateway reaches nodebackend in-network at invoke time.
+            fillAndAwaitApiUniqueness("context", context);
+            fillAndAwaitApiUniqueness("name", name);
             if (endpoint != null && !endpoint.isBlank()) {
                 fillAndBlur("input[name=endpoint]", endpoint);
             }
-            Locator create = page.getByRole(AriaRole.BUTTON,
-                    new Page.GetByRoleOptions().setName("Create").setExact(true));
-            try {
-                create.waitFor(new Locator.WaitForOptions().setTimeout(10000));
-            } catch (RuntimeException e) {
-                continue;
-            }
-            if (!waitForEnabled(create, 20000)) {
-                log.info("[SSO-WORK] create attempt " + attempt
-                        + ": Create stayed disabled (validate 404 — webapp cold)");
-                // Last-ditch on the final attempts: the name/context ARE unique (server-side), so the disable is
-                // only the client's failed uniqueness pre-check. Force-clear the disabled attribute and submit;
-                // the server-side create still enforces real uniqueness.
-                if (attempt >= 4) {
-                    try {
-                        create.evaluate("el => { el.disabled = false; el.classList.remove('Mui-disabled'); }");
-                        create.dispatchEvent("click");
-                        page.waitForURL("**/publisher/apis/*/overview**",
-                                new Page.WaitForURLOptions().setTimeout(6000));
-                        currentApiId = apiIdFromUrl(page.url());
-                        if (currentApiId != null) {
-                            log.info("[SSO-WORK] created API id=" + currentApiId
-                                    + " (force-submit, attempt " + attempt + ")");
-                            return currentApiId;
-                        }
-                    } catch (RuntimeException forceFailed) {
-                        // fall through to reload
-                    }
-                }
-                continue;
-            }
-            // Enabled — click until the app routes to the overview (the button can still flicker mid-validation).
-            long deadline = System.currentTimeMillis() + 20000;
-            boolean navigated = false;
-            // CHECKSTYLE:OFF deadlineLoop - retry the Create click until the SPA routes to the API; not an HTTP retry
-            while (System.currentTimeMillis() < deadline) {
-                // CHECKSTYLE:ON
-                waitForEnabled(create, 4000);
-                try {
-                    create.dispatchEvent("click");
-                } catch (RuntimeException ignored) {
-                    // momentarily detached/disabled; retry
-                }
-                try {
-                    page.waitForURL("**/publisher/apis/*/overview**",
-                            new Page.WaitForURLOptions().setTimeout(4000));
-                    navigated = true;
-                    break;
-                } catch (RuntimeException stillOnForm) {
-                    // not yet — loop
-                }
-            }
-            if (navigated) {
-                currentApiId = apiIdFromUrl(page.url());
-                if (currentApiId == null) {
-                    throw new AssertionError("could not extract the created API id from " + page.url());
-                }
-                log.info("[SSO-WORK] created API id=" + currentApiId + " at " + page.url()
-                        + " (attempt " + attempt + ")");
-                return currentApiId;
-            }
-            log.info("[SSO-WORK] create attempt " + attempt + ": enabled but no navigation; reloading");
+        } catch (RuntimeException | AssertionError e) {
+            snap("create-api-validation");
+            dumpDiagnostics("create-api-validation");
+            throw e;
         }
-        snap("create-no-nav");
-        dumpDiagnostics("create-no-nav");
-        throw new AssertionError("publisher create-API never completed across retries (Create stayed disabled / "
-                + "no navigation — publisher /apis/validate likely still returning 404). " + pageDiagnostic());
+        Locator create = page.getByRole(AriaRole.BUTTON,
+                new Page.GetByRoleOptions().setName("Create").setExact(true));
+        if (!waitForEnabled(create, 20000)) {
+            snap("create-api-disabled");
+            dumpDiagnostics("create-api-disabled");
+            throw new AssertionError("Create stayed disabled after API uniqueness validation completed. "
+                    + pageDiagnostic());
+        }
+        try {
+            clickAndAwaitWriteResponse(create, "Create API", "POST", "/publisher/v4/apis", 30000);
+        } catch (RuntimeException | AssertionError e) {
+            snap("create-api-no-response");
+            dumpDiagnostics("create-api-no-response");
+            throw e;
+        }
+        try {
+            page.waitForURL("**/publisher/apis/*/overview**", new Page.WaitForURLOptions().setTimeout(15000));
+        } catch (RuntimeException e) {
+            snap("create-api-no-navigation");
+            dumpDiagnostics("create-api-no-navigation");
+            throw new AssertionError("Publisher accepted Create API but did not navigate to its overview. "
+                    + pageDiagnostic(), e);
+        }
+        currentApiId = apiIdFromUrl(page.url());
+        if (currentApiId == null) {
+            throw new AssertionError("could not extract the created API id from " + page.url());
+        }
+        log.info("[SSO-WORK] created API id=" + currentApiId + " at " + page.url());
+        return currentApiId;
+    }
+
+    /** Blurs one unique API field and awaits the availability response for that exact value. */
+    private void fillAndAwaitApiUniqueness(String field, String value) {
+        String normalized = "context".equals(field) && !value.startsWith("/") ? "/" + value : value;
+        String query = "query=" + field + ":" + normalized.trim().toLowerCase(java.util.Locale.ROOT);
+        com.microsoft.playwright.Response response = page.waitForResponse(candidate -> {
+            URI url = URI.create(candidate.url());
+            return "POST".equals(candidate.request().method())
+                    && "/api/am/publisher/v4/apis/validate".equals(url.getPath()) && url.getQuery() != null
+                    && java.util.Arrays.asList(url.getQuery().split("&")).contains(query);
+        }, new Page.WaitForResponseOptions().setTimeout(PAGE_READY_TIMEOUT_MS),
+                () -> fillAndBlur("input[name=" + field + "]", value));
+        String failure = response.finished();
+        if (failure != null || response.status() != 404) {
+            throw new AssertionError("API " + field + " availability check for '" + value + "' returned HTTP "
+                    + response.status() + " (expected 404 for an unused value), transport=" + failure + "; body="
+                    + boundedResponseBody(response));
+        }
+        log.info("[SSO-WORK] API " + field + " uniqueness check completed: HTTP " + response.status());
     }
 
     /** Extracts the API UUID from a publisher URL like {@code .../publisher/apis/<uuid>/overview}. */
@@ -1190,19 +1217,12 @@ public final class PlaywrightSsoClient implements AutoCloseable {
         // POSTs .../deploy-revision. Wait for that response rather than guessing a post-deploy UI label.
         com.microsoft.playwright.Response resp;
         try {
-            resp = page.waitForResponse(
-                    r -> r.url().contains("/deploy-revision") && "POST".equalsIgnoreCase(r.request().method()),
-                    new Page.WaitForResponseOptions().setTimeout(45000),
-                    () -> clickWhenReady(deploy, "Deploy"));
-        } catch (RuntimeException e) {
+            resp = clickAndAwaitWriteResponse(deploy, "Deploy", "POST",
+                    "/publisher/v4/apis/" + currentApiId + "/revisions", "/deploy-revision", 45000);
+        } catch (RuntimeException | AssertionError e) {
             snap("deploy-no-call");
             dumpDiagnostics("deploy-no-call");
-            throw new AssertionError("the deploy-revision call was never made after clicking Deploy. "
-                    + pageDiagnostic(), e);
-        }
-        if (resp.status() >= 300) {
-            snap("deploy-http-fail");
-            throw new AssertionError("deploy-revision returned HTTP " + resp.status() + ". " + pageDiagnostic());
+            throw e;
         }
         log.info("[SSO-WORK] deployed API id=" + currentApiId + " (deploy-revision " + resp.status() + ")");
     }
@@ -1223,19 +1243,11 @@ public final class PlaywrightSsoClient implements AutoCloseable {
         // The publish POSTs .../change-lifecycle?action=Publish — wait for that as the deterministic success signal.
         com.microsoft.playwright.Response resp;
         try {
-            resp = page.waitForResponse(
-                    r -> r.url().contains("/change-lifecycle") && "POST".equalsIgnoreCase(r.request().method()),
-                    new Page.WaitForResponseOptions().setTimeout(45000),
-                    () -> clickWhenReady(publish, "Publish"));
-        } catch (RuntimeException e) {
+            resp = clickAndAwaitWriteResponse(publish, "Publish", "POST", "/change-lifecycle", 45000);
+        } catch (RuntimeException | AssertionError e) {
             snap("publish-no-call");
             dumpDiagnostics("publish-no-call");
-            throw new AssertionError("the change-lifecycle call was never made after clicking Publish. "
-                    + pageDiagnostic(), e);
-        }
-        if (resp.status() >= 300) {
-            snap("publish-http-fail");
-            throw new AssertionError("change-lifecycle returned HTTP " + resp.status() + ". " + pageDiagnostic());
+            throw e;
         }
         log.info("[SSO-WORK] published API id=" + currentApiId + " (change-lifecycle " + resp.status() + ")");
     }
@@ -1248,6 +1260,7 @@ public final class PlaywrightSsoClient implements AutoCloseable {
     public void redeployApi() {
         page.navigate(apimInternal + "/publisher/apis/" + currentApiId + "/deployments",
                 new Page.NavigateOptions().setWaitUntil(WaitUntilState.DOMCONTENTLOADED));
+        awaitUnchangedConsoleSession("publisher");
         Locator dnr = page.getByRole(AriaRole.BUTTON,
                 new Page.GetByRoleOptions().setName("Deploy New Revision"));
         try {
@@ -1257,38 +1270,95 @@ public final class PlaywrightSsoClient implements AutoCloseable {
             throw new AssertionError("'Deploy New Revision' not found on the deployments page (did the admin→"
                     + "publisher round-trip land unauthenticated?). " + pageDiagnostic(), e);
         }
-        waitForEnabled(dnr, 20000);
-        com.microsoft.playwright.Response resp;
+        if (!waitForEnabled(dnr, 20000)) {
+            snap("redeploy-new-revision-disabled");
+            dumpDiagnostics("redeploy-new-revision-disabled");
+            throw new AssertionError("'Deploy New Revision' stayed disabled. " + pageDiagnostic());
+        }
+        Locator dialog = page.getByRole(AriaRole.DIALOG);
+        Locator confirm = dialog.getByRole(AriaRole.BUTTON,
+                new Locator.GetByRoleOptions().setName("Deploy").setExact(true));
+        Locator defaultGateway = page.getByTestId("Defaultgateway-select-btn")
+                .locator("input[type='checkbox']");
         try {
-            resp = page.waitForResponse(
-                    r -> r.url().contains("/deploy-revision") && "POST".equalsIgnoreCase(r.request().method()),
-                    new Page.WaitForResponseOptions().setTimeout(45000),
-                    () -> {
-                        clickWhenReady(dnr, "Deploy New Revision");
-                        // "Deploy New Revision" opens a confirm dialog (revision description + gateway, Default
-                        // pre-selected); click its Deploy. If the build deploys directly with no dialog, this is a
-                        // best-effort no-op.
-                        try {
-                            Locator confirm = page.getByRole(AriaRole.DIALOG).getByRole(AriaRole.BUTTON,
-                                    new Locator.GetByRoleOptions().setName("Deploy").setExact(true));
-                            confirm.waitFor(new Locator.WaitForOptions().setTimeout(6000));
-                            waitForEnabled(confirm, 6000);
-                            clickWhenReady(confirm, "Deploy (dialog)");
-                        } catch (RuntimeException noDialog) {
-                            // no confirm dialog — the click above already triggered the deploy
-                        }
-                    });
-        } catch (RuntimeException e) {
+            clickOnce(dnr, "Deploy New Revision");
+            try {
+                confirm.waitFor(new Locator.WaitForOptions().setTimeout(PAGE_READY_TIMEOUT_MS));
+            } catch (RuntimeException e) {
+                snap("redeploy-dialog-missing");
+                dumpDiagnostics("redeploy-dialog-missing");
+                throw new AssertionError("The Deploy New Revision dialog did not open. " + pageDiagnostic(), e);
+            }
+            try {
+                defaultGateway.waitFor(new Locator.WaitForOptions().setTimeout(PAGE_READY_TIMEOUT_MS));
+            } catch (RuntimeException e) {
+                snap("redeploy-default-gateway-missing");
+                dumpDiagnostics("redeploy-default-gateway-missing");
+                throw new AssertionError("The Default gateway was not available in the revision dialog. "
+                        + redeployUiDiagnostic(dialog, defaultGateway, confirm), e);
+            }
+            log.info("[SSO-DIAG] redeploy dialog before gateway selection: "
+                    + redeployUiDiagnostic(dialog, defaultGateway, confirm));
+            if (!defaultGateway.isChecked()) {
+                defaultGateway.click(new Locator.ClickOptions().setTimeout(8000));
+            }
+            if (!defaultGateway.isChecked() || !waitForEnabled(confirm, 6000)) {
+                snap("redeploy-dialog-not-ready");
+                dumpDiagnostics("redeploy-dialog-not-ready");
+                throw new AssertionError("The selected gateway did not make the Deploy control ready. "
+                        + redeployUiDiagnostic(dialog, defaultGateway, confirm));
+            }
+            log.info("[SSO-DIAG] redeploy dialog ready to submit: "
+                    + redeployUiDiagnostic(dialog, defaultGateway, confirm));
+            com.microsoft.playwright.Response resp = clickAndAwaitWriteResponse(confirm, "Redeploy API", "POST",
+                    "/publisher/v4/apis/" + currentApiId + "/revisions", "/deploy-revision", 45000);
+            log.info("[SSO-WORK] redeployed API id=" + currentApiId + " (deploy-revision " + resp.status() + ")");
+        } catch (RuntimeException | AssertionError e) {
             snap("redeploy-no-call");
             dumpDiagnostics("redeploy-no-call");
-            throw new AssertionError("the redeploy (deploy-revision) call was never made. " + pageDiagnostic(), e);
+            throw e;
         }
-        if (resp.status() >= 300) {
-            snap("redeploy-http-fail");
-            throw new AssertionError("redeploy deploy-revision returned HTTP " + resp.status() + ". "
-                    + pageDiagnostic());
+    }
+
+    /** Waits for the OP iframe to confirm the current document's console session state. */
+    private void awaitUnchangedConsoleSession(String consoleContext) {
+        try {
+            page.waitForFunction("prefix => location.pathname.startsWith(prefix)"
+                            + " && window.__ssoOidcSessionStatus === 'unchanged'", "/" + consoleContext + "/",
+                    new Page.WaitForFunctionOptions().setTimeout(PAGE_READY_TIMEOUT_MS));
+        } catch (RuntimeException e) {
+            snap("console-session-not-current");
+            dumpDiagnostics("console-session-not-current");
+            throw new AssertionError("The '" + consoleContext
+                    + "' console's OIDC session check did not confirm an unchanged session. "
+                    + pageDiagnostic(), e);
         }
-        log.info("[SSO-WORK] redeployed API id=" + currentApiId + " (deploy-revision " + resp.status() + ")");
+        log.info("[SSO-SESSION] current console document confirmed unchanged at " + page.url());
+    }
+
+    private String redeployUiDiagnostic(Locator dialog, Locator gateway, Locator deploy) {
+        String dialogState;
+        try {
+            dialogState = "dialogCount=" + dialog.count() + " dialogHtml="
+                    + (dialog.count() == 0 ? "<absent>" : dialog.first().evaluate("element => element.outerHTML"));
+        } catch (RuntimeException e) {
+            dialogState = "dialogState=<unavailable: " + e.getMessage() + ">";
+        }
+        String gatewayState;
+        try {
+            gatewayState = "defaultGatewayCount=" + gateway.count() + " defaultGatewayChecked="
+                    + (gateway.count() == 0 ? "<absent>" : gateway.isChecked());
+        } catch (RuntimeException e) {
+            gatewayState = "defaultGatewayState=<unavailable: " + e.getMessage() + ">";
+        }
+        String deployState;
+        try {
+            deployState = "deployCount=" + deploy.count() + " deployEnabled="
+                    + (deploy.count() == 0 ? "<absent>" : deploy.isEnabled());
+        } catch (RuntimeException e) {
+            deployState = "deployState=<unavailable: " + e.getMessage() + ">";
+        }
+        return dialogState + " " + gatewayState + " " + deployState + " " + pageDiagnostic();
     }
 
     // ─────────────────────────── admin SPA-session REST work ───────────────────────────
@@ -1317,6 +1387,154 @@ public final class PlaywrightSsoClient implements AutoCloseable {
             snap("click-fail-" + what.replaceAll("\\s+", "-"));
             throw new AssertionError("could not click " + what + " (normal + dispatched click both failed). "
                     + pageDiagnostic(), e);
+        }
+    }
+
+    /** Clicks a write control once, then waits for that click's request and terminal network result. */
+    private com.microsoft.playwright.Response clickAndAwaitWriteResponse(Locator locator, String what, String method,
+            String pathFragment, int responseTimeoutMs) {
+        return clickAndAwaitWriteResponse(locator, what, method, pathFragment, pathFragment, responseTimeoutMs);
+    }
+
+    /** Tracks a click's first write and its resulting write within one response budget. */
+    private com.microsoft.playwright.Response clickAndAwaitWriteResponse(Locator locator, String what, String method,
+            String firstPathFragment, String resultPathFragment, int responseTimeoutMs) {
+        try {
+            locator.scrollIntoViewIfNeeded(new Locator.ScrollIntoViewIfNeededOptions().setTimeout(5000));
+        } catch (RuntimeException ignored) {
+            // The single actionability-checked click below determines whether the control can be used.
+        }
+        long marker = apiRequestSequence.get();
+        java.util.concurrent.atomic.AtomicReference<RuntimeException> clickFailure =
+                new java.util.concurrent.atomic.AtomicReference<>();
+        com.microsoft.playwright.Request request = null;
+        RuntimeException requestWaitFailure = null;
+        try {
+            request = page.waitForRequest(candidate -> {
+                ApiRequestObservation observation = apiRequestObservations.get(candidate);
+                return observation != null && observation.sequence > marker
+                        && method.equalsIgnoreCase(candidate.method()) && candidate.url().contains(firstPathFragment);
+            }, new Page.WaitForRequestOptions().setTimeout(8000), () -> {
+                try {
+                    locator.click(new Locator.ClickOptions().setTimeout(8000));
+                } catch (RuntimeException e) {
+                    clickFailure.set(e);
+                }
+            });
+        } catch (RuntimeException e) {
+            requestWaitFailure = e;
+            request = findObservedRequest(marker, method, firstPathFragment);
+        }
+        if (request == null) {
+            snap("write-request-not-sent-" + what.replaceAll("\\s+", "-"));
+            String detail = clickFailure.get() == null ? "request was not observed" :
+                    "click failed before a request was observed: " + clickFailure.get().getMessage();
+            throw new AssertionError(what + " request was never sent (" + detail + "). " + pageDiagnostic(),
+                    requestWaitFailure == null ? clickFailure.get() : requestWaitFailure);
+        }
+        if (clickFailure.get() != null) {
+            log.warn(what + " click raised after its " + method + " request was observed; awaiting the request "
+                    + "result without clicking again. Playwright error: " + clickFailure.get().getMessage());
+        }
+        long responseDeadline = System.nanoTime()
+                + java.util.concurrent.TimeUnit.MILLISECONDS.toNanos(responseTimeoutMs);
+        com.microsoft.playwright.Response firstResponse = awaitWriteResponse(request, what, responseTimeoutMs);
+        if (firstPathFragment.equals(resultPathFragment)) {
+            return firstResponse;
+        }
+        log.info("[SSO-WORK] " + what + " first write completed: " + firstResponse.status() + " "
+                + shortUrl(firstResponse.url()));
+        java.util.concurrent.atomic.AtomicReference<com.microsoft.playwright.Request> resultRequest =
+                new java.util.concurrent.atomic.AtomicReference<>();
+        try {
+            page.waitForCondition(() -> {
+                resultRequest.set(findObservedRequest(marker, method, resultPathFragment));
+                return resultRequest.get() != null;
+            }, new Page.WaitForConditionOptions().setTimeout(remainingWriteBudget(responseDeadline, what)));
+        } catch (RuntimeException e) {
+            throw new AssertionError(what + " first write succeeded but its " + resultPathFragment
+                    + " request was not observed within the response budget. " + pageDiagnostic(), e);
+        }
+        return awaitWriteResponse(resultRequest.get(), what, remainingWriteBudget(responseDeadline, what));
+    }
+
+    private int remainingWriteBudget(long deadlineNanos, String what) {
+        long remaining = java.util.concurrent.TimeUnit.NANOSECONDS.toMillis(deadlineNanos - System.nanoTime());
+        if (remaining <= 0) {
+            throw new AssertionError(what + " exceeded its response budget. " + pageDiagnostic());
+        }
+        return (int) remaining;
+    }
+
+    /** Requires a tracked write to receive a successful terminal network result. */
+    private com.microsoft.playwright.Response awaitWriteResponse(com.microsoft.playwright.Request request, String what,
+            int responseTimeoutMs) {
+        ApiRequestObservation observation = apiRequestObservations.get(request);
+        if (observation == null) {
+            throw new AssertionError(what + " request was observed but could not be tracked to a response.");
+        }
+        if (!observation.isTerminal()) {
+            try {
+                page.waitForCondition(observation::isTerminal,
+                        new Page.WaitForConditionOptions().setTimeout(responseTimeoutMs));
+            } catch (RuntimeException e) {
+                if (!observation.isTerminal()) {
+                    throw new AssertionError(what + " request was sent but no response arrived within "
+                            + responseTimeoutMs + " ms. " + pageDiagnostic(), e);
+                }
+            }
+        }
+        if (observation.failure != null) {
+            throw new AssertionError(what + " request failed in transport: " + observation.failure + ". "
+                    + pageDiagnostic());
+        }
+        com.microsoft.playwright.Response response = observation.response;
+        if (response == null) {
+            throw new AssertionError(what + " request was sent but no response was recorded. " + pageDiagnostic());
+        }
+        if (response.status() < 200 || response.status() >= 300) {
+            throw new AssertionError(what + " response was HTTP " + response.status() + "; body="
+                    + boundedResponseBody(response) + ". " + pageDiagnostic());
+        }
+        return response;
+    }
+
+    private com.microsoft.playwright.Request findObservedRequest(long marker, String method, String pathFragment) {
+        com.microsoft.playwright.Request first = null;
+        long firstSequence = Long.MAX_VALUE;
+        for (java.util.Map.Entry<com.microsoft.playwright.Request, ApiRequestObservation> entry
+                : apiRequestObservations.entrySet()) {
+            com.microsoft.playwright.Request candidate = entry.getKey();
+            long sequence = entry.getValue().sequence;
+            if (sequence > marker && sequence < firstSequence && method.equalsIgnoreCase(candidate.method())
+                    && candidate.url().contains(pathFragment)) {
+                first = candidate;
+                firstSequence = sequence;
+            }
+        }
+        return first;
+    }
+
+    private static String boundedResponseBody(com.microsoft.playwright.Response response) {
+        try {
+            String body = response.text();
+            return body.length() > 500 ? body.substring(0, 500) + "…" : body;
+        } catch (RuntimeException e) {
+            return "<unavailable: " + e.getMessage() + ">";
+        }
+    }
+
+    /** Sends one UI click whose handler opens a dialog and does not itself issue a write request. */
+    private void clickOnce(Locator locator, String what) {
+        try {
+            locator.scrollIntoViewIfNeeded(new Locator.ScrollIntoViewIfNeededOptions().setTimeout(5000));
+        } catch (RuntimeException ignored) {
+            // The single actionability-checked click below determines whether the control can be used.
+        }
+        try {
+            locator.click(new Locator.ClickOptions().setTimeout(8000));
+        } catch (RuntimeException e) {
+            throw new AssertionError("could not click " + what + "; no second click was sent. " + pageDiagnostic(), e);
         }
     }
 
@@ -1524,14 +1742,15 @@ public final class PlaywrightSsoClient implements AutoCloseable {
         // The SAVE POSTs /api/am/devportal/v3/applications; wait for that as the success signal and read the id.
         com.microsoft.playwright.Response resp;
         try {
-            resp = page.waitForResponse(
-                    r -> r.url().contains("/devportal/v3/applications") && "POST".equalsIgnoreCase(r.request().method()),
-                    new Page.WaitForResponseOptions().setTimeout(30000),
-                    () -> clickWhenReady(save, "SAVE"));
-        } catch (RuntimeException e) {
+            resp = clickAndAwaitWriteResponse(save, "DevPortal application SAVE", "POST",
+                    "/devportal/v3/applications", 30000);
+        } catch (RuntimeException | AssertionError e) {
             snap("dp-app-no-call");
             dumpDiagnostics("dp-app-no-call");
-            throw new AssertionError("the DevPortal application create call was never made. Toasts shown: "
+            if (e instanceof AssertionError) {
+                throw (AssertionError) e;
+            }
+            throw new AssertionError("DevPortal application SAVE failed. Toasts shown: "
                     + recordedToasts() + ". " + pageDiagnostic(), e);
         }
         if (resp.status() >= 300) {
@@ -1595,15 +1814,14 @@ public final class PlaywrightSsoClient implements AutoCloseable {
         waitForEnabled(subscribe, 15000);
         com.microsoft.playwright.Response resp;
         try {
-            resp = page.waitForResponse(
-                    r -> r.url().contains("/devportal/v3/subscriptions")
-                            && "POST".equalsIgnoreCase(r.request().method()),
-                    new Page.WaitForResponseOptions().setTimeout(30000),
-                    () -> clickWhenReady(subscribe, "Subscribe"));
-        } catch (RuntimeException e) {
+            resp = clickAndAwaitWriteResponse(subscribe, "Subscribe", "POST", "/devportal/v3/subscriptions", 30000);
+        } catch (RuntimeException | AssertionError e) {
             snap("dp-subscribe-no-call");
             dumpDiagnostics("dp-subscribe-no-call");
-            throw new AssertionError("the subscribe call was never made. " + pageDiagnostic(), e);
+            if (e instanceof AssertionError) {
+                throw (AssertionError) e;
+            }
+            throw new AssertionError("Subscribe failed. " + pageDiagnostic(), e);
         }
         if (resp.status() >= 300) {
             snap("dp-subscribe-http-fail");
@@ -1623,30 +1841,65 @@ public final class PlaywrightSsoClient implements AutoCloseable {
                 new Page.NavigateOptions().setWaitUntil(WaitUntilState.DOMCONTENTLOADED));
         Locator gen = page.locator("#generate-keys");
         awaitPageElement(gen, "the Generate Keys button", "dp-generate-keys-missing");
-        waitForEnabled(gen, 20000);
+        if (!waitForEnabled(gen, 20000)) {
+            snap("dp-generate-keys-disabled");
+            dumpDiagnostics("dp-generate-keys-disabled");
+            throw new AssertionError("The Generate Keys button never enabled after the key page loaded. "
+                    + keysDialogDiagnostic());
+        }
+        boolean multipleSecretsAllowed = loadedMultipleSecretsAllowed();
+        Locator dialog = page.getByRole(AriaRole.DIALOG);
+        Locator create = dialog.getByRole(AriaRole.BUTTON, new Locator.GetByRoleOptions().setName("Create"));
+        String generatePath = "/applications/" + currentAppId + "/generate-keys";
         com.microsoft.playwright.Response resp;
         try {
-            resp = page.waitForResponse(
-                    r -> r.url().contains("/generate-keys") && "POST".equalsIgnoreCase(r.request().method()),
-                    new Page.WaitForResponseOptions().setTimeout(45000),
-                    () -> {
-                        // "GENERATE KEYS" opens a "Create Secret" dialog (description + expiry); its CREATE button
-                        // performs the actual generate-keys POST.
-                        clickWhenReady(gen, "Generate Keys");
-                        Locator create = page.getByRole(AriaRole.DIALOG).getByRole(AriaRole.BUTTON,
-                                new Locator.GetByRoleOptions().setName("Create"));
-                        create.waitFor(new Locator.WaitForOptions().setTimeout(10000));
-                        waitForEnabled(create, 10000);
-                        clickWhenReady(create, "Create (keys dialog)");
-                    });
-        } catch (RuntimeException e) {
+            if (multipleSecretsAllowed) {
+                try {
+                    clickOnce(gen, "Generate Keys");
+                } catch (AssertionError clickFailure) {
+                    try {
+                        dialog.waitFor(new Locator.WaitForOptions().setTimeout(10000));
+                    } catch (RuntimeException dialogMissing) {
+                        throw clickFailure;
+                    }
+                    log.warn("Generate Keys click raised after the Create Secret dialog appeared; continuing without "
+                            + "clicking Generate Keys again. Playwright error: " + clickFailure.getMessage());
+                }
+                try {
+                    dialog.waitFor(new Locator.WaitForOptions().setTimeout(10000));
+                    page.waitForFunction("""
+                            () => {
+                                const dialog = [...document.querySelectorAll('[role="dialog"]')]
+                                    .find(element => element.getClientRects().length > 0);
+                                const root = dialog?.closest('[data-testid="new-secret-dialog"]');
+                                return !!root && root.getAnimations({subtree: true})
+                                    .every(animation => animation.playState !== 'running');
+                            }
+                            """, null, new Page.WaitForFunctionOptions().setTimeout(10000));
+                    create.waitFor(new Locator.WaitForOptions().setTimeout(10000));
+                    if (!waitForEnabled(create, 10000)) {
+                        snap("dp-keys-create-disabled");
+                        dumpDiagnostics("dp-keys-create-disabled");
+                        throw new AssertionError("Create stayed disabled in the keys dialog. "
+                                + keysDialogDiagnostic());
+                    }
+                } catch (RuntimeException | AssertionError e) {
+                    snap("dp-keys-dialog-not-ready");
+                    dumpDiagnostics("dp-keys-dialog-not-ready");
+                    throw new AssertionError("The Create Secret dialog did not become ready. "
+                            + keysDialogDiagnostic(), e);
+                }
+                resp = clickAndAwaitWriteResponse(create, "Create Secret", "POST", generatePath, 45000);
+            } else {
+                resp = clickAndAwaitWriteResponse(gen, "Generate Keys", "POST", generatePath, 45000);
+            }
+        } catch (RuntimeException | AssertionError e) {
             snap("dp-keys-no-call");
             dumpDiagnostics("dp-keys-no-call");
-            throw new AssertionError("the generate-keys call was never made. " + pageDiagnostic(), e);
-        }
-        if (resp.status() >= 300) {
-            snap("dp-keys-http-fail");
-            throw new AssertionError("generate-keys returned HTTP " + resp.status() + ". " + pageDiagnostic());
+            if (e instanceof AssertionError) {
+                throw (AssertionError) e;
+            }
+            throw new AssertionError("Generate keys failed. " + keysDialogDiagnostic(), e);
         }
         // The generate-keys response carries the app's consumer key/secret — capture them to mint an app token.
         try {
@@ -1658,6 +1911,85 @@ public final class PlaywrightSsoClient implements AutoCloseable {
         }
         log.info("[SSO-WORK] generated app keys (generate-keys " + resp.status()
                 + ", consumerKey " + (appConsumerKey == null ? "MISSING" : "captured") + ")");
+    }
+
+    /** Captures the keys page dialog and controls alongside the API-call history when key creation fails. */
+    private String keysDialogDiagnostic() {
+        Locator dialog = page.getByRole(AriaRole.DIALOG);
+        Locator create = dialog.getByRole(AriaRole.BUTTON,
+                new Locator.GetByRoleOptions().setName("Create"));
+        Locator generate = page.locator("#generate-keys");
+        String dialogState;
+        try {
+            int count = dialog.count();
+            dialogState = "dialogCount=" + count + " dialogHtml="
+                    + (count == 0 ? "<absent>" : dialog.first().evaluate("element => element.outerHTML"));
+        } catch (RuntimeException e) {
+            dialogState = "dialogState=<unavailable: " + e.getMessage() + ">";
+        }
+        String buttonState;
+        try {
+            int count = create.count();
+            buttonState = "createCount=" + count + " createEnabled="
+                    + (count == 0 ? "<absent>" : create.first().isEnabled());
+        } catch (RuntimeException e) {
+            buttonState = "createState=<unavailable: " + e.getMessage() + ">";
+        }
+        String generateState;
+        try {
+            int count = generate.count();
+            generateState = "generateKeysCount=" + count + " generateKeysEnabled="
+                    + (count == 0 ? "<absent>" : generate.first().isEnabled());
+        } catch (RuntimeException e) {
+            generateState = "generateKeysState=<unavailable: " + e.getMessage() + ">";
+        }
+        java.util.List<String> keyPageCalls = new java.util.ArrayList<>();
+        for (String call : new java.util.ArrayList<>(apiCalls)) {
+            if (call.contains("/api/am/devportal/")
+                    && (call.contains("/key-managers")
+                    || (currentAppId != null && call.contains("/applications/" + currentAppId)))) {
+                keyPageCalls.add(call);
+            }
+        }
+        return dialogState + " " + buttonState + " " + generateState
+                + " keysPageXhrs=" + keyPageCalls + " " + pageDiagnostic();
+    }
+
+    private boolean loadedMultipleSecretsAllowed() {
+        String body = keyManagersResponseBody;
+        if (body == null) {
+            throw new AssertionError("The DevPortal key-manager settings response was not captured after the keys "
+                    + "page rendered. " + keysDialogDiagnostic());
+        }
+        try {
+            org.json.JSONArray managers = new org.json.JSONObject(body).getJSONArray("list");
+            org.json.JSONObject selected = null;
+            org.json.JSONObject resident = null;
+            for (int i = 0; i < managers.length(); i++) {
+                org.json.JSONObject manager = managers.getJSONObject(i);
+                if (!manager.optBoolean("enabled")) {
+                    continue;
+                }
+                if (selected == null) {
+                    selected = manager;
+                }
+                if ("Resident Key Manager".equals(manager.optString("name"))) {
+                    resident = manager;
+                }
+            }
+            org.json.JSONObject selectedManager = resident == null ? selected : resident;
+            if (selectedManager == null) {
+                throw new IllegalStateException("no enabled key manager in captured response");
+            }
+            org.json.JSONObject properties = selectedManager.optJSONObject("additionalProperties");
+            if (properties == null || !properties.has("enable_multiple_client_secrets")) {
+                throw new IllegalStateException("selected key manager has no enable_multiple_client_secrets setting");
+            }
+            return "true".equals(properties.optString("enable_multiple_client_secrets"));
+        } catch (RuntimeException e) {
+            throw new AssertionError("Could not determine the loaded key-manager multiple-secret setting. "
+                    + keysDialogDiagnostic(), e);
+        }
     }
 
     /** App OAuth credentials captured from generate-keys, used to mint an app access token for invocation. */

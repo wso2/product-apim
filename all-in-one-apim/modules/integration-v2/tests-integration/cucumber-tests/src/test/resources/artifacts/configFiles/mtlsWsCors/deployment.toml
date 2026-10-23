@@ -31,7 +31,7 @@ enable_validation_for_ws = true
 # are shortened so upload -> trust propagates in about a minute. enable_restart_from_api allows the endpoint
 # step's single gateway-restart recovery when the product drops the upload event, and the block's
 # listenerSslReloadReadinessSeconds gate's restart when the listener's SSL-profile reload is disabled on a start.
-# Same values as the endpointCertificateReload overlay used by the distributed suite.
+# The distributed twin applies these sender settings to Gateway alongside the listener settings above.
 [transport.passthru_https.sender.ssl_profile]
 interval = 30000
 

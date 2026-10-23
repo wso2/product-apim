@@ -146,6 +146,10 @@ jobs:
             git --no-pager diff -- docs/devs/coverage-tree.md
             exit 1
           fi
+      # Suite registration parity includes block order, provisioning and declared topology omissions.
+      - name: Verify integration-v2 suite alignment
+        working-directory: all-in-one-apim/modules/integration-v2
+        run: python3 docs/devs/suite_alignment.py
       - name: Verify carbon-apimgt versions are consistent
         run: |
           python3 - <<'PY'
@@ -276,11 +280,10 @@ jobs:
             suite: testng-v2.xml
             coverage: true
             topology: all-in-one
-          # Temporarily disabled while investigating distributed-topology CI failures.
-          # - id: v2-distributed
-          #   suite: testng-v2_distributed.xml
-          #   coverage: false
-          #   topology: distributed
+          - id: v2-distributed
+            suite: testng-v2_distributed.xml
+            coverage: false
+            topology: distributed
     steps:
       - name: Run hostname
         run: hostname
@@ -344,10 +347,20 @@ jobs:
           docker cp "$cid:$BASE/components/plugins"        "$SRC/plugins"
           docker cp "$cid:$BASE/deployment/server/webapps" "$SRC/webapps"
           echo "APIM_COVERAGE_CLASSFILES=$SRC" >> "$GITHUB_ENV"
-      # Caps the host Playwright browser (1 CPU, 2.5 GiB, no swap): PlaywrightSsoClient launches Chromium inside this
-      # cgroup whenever it exists, and logs the group's limits and member pids at each launch.
+      # Give the distributed job a shared 14 GiB pressure threshold, 15 GiB hard RAM ceiling, and 5 GiB
+      # aggregate swap budget. Docker containers inherit this slice; Maven and the browser are placed in it too.
+      - name: Prepare distributed memory and swap budget
+        if: matrix.topology == 'distributed'
+        run: |
+          sudo bash all-in-one-apim/modules/integration-v2/tests-integration/cucumber-tests/src/test/resources/distributed-memory-budget/setup-distributed-memory-budget.sh setup "$RUNNER_TEMP/apim-distributed-memory-budget"
+      # Caps the host Playwright browser (1 CPU, 2.5 GiB all-in-one / 512 MiB distributed). Distributed browser
+      # swap is included in the shared 5 GiB parent-slice budget; all-in-one remains swap-free.
       - name: Create browser cgroup
-        run: sudo bash all-in-one-apim/modules/integration-v2/tests-integration/cucumber-tests/src/test/resources/browser-cgroup/setup-browser-cgroup.sh
+        env:
+          BROWSER_CGROUP_PATH: ${{ matrix.topology == 'distributed' && '/sys/fs/cgroup/apimdistributed.slice/apimdistributed-browser.service' || '/sys/fs/cgroup/pw-browser' }}
+          BROWSER_MEMORY_LIMIT_BYTES: ${{ matrix.topology == 'distributed' && '536870912' || '2684354560' }}
+          BROWSER_SWAP_LIMIT_BYTES: ${{ matrix.topology == 'distributed' && '134217728' || '0' }}
+        run: sudo bash all-in-one-apim/modules/integration-v2/tests-integration/cucumber-tests/src/test/resources/browser-cgroup/setup-browser-cgroup.sh "$BROWSER_CGROUP_PATH" "$BROWSER_MEMORY_LIMIT_BYTES" "$BROWSER_SWAP_LIMIT_BYTES"
       # Runs the host Playwright browser in a private network namespace, so the bridges and veths the parallel blocks
       # create and remove never reach Chromium (which cancels in-flight requests on any host address change).
       - name: Configure browser network isolation
@@ -355,6 +368,13 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y socat iproute2
           sudo bash all-in-one-apim/modules/integration-v2/tests-integration/cucumber-tests/src/test/resources/browser-cgroup/setup-browser-network.sh
+      - name: Prepare Ubuntu host clock for integration-v2
+        run: |
+          sudo apt-get install -y chrony
+          CLOCK_LOG_DIR="$GITHUB_WORKSPACE/all-in-one-apim/modules/integration-v2/tests-integration/cucumber-tests/target/logs/host-clock/preparation"
+          mkdir -p "$CLOCK_LOG_DIR"
+          sudo bash all-in-one-apim/modules/integration-v2/tests-integration/cucumber-tests/src/test/resources/host-clock/prepare-test-clock.sh prepare "$CLOCK_LOG_DIR"
+          echo "APIM_CLOCK_PREPARED_FILE=$CLOCK_LOG_DIR/prepared.json" >> "$GITHUB_ENV"
       # `mvn test` (not install) keeps the testcontainers pre-integration-test execs from firing, so the
       # loaded images and the restored target/is7 staging are reused. `-am` builds only the integration-v2
       # reactor deps up to the test phase; product 4.7.0-SNAPSHOT artifacts resolve from the restored repo.
@@ -362,6 +382,8 @@ jobs:
         if: matrix.topology == 'all-in-one'
         working-directory: all-in-one-apim/modules/integration-v2
         run: >
+          python3 tests-integration/cucumber-tests/src/test/resources/host-diagnostics/run-with-host-diagnostics.py
+          --output tests-integration/cucumber-tests/target/logs/host-diagnostics --
           mvn test -pl tests-integration/cucumber-tests -am
           -Dsurefire.suite.xml=${{ matrix.suite }}
           -Dapim.server.version="$APIM_VERSION"
@@ -371,19 +393,40 @@ jobs:
           -Dplaywright.sso=true
           -Dapim.coverage=true
           -Dapim.coverage.classfiles="$APIM_COVERAGE_CLASSFILES"
+          -Dapim.clock.prepared.file="$APIM_CLOCK_PREPARED_FILE"
           -Ddocker.extra.hosts="--add-host=host.docker.internal:host-gateway"
       - name: Run distributed integration-v2 suite (coverage intentionally disabled)
         if: matrix.topology == 'distributed'
         working-directory: all-in-one-apim/modules/integration-v2
+        run: |
+          SUITE_USER="$(id -un)"
+          SUITE_NOFILE_LIMIT="$(ulimit -Sn):$(ulimit -Hn)"
+          sudo -E systemd-run --scope --slice=apimdistributed.slice --unit=apim-distributed-suite \
+            --working-directory="$GITHUB_WORKSPACE/all-in-one-apim/modules/integration-v2" -- \
+            prlimit --nofile="$SUITE_NOFILE_LIMIT" -- \
+            setpriv --reuid="$(id -u)" --regid="$(id -g)" --init-groups -- \
+            env HOME="$HOME" PATH="$PATH" JAVA_HOME="$JAVA_HOME" USER="$SUITE_USER" LOGNAME="$SUITE_USER" \
+            python3 tests-integration/cucumber-tests/src/test/resources/host-diagnostics/run-with-host-diagnostics.py \
+              --output tests-integration/cucumber-tests/target/logs/host-diagnostics -- \
+              mvn test -pl tests-integration/cucumber-tests -am \
+                -Dsurefire.suite.xml=${{ matrix.suite }} \
+                -Dapim.server.version="$APIM_VERSION" \
+                -Ddistributed.apim.cp.image.name="distributed-apim-cp:${CP_VERSION}-jdk21" \
+                -Ddistributed.apim.tm.image.name="distributed-apim-tm:${TM_VERSION}-jdk21" \
+                -Ddistributed.apim.gateway.image.name="distributed-apim-gateway:${GATEWAY_VERSION}-jdk21" \
+                -Dplaywright.sso=true \
+                -Dplaywright.browser.cgroup=/sys/fs/cgroup/apimdistributed.slice/apimdistributed-browser.service \
+                -Dapim.clock.prepared.file="$APIM_CLOCK_PREPARED_FILE" \
+                -Ddocker.extra.hosts="--add-host=host.docker.internal:host-gateway"
+      - name: Stop host diagnostics collector
+        if: always()
+        working-directory: all-in-one-apim/modules/integration-v2
         run: >
-          mvn test -pl tests-integration/cucumber-tests -am
-          -Dsurefire.suite.xml=${{ matrix.suite }}
-          -Dapim.server.version="$APIM_VERSION"
-          -Ddistributed.apim.cp.image.name="distributed-apim-cp:${CP_VERSION}-jdk21"
-          -Ddistributed.apim.tm.image.name="distributed-apim-tm:${TM_VERSION}-jdk21"
-          -Ddistributed.apim.gateway.image.name="distributed-apim-gateway:${GATEWAY_VERSION}-jdk21"
-          -Dplaywright.sso=true
-          -Ddocker.extra.hosts="--add-host=host.docker.internal:host-gateway"
+          python3 tests-integration/cucumber-tests/src/test/resources/host-diagnostics/run-with-host-diagnostics.py
+          --output tests-integration/cucumber-tests/target/logs/host-diagnostics --stop
+      - name: Restore Docker and host swap configuration
+        if: always() && matrix.topology == 'distributed'
+        run: sudo bash all-in-one-apim/modules/integration-v2/tests-integration/cucumber-tests/src/test/resources/distributed-memory-budget/setup-distributed-memory-budget.sh cleanup "$RUNNER_TEMP/apim-distributed-memory-budget"
       - name: Archive test reports
         if: always()
         uses: actions/upload-artifact@v4

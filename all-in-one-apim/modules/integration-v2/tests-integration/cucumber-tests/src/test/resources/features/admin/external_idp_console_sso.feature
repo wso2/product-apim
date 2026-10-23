@@ -47,6 +47,10 @@ Feature: Console SSO via an external Identity Server survives the multi-option O
 
   Background:
     Given The system is ready
+    And I have a valid DCR application for the current user
+    And I have a valid Publisher access token for the current user
+    And I have a valid Devportal access token for the current user
+    And I have a valid Admin access token for the current user
     And an external Identity Server is registered as OIDC identity provider "ISIDP"
     And the "publisher", "admin" and "devportal" consoles each offer a multi-option login step with a local authenticator and "ISIDP"
     And a federated user "sso_admin" exists on the external Identity Server with the "admin", "publisher" and "subscriber" roles

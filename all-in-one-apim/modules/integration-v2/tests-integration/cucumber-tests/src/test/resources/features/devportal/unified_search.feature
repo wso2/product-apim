@@ -37,6 +37,7 @@ Feature: DevPortal Unified Search
     Then The response status code should be 200
     And I extract response field "name" and store it as "usContextApiName"
     And I extract response field "context" and store it as "usContextApiContext"
+    # This exact-count query is itself the Publisher-index readiness poll for the published API.
     When I unified-search the "publisher" plane for "context:{{usContextApiContext}}/{version}" until the result count is 1 within 60 seconds
     Then The value of response field "list[0].name" should be "{{usContextApiName}}"
 
@@ -64,30 +65,42 @@ Feature: DevPortal Unified Search
     When I retrieve the "apis" resource with id "usApiId"
     And I extract response field "name" and store it as "usApiName"
     And I wait until the DevPortal API index contains API "usApiId" named "{{usApiName}}" within 120 seconds
+    And I unified-search the "publisher" plane for "name:{{usApiName}}" until API "usApiId" is present within 120 seconds
     # Legacy ContentSearchTestCase first warmed the Publisher API index in its preceding search test. Keep that
     # prerequisite explicit here so document-content indexing is not started while the Publisher index is still cold.
     And I search Publisher APIs with content query "name:{{usApiName}}" until the result count is 1 within 120 seconds
+    And I generate a unique value and store it as "usDocToken"
 
     # Legacy's fixture shape: HOWTO + INLINE, content written through the /content resource. The create payload's
     # inlineContent is METADATA ONLY on this build (an INLINE doc 404s on /content until this POST), so the content
     # search below is necessarily exercising the /content write path.
+    When I generate a unique value and store it as "usDocName"
     When I prepare a new document payload with type "HOWTO", sourceType "INLINE", and inlineContent "placeholder"
+    And I set the prepared document name to "{{usDocName}}"
     And I add the document to API "usApiId"
     Then The response status code should be 201
-    When I add inline content "This is a sample API to test unified search feature - <token>" to document "documentID" of API "usApiId"
+    When I retrieve document with "documentID" for "usApiId"
+    Then The response status code should be 200
+    And The value of response field "documentId" should be "{{documentID}}"
+    And The value of response field "name" should be "{{usDocName}}"
+    And The value of response field "type" should be "HOWTO"
+    And The value of response field "sourceType" should be "INLINE"
+    # Wait for document creation to reach the Publisher index before submitting its content update.
+    And I unified-search the "publisher" plane for "content:{{usDocName}}" until document "documentID" of API "usApiId" is present within 120 seconds
+    When I add inline content "This is a sample API to test unified search feature - {{usDocToken}}" to document "documentID" of API "usApiId"
     Then The response status code should be 201
 
     # Legacy's two assertions, in legacy's order. Publisher search is the first exact-count content-index
     # convergence gate; only after it succeeds do we assert the tenant-aware DevPortal search surface.
-    When I unified-search the "publisher" plane for "<token>" until the result count is 1 within 120 seconds
-    And I unified-search the "devportal" plane for "<token>" until the result count is 1 within 120 seconds
+    When I unified-search the "publisher" plane for "{{usDocToken}}" until the result count is 1 within 120 seconds
+    And I unified-search the "devportal" plane for "{{usDocToken}}" until the result count is 1 within 120 seconds
     # CONTROL — the same token on /apis?query= is 0 BY CONTRACT, not by defect.
-    And I search DevPortal APIs with query "<token>" and limit 25 until the result count is 0 within 60 seconds
+    And I search DevPortal APIs with query "{{usDocToken}}" and limit 25 until the result count is 0 within 60 seconds
 
     Examples:
-      | actor             | token           |
-      | superTenantAdmin | zzdocalphatoken |
-      | admin@tenant1.com | zzdocbetatoken |
+      | actor             |
+      | superTenantAdmin |
+      | admin@tenant1.com |
 
   # The ordinary SECONDARY.COM mode is separate from emailUserMode. It exercises the same role-filtered Publisher
   # search contract as ContentSearchTestCase's SUPER_TENANT_USER_STORE_USER factory row using scenario-owned
@@ -176,11 +189,34 @@ Feature: DevPortal Unified Search
     # Ensure the parent API is visible in the Publisher index before adding/indexing its document, matching the
     # proven legacy ordering without depending on the shared search result count.
     And I unified-search the "publisher" plane for "name:{{ssDocApiName}}" until API "ssDocApiId" is present within 120 seconds
+
+    # Establish that the API is initially visible to the user who will be excluded by the visibility update. This
+    # makes the later zero-result wait a real index-convergence check rather than an empty-index pass.
+    When I act as "SECONDARY.COM/subscriberUser1<suffix>"
+    And I unified-search the "devportal" plane for "name:{{ssDocApiName}}" until API "ssDocApiId" is present within 120 seconds
+    When I act as "admin<suffix>"
     And I update API "ssDocApiId" to restricted Store visibility for role "Internal/publisher" and no Publisher access restriction
 
-    When I prepare a new document payload with type "HOWTO", sourceType "INLINE", and inlineContent "placeholder"
+    # The management API readback is synchronous, while the search-index visibility update is async. Wait for the
+    # now-unauthorized actor to lose the API before creating its document.
+    When I act as "SECONDARY.COM/subscriberUser1<suffix>"
+    And I unified-search the "devportal" plane for "name:{{ssDocApiName}}" until the result count is 0 within 120 seconds
+    When I act as "admin<suffix>"
+
+    When I generate a unique value and store it as "ssDocIndexName"
+    And I prepare a new document payload with type "HOWTO", sourceType "INLINE", and inlineContent "placeholder"
+    And I set the prepared document name to "{{ssDocIndexName}}"
     And I add the document to API "ssDocApiId"
     Then The response status code should be 201
+    When I retrieve document with "documentID" for "ssDocApiId"
+    Then The response status code should be 200
+    And The value of response field "documentId" should be "{{documentID}}"
+    And The value of response field "name" should be "{{ssDocIndexName}}"
+    And The value of response field "type" should be "HOWTO"
+    And The value of response field "sourceType" should be "INLINE"
+    # Let the metadata-only registry index update settle before posting inline content, which triggers a second
+    # update for the same document. This keeps the two asynchronous index events from racing each other.
+    And I unified-search the "publisher" plane for "content:{{ssDocIndexName}}" until document "documentID" of API "ssDocApiId" is present within 120 seconds
     When I add inline content "ordinary secondary-store document {{ssDocToken}}" to document "documentID" of API "ssDocApiId"
     Then The response status code should be 201
 
@@ -218,11 +254,36 @@ Feature: DevPortal Unified Search
     And the "apis" resource "docVisApiId" should be live on the gateway, redeploying if propagation is lost
     When I publish the "apis" resource with id "docVisApiId"
     Then The lifecycle status of API "docVisApiId" should be "Published"
+    When I retrieve the "apis" resource with id "docVisApiId"
+    Then The response status code should be 200
+    And I extract response field "name" and store it as "docVisApiName"
+    And I unified-search the "publisher" plane for "name:{{docVisApiName}}" until API "docVisApiId" is present within 120 seconds
+
+    # Prove the API was visible before changing its Store visibility, so the post-update absence poll below cannot
+    # succeed just because the DevPortal index has not seen the API yet.
+    When I act as "docVisOut<suffix>"
+    And I unified-search the "devportal" plane for "name:{{docVisApiName}}" until API "docVisApiId" is present within 120 seconds
+    When I act as "<owner>"
     And I update API "docVisApiId" to restricted Store visibility for role "{{docVisRole}}" and no Publisher access restriction
 
+    # Wait for the asynchronous Store-visibility index update before adding document content.
+    When I act as "docVisOut<suffix>"
+    And I unified-search the "devportal" plane for "name:{{docVisApiName}}" until the result count is 0 within 120 seconds
+    When I act as "<owner>"
+
+    When I generate a unique value and store it as "docVisDocName"
     When I prepare a new document payload with type "HOWTO", sourceType "INLINE", and inlineContent "placeholder"
+    And I set the prepared document name to "{{docVisDocName}}"
     And I add the document to API "docVisApiId"
     Then The response status code should be 201
+    When I retrieve document with "documentID" for "docVisApiId"
+    Then The response status code should be 200
+    And The value of response field "documentId" should be "{{documentID}}"
+    And The value of response field "name" should be "{{docVisDocName}}"
+    And The value of response field "type" should be "HOWTO"
+    And The value of response field "sourceType" should be "INLINE"
+    # Serialize document creation and the subsequent content update through the Publisher index.
+    And I unified-search the "publisher" plane for "content:{{docVisDocName}}" until document "documentID" of API "docVisApiId" is present within 120 seconds
     When I add inline content "Restricted document content {{docVisToken}}" to document "documentID" of API "docVisApiId"
     Then The response status code should be 201
     When I unified-search the "publisher" plane for "{{docVisToken}}" until the result count is 1 within 120 seconds
@@ -251,16 +312,34 @@ Feature: DevPortal Unified Search
     And I extract response field "name" and store it as "usShapeApiName"
     When I publish the "apis" resource with id "usShapeApiId"
     Then The lifecycle status of API "usShapeApiId" should be "Published"
+    # Wait for the Publisher API index before creating associated document metadata. A successful publish response
+    # does not mean the API is already visible to the asynchronous indexer.
+    And I unified-search the "publisher" plane for "name:{{usShapeApiName}}" until API "usShapeApiId" is present within 120 seconds
+    When I generate a unique value and store it as "usShapeDocName"
     When I prepare a new document payload with type "HOWTO", sourceType "INLINE", and inlineContent "placeholder"
+    And I set the prepared document name to "{{usShapeDocName}}"
     And I add the document to API "usShapeApiId"
     Then The response status code should be 201
-    When I add inline content "shape probe body zzdocshapetoken" to document "documentID" of API "usShapeApiId"
+    When I retrieve document with "documentID" for "usShapeApiId"
+    Then The response status code should be 200
+    And The value of response field "documentId" should be "{{documentID}}"
+    And The value of response field "name" should be "{{usShapeDocName}}"
+    And The value of response field "type" should be "HOWTO"
+    And The value of response field "sourceType" should be "INLINE"
+    # Wait for this exact document's metadata to be indexed before posting its content, so the two writes cannot
+    # race in the asynchronous document indexer.
+    And I unified-search the "publisher" plane for "content:{{usShapeDocName}}" until document "documentID" of API "usShapeApiId" is present within 120 seconds
+    And I generate a unique value and store it as "usShapeToken"
+    When I add inline content "shape probe body {{usShapeToken}}" to document "documentID" of API "usShapeApiId"
     Then The response status code should be 201
 
     # Match the legacy ordering: first wait for the document content in the Publisher index, then verify the
     # tenant-aware DevPortal index. The shape assertions below remain exact and unchanged.
-    When I unified-search the "publisher" plane for "zzdocshapetoken" until the result count is 1 within 120 seconds
-    When I unified-search the "devportal" plane for "zzdocshapetoken" until the result count is 1 within 120 seconds
+    When I unified-search the "publisher" plane for "{{usShapeToken}}" until the result count is 1 within 120 seconds
+    When I unified-search the "devportal" plane for "{{usShapeToken}}" until the result count is 1 within 120 seconds
+    # The API, its definition and its document are separate indexed entries; wait for the complete result set before
+    # taking the one-shot response that the shape assertions inspect.
+    And I unified-search the "devportal" plane for "{{usShapeApiName}}" until the result count is 3 within 120 seconds
     When I unified-search the "devportal" plane once for "{{usShapeApiName}}"
     Then The response status code should be 200
     And The response should contain "\"type\":\"API\""
@@ -287,16 +366,32 @@ Feature: DevPortal Unified Search
     And the "apis" resource "usDelApiId" should be live on the gateway, redeploying if propagation is lost
     When I publish the "apis" resource with id "usDelApiId"
     Then The lifecycle status of API "usDelApiId" should be "Published"
-    When I prepare a new document payload with type "HOWTO", sourceType "INLINE", and inlineContent "placeholder"
+    # Wait for the parent API's Publisher index entry before creating and indexing its document.
+    And I retrieve the "apis" resource with id "usDelApiId"
+    Then The response status code should be 200
+    And I extract response field "name" and store it as "usDelApiName"
+    And I unified-search the "publisher" plane for "name:{{usDelApiName}}" until API "usDelApiId" is present within 120 seconds
+    When I generate a unique value and store it as "usDelDocIndexName"
+    And I generate a unique value and store it as "usDelToken"
+    And I prepare a new document payload with type "HOWTO", sourceType "INLINE", and inlineContent "placeholder"
+    And I set the prepared document name to "{{usDelDocIndexName}}"
     And I add the document to API "usDelApiId"
     Then The response status code should be 201
-    When I add inline content "delete probe body zzdocdeltoken" to document "documentID" of API "usDelApiId"
+    When I retrieve document with "documentID" for "usDelApiId"
+    Then The response status code should be 200
+    And The value of response field "documentId" should be "{{documentID}}"
+    And The value of response field "name" should be "{{usDelDocIndexName}}"
+    And The value of response field "type" should be "HOWTO"
+    And The value of response field "sourceType" should be "INLINE"
+    # Wait for the created metadata entry before the inline-content update to avoid overlapping index events.
+    And I unified-search the "devportal" plane for "content:{{usDelDocIndexName}}" until document "documentID" of API "usDelApiId" is present within 120 seconds
+    When I add inline content "delete probe body {{usDelToken}}" to document "documentID" of API "usDelApiId"
     Then The response status code should be 201
     # Present first — so the zero below cannot pass against an index that never saw the document.
-    When I unified-search the "devportal" plane for "zzdocdeltoken" until the result count is 1 within 120 seconds
+    When I unified-search the "devportal" plane for "{{usDelToken}}" until the result count is 1 within 120 seconds
     When I delete the document with "documentID" for "usDelApiId"
     Then The response status code should be 200
-    When I unified-search the "devportal" plane for "zzdocdeltoken" until the result count is 0 within 120 seconds
+    When I unified-search the "devportal" plane for "{{usDelToken}}" until the result count is 0 within 120 seconds
 
     Examples:
       | actor            |
