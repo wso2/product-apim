@@ -13,6 +13,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import javax.ws.rs.core.Response;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.logging.Log;
@@ -46,6 +47,8 @@ import org.wso2.carbon.utils.ServerConstants;
     private final String API_VERSION_1_0_0 = "1.0.0";
     private final String CORRELATION_CONFIG_PATH = "api/am/devops/v0/config/correlation";
     private final String CORRELATION_ID = "9e3ec6ed-2a37-4b20-8dd4-d5fbc754a7d9";
+    // Activity id sent with each invocation; the disabling phase uses its own so it cannot match earlier lines.
+    private String correlationId = CORRELATION_ID;
     private static final long LOG_POLL_INTERVAL_MS = 2000;
     private static final long LOG_POLL_TIMEOUT_MS = 30000;
     private static final long LOG_QUIET_PERIOD_MS = 3000;
@@ -124,6 +127,7 @@ import org.wso2.carbon.utils.ServerConstants;
 
         // Disabling all the correlation components using the DevOps API and testing whether logs are still logging.
         configureCorrelationLoggingComponent(new String[] { "http", "jdbc", "synapse", "ldap", "method-calls" }, false);
+        correlationId = UUID.randomUUID().toString();
         InvokeTestAPI();
         resetAllLogs();
         awaitAllCorrelationCategories();
@@ -156,7 +160,7 @@ import org.wso2.carbon.utils.ServerConstants;
                 assertTrue(isSynapseLogLine(logLine) || isHTTPLogLine(logLine) || isJDBCLogLine(logLine)
                                 || isMethodCallsLogLine(logLine) || logLine.contains("Started log handler"),
                         "Unrecognised correlation log line: " + logLine);
-                if (logLine.contains(CORRELATION_ID)) {
+                if (logLine.contains(correlationId)) {
                     correlationIDLog = true;
                 }
             }
@@ -203,10 +207,11 @@ import org.wso2.carbon.utils.ServerConstants;
         assertTrue(synapseLog, "No synapse correlation log line seen " + phase);
         assertTrue(methodCallsLog, "No method-calls correlation log line seen " + phase);
         assertTrue(correlationIDLog,
-                "Correlation id '" + CORRELATION_ID + "' not found in any log line " + phase);
+                "Correlation id '" + correlationId + "' not found in any log line " + phase);
     }
 
     private void InvokeTestAPI() throws Exception {
+        requestHeaders.put("activityID", correlationId);
         HttpResponse invokeResponse =
                 HTTPSClientUtils.doGet(getAPIInvocationURLHttps(context, API_VERSION_1_0_0) + "", requestHeaders);
         assertEquals(invokeResponse.getResponseCode(), 200, "Response code mismatched");
@@ -246,7 +251,6 @@ import org.wso2.carbon.utils.ServerConstants;
         accessToken = apiKeyDTO.getToken().getAccessToken();
         assertNotNull(accessToken);
         requestHeaders.put("Authorization", "Bearer " + accessToken);
-        requestHeaders.put("activityID", CORRELATION_ID);
     }
 
     private void configureCorrelationLoggingComponent(String[] componentNames, Boolean enable) throws Exception {
