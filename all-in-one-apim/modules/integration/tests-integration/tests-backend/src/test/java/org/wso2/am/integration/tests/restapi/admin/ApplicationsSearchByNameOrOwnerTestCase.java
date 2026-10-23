@@ -154,6 +154,7 @@ public class ApplicationsSearchByNameOrOwnerTestCase extends APIMIntegrationBase
 
             assert applicationInfoList != null;
             assertTrue(verifyApplicationSearchQueryResults(expectedApplications, applicationInfoList));
+            assertTrue(verifyAllApplicationsMatchQuery(searchQuery, applicationInfoList));
         }
     }
 
@@ -172,6 +173,7 @@ public class ApplicationsSearchByNameOrOwnerTestCase extends APIMIntegrationBase
 
             assert applicationInfoList != null;
             assertTrue(verifyApplicationSearchQueryResults(expectedApplications, applicationInfoList));
+            assertTrue(verifyAllApplicationsMatchQuery(searchQuery, applicationInfoList));
         }
     }
 
@@ -190,6 +192,7 @@ public class ApplicationsSearchByNameOrOwnerTestCase extends APIMIntegrationBase
 
             assert applicationInfoList != null;
             assertTrue(verifyApplicationSearchQueryResults(expectedApplications, applicationInfoList));
+            assertTrue(verifyAllApplicationsMatchQuery(searchQuery, applicationInfoList));
         }
     }
 
@@ -208,6 +211,7 @@ public class ApplicationsSearchByNameOrOwnerTestCase extends APIMIntegrationBase
 
             assert applicationInfoList != null;
             assertTrue(verifyApplicationSearchQueryResults(expectedApplications, applicationInfoList));
+            assertTrue(verifyAllApplicationsMatchQuery(searchQuery, applicationInfoList));
         }
     }
 
@@ -234,5 +238,23 @@ public class ApplicationsSearchByNameOrOwnerTestCase extends APIMIntegrationBase
             }
         }
         return !expectedResultSet.isEmpty();
+    }
+
+    private boolean verifyAllApplicationsMatchQuery(String query, List<ApplicationInfoDTO> applications) {
+        if (query == null || query.trim().isEmpty()) {
+            return true;
+        }
+
+        String normalizedQuery = query.toLowerCase();
+        for (ApplicationInfoDTO app : applications) {
+            String name = app.getName();
+            String owner = app.getOwner();
+            boolean matchesName = name != null && name.toLowerCase().contains(normalizedQuery);
+            boolean matchesOwner = owner != null && owner.toLowerCase().contains(normalizedQuery);
+            if (!matchesName && !matchesOwner) {
+                return false;
+            }
+        }
+        return true;
     }
 }
