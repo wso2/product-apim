@@ -1032,6 +1032,7 @@ public class GraphqlSubscriptionTestCase extends APIMIntegrationBaseTest {
             assertEquals(socket.getResponseMessage(), "{\"type\":\"connection_ack\"}",
                     "Received response in not a Connection Ack response");
             socket.setResponseMessage(null);
+            socket.clearFrames();
             //Send initial graphQL subscription request message
             textMessage = "{\"id\":\"2\",\"type\":\"start\",\"payload\":{\"variables\":{},\"extensions\":{},"
                     + "\"operationName\":null,\"query\": \"subscription {\\n  "
@@ -1083,15 +1084,14 @@ public class GraphqlSubscriptionTestCase extends APIMIntegrationBaseTest {
         String lastFrame = null;
         int framesSeen = 0;
         while (true) {
-            String message = socket.getResponseMessage();
-            if (!StringUtils.isEmpty(message)) {
+            String message;
+            while ((message = socket.pollFrame()) != null) {
                 framesSeen++;
                 lastFrame = message;
                 log.info("Frame " + framesSeen + " while awaiting throttling: " + message);
                 if (message.contains("\"type\":\"error\"")) {
                     return message;
                 }
-                socket.setResponseMessage(null);
             }
             if (System.currentTimeMillis() >= deadline) {
                 break;
