@@ -203,6 +203,12 @@
                                     org.wso2.carbon.apimgt:org.wso2.carbon.apimgt.throttle.policy.deployer.feature:${carbon.apimgt.version}
                                 </featureArtifactDef>
                                 <featureArtifactDef>
+                                    org.wso2.carbon.apimgt:org.wso2.carbon.apimgt.tm.healthcheck.feature:${carbon.apimgt.version}
+                                </featureArtifactDef>
+                                <featureArtifactDef>
+                                    org.wso2.carbon.healthcheck:org.wso2.carbon.healthcheck.server.feature:${carbon.healthcheck.version}
+                                </featureArtifactDef>
+                                <featureArtifactDef>
                                     org.wso2.carbon.apimgt:org.wso2.carbon.apimgt.scxml.feature:${carbon.apimgt.version}
                                 </featureArtifactDef>
 
@@ -1081,6 +1087,14 @@
                                 <feature>
                                     <id>org.wso2.carbon.apimgt.throttle.policy.deployer.feature.group</id>
                                     <version>${carbon.apimgt.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.apimgt.tm.healthcheck.feature.group</id>
+                                    <version>${carbon.apimgt.version}</version>
+                                </feature>
+                                <feature>
+                                    <id>org.wso2.carbon.healthcheck.server.feature.group</id>
+                                    <version>${carbon.healthcheck.version}</version>
                                 </feature>
                                 <feature>
                                     <id>org.wso2.carbon.apimgt.jms.listener.feature.group</id>
