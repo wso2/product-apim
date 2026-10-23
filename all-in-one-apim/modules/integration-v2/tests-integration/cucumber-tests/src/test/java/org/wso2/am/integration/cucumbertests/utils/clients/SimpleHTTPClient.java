@@ -417,6 +417,9 @@ public class SimpleHTTPClient {
      * Retries the generic management error only for reads. A failed mutation may have committed state before
      * returning 500 (key generation reserves its key mapping before registering the OAuth client). Return that
      * first failure intact instead of replaying the mutation and replacing it with an unrelated conflict.
+     * A revision create that collides with the governance scheduler's export of the same API fails with
+     * 500 "Error while adding new API Revision", not this error code, so a mutation retry here would not cover it;
+     * the revision steps' wait for a 201 does.
      */
     private org.wso2.carbon.automation.test.utils.http.client.HttpResponse withGeneralErrorRetry(
             String method, HttpCall call) throws IOException {
