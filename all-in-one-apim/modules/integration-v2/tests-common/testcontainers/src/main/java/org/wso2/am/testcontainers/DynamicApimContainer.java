@@ -575,6 +575,21 @@ public class DynamicApimContainer extends GenericContainer<DynamicApimContainer>
         return readContainerFile(getContainerLogFilePath(fileName));
     }
 
+    @Override
+    public ContainerLogHistory.Snapshot readGatewayLogHistory(String fileName) {
+        return ContainerLogHistory.read(this, Constants.APIM_CONTAINER_USER_HOME + "/" + requireServerName(), fileName);
+    }
+
+    @Override
+    public ContainerLogHistory.Snapshot readControlPlaneLogHistory(String fileName) {
+        return readGatewayLogHistory(fileName);
+    }
+
+    @Override
+    public ContainerLogHistory.Snapshot readTrafficManagerLogHistory(String fileName) {
+        return readGatewayLogHistory(fileName);
+    }
+
     /**
      * Reads a file's content from inside the running container as UTF-8. Used by the remote-logging tests to
      * assert how the server rewrote {@code log4j2.properties} (e.g. an appender flipped to a SecuredHttp type).

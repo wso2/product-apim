@@ -478,7 +478,7 @@ public class EndpointCertificateSteps {
             return null;
         }
         try {
-            return runtime.readGatewayLogFile(ContainerLogDiagnostics.SERVER_LOG);
+            return runtime.readGatewayLogHistory(ContainerLogDiagnostics.SERVER_LOG).text();
         } catch (RuntimeException logUnavailable) {
             return null;
         }

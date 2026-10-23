@@ -44,7 +44,6 @@ import java.util.regex.Pattern;
 public final class ListenerSslReloadReadiness {
 
     private static final String SERVER_LOG = "wso2carbon.log";
-    private static final Pattern SERVER_START = Pattern.compile("Starting WSO2 Carbon", Pattern.CASE_INSENSITIVE);
     private static final Pattern LISTENER_RELOAD = Pattern.compile("PassThroughHttpListener reloading SSL Config");
     private static final Pattern HTTPS_LISTENER_STARTED = Pattern.compile("Pass-through HTTPS Listener started on");
     private static final Pattern LOG_TIMESTAMP = Pattern.compile(
@@ -79,7 +78,7 @@ public final class ListenerSslReloadReadiness {
 
     /** Takes one snapshot of the Gateway log for the server's current start. */
     public static Result inspect(ApimRuntime runtime) {
-        String log = currentStart(runtime.readGatewayLogFile(SERVER_LOG));
+        String log = runtime.readGatewayLogHistory(SERVER_LOG).text();
         List<String> events = new ArrayList<>();
         boolean started = false;
         String pendingReload = null;
@@ -130,13 +129,4 @@ public final class ListenerSslReloadReadiness {
         return last;
     }
 
-    /** The part of the log written since the most recent server start, or the whole log if none is found. */
-    private static String currentStart(String log) {
-        Matcher matcher = SERVER_START.matcher(log);
-        int start = -1;
-        while (matcher.find()) {
-            start = matcher.start();
-        }
-        return start >= 0 ? log.substring(start) : log;
-    }
 }

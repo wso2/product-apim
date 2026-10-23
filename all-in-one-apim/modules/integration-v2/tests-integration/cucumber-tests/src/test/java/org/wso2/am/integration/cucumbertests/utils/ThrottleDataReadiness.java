@@ -47,7 +47,6 @@ import java.util.regex.Pattern;
 public final class ThrottleDataReadiness {
 
     private static final String SERVER_LOG = "wso2carbon.log";
-    private static final Pattern SERVER_START = Pattern.compile("Starting WSO2 Carbon", Pattern.CASE_INSENSITIVE);
     private static final Pattern TM_PUBLISHER_READY = Pattern.compile(
             "Event Publisher configuration successfully deployed and in active state\\s*:\\s*jmsEventPublisher2",
             Pattern.CASE_INSENSITIVE);
@@ -95,9 +94,11 @@ public final class ThrottleDataReadiness {
 
     /** Takes one snapshot of all logs relevant to the throttle-data pipeline, each from its current start. */
     public static Result inspect(ApimRuntime runtime) {
-        String controlPlaneLog = currentStart(runtime.readControlPlaneLogFile(SERVER_LOG));
-        String trafficManagerLog = currentStart(runtime.readTrafficManagerLogFile(SERVER_LOG));
-        String gatewayLog = currentStart(runtime.readGatewayLogFile(SERVER_LOG));
+        String gatewayLog = runtime.readGatewayLogHistory(SERVER_LOG).text();
+        String controlPlaneLog = runtime instanceof DistributedDynamicApimContainer
+                ? runtime.readControlPlaneLogHistory(SERVER_LOG).text() : gatewayLog;
+        String trafficManagerLog = runtime instanceof DistributedDynamicApimContainer
+                ? runtime.readTrafficManagerLogHistory(SERVER_LOG).text() : gatewayLog;
 
         if (runtime instanceof DistributedDynamicApimContainer distributed) {
             return DistributedThrottleDataReadiness.inspect(distributed, controlPlaneLog, trafficManagerLog, gatewayLog);
@@ -116,12 +117,6 @@ public final class ThrottleDataReadiness {
                         + diagnostics("Control Plane", controlPlaneLog)
                         + diagnostics("Traffic Manager", trafficManagerLog)
                         + diagnostics("Gateway", gatewayLog));
-    }
-
-    /** The part of a component log written since its most recent server start, or the whole log if none is found. */
-    private static String currentStart(String log) {
-        int start = lastMatchStart(log, SERVER_START);
-        return start >= 0 ? log.substring(start) : log;
     }
 
     /** The last relevant event in the current start must be the positive marker, not a later failure. */
