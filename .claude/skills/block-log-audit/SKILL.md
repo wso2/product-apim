@@ -68,7 +68,9 @@ when proposing or making test changes: `all-in-one-apim/modules/integration-v2/t
 Run `scripts/digest_block_log.py <label>.carbon.log <label>.test.log` to normalise (UUIDs, `_<hex8>_<n>` unique
 suffixes, numbers, timestamps) and count every ERROR/WARN after server startup, with first/last timestamps. For a distributed block run it once per
 container log (the test log with any one of them); a request crosses containers (deploy on `apim-cp`, route and
-handshake on `apim-gw`, throttling on `apim-tm`), so follow each failing resource through all of them. Startup
+handshake on `apim-gw`, throttling on `apim-tm`), so follow each failing resource through all of them. A block that
+boots an external IS also has `<label>.is.log`: digest it too (same `WSO2 Carbon started in` startup boundary) and
+count its post-startup ERROR/WARN with the others; a federated or key-manager failure often shows only there. Startup
 noise (catalogued in `references/benign-catalogue.md`) is listed once and set aside. Read the block's definition in
 `testng-v2.xml` (parameters, overlays, runners, any XML comment explaining why it is separate) and each runner's
 `@CucumberOptions(features = ...)`.

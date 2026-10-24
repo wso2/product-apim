@@ -5,6 +5,7 @@
         <classes>
             <class name="org.wso2.am.testcontainers.ContainerLogHistoryTest"/>
             <class name="org.wso2.am.integration.cucumbertests.utils.GatewaySynapseLogTest"/>
+            <class name="org.wso2.am.integration.cucumbertests.utils.LogReadinessTransportTest"/>
         </classes>
     </test>
 </suite>

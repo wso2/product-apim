@@ -17,6 +17,7 @@
 package org.wso2.am.integration.cucumbertests.utils;
 
 import org.wso2.am.testcontainers.ApimRuntime;
+import org.wso2.am.testcontainers.ContainerLogHistory;
 import org.wso2.am.testcontainers.DistributedDynamicApimContainer;
 
 import java.util.ArrayList;
@@ -71,12 +72,25 @@ public final class ThrottleDataReadiness {
     private ThrottleDataReadiness() {
     }
 
-    /** Polls the component logs until the complete throttle-data pipeline is healthy or the deadline expires. */
+    /**
+     * Polls the component logs until the complete throttle-data pipeline is healthy or the deadline expires. A log
+     * read that the container transport cannot serve yet, as while a restarted JVM comes up, counts as not ready.
+     */
     public static Result await(ApimRuntime runtime, int timeoutSeconds) throws InterruptedException {
 
         AtomicLong healthySince = new AtomicLong(-1L);
         return Utils.retryUntil(timeoutSeconds * 1000L,
-                () -> inspect(runtime), result -> {
+                () -> {
+                    try {
+                        return inspect(runtime);
+                    } catch (ContainerLogHistory.ReadUnavailableException unavailable) {
+                        if (unavailable.getCause() instanceof InterruptedException) {
+                            throw unavailable;
+                        }
+                        return new Result(false, false, false, false,
+                                "component log unavailable: " + unavailable.getMessage());
+                    }
+                }, result -> {
                     if (!result.ready()) {
                         healthySince.set(-1L);
                         return false;

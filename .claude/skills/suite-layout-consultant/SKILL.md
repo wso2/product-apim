@@ -1,9 +1,9 @@
 ---
 name: suite-layout-consultant
 description: >-
-  Decide where new or changed integration-v2 runners, features and overlays belong in the 4-lane CI suite layout,
+  Decide where new or changed integration-v2 runners, features and overlays belong in the grouped 4-lane CI suite layout,
   from measured runtime. Measures a runner's isolated runtime, models block length (boot + longest lane) and the
-  4-queue packing, and recommends the cheapest placement: extend an existing feature/runner, join a compatible
+  per-group 4-queue packing, and recommends the cheapest placement: extend an existing feature/runner, join a compatible
   block, merge an orthogonal overlay, split an oversized runner/feature, and only as a last resort a new block.
   Mandatory for test-coverage work that adds or grows runners, features, blocks or overlays; also use to audit or
   rebalance the suite layout.
@@ -11,12 +11,16 @@ description: >-
 
 # Integration-V2 Suite Layout Consultant
 
-The all-in-one suite runs every `<test>` block of `testng-v2.xml` on a 4-CPU / 16 GB GitHub runner, 4 blocks at a time
-(`<suite parallel="tests" thread-count="4">`). Each block boots its own APIM container (and any IS/Squid/Solace it
-needs), runs its runners on `thread-count` lanes, and tears down. Wall time is therefore set by how the blocks pack into
-4 queues. Consolidating overlays, merging the WsProxy and NetworkAccessControl blocks into compatible blocks, splitting
-blocks/runners/features by measured time and setting `thread-count` per workload took the suite from about 2 h 30 min
-to about 1 h 10 min (the last CI run: 31 blocks, 15,203 s of block time, 4,068 s wall, ~93% packing efficiency).
+The product suite exists in two topologies with one shared block and runner layout: `testng-v2.xml` (one all-in-one
+APIM per block) and `testng-v2_distributed.xml` (control plane, traffic manager and gateway per block), kept aligned by
+`docs/devs/suite_alignment.py`. Every block declares a `group`; CI runs each topology as one job per group
+(`-Dapim.v2.test.groups`), all jobs side by side, each on a 4-CPU / 16 GB GitHub runner running 4 of its group's blocks
+at a time (`<suite parallel="tests" thread-count="4">`). Each block boots its own containers (and any IS/Squid/Solace it
+needs), runs its runners on `thread-count` lanes, and tears down. Wall time is therefore set by how each group's blocks
+pack into its 4 queues, and the suite ends with its longest group. Consolidating overlays, merging blocks, splitting by
+measured time, setting `thread-count` per workload and splitting the suite into two groups took the all-in-one suite
+from about 2 h 30 min to about 1 h 37 min per run (PR #14336: 37 blocks, 36,620 s of block time, groups of 70 and
+97 min).
 
 Every test change can erode that: a new block costs a whole container boot (~115–170 s, more with an IS) before it runs
 one scenario; a long runner appended to a `thread-count="1"` block stretches that block for everyone; a feature that
@@ -61,16 +65,23 @@ the file-order versus longest-first gap) and propose changes in the preference o
 
 ### 1. Baseline the current layout
 Take the baseline from an existing full run, never from a new full local run. In order of preference:
-1. **A pull request URL/number or a workflow run id** (preferred): `scripts/fetch_ci_timings.sh <PR | run id> <out dir>`
-   downloads the run's `testng-results.xml` (block and runner timings under real CI conditions), the suite file at the
-   run's commit, and the job log.
+1. **A pull request URL/number or a workflow run id** (preferred):
+   `scripts/fetch_ci_timings.sh <PR | run id> <out dir> [--topology all-in-one|distributed]` downloads the topology's
+   `testng-results.xml` (block and runner timings under real CI conditions), its suite file at the run's commit, the
+   features and the job log. It finds the topology's group jobs from the run and merges all of their reports (and
+   logs), failing rather than returning only some groups; `suite_timings.py` separates them again by each block's
+   `group`. **Choose the topology from the change:** a distributed-only block, overlay or component parameter
+   (`.cp`/`.tm`/`.gateway`) is decided on `distributed`; everything else on `all-in-one` first. A block or group
+   change applies to both suites (they stay aligned), so check the decision against the other topology's baseline
+   too: the same block can be the long pole in one and not the other.
 2. **A raw CI job log** (when the reports artefact has expired, ~90 days): block-level timings only, from the
    `BlockLifecycleListener` lines; runner times then come from your isolated runs (step 2).
 3. **A local `testng-results.xml` from a full local run** (last resort, only when no CI data exists): state in the
    report that it reflects local conditions (different CPU, concurrency and platform from CI).
 Run `scripts/suite_timings.py <testng-results.xml | job log> <suite xml> --features <out dir>/features`: it prints
 the deterministic metrics the report pastes (run summary, blocks, top runners, top features, slowest scenarios,
-multi-block runners, layout model). Read each candidate block's suite comment, `thread-count`, overlays,
+multi-block runners, layout model per group, group balance and longest-first regrouping). `--group <name>` limits it to one
+group's job. Read each candidate block's suite comment, `thread-count`, overlays,
 parameters (`apimCpuLimit`, `initBackend`, `bootExternalIdentityServer`, `lifecycleLock`, ordering notes such as
 "keep X last").
 
@@ -82,11 +93,14 @@ or runner is growing, compare with its previous span.
 
 ### 3. Model the candidates
 For each placement option, write a what-if file (`<block> <runner> <seconds>`, `<block> thread-count <n>`,
-`<block> remove <runner>`, `<block> drop`, `<block> position <n>`; a new block name pays the boot cost) and run
-`suite_timings.py ... --what-if <file>`. The modelled suite time is file-order dispatch, which is what TestNG runs (it
-matched CI within 0.3%); the longest-first figure beside it is the best order for the same blocks, so a gap between
-them is a reorder to propose, and any block a change adds or lengthens must be placed in the file where the file-order
-model says it costs least. Compare modelled suite time, the fullest queue and packing efficiency. See `references/layout-model.md` for the model and its limits, and
+`<block> remove <runner>`, `<block> drop`, `<block> position <n>`, `<block> group <name>`; a new block name pays the
+boot cost) and run `suite_timings.py ... --what-if <file>`. The modelled suite time is the longest group's file-order
+dispatch, which is what TestNG runs in each CI job (it matched CI within 0.3%). The longest-first figure beside it is
+a heuristic candidate order (greedy longest-first packing), not a guaranteed optimum and sometimes longer than the file
+order: propose a reorder only when its modelled time is actually lower, and model any other order you consider with
+`position` lines. Any block a change adds or lengthens must be placed in the group and file position where the model
+says it costs least. Longest-first regrouping is likewise a heuristic: a lower figure suggests a group rebalance to
+model with `group` lines (and to apply in both suites). Compare modelled suite time, the fullest queue and packing efficiency. See `references/layout-model.md` for the model and its limits, and
 `references/consolidation-playbook.md` / `references/splitting-playbook.md` for what makes an option valid.
 
 ### 4. Check compatibility of the chosen option
@@ -143,6 +157,7 @@ focused suites are the default. Follow the repository's lock or concurrency conv
 - `references/consolidation-playbook.md` — how to merge blocks/overlays safely (WsProxy, NetworkAccessControl examples)
 - `references/splitting-playbook.md` — splitting runners, features and blocks by time; ordering and fixtures
 - `references/report-template.md` — the consultant report
-- `scripts/fetch_ci_timings.sh` — fetch a PR's or run's testng-results.xml, suite file and job log from CI
-- `scripts/suite_timings.py` — measured block/runner timings and the 4-queue model with what-if layouts (also reads
+- `scripts/fetch_ci_timings.sh` — fetch a PR's or run's testng-results.xml, suite file and job log from CI (per
+  topology, every group job merged)
+- `scripts/suite_timings.py` — measured block/runner timings and the per-group 4-queue model with what-if layouts (also reads
   a job log for block-level timings)

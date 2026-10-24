@@ -32,7 +32,8 @@ import org.wso2.am.testcontainers.ContainerLogHistory;
  * before deploying; the readiness gate then {@link #artifactAddedSinceMark checks} the appended part.</p>
  *
  * <p>Without a block container or a deploy mark, the gate uses artifact existence. A marked deploy requires
- * readable history after that mark; a lost mark or a different boot cannot confirm the deploy. Container
+ * readable history after that mark; a lost mark, or a mark from another container or log file, cannot confirm the
+ * deploy. After a restart in the same container and log file, the whole later boot follows the mark. Container
  * transport failures keep polling within the existing deadline.</p>
  */
 public final class GatewaySynapseLog {
