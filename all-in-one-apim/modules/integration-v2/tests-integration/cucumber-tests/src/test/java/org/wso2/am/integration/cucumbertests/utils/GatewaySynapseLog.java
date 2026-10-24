@@ -84,7 +84,8 @@ public final class GatewaySynapseLog {
 
     /**
      * {@link HealGate.Ready} once the gateway log has gained {@code artifact}'s synapse hot-swap line since the mark
-     * taken for {@code resourceId}; {@link HealGate.NotReady} while it has not. Matching is on the full synapse
+     * taken for {@code resourceId}; {@link HealGate.NotReady} while it has not, including while a restarted gateway has
+     * not logged its {@code Starting WSO2 Carbon} line yet. Matching is on the full synapse
      * artifact name, which is scenario-unique because resource names are unique by construction: block classes share
      * one container and one log, so anything less specific could match a sibling scenario's deploy.
      */
@@ -111,6 +112,9 @@ public final class GatewaySynapseLog {
         }
         if (!(mark instanceof ContainerLogHistory.Mark)) {
             return new HealGate.Fatal("Invalid gateway log mark for " + resourceId);
+        }
+        if (!log.bootFound()) {
+            return new HealGate.NotReady("the gateway's current boot has not logged 'Starting WSO2 Carbon' yet");
         }
         String appended;
         try {

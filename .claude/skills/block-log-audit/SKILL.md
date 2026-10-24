@@ -122,7 +122,7 @@ what was checked for empty sections.
 ## Gate criteria (when used as the test-coverage Phase 6 gate)
 
 The block passes the gate only when, for the scenarios added or changed by the work under review:
-- no item in A, B, C or D, and no E item without a readiness/robustness fix;
+- no item in A, B, C or D, no E item without a readiness/robustness fix, and no open question (H) about those scenarios;
 - every ERROR/WARN they produce is in G with a verified reason, or is a catalogued product issue (F) the change does
   not make worse;
 - every new negative assertion is exact (status AND error code/message field where the product provides one) and

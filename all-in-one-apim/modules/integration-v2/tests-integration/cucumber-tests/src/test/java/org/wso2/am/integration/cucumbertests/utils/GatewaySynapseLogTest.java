@@ -27,7 +27,8 @@ import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Marked artifact checks require a new event and retain their boundary through rollover. After a restart in the same
- * container and log file, the whole later boot follows the mark; a mark from another container or log file is fatal.
+ * container and log file, the whole later boot follows the mark, and a later boot that has not logged its start line
+ * yet is not ready; a mark from another container or log file is fatal.
  */
 public class GatewaySynapseLogTest {
     private static final String EVENT = "API : UniqueAPI:v1 " + GatewaySynapseLog.SYNAPSE_ADDED + "\n";
@@ -55,6 +56,17 @@ public class GatewaySynapseLogTest {
         history.set(new ContainerLogHistory.Snapshot(BOOT, EVENT, true));
         GatewaySynapseLog.mark("id");
         history.set(new ContainerLogHistory.Snapshot(RESTARTED_BOOT, "", true));
+        Assert.assertTrue(GatewaySynapseLog.artifactAddedSinceMark("id", "UniqueAPI:v1") instanceof HealGate.NotReady);
+        history.set(new ContainerLogHistory.Snapshot(RESTARTED_BOOT, EVENT, true));
+        Assert.assertTrue(GatewaySynapseLog.artifactAddedSinceMark("id", "UniqueAPI:v1") instanceof HealGate.Ready);
+    }
+
+    @Test
+    public void restartedBootWithoutItsStartLineIsNotReady() {
+        AtomicReference<ContainerLogHistory.Snapshot> history = runtime(EVENT);
+        history.set(new ContainerLogHistory.Snapshot(BOOT, EVENT, true));
+        GatewaySynapseLog.mark("id");
+        history.set(new ContainerLogHistory.Snapshot(RESTARTED_BOOT, "", false));
         Assert.assertTrue(GatewaySynapseLog.artifactAddedSinceMark("id", "UniqueAPI:v1") instanceof HealGate.NotReady);
         history.set(new ContainerLogHistory.Snapshot(RESTARTED_BOOT, EVENT, true));
         Assert.assertTrue(GatewaySynapseLog.artifactAddedSinceMark("id", "UniqueAPI:v1") instanceof HealGate.Ready);
