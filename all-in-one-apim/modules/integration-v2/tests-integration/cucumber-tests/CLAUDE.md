@@ -165,10 +165,10 @@ mutable.**
 - **Transient `900967` "General Error" is absorbed at the client — steps never retry on `5xx`.** Under
   parallel-lane load the management API intermittently answers a `5xx` with body `{"code":900967,...,"General
   Error",...}` (e.g. a just-created API racing the Governance compliance evaluator). `SimpleHTTPClient` retries
-  this transparently on **every** call — `withGeneralErrorRetry` for `HttpResponse` methods and the same gate
-  inside `doGetToFile` for binary downloads — matching ONLY that code+message, so a real `4xx` or a different
-  `5xx` still returns first-try. Load flakiness is a given and handled here, once; a step issues a SINGLE
-  call and asserts, and must **not** hand-roll a retry-on-`5xx` loop around an export/download:
+  this transparently on **reads** (GET, HEAD, OPTIONS) — `withGeneralErrorRetry` for `HttpResponse` methods and
+  the same gate inside `doGetToFile` for binary downloads — matching ONLY that code+message, so a real `4xx` or a
+  different `5xx` still returns first-try. Mutations are sent once: a failed write may already have committed.
+  Load flakiness is a given and handled here, once; a step issues a SINGLE call and asserts, and must **not** hand-roll a retry-on-`5xx` loop around an export/download:
   ```java
   // right — the client already rode out any transient 900967; the step just asserts the outcome
   DownloadResult r = Requests.getToFile(exportUrl, headers, ".zip");
@@ -210,6 +210,13 @@ adding it to the matching block in the other suite, or declaring a block-scoped 
 From `integration-v2`, run `python3 docs/devs/suite_alignment.py`. The standalone validator writes nothing;
 both CI build workflows run it and reject undeclared differences, unsupported selectors and stale ignores
 with file/line annotations before building images. Component overlay/server-file routing is topology-specific.
+Every product block declares `<parameter name="group" value="group1|group2"/>`, identical in both suites and
+balanced by CI block duration. `-Dapim.v2.test.groups=group1` runs only that group's blocks (CI runs each suite as
+two jobs); without the property the complete suite runs. A block without a group, or an unknown group, fails the run.
+`BlockTimelineListener` passively records each executed block's worker thread (lane), timings and TestNG runner
+results, including configuration/boot failures, in `target/block-timeline.json`. Timings are TestNG context intervals:
+bootstrap and test execution, before teardown callbacks. The always-run CI step `docs/devs/render_block_timeline.py`
+appends lane and runner diagrams to the job summary; a missing timeline produces a note and never changes the job result.
 JaCoCo collection is opt-in with `-Dapim.coverage=true`: the all-in-one lane dumps coverage per block and
 merges it into a suite report; distributed-lane coverage is not collected. See the coverage architecture doc.
 
@@ -548,6 +555,17 @@ distribution defaults. Only reach for an overlay when a feature genuinely needs 
   `TenantUserProvisioner.registerRuntimeTenantAdmin` + standard steps in `TenantSharingSteps`).
 
 ## 15. Shared glue utilities (reuse these — never re-write one privately in a Steps class)
+
+- **Container log history:** readiness and marked assertions use `ApimRuntime.read*LogHistory`, backed by
+  `ContainerLogHistory`. It reads the component's configured archives and current file in date/index order,
+  handles gzip, and restricts evidence to the live Carbon JVM's boot. `Snapshot.mark()` / `since(mark)`
+  preserve the assertion boundary through rollover and reject expired or ambiguous marks. A mark taken before a
+  restart of the same container's Carbon JVM accepts the whole later boot; a mark from another container or log
+  file is rejected.
+  The boot boundary uses the JVM's recorded creation time; a later clock correction does not move it.
+  A bounded byte cache verifies live prefixes before transferring deltas. Deploy-log transport failures poll
+  within the existing deadline; invalid boot/mark evidence fails. `read*LogFile` means the current file only.
+  Verify with `testng-fv-log-history.xml`.
 Every helper below exists because it was once copy-pasted across step classes and consolidated. Before
 writing ANY private helper in a Steps file, check this list; if a near-fit exists, extend it here instead
 of forking it locally. (The §7 context/funnel primitives — `TestContext.resolve/get/contains`,

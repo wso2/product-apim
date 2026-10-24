@@ -450,6 +450,21 @@ public class DistributedDynamicApimContainer implements ApimRuntime {
     }
 
     @Override
+    public ContainerLogHistory.Snapshot readGatewayLogHistory(String fileName) {
+        return ContainerLogHistory.read(gateway, SERVER_HOME, fileName);
+    }
+
+    @Override
+    public ContainerLogHistory.Snapshot readControlPlaneLogHistory(String fileName) {
+        return ContainerLogHistory.read(cp, SERVER_HOME, fileName);
+    }
+
+    @Override
+    public ContainerLogHistory.Snapshot readTrafficManagerLogHistory(String fileName) {
+        return ContainerLogHistory.read(tm, SERVER_HOME, fileName);
+    }
+
+    @Override
     public String readContainerFile(String containerPath) {
         try {
             return cp.copyFileFromContainer(containerPath,

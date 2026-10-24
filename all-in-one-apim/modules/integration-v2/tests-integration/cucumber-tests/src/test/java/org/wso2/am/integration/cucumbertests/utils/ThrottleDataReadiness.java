@@ -17,6 +17,7 @@
 package org.wso2.am.integration.cucumbertests.utils;
 
 import org.wso2.am.testcontainers.ApimRuntime;
+import org.wso2.am.testcontainers.ContainerLogHistory;
 import org.wso2.am.testcontainers.DistributedDynamicApimContainer;
 
 import java.util.ArrayList;
@@ -47,7 +48,6 @@ import java.util.regex.Pattern;
 public final class ThrottleDataReadiness {
 
     private static final String SERVER_LOG = "wso2carbon.log";
-    private static final Pattern SERVER_START = Pattern.compile("Starting WSO2 Carbon", Pattern.CASE_INSENSITIVE);
     private static final Pattern TM_PUBLISHER_READY = Pattern.compile(
             "Event Publisher configuration successfully deployed and in active state\\s*:\\s*jmsEventPublisher2",
             Pattern.CASE_INSENSITIVE);
@@ -72,12 +72,25 @@ public final class ThrottleDataReadiness {
     private ThrottleDataReadiness() {
     }
 
-    /** Polls the component logs until the complete throttle-data pipeline is healthy or the deadline expires. */
+    /**
+     * Polls the component logs until the complete throttle-data pipeline is healthy or the deadline expires. A log
+     * read that the container transport cannot serve yet, as while a restarted JVM comes up, counts as not ready.
+     */
     public static Result await(ApimRuntime runtime, int timeoutSeconds) throws InterruptedException {
 
         AtomicLong healthySince = new AtomicLong(-1L);
         return Utils.retryUntil(timeoutSeconds * 1000L,
-                () -> inspect(runtime), result -> {
+                () -> {
+                    try {
+                        return inspect(runtime);
+                    } catch (ContainerLogHistory.ReadUnavailableException unavailable) {
+                        if (unavailable.getCause() instanceof InterruptedException) {
+                            throw unavailable;
+                        }
+                        return new Result(false, false, false, false,
+                                "component log unavailable: " + unavailable.getMessage());
+                    }
+                }, result -> {
                     if (!result.ready()) {
                         healthySince.set(-1L);
                         return false;
@@ -95,9 +108,11 @@ public final class ThrottleDataReadiness {
 
     /** Takes one snapshot of all logs relevant to the throttle-data pipeline, each from its current start. */
     public static Result inspect(ApimRuntime runtime) {
-        String controlPlaneLog = currentStart(runtime.readControlPlaneLogFile(SERVER_LOG));
-        String trafficManagerLog = currentStart(runtime.readTrafficManagerLogFile(SERVER_LOG));
-        String gatewayLog = currentStart(runtime.readGatewayLogFile(SERVER_LOG));
+        String gatewayLog = runtime.readGatewayLogHistory(SERVER_LOG).text();
+        String controlPlaneLog = runtime instanceof DistributedDynamicApimContainer
+                ? runtime.readControlPlaneLogHistory(SERVER_LOG).text() : gatewayLog;
+        String trafficManagerLog = runtime instanceof DistributedDynamicApimContainer
+                ? runtime.readTrafficManagerLogHistory(SERVER_LOG).text() : gatewayLog;
 
         if (runtime instanceof DistributedDynamicApimContainer distributed) {
             return DistributedThrottleDataReadiness.inspect(distributed, controlPlaneLog, trafficManagerLog, gatewayLog);
@@ -116,12 +131,6 @@ public final class ThrottleDataReadiness {
                         + diagnostics("Control Plane", controlPlaneLog)
                         + diagnostics("Traffic Manager", trafficManagerLog)
                         + diagnostics("Gateway", gatewayLog));
-    }
-
-    /** The part of a component log written since its most recent server start, or the whole log if none is found. */
-    private static String currentStart(String log) {
-        int start = lastMatchStart(log, SERVER_START);
-        return start >= 0 ? log.substring(start) : log;
     }
 
     /** The last relevant event in the current start must be the positive marker, not a later failure. */

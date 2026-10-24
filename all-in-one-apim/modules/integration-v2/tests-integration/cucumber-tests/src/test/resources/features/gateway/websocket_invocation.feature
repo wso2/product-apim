@@ -222,6 +222,9 @@ Feature: Gateway WebSocket API Invocation
     [{"name":"{{gatewayEnvironment}}","vhost":"localhost","displayOnDevportal":true}]
     """
     And I make a request to deploy revision "revisionId" of "apis" resource "wsApiId" with payload "wsScopeDeployPayload"
+    # The API is already live from its first deploy; wait for THIS revision's artifact to replace it before
+    # invoking, or the invocation can land on the gateway mid-swap.
+    And the "apis" resource "wsApiId" should be live on the gateway, redeploying if propagation is lost
     When I publish the "apis" resource with id "wsApiId"
     Then The lifecycle status of API "wsApiId" should be "Published"
     # Subscribe an application (async plan) with password-grant keys so a scoped token can be requested
@@ -588,6 +591,9 @@ Feature: Gateway WebSocket API Invocation
     [{"name":"{{gatewayEnvironment}}","vhost":"localhost","displayOnDevportal":true}]
     """
     And I make a request to deploy revision "revisionId" of "apis" resource "wsTplApiId" with payload "wsTplDeployPayload"
+    # The API is already live from its first deploy; wait for THIS revision's artifact to replace it before
+    # invoking, or the invocation can land on the gateway mid-swap.
+    And the "apis" resource "wsTplApiId" should be live on the gateway, redeploying if propagation is lost
     When I publish the "apis" resource with id "wsTplApiId"
     Then The lifecycle status of API "wsTplApiId" should be "Published"
     # An application with password-grant keys, subscribed on the async plan, so a token can be minted per scope

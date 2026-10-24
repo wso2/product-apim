@@ -11,64 +11,6 @@ concurrency:
   group: ${{ github.event.number }}
   cancel-in-progress: true
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        include:
-          - id: 1
-            segment: group1
-          - id: 2
-            segment: group2
-          - id: 3
-            segment: group3
-          - id: 4
-            segment: group4
-      fail-fast: false
-    steps:
-    - name: Run hostname
-      run: hostname
-    - name: Fix host entry
-      run: sudo echo "127.0.0.1 $(hostname)" | sudo tee -a /etc/hosts
-    - name: Show hosts
-      run: cat /etc/hosts
-    - name: Checkout master
-      uses: actions/checkout@v3
-    - name: Cache Maven packages
-      uses: actions/cache@v3
-      with:
-        path: ~/.m2
-        key: ${{ runner.os }}-m2
-        restore-keys: ${{ runner.os }}-m2
-    - name: Set up JDK 21
-      uses: actions/setup-java@v2
-      with:
-        java-version: 21
-        distribution: 'temurin'
-    - name: Set up Maven
-      uses: ./.github/actions/setup-maven
-    - uses: actions/setup-node@v1
-      with:
-        node-version: '10.x'
-    - name: Build product-apim with Test.
-      run: mvn clean install --file all-in-one-apim/pom.xml -DskipBenchMarkTest=true -DskipRestartTests=true
-      env:
-        PRODUCT_APIM_TEST_GROUPS: ${{ matrix.segment }}
-    - name: Prepare upload testng report
-      if: always()
-      run: mv all-in-one-apim/modules/integration/tests-integration/tests-backend/target/surefire-reports/TEST-TestSuite.xml TEST-TestSuite_${{ matrix.id }}.xml
-    - name: Archive testng report
-      if: always()
-      uses: actions/upload-artifact@v4
-      with:
-        name: TEST-TestSuite_${{ matrix.id }}
-        path: |
-          TEST-TestSuite_${{ matrix.id }}.xml
-        if-no-files-found: warn
-    - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v3
-      with:
-        flags: integration_tests
   run-benchmark-test:
     runs-on: ubuntu-latest
     steps:
@@ -79,40 +21,25 @@ jobs:
       - name: Show hosts
         run: cat /etc/hosts
       - name: Checkout master
-        uses: actions/checkout@v3
+        uses: actions/checkout@v7
       - name: Cache Maven packages
-        uses: actions/cache@v3
+        uses: actions/cache@v6
         with:
           path: ~/.m2
           key: ${{ runner.os }}-m2
           restore-keys: ${{ runner.os }}-m2
       - name: Set up JDK 21
-        uses: actions/setup-java@v2
+        uses: actions/setup-java@v6
         with:
           java-version: 21
           distribution: 'temurin'
       - name: Set up Maven
         uses: ./.github/actions/setup-maven
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@v7
         with:
           node-version: '10.x'
       - name: Build product-apim with Test.
         run: mvn clean install -U --file all-in-one-apim/pom.xml -DskipIntegrationTests=true
-  show-report:
-    if: ${{ always() && !cancelled() }}
-    needs: build
-    runs-on: 'ubuntu-latest'
-    steps:
-      - uses: actions/download-artifact@v4
-        with:
-          path: reports
-      - name: Publish Test Report
-        if: always()
-        uses: malinthaprasan/action-surefire-report@v1
-        env:
-          NODE_OPTIONS: --max-old-space-size=8192
-        with:
-          report_paths: 'reports/**/TEST-*.xml'
   # Builds the distribution + Docker images ONCE, then shares the non-public images (docker save ->
   # artifact), the testcontainers target/is7 and distributed-apim staging (image defaults + schemas,
   # produced by the same pre-integration-test execs), and the Maven repo (run-scoped cache) with the
@@ -131,7 +58,7 @@ jobs:
       - name: Fix host entry
         run: sudo echo "127.0.0.1 $(hostname)" | sudo tee -a /etc/hosts
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
       # Placed before the image build so a broken v2 taxonomy fails in seconds, and integration-v2 (which needs
       # this job) never starts.
       - name: Lint integration-v2 scenario tags
@@ -190,7 +117,7 @@ jobs:
           print(f"carbon.apimgt.version is consistent across all distributions: {next(iter(distinct_versions))}")
           PY
       - name: Set up JDK 21
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v6
         with:
           java-version: '21'
           distribution: 'temurin'
@@ -199,7 +126,7 @@ jobs:
       # Run-scoped key so the matrix restores exactly this run's repo (incl. the 4.7.0-SNAPSHOT artifacts the
       # dist build installs); restore-keys warm-starts from the shared cache.
       - name: Cache Maven repository
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ~/.m2/repository
           key: m2-v2-${{ github.run_id }}
@@ -256,7 +183,7 @@ jobs:
           tar -C all-in-one-apim/modules/integration-v2/tests-common/testcontainers/target -czf \
             /tmp/v2-images/distributed-apim-staging.tar.gz distributed-apim/defaults
       - name: Upload Docker images
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: v2-images
           path: /tmp/v2-images/
@@ -266,22 +193,33 @@ jobs:
   integration-v2:
     needs: v2-build-images
     runs-on: ubuntu-latest
-    # Least privilege for GITHUB_TOKEN, scoped per-job: checkout is read-only; 
-    # checks: write is the single write the surefire-report action needs to publish its check run
-    # (cache/artifacts use the runtime token; the Codecov upload does not use GITHUB_TOKEN).
+    # Workflow-mode test reporting uses job annotations and the step summary; Codecov does not use GITHUB_TOKEN.
     permissions:
       contents: read
-      checks: write
     strategy:
       fail-fast: false
       matrix:
+        # Each suite runs as two jobs selected by the blocks' group parameter (SuiteGroupSelectionListener);
+        # both suites declare the same groups, so each pair covers its complete suite.
         include:
-          - id: v2-all-in-one
+          - id: v2-all-in-one-group1
             suite: testng-v2.xml
+            group: group1
             coverage: true
             topology: all-in-one
-          - id: v2-distributed
+          - id: v2-all-in-one-group2
+            suite: testng-v2.xml
+            group: group2
+            coverage: true
+            topology: all-in-one
+          - id: v2-distributed-group1
             suite: testng-v2_distributed.xml
+            group: group1
+            coverage: false
+            topology: distributed
+          - id: v2-distributed-group2
+            suite: testng-v2_distributed.xml
+            group: group2
             coverage: false
             topology: distributed
     steps:
@@ -290,22 +228,22 @@ jobs:
       - name: Fix host entry
         run: sudo echo "127.0.0.1 $(hostname)" | sudo tee -a /etc/hosts
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
       - name: Set up JDK 21
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v6
         with:
           java-version: '21'
           distribution: 'temurin'
       - name: Set up Maven
         uses: ./.github/actions/setup-maven
       - name: Restore Maven repository
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ~/.m2/repository
           key: m2-v2-${{ github.run_id }}
           restore-keys: ${{ runner.os }}-m2
       - name: Download Docker images
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: v2-images
           path: /tmp/v2-images
@@ -386,6 +324,7 @@ jobs:
           --output tests-integration/cucumber-tests/target/logs/host-diagnostics --
           mvn test -pl tests-integration/cucumber-tests -am
           -Dsurefire.suite.xml=${{ matrix.suite }}
+          -Dapim.v2.test.groups=${{ matrix.group }}
           -Dapim.server.version="$APIM_VERSION"
           -Ddistributed.apim.cp.image.name="distributed-apim-cp:${CP_VERSION}-jdk21"
           -Ddistributed.apim.tm.image.name="distributed-apim-tm:${TM_VERSION}-jdk21"
@@ -410,6 +349,7 @@ jobs:
               --output tests-integration/cucumber-tests/target/logs/host-diagnostics -- \
               mvn test -pl tests-integration/cucumber-tests -am \
                 -Dsurefire.suite.xml=${{ matrix.suite }} \
+                -Dapim.v2.test.groups=${{ matrix.group }} \
                 -Dapim.server.version="$APIM_VERSION" \
                 -Ddistributed.apim.cp.image.name="distributed-apim-cp:${CP_VERSION}-jdk21" \
                 -Ddistributed.apim.tm.image.name="distributed-apim-tm:${TM_VERSION}-jdk21" \
@@ -429,11 +369,12 @@ jobs:
         run: sudo bash all-in-one-apim/modules/integration-v2/tests-integration/cucumber-tests/src/test/resources/distributed-memory-budget/setup-distributed-memory-budget.sh cleanup "$RUNNER_TEMP/apim-distributed-memory-budget"
       - name: Archive test reports
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: integration-v2-reports-${{ matrix.id }}
           path: |
             all-in-one-apim/modules/integration-v2/tests-integration/cucumber-tests/target/surefire-reports/**
+            all-in-one-apim/modules/integration-v2/tests-integration/cucumber-tests/target/block-timeline.json
             all-in-one-apim/modules/integration-v2/tests-integration/cucumber-tests/target/cucumber-report/**
             all-in-one-apim/modules/integration-v2/tests-integration/cucumber-tests/target/logs/**
             all-in-one-apim/modules/integration-v2/tests-integration/cucumber-tests/target/coverage/output/**
@@ -476,18 +417,25 @@ jobs:
           echo "Coverage dumps: $dumped/$expected blocks, $restarts pre-restart dump(s)"
       - name: Upload v2 integration coverage to Codecov
         if: ${{ always() && matrix.coverage }}
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@v7
         with:
           files: all-in-one-apim/modules/integration-v2/tests-integration/cucumber-tests/target/coverage/output/txt/jacoco-it.xml
           flags: integration-v2_tests
-      # Surface the actual scenario failures (name + assertion message) at the top of the run as a check +
-      # annotations, so a red build is diagnosable without expanding logs. Same action the legacy show-report
-      # job uses; the v2 surefire XML is standard Surefire JUnit, so it parses identically.
+      # Publish per-test failure annotations and totals in the workflow run summary.
       - name: Publish v2 test report
         if: always()
-        uses: malinthaprasan/action-surefire-report@v1
+        uses: ScalableCapital/action-surefire-report@v2
         env:
           NODE_OPTIONS: --max-old-space-size=8192
         with:
           report_paths: 'all-in-one-apim/modules/integration-v2/tests-integration/cucumber-tests/target/surefire-reports/TEST-*.xml'
-          check_name: 'integration-v2 results'
+          report_mode: workflow
+          fail_on_test_failures: false
+          fail_if_no_tests: true
+          check_name: 'integration-v2 results (${{ matrix.id }})'
+      # The execution map is best effort, including jobs whose test JVM did not finish.
+      - name: Summarize v2 suite execution
+        if: always()
+        continue-on-error: true
+        working-directory: all-in-one-apim/modules/integration-v2
+        run: python3 docs/devs/render_block_timeline.py
