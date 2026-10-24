@@ -193,12 +193,9 @@ jobs:
   integration-v2:
     needs: v2-build-images
     runs-on: ubuntu-latest
-    # Least privilege for GITHUB_TOKEN, scoped per-job: checkout is read-only; 
-    # checks: write is the single write the surefire-report action needs to publish its check run
-    # (cache/artifacts use the runtime token; the Codecov upload does not use GITHUB_TOKEN).
+    # Workflow-mode test reporting uses job annotations and the step summary; Codecov does not use GITHUB_TOKEN.
     permissions:
       contents: read
-      checks: write
     strategy:
       fail-fast: false
       matrix:
@@ -250,7 +247,6 @@ jobs:
         with:
           name: v2-images
           path: /tmp/v2-images
-          digest-mismatch: warn
       - name: Load Docker images
         run: docker load < /tmp/v2-images/images.tar.gz
       - name: Resolve APIM product versions
@@ -421,13 +417,11 @@ jobs:
           echo "Coverage dumps: $dumped/$expected blocks, $restarts pre-restart dump(s)"
       - name: Upload v2 integration coverage to Codecov
         if: ${{ always() && matrix.coverage }}
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@v7
         with:
           files: all-in-one-apim/modules/integration-v2/tests-integration/cucumber-tests/target/coverage/output/txt/jacoco-it.xml
           flags: integration-v2_tests
-      # Surface the actual scenario failures (name + assertion message) at the top of the run as a check +
-      # annotations, so a red build is diagnosable without expanding logs. The v2 surefire XML is standard
-      # Surefire JUnit.
+      # Publish per-test failure annotations and totals in the workflow run summary.
       - name: Publish v2 test report
         if: always()
         uses: ScalableCapital/action-surefire-report@v2
@@ -435,7 +429,7 @@ jobs:
           NODE_OPTIONS: --max-old-space-size=8192
         with:
           report_paths: 'all-in-one-apim/modules/integration-v2/tests-integration/cucumber-tests/target/surefire-reports/TEST-*.xml'
-          report_mode: check-run
+          report_mode: workflow
           fail_on_test_failures: false
           fail_if_no_tests: true
           check_name: 'integration-v2 results (${{ matrix.id }})'

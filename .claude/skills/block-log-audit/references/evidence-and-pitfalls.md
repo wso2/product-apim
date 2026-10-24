@@ -40,9 +40,10 @@ An assertion that cannot fail guards nothing. To prove a strengthened or new ass
 
 ## Running a block
 
-- Build a focused suite: the `<suite>` element and `<listeners>` of `testng-v2.xml` plus the block's `<test>` element
-  copied verbatim, in `src/test/resources/zz-<label>.xml`; delete it afterwards. Copy the whole element — every runner,
-  `thread-count`, order, parameters. Removing runners "to save time" removes exactly the interactions (parallel lanes
+- Build a focused suite: the `<suite>` element and `<listeners>` of the suite file that ran (`testng-v2.xml` for
+  all-in-one or `testng-v2_distributed.xml` for distributed) plus the block's `<test>` element copied verbatim, in
+  `src/test/resources/zz-<label>.xml`; delete it afterwards. Copy the whole element — every runner, `thread-count`,
+  order, parameters. Removing runners "to save time" removes exactly the interactions (parallel lanes
   on one server, shared fixtures, cleanup, ordering, global config) the audit exists to catch.
 - From `all-in-one-apim/modules/integration-v2`: `mvn -o -B test -pl tests-integration/cucumber-tests -am
   -Dsurefire.suite.xml=zz-<label>.xml` (`-am` is mandatory; add `-Dplaywright.sso=true` for browser blocks). On macOS

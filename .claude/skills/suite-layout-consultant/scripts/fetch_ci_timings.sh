@@ -16,8 +16,10 @@
 #                       the artefacts have expired)
 #   run.txt             run id, commit, conclusion, URLs
 # A PR resolves to its most recent run of the workflow that contains the integration-v2 jobs. Timings are complete or
-# absent: a missing group's artefact (or log) discards that source rather than leaving its blocks out. Exits non-zero,
-# saying what is missing, when neither source is complete.
+# absent: a source is kept only when it covers every block of the archived suite (testng-results.xml: every block and
+# each of its runners; job.log: every block's ready and close lines), so a missing group's artefact or log, or a
+# report missing blocks, discards that source rather than leaving its blocks out. Exits non-zero, saying what is
+# missing, when neither source is complete.
 set -euo pipefail
 
 usage="usage: fetch_ci_timings.sh <PR URL | PR number | run id> <out dir> [repo] [--topology all-in-one|distributed]"
@@ -37,6 +39,7 @@ case "$topology" in
     distributed) suite_file=testng-v2_distributed.xml ;;
     *) echo "unknown topology '$topology'; $usage" >&2; exit 2 ;;
 esac
+scripts=$(cd "$(dirname "$0")" && pwd)
 suite_path=all-in-one-apim/modules/integration-v2/tests-integration/cucumber-tests/src/test/resources/$suite_file
 mkdir -p "$out"
 out=$(cd "$out" && pwd)
@@ -81,6 +84,31 @@ if [ -z "${groups[0]}" ] && ! jq -e --arg n "integration-v2 (v2-$topology," \
     exit 1
 fi
 echo "topology $topology: ${groups[*]:-ungrouped}" >&2
+# Prints what the timing source lacks against the archived suite and fails when anything is missing.
+check_coverage() {
+    python3 - "$scripts" "$1" "$2" "$out/$suite_file" <<'PY'
+import sys
+sys.dont_write_bytecode = True
+sys.path.insert(0, sys.argv[1])
+from suite_timings import parse_log, parse_results, parse_suite
+kind, path, suite = sys.argv[2:]
+layout = parse_suite(suite)
+if kind == 'results':
+    blocks, runners, _, _ = parse_results(path)
+    missing = []
+    for b in layout:
+        if b['name'] not in blocks:
+            missing.append(b['name'])
+        else:
+            missing += [f"{b['name']}/{r}" for r in b['runners'] if (b['name'], r) not in runners]
+else:
+    times = parse_log(path, layout)
+    missing = [b['name'] for b in layout if b['name'] not in times]
+if missing:
+    print(' '.join(missing))
+    sys.exit(1)
+PY
+}
 artefact_name() { echo "integration-v2-reports-v2-$topology${1:+-$1}"; }
 job_name() { echo "integration-v2 (v2-$topology${1:+-$1},"; }
 
@@ -112,7 +140,12 @@ for path in rest:
         suite.append(test)
 tree.write(target, encoding='utf-8', xml_declaration=True)
 PY
-    have_results=true
+    if absent=$(check_coverage results "$out/testng-results.xml"); then
+        have_results=true
+    else
+        echo "reports artefacts for the $topology suite lack:$(printf ' %s' $absent)" >&2
+        rm -f "$out/testng-results.xml"
+    fi
 else
     echo "reports artefact missing for the $topology suite:${missing:- none found}" >&2
 fi
@@ -140,6 +173,10 @@ for group in "${groups[@]}"; do
     $got || { echo "job log missing for ${name%,}" >&2; have_log=false; }
 done
 rm -f "$out/job.part"
+if $have_log && ! absent=$(check_coverage log "$out/job.log"); then
+    echo "job logs for the $topology suite lack the ready and close lines of:$(printf ' %s' $absent)" >&2
+    have_log=false
+fi
 $have_log || rm -f "$out/job.log"
 
 echo "run $run at $sha: testng-results.xml=$have_results job.log=$have_log -> $out"

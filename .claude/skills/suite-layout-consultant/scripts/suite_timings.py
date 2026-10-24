@@ -27,8 +27,9 @@ side by side; within a job TestNG starts that group's blocks in suite-file order
 to free up. The modelled suite time is the longest group's file-order dispatch. Longest-first packing (greedy: each
 block, longest first, onto the queue that frees first) is a heuristic candidate order, reachable by listing the blocks
 longest-first; it is usually close to optimal but not guaranteed, and can be longer than the file order. A suite without group parameters is one group. --group
-restricts the report to one group's blocks. Spans measured under concurrency include contention; measure moved runners
-in isolation and feed them to --what-if.
+restricts the report to one group's blocks, so it rejects a what-if that moves a block to another group (that group's
+blocks are not in the model; run without --group to model a move between groups). Spans measured under concurrency
+include contention; measure moved runners in isolation and feed them to --what-if.
 
 --what-if <file>, one change per line (applied in order):
   <block> <runner> <seconds>       add a runner to a block with this duration (or override it)
@@ -54,7 +55,8 @@ def ts(value):
 
 
 def parse_suite(path):
-    suite = open(path, encoding='utf-8').read()
+    # A runner or block inside an XML comment never runs.
+    suite = re.sub(r'<!--.*?-->', '', open(path, encoding='utf-8').read(), flags=re.S)
     layout = []
     for m in re.finditer(r'<test name="([^"]+)"([^>]*)>(.*?)</test>', suite, re.S):
         tc = re.search(r'thread-count="(\d+)"', m.group(2))
@@ -273,6 +275,13 @@ def main():
         if args.group not in groups_of(layout):
             ap.error(f'no block declares group {args.group}; groups: {groups_of(layout)}')
         layout = [b for b in layout if b['group'] == args.group]
+        if args.what_if:
+            for line in open(args.what_if, encoding='utf-8'):
+                parts = line.split()
+                if len(parts) == 3 and parts[1] == 'group' and parts[2] != args.group \
+                        and not line.lstrip().startswith('#'):
+                    ap.error(f'what-if moves {parts[0]} to group {parts[2]}, whose blocks --group {args.group} '
+                             f'leaves out; run without --group to model a move between groups')
     head = open(args.results, encoding='utf-8', errors='replace').read(200).lstrip()
     log_only = not head.startswith('<')
     if log_only:

@@ -127,7 +127,6 @@ jobs:
         with:
           name: v2-hosted-db-assets
           path: ${{ runner.temp }}/v2-hosted-db-assets
-          digest-mismatch: warn
       - name: Load Docker images
         run: docker load < "$RUNNER_TEMP/v2-hosted-db-assets/images.tar.gz"
       - name: Resolve APIM product versions
