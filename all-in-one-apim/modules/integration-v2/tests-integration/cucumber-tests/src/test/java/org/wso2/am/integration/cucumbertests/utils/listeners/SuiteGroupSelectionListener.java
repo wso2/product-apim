@@ -33,11 +33,11 @@ import java.util.stream.Collectors;
 /**
  * Selects the {@code <test>} blocks of a product suite by their {@code group} parameter, so CI can run one suite as
  * several parallel jobs. {@code -Dapim.v2.test.groups=group1[,group2...]} keeps only the blocks of the listed groups,
- * in their suite order; without the property the complete suite runs.
+ * in their suite order; without the property, or with a blank value, the complete suite runs.
  *
  * <p>Every block must declare exactly one {@code group}, checked on every run: a block without a group would
- * otherwise be silently skipped by every partial CI job. A requested group that no block declares fails the run
- * instead of selecting nothing.
+ * otherwise be silently skipped by every partial CI job. A requested group that no block declares, or a value that
+ * names no group at all (such as {@code ","}), fails the run instead of selecting nothing or everything.
  */
 public class SuiteGroupSelectionListener implements IAlterSuiteListener {
 
@@ -89,9 +89,14 @@ public class SuiteGroupSelectionListener implements IAlterSuiteListener {
         if (requestedGroups == null || requestedGroups.isBlank()) {
             return Set.of();
         }
-        return Arrays.stream(requestedGroups.split(","))
+        Set<String> groups = Arrays.stream(requestedGroups.split(","))
                 .map(String::trim)
                 .filter(group -> !group.isEmpty())
                 .collect(Collectors.toCollection(LinkedHashSet::new));
+        if (groups.isEmpty()) {
+            throw new IllegalStateException("-D" + GROUPS_PROPERTY + "='" + requestedGroups
+                    + "' names no group; omit the property to run the complete suite");
+        }
+        return groups;
     }
 }

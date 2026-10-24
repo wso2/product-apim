@@ -1,9 +1,14 @@
-# The 4-lane layout model
+# The grouped 4-lane layout model
 
 ## Shape of a run
 
-- `testng-v2.xml`: `<suite parallel="tests" thread-count="4">` — four `<test>` blocks run at a time; when one ends,
-  the next block in file order starts. A block = one APIM container (plus IS/Squid/Solace/platform gateway if its
+- Two topologies share one block and runner layout: `testng-v2.xml` (all-in-one APIM per block) and
+  `testng-v2_distributed.xml` (control plane, traffic manager and gateway per block); `docs/devs/suite_alignment.py`
+  keeps them aligned, including each block's `group`.
+- Every block declares `<parameter name="group" value="groupN"/>`. CI runs each topology as one job per group
+  (`-Dapim.v2.test.groups=groupN`, matrix ids `v2-<topology>-<group>`), all jobs side by side on separate runners.
+- Within a job: `<suite parallel="tests" thread-count="4">` — four of that group's `<test>` blocks run at a time; when
+  one ends, the group's next block in file order starts. A block = one APIM container (plus IS/Squid/Solace/platform gateway if its
   parameters ask) booted by `BlockLifecycleListener`, its runners, then teardown.
 - Inside a block, `<test parallel="classes" thread-count="N">` runs N runners at a time (lanes). Runners are
   dispatched in suite order; scenarios inside a runner run sequentially; feature files inside a runner run in
@@ -28,14 +33,20 @@ order) onto `thread-count` lanes, each runner to the lane that frees first.
 
 ## Suite length
 
-TestNG starts the `<test>` blocks in suite-file order, each on the first of the 4 threads to free up. That file-order
-dispatch is the modelled suite time: on PR #14323's CI run it gave 5,289 s against a measured 5,303 s (+0.3%).
-Longest-first packing of the same blocks is the best order; the gap between the two is what reordering the blocks in
-the file saves (275 s on that run), with no other change. Budget: 4 queues × ~3,600 s. The levers, cheapest first:
-reorder blocks (no compatibility risk), shorten the longest blocks (they set the floor), and remove boots (fewer,
-fuller blocks).
+Within each group's job, TestNG starts that group's `<test>` blocks in suite-file order, each on the first of the 4
+threads to free up. That file-order dispatch is the group's modelled time, and the suite takes as long as its longest
+group. On PR #14323's ungrouped run it gave 5,289 s against a measured 5,303 s (+0.3%); on PR #14336's two-group
+all-in-one run, 5,834 s (group2) against a measured 5,841 s (+0.1%). Longest-first packing (greedy: each block,
+longest first, onto the queue that frees first) is a heuristic candidate order within a group, reachable by listing
+the blocks longest-first. It is usually close to the shortest schedule but not guaranteed: on PR #14336 group1 it
+was 98 s longer than the file order. Treat it as one candidate to model, not a bound. Longest-first regrouping (all
+blocks packed onto groups x 4 queues) is likewise a heuristic candidate for moving blocks between groups. Budget: per group, 4 queues × ~3,600 s; the groups should end
+close together. The levers, cheapest first: reorder blocks (no compatibility risk), rebalance blocks between groups
+(changes only the `group` value, in both suites), shorten the longest blocks (they set the floor), and remove boots
+(fewer, fuller blocks).
 
-`scripts/suite_timings.py` implements both models and a what-if mode; its `position` directive models a reorder.
+`scripts/suite_timings.py` implements the models and a what-if mode; its `position` directive models a reorder and its
+`group` directive a move to another group. `--group` limits the report to one group.
 
 ## Model limits — say these in the report
 

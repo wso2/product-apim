@@ -2,7 +2,7 @@
 """Deterministic timing metrics of an integration-v2 run and the 4-lane layout model.
 
 usage: suite_timings.py <testng-results.xml | CI job log> <suite xml> [--features <dir>] [--lanes 4] [--budget 3600]
-                        [--boot <seconds>] [--top 15] [--what-if <file>]
+                        [--boot <seconds>] [--top 15] [--what-if <file>] [--group <name>]
 
 Input: TestNG's testng-results.xml (target/surefire-reports/, archived by CI; fetch_ci_timings.sh downloads it with the
 suite file and the features at the run's commit) and the suite file that ran. --features points at the features
@@ -16,15 +16,19 @@ Output (Markdown, always the same sections in the same order, so reports are com
   4. Top features         — longest features (summed scenario time per block): scenarios, mean, runner, block
   5. Slowest scenarios    — single scenario rows
   6. Multi-block runners  — runners registered in more than one block, and what each registration costs
-  7. Layout model         — file-order dispatch (what TestNG runs; the modelled suite time) and longest-first
-                            packing (the best order for the same blocks); the gap is the saving a reorder buys
+  7. Layout model         — per group: file-order dispatch (what TestNG runs) and longest-first packing (a heuristic
+                            order for the same blocks, not guaranteed shorter); the suite time is the longest group;
+                            then longest-first regrouping (all blocks packed onto groups x lanes queues)
   8. What-if comparison   — with --what-if: per-block and suite before/after and the change
 
 Model: block length = boot + longest lane, runners dispatched in suite order onto thread-count lanes (each runner to
-the lane that frees first). TestNG starts blocks in suite-file order, each on the first of --lanes threads to free up,
-so file-order dispatch is the modelled suite time; longest-first packing of the same blocks is the target a reorder
-can reach. Spans measured under concurrency include contention; measure moved runners in isolation and feed them to
---what-if.
+the lane that frees first). CI runs each suite as one job per `group` block parameter (-Dapim.v2.test.groups), the jobs
+side by side; within a job TestNG starts that group's blocks in suite-file order, each on the first of --lanes threads
+to free up. The modelled suite time is the longest group's file-order dispatch. Longest-first packing (greedy: each
+block, longest first, onto the queue that frees first) is a heuristic candidate order, reachable by listing the blocks
+longest-first; it is usually close to optimal but not guaranteed, and can be longer than the file order. A suite without group parameters is one group. --group
+restricts the report to one group's blocks. Spans measured under concurrency include contention; measure moved runners
+in isolation and feed them to --what-if.
 
 --what-if <file>, one change per line (applied in order):
   <block> <runner> <seconds>       add a runner to a block with this duration (or override it)
@@ -33,14 +37,16 @@ can reach. Spans measured under concurrency include contention; measure moved ru
   <block> boot <seconds>           change a block's boot estimate
   <block> drop                     remove a block (e.g. after moving all of its runners)
   <block> position <n>             move a block to position n (1-based) in the suite file order
-A block name that does not exist yet creates a new block (it pays the median boot unless given one).
+  <block> group <name>             move a block to another group (CI job)
+A block name that does not exist yet creates a new block (it pays the median boot unless given one) in the first
+group.
 """
 import argparse
 import os
 import re
 import statistics
 import xml.etree.ElementTree as ET
-from datetime import datetime
+from datetime import datetime, timedelta
 
 
 def ts(value):
@@ -54,8 +60,9 @@ def parse_suite(path):
         tc = re.search(r'thread-count="(\d+)"', m.group(2))
         runners = [c.rsplit('.', 1)[-1] for c in re.findall(r'<class name="([^"]+)"', m.group(3))]
         label = re.search(r'name="blockLabel" value="([^"]+)"', m.group(3))
+        group = re.search(r'name="group" value="([^"]+)"', m.group(3))
         layout.append({'name': m.group(1), 'tc': int(tc.group(1)) if tc else 1, 'runners': runners,
-                       'label': label.group(1) if label else None})
+                       'label': label.group(1) if label else None, 'group': group.group(1) if group else ''})
     return layout
 
 
@@ -105,18 +112,28 @@ def parse_results(path):
 
 def parse_log(path, layout):
     by_label = {b['label']: b['name'] for b in layout if b['label']}
-    line_re = re.compile(r"(\d\d:\d\d:\d\d)\.\d+ \[[^\]]+\] INFO\s+BlockLifecycleListener \[\] - Block '([^']+)' (.*)")
+    # A CI log line starts with the runner's ISO date-time, used whole so a date and a time of day never disagree
+    # around midnight; a local log has only the test JVM's time of day.
+    line_re = re.compile(r"^(?:(\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d)\S* )?.*?(\d\d:\d\d:\d\d)\.\d+ \[[^\]]+\] INFO\s+"
+                         r"BlockLifecycleListener \[\] - Block '([^']+)' (.*)")
     times = {}
     with open(path, encoding='utf-8', errors='replace') as log:
         for raw in log:
             m = line_re.search(re.sub(r'\x1b\[[0-9;]*m', '', raw))
-            if not m or m.group(2) not in by_label:
+            if not m or m.group(3) not in by_label:
                 continue
-            t = datetime.strptime(m.group(1), '%H:%M:%S')
-            entry = times.setdefault(by_label[m.group(2)], [t, None, None])
-            if m.group(3).startswith('booted and ready'):
+            t = (datetime.strptime(m.group(1), '%Y-%m-%dT%H:%M:%S') if m.group(1)
+                 else datetime.strptime(m.group(2), '%H:%M:%S'))
+            entry = times.get(by_label[m.group(3)])
+            if entry and not m.group(1):
+                # Without a date, a block's events are in order: a time of day earlier than its last one is past midnight.
+                last = max(x for x in entry if x)
+                while t < last:
+                    t += timedelta(days=1)
+            entry = times.setdefault(by_label[m.group(3)], [t, None, None])
+            if m.group(4).startswith('booted and ready'):
                 entry[1] = t
-            elif m.group(3).startswith('private network closed'):
+            elif m.group(4).startswith('private network closed'):
                 entry[2] = t
     return {k: v for k, v in times.items() if v[1] and v[2]}
 
@@ -159,23 +176,49 @@ def fmt(seconds):
     return f'{seconds:,.0f} s ({seconds / 60:.0f} min)' if abs(seconds) >= 60 else f'{seconds:.0f} s'
 
 
+def groups_of(layout):
+    return list(dict.fromkeys(b['group'] for b in layout))
+
+
 def model_table(title, layout, rows, lanes, budget):
-    ordered = [(b['name'], sum(rows[b['name']][:2])) for b in layout]
-    total = sum(length for _, length in ordered)
-    results = {}
-    for kind, queues in (('file order', dispatch(ordered, lanes)), ('longest first', pack(ordered, lanes))):
-        makespan = queues[0][0] if queues else 0.0
-        results[kind] = makespan
-        print(f'\n### {title} — {kind}' + (' (what TestNG runs)' if kind == 'file order' else ' (best order)'))
-        print('| Queue | Blocks (in start order) | Filled | Of budget |')
-        print('|---|---|---:|---:|')
-        for i, (filled, names) in enumerate(queues, 1):
-            print(f'| {i} | {", ".join(names)} | {fmt(filled)} | {100 * filled / budget:.0f}% |')
-        eff = 100 * total / (lanes * makespan) if makespan else 0
-        print(f'\n{kind.capitalize()}: suite time **{fmt(makespan)}**; packing efficiency {eff:.0f}%.')
-    gap = results['file order'] - results['longest first']
-    print(f'\nModelled suite time (file order) **{fmt(results["file order"])}**; block time {fmt(total)}; '
-          f'reordering the blocks longest-first would save {fmt(gap) if gap >= 1 else "0 s"}.')
+    """Each group is a CI job with its own lanes; the suite takes as long as its longest group."""
+    total = sum(sum(rows[b['name']][:2]) for b in layout)
+    results = {'file order': 0.0, 'longest first': 0.0}
+    groups = groups_of(layout)
+    for group in groups:
+        ordered = [(b['name'], sum(rows[b['name']][:2])) for b in layout if b['group'] == group]
+        group_total = sum(length for _, length in ordered)
+        heading = f'{title}{f" — {group}" if group else ""}'
+        for kind, queues in (('file order', dispatch(ordered, lanes)), ('longest first', pack(ordered, lanes))):
+            makespan = queues[0][0] if queues else 0.0
+            results[kind] = max(results[kind], makespan)
+            print(f'\n### {heading} — {kind}' + (' (what TestNG runs)' if kind == 'file order' else ' (heuristic)'))
+            print('| Queue | Blocks (in start order) | Filled | Of budget |')
+            print('|---|---|---:|---:|')
+            for i, (filled, names) in enumerate(queues, 1):
+                print(f'| {i} | {", ".join(names)} | {fmt(filled)} | {100 * filled / budget:.0f}% |')
+            eff = 100 * group_total / (lanes * makespan) if makespan else 0
+            print(f'\n{kind.capitalize()}: {"group" if group else "suite"} time **{fmt(makespan)}**; '
+                  f'packing efficiency {eff:.0f}%.')
+    if len(groups) > 1:
+        ordered = [(b['name'], sum(rows[b['name']][:2])) for b in layout]
+        queues = pack(ordered, lanes * len(groups))
+        regrouped = queues[0][0] if queues else 0.0
+        print(f'\n### {title} — groups')
+        print('| Group | Blocks | Block time | File order | Longest first |')
+        print('|---|---:|---:|---:|---:|')
+        for group in groups:
+            ordered = [(b['name'], sum(rows[b['name']][:2])) for b in layout if b['group'] == group]
+            print(f'| {group} | {len(ordered)} | {fmt(sum(x for _, x in ordered))} | '
+                  f'{fmt(dispatch(ordered, lanes)[0][0] if ordered else 0.0)} | '
+                  f'{fmt(pack(ordered, lanes)[0][0] if ordered else 0.0)} |')
+        change = regrouped - results['file order']
+        print(f'\nLongest-first regrouping (heuristic: all blocks onto {len(groups)} x {lanes} queues): '
+              f'**{fmt(regrouped)}**; change against the current groups {change:+,.0f} s.')
+    change = results['longest first'] - results['file order']
+    print(f'\nModelled suite time (file order{", longest group" if len(groups) > 1 else ""}) '
+          f'**{fmt(results["file order"])}**; block time {fmt(total)}; '
+          f'longest-first reordering (heuristic) changes it by {change:+,.0f} s.')
     return results['file order'], results['longest first'], total
 
 
@@ -192,11 +235,13 @@ def apply_what_if(path, layout, durations, boots):
             continue
         block = next((b for b in layout if b['name'] == name), None)
         if block is None:
-            block = {'name': name, 'tc': 1, 'runners': [], 'label': None}
+            block = {'name': name, 'tc': 1, 'runners': [], 'label': None, 'group': layout[0]['group'] if layout else ''}
             layout.append(block)
         if parts[1] == 'position':
             layout.remove(block)
             layout.insert(max(0, int(parts[2]) - 1), block)
+        elif parts[1] == 'group':
+            block['group'] = parts[2]
         elif parts[1] == 'thread-count':
             block['tc'] = int(parts[2])
         elif parts[1] == 'boot':
@@ -220,9 +265,14 @@ def main():
     ap.add_argument('--boot', type=float)
     ap.add_argument('--top', type=int, default=15)
     ap.add_argument('--what-if')
+    ap.add_argument('--group')
     args = ap.parse_args()
 
     layout = parse_suite(args.suite)
+    if args.group:
+        if args.group not in groups_of(layout):
+            ap.error(f'no block declares group {args.group}; groups: {groups_of(layout)}')
+        layout = [b for b in layout if b['group'] == args.group]
     head = open(args.results, encoding='utf-8', errors='replace').read(200).lstrip()
     log_only = not head.startswith('<')
     if log_only:
@@ -234,6 +284,10 @@ def main():
         runners, scenarios, tests = {}, [], 0
     else:
         blocks, runners, scenarios, tests = parse_results(args.results)
+        names = {b['name'] for b in layout}
+        runners = {k: v for k, v in runners.items() if k[0] in names}
+        scenarios = [x for x in scenarios if x['block'] in names]
+        tests = len(scenarios)
         durations = {k: (v[1] - v[0]).total_seconds() for k, v in runners.items()}
         boots = {}
         for b in layout:
@@ -250,21 +304,33 @@ def main():
     # 1. Run summary
     block_time = sum(boot + lane for boot, lane, _ in rows.values())
     boot_time = sum(boot for boot, _, _ in rows.values())
-    starts = [s for s, _ in blocks.values()]
-    ends = [e for _, e in blocks.values()]
-    wall = (max(ends) - min(starts)).total_seconds() if starts else 0.0
+    # Group jobs can start minutes apart, so each group's span is measured on its own and the suite takes the longest.
+    walls = {}
+    for group in groups_of(layout):
+        spans = [blocks[b['name']] for b in layout if b['group'] == group and b['name'] in blocks]
+        if spans:
+            walls[group] = (max(e for _, e in spans) - min(s for s, _ in spans)).total_seconds()
+    wall = max(walls.values()) if walls else 0.0
     print('## 1. Run summary')
     print('| Metric | Value |')
     print('|---|---|')
     print(f'| Source | {os.path.basename(args.results)}{" (job log: block level only)" if log_only else ""} |')
     regs = sum(len(b['runners']) for b in layout) if not log_only else 'n/a'
     print(f'| Blocks / runner registrations / scenario rows | {len(rows)} / {regs} / {tests if not log_only else "n/a"} |')
-    print(f'| Measured wall span (first block start → last block end) | {fmt(wall)} |')
+    label = 'longest group, first block start → last block end' if len(walls) > 1 else 'first block start → last block end'
+    print(f'| Measured wall span ({label}) | {fmt(wall)} |')
+    if len(walls) > 1:
+        print(f'| Measured span per group | {", ".join(f"{g}: {fmt(w)}" for g, w in walls.items())} |')
     print(f'| Block time (sum of boot + longest lane) | {fmt(block_time)} |')
     if block_time:
         print(f'| Boot overhead | {fmt(boot_time)} ({100 * boot_time / block_time:.0f}% of block time; '
               f'median boot {default_boot:.0f} s) |')
-    print(f'| Ideal on {args.lanes} lanes (block time / lanes) | {fmt(block_time / args.lanes)} |')
+    groups = groups_of(layout)
+    if len(groups) > 1:
+        counts = ', '.join(f'{g}: {sum(1 for b in layout if b["group"] == g)} blocks' for g in groups)
+        print(f'| Groups (one CI job each, {args.lanes} lanes) | {counts} |')
+    lanes_total = args.lanes * len(groups)
+    print(f'| Ideal on {lanes_total} lanes (block time / lanes) | {fmt(block_time / lanes_total)} |')
 
     # 2. Blocks
     print('\n## 2. Blocks (highest total first)')
@@ -371,7 +437,7 @@ def main():
         print(f'| Modelled suite time (file order) | {fmt(before_makespan)} | {fmt(after_makespan)} | '
               f'{after_makespan - before_makespan:+,.0f} s '
               f'({100 * (after_makespan - before_makespan) / before_makespan:+.0f}%) |')
-        print(f'| Best order (longest first) | {fmt(before_best)} | {fmt(after_best)} | '
+        print(f'| Longest first (heuristic) | {fmt(before_best)} | {fmt(after_best)} | '
               f'{after_best - before_best:+,.0f} s |')
         print(f'| Block time | {fmt(before_total)} | {fmt(after_total)} | {after_total - before_total:+,.0f} s |')
         print(f'| Blocks (boots) | {len(rows)} | {len(rows2)} | {len(rows2) - len(rows):+d} |')

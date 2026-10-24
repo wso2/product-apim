@@ -25,9 +25,15 @@ import org.wso2.am.testcontainers.ContainerLogHistory;
 import java.lang.reflect.Proxy;
 import java.util.concurrent.atomic.AtomicReference;
 
-/** Marked artifact checks require a new event and retain their boundary through rollover. */
+/**
+ * Marked artifact checks require a new event and retain their boundary through rollover. After a restart in the same
+ * container and log file, the whole later boot follows the mark; a mark from another container or log file is fatal.
+ */
 public class GatewaySynapseLogTest {
     private static final String EVENT = "API : UniqueAPI:v1 " + GatewaySynapseLog.SYNAPSE_ADDED + "\n";
+    /** Real identity shape: {@code <container>:<pid>:<start ticks>:<file>}. */
+    private static final String BOOT = "container:100:5000:wso2carbon.log";
+    private static final String RESTARTED_BOOT = "container:200:9000:wso2carbon.log";
 
     @AfterMethod
     public void clearContext() {
@@ -44,11 +50,27 @@ public class GatewaySynapseLogTest {
     }
 
     @Test
-    public void restartRejectsAnOldMark() {
+    public void restartReadsTheWholeLaterBoot() {
         AtomicReference<ContainerLogHistory.Snapshot> history = runtime(EVENT);
+        history.set(new ContainerLogHistory.Snapshot(BOOT, EVENT, true));
         GatewaySynapseLog.mark("id");
-        history.set(new ContainerLogHistory.Snapshot("new-boot:carbon", EVENT, true));
-        Assert.assertTrue(GatewaySynapseLog.artifactAddedSinceMark("id", "UniqueAPI:v1") instanceof HealGate.Fatal);
+        history.set(new ContainerLogHistory.Snapshot(RESTARTED_BOOT, "", true));
+        Assert.assertTrue(GatewaySynapseLog.artifactAddedSinceMark("id", "UniqueAPI:v1") instanceof HealGate.NotReady);
+        history.set(new ContainerLogHistory.Snapshot(RESTARTED_BOOT, EVENT, true));
+        Assert.assertTrue(GatewaySynapseLog.artifactAddedSinceMark("id", "UniqueAPI:v1") instanceof HealGate.Ready);
+    }
+
+    @Test
+    public void markFromAnotherContainerOrLogFileIsFatal() {
+        for (String other : new String[]{"other-container:200:9000:wso2carbon.log",
+                "container:200:9000:http_access.log"}) {
+            AtomicReference<ContainerLogHistory.Snapshot> history = runtime(EVENT);
+            history.set(new ContainerLogHistory.Snapshot(BOOT, EVENT, true));
+            GatewaySynapseLog.mark("id");
+            history.set(new ContainerLogHistory.Snapshot(other, EVENT, true));
+            Assert.assertTrue(GatewaySynapseLog.artifactAddedSinceMark("id", "UniqueAPI:v1")
+                    instanceof HealGate.Fatal, other);
+        }
     }
 
     @Test

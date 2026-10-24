@@ -17,6 +17,7 @@
 package org.wso2.am.integration.cucumbertests.utils;
 
 import org.wso2.am.testcontainers.ApimRuntime;
+import org.wso2.am.testcontainers.ContainerLogHistory;
 
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -70,10 +71,21 @@ public final class ListenerSslReloadReadiness {
     public record Result(State state, String diagnostics) {
     }
 
-    /** Polls the Gateway log until the listener has started, returning as soon as its state is decided. */
+    /**
+     * Polls the Gateway log until the listener has started, returning as soon as its state is decided. A log read
+     * that the container transport cannot serve yet, as while a restarted JVM comes up, counts as {@code PENDING}.
+     */
     public static Result await(ApimRuntime runtime, int timeoutSeconds) throws InterruptedException {
-        return Utils.retryUntil(timeoutSeconds * 1000L, () -> inspect(runtime),
-                result -> result.state() != State.PENDING);
+        return Utils.retryUntil(timeoutSeconds * 1000L, () -> {
+            try {
+                return inspect(runtime);
+            } catch (ContainerLogHistory.ReadUnavailableException unavailable) {
+                if (unavailable.getCause() instanceof InterruptedException) {
+                    throw unavailable;
+                }
+                return new Result(State.PENDING, "gateway log unavailable: " + unavailable.getMessage());
+            }
+        }, result -> result.state() != State.PENDING);
     }
 
     /** Takes one snapshot of the Gateway log for the server's current start. */

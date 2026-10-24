@@ -19,6 +19,7 @@ package org.wso2.am.integration.cucumbertests.utils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.am.testcontainers.ApimRuntime;
+import org.wso2.am.testcontainers.ContainerLogHistory;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -53,7 +54,9 @@ public final class TenantPolicyDeployReadiness {
 
     /**
      * Polls the Traffic Manager log until {@code tenantDomain}'s execution-plan deployments have settled, or
-     * {@code timeoutSeconds} elapse. The returned result says which.
+     * {@code timeoutSeconds} elapse. The returned result says which. A log read that the container transport cannot
+     * serve is an unsettled observation; the plan count is cumulative over the boot, so the next read still sees any
+     * deployment made meanwhile and restarts the quiet window.
      */
     public static Result await(ApimRuntime runtime, String tenantDomain, int timeoutSeconds)
             throws InterruptedException {
@@ -64,7 +67,16 @@ public final class TenantPolicyDeployReadiness {
         long[] lastChange = {start};
         int[] lastCount = {-1};
         Result result = Utils.retryUntilWithInterval(timeoutSeconds * 1000L, POLL_INTERVAL_MILLIS, () -> {
-            Sample sample = sample(runtime.readTrafficManagerLogHistory(SERVER_LOG).text(), deployed);
+            String log;
+            try {
+                log = runtime.readTrafficManagerLogHistory(SERVER_LOG).text();
+            } catch (ContainerLogHistory.ReadUnavailableException unavailable) {
+                if (unavailable.getCause() instanceof InterruptedException) {
+                    throw unavailable;
+                }
+                return new Result(false, Math.max(lastCount[0], 0), null, System.currentTimeMillis() - start);
+            }
+            Sample sample = sample(log, deployed);
             long now = System.currentTimeMillis();
             if (sample.count() != lastCount[0]) {
                 lastCount[0] = sample.count();

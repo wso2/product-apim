@@ -83,6 +83,17 @@ public class SuiteGroupSelectionListenerTest {
     }
 
     @Test
+    public void valueNamingNoGroupFails() {
+        for (String requested : List.of(",,,", " , ")) {
+            XmlSuite suite = suite("A", "group1", "B", "group2");
+            IllegalStateException failure = Assert.expectThrows(IllegalStateException.class,
+                    () -> SuiteGroupSelectionListener.select(List.of(suite), requested));
+            Assert.assertTrue(failure.getMessage().contains("names no group"), failure.getMessage());
+            Assert.assertEquals(names(suite), List.of("A", "B"));
+        }
+    }
+
+    @Test
     public void ungroupedBlockFailsEvenForCompleteSuite() {
         XmlSuite suite = suite("A", "group1", "B", null);
         IllegalStateException failure = Assert.expectThrows(IllegalStateException.class,
