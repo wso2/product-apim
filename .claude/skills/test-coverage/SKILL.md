@@ -113,11 +113,12 @@ artifact (grep the glue for a reusable step; confirm no existing feature fits).
   deliverable.
 - **Block log audit (MANDATORY for integration work).** Green is necessary, not sufficient. For every block that
   runs a new or changed scenario, run the `block-log-audit` skill on that run's logs (split per block with its
-  `scripts/split_block_logs.py`) and meet its gate: no assertion passing for the wrong reason, no leak, no cleanup
-  re-delete or other hygiene defect, every ERROR/WARN the new scenarios produce explained (expected and asserted,
-  or benign with a reason, or a catalogued product issue the change does not worsen), every new negative assertion
-  exact and shown able to fail. Fix what it finds, re-run the block, and attach the audit report to the work.
-  A test that passes while its block logs show the wrong cause, a leak or a race is not done.
+  `scripts/split_block_logs.py`) and meet its gate: no assertion passing for the wrong reason, no coverage gap, no
+  leak, no cleanup re-delete or other hygiene defect, no open question about the new scenarios, every ERROR/WARN
+  the new scenarios produce explained (expected and asserted, or benign with a reason, or a catalogued product issue
+  the change does not worsen), every new negative assertion exact and shown able to fail. Fix what it finds, re-run
+  the block, and attach the audit report to the work. A test that passes while its block logs show the wrong cause,
+  a leak or a race is not done.
 - **Layout check (MANDATORY when Phase 5 changed placement).** Meet the `suite-layout-consultant` gate: isolated
   runtimes measured, the placement is the cheapest valid option, the modelled suite time and packing stay within
   budget (state before/after), no block over ~3,600 s, and the affected blocks ran green in their new layout.

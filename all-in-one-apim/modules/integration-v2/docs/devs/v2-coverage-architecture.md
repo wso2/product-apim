@@ -2,6 +2,7 @@
 
 **Status:** Implemented — opt-in `-Dapim.coverage=true` drives agent-at-boot → per-block dump → suite-end merge+report (verified locally end-to-end). The CI wiring is committed too: the `integration-v2` job runs the suite with coverage, extracts the product class files from the already-shared Docker image via `docker cp` (no separate dist-zip artifact — the image is byte-identical to what ran; passed via `-Dapim.coverage.classfiles`), and a Codecov upload step publishes it (flag `integration-v2_tests`). See §8.
 **Scope:** Server-side JaCoCo coverage for the **integration-v2 all-in-one lane** (the `DynamicApimContainer` Testcontainers path), uploaded to the **product-apim** Codecov project **standalone** — the same model the legacy lane uses (flag `integration_tests`). The coverage requirement is **all-in-one only** — the distributed lane is **not** a coverage target (by requirement, not merely deferred).
+**Update (2026-10-23):** The legacy integration suite's CI jobs (the `group1`–`group4` matrix that uploaded flag `integration_tests`, and `show-report`) were removed from the `APIM builder` workflow as the final step of migrating to the integration-v2 suite. `integration-v2_tests` is now the only integration coverage this workflow uploads; the references below to the legacy lane and its `integration_tests` flag describe the model this design followed.
 **Prior art:** modelled on the api-platform (Go) coverage pipeline, adapted to Java/JVM + JaCoCo.
 
 ---

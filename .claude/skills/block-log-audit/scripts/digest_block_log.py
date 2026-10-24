@@ -18,7 +18,8 @@ startup mid-run and tenants load lazily. Each signature matches its full catalog
 too), or any other text from those loggers, is counted as a finding.
 Stack-trace continuation lines are not counted as messages. MySQL error-log lines are counted by their own bracketed
 severity ([Warning]/[ERROR]; [System]/[Note] are informational). A server log with no recognised line is reported as
-unparsed rather than as zero findings.
+unparsed rather than as zero findings, and one without a startup line (a server that never finished starting, or a
+log cut before it) lists every WARN as unverified rather than summarising it as startup noise.
 
 Normalisation replaces UUIDs, the suite's ${UNIQUE:...} suffixes (_<hex8>_<n>), long hex ids, IP addresses, numbers
 and quoted values, so the same message from different scenarios groups together. Always read the original lines
@@ -66,7 +67,8 @@ def normalise(message):
 
 
 def inventory(path, pattern, server):
-    """Returns (groups, startup, recognised): recognised counts lines in a known log format, of any severity."""
+    """Returns (groups, startup, recognised, started): recognised counts lines in a known log format, of any
+    severity; started is whether the startup line was found (always True for a test log)."""
     groups, startup = OrderedDict(), OrderedDict()
     started = not server
     recognised = 0
@@ -104,7 +106,7 @@ def inventory(path, pattern, server):
             entry = target.setdefault(key, [0, ts, ts])
             entry[0] += 1
             entry[2] = ts
-    return groups, startup, recognised
+    return groups, startup, recognised, started
 
 
 def table(title, groups):
@@ -122,16 +124,19 @@ def main(argv):
     paths = [a for a in argv if a != '--all']
     if not paths:
         sys.exit(__doc__)
-    groups, startup, recognised = inventory(paths[0], SERVER, server=True)
+    groups, startup, recognised, started = inventory(paths[0], SERVER, server=True)
     if not recognised:
         print(f'\n### Server log unparsed ({paths[0]}): no Carbon or MySQL log line recognised; inventory it by hand')
     table(f'Server ERROR (any time) and WARN after startup ({paths[0]})', groups)
-    if show_all:
+    if recognised and not started:
+        table('Startup boundary not found (no "WSO2 Carbon started in" or "ready for connections" line): '
+              'server WARN unverified, classify each', startup)
+    elif show_all:
         table('Server WARN during startup', startup)
     else:
         print(f'\nStartup noise: {len(startup)} distinct, {sum(v[0] for v in startup.values())} lines (--all lists them)')
     if len(paths) > 1:
-        test_groups, _, _ = inventory(paths[1], TEST, server=False)
+        test_groups, _, _, _ = inventory(paths[1], TEST, server=False)
         table(f'Test-side ERROR/WARN ({paths[1]})', test_groups)
 
 

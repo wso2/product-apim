@@ -9,6 +9,12 @@ The current all-in-one APIM reactor pins `carbon.apimgt.version` to `9.34.8`; th
 plan's earlier version assumption and is not current. Recheck compatibility against the actual legacy and v2
 artifacts before implementing the comparison.
 
+**Update (2026-10-23):** The legacy integration suite no longer runs in CI. Its jobs (`build`, the `group1`–`group4`
+matrix that uploaded Codecov flag `integration_tests`, and `show-report`) were removed from the `APIM builder` workflow
+(`.github/workflows/maven.yml`) as the final step of migrating to the integration-v2 suite. The background and steps
+below describe the legacy CI job as it ran before that removal; implementing this plan now needs a legacy job added
+for the baseline only (Step 1), with no Codecov upload.
+
 **Goal:** compute the legacy suite's code coverage with *exactly* the calculation v2 uses, then list the lines legacy
 covers that v2 does not — coverage-level parity gaps.
 
