@@ -9,13 +9,13 @@ usage: digest_block_log.py <server log> [<label>.test.log] [--all]
 prefix.
 
 Prints, for the server log and the test log separately, every distinct normalised ERROR/WARN message with its count
-and the first/last timestamps. Server messages logged before startup completed are summarised separately as startup
-noise (use --all to list them too): everything before the first "WSO2 Carbon started in" line (MySQL: "ready for
+and the first/last timestamps. Server WARNs logged before startup completed are summarised separately as startup
+noise (use --all to list them too): every WARN before the first "WSO2 Carbon started in" line (MySQL: "ready for
 connections"), plus the catalogued
 startup/restart WARN signatures (OSGi waits, JMS listeners not yet polling, access-log.properties, GA config, Digester
 maxDays, DefaultSchemaGenerator overloading, tenant sequence copy) wherever they appear, since restart blocks repeat
-startup mid-run and tenants load lazily. Each signature matches its full catalogued message; an ERROR, or any other
-text from those loggers, is counted as a finding.
+startup mid-run and tenants load lazily. Each signature matches its full catalogued message; an ERROR (before startup
+too), or any other text from those loggers, is counted as a finding.
 Stack-trace continuation lines are not counted as messages. MySQL error-log lines are counted by their own bracketed
 severity ([Warning]/[ERROR]; [System]/[Note] are informational). A server log with no recognised line is reported as
 unparsed rather than as zero findings.
@@ -100,7 +100,7 @@ def inventory(path, pattern, server):
                 ts, level, msg = m.group(1), m.group(2), m.group(3) + ' ' + m.group(4)
             key = (level, normalise(msg))
             noise = server and level == 'WARN' and STARTUP_NOISE.match(msg.strip())
-            target = groups if started and not noise else startup
+            target = groups if (started or level == 'ERROR') and not noise else startup
             entry = target.setdefault(key, [0, ts, ts])
             entry[0] += 1
             entry[2] = ts
@@ -125,9 +125,9 @@ def main(argv):
     groups, startup, recognised = inventory(paths[0], SERVER, server=True)
     if not recognised:
         print(f'\n### Server log unparsed ({paths[0]}): no Carbon or MySQL log line recognised; inventory it by hand')
-    table(f'Server ERROR/WARN after startup ({paths[0]})', groups)
+    table(f'Server ERROR (any time) and WARN after startup ({paths[0]})', groups)
     if show_all:
-        table('Server ERROR/WARN during startup', startup)
+        table('Server WARN during startup', startup)
     else:
         print(f'\nStartup noise: {len(startup)} distinct, {sum(v[0] for v in startup.values())} lines (--all lists them)')
     if len(paths) > 1:

@@ -17,7 +17,8 @@ block's logs long before they cause a flaky failure. This skill accounts for eve
 and turns each into one of: expected and correctly asserted, benign with a stated reason, or a finding with a root
 cause and a fix.
 
-Audit **one block per invocation** (one `<test name="IntegrationV2-...">` in `testng-v2.xml`). Rules you must obey
+Audit **one block per invocation** (one `<test name="IntegrationV2-...">` in the suite file that ran:
+`testng-v2.xml` for all-in-one, `testng-v2_distributed.xml` for distributed). Rules you must obey
 when proposing or making test changes: `all-in-one-apim/modules/integration-v2/tests-integration/cucumber-tests/CLAUDE.md`.
 
 ## Operating principles
@@ -30,8 +31,9 @@ when proposing or making test changes: `all-in-one-apim/modules/integration-v2/t
 - **Evidence or it did not happen.** Every claim cites the exact log line (with timestamp) and file:line, or product
   bytecode (`javap -c -p -l`). A plausible story is not a root cause. If evidence is missing, the item is an open
   question (section H) with the evidence that would settle it, never a finding.
-- **Count everything, explain everything.** Every distinct normalised ERROR/WARN after startup ends up in exactly one
-  section. Silence is not a verdict: "no ERROR in the block" is checked, not assumed.
+- **Count everything, explain everything.** Every distinct normalised ERROR at any time and WARN after startup ends
+  up in exactly one section. Startup WARN noise is catalogued separately. Silence is not a verdict: "no ERROR in the
+  block" is checked, not assumed.
 - **Asserted is not the same as expected.** A server ERROR is "expected" only if a step deliberately provokes it AND
   the scenario asserts the outcome that proves it, and the asserted outcome could not have come from another cause.
 - **Fix the cause, never the symptom.** Never relax an assertion, never reduce coverage, no static sleeps (poll a real
@@ -66,13 +68,15 @@ when proposing or making test changes: `all-in-one-apim/modules/integration-v2/t
 
 ### 1. Inventory
 Run `scripts/digest_block_log.py <label>.carbon.log <label>.test.log` to normalise (UUIDs, `_<hex8>_<n>` unique
-suffixes, numbers, timestamps) and count every ERROR/WARN after server startup, with first/last timestamps. For a distributed block run it once per
+suffixes, numbers, timestamps) and count every ERROR at any time and WARN after server startup, with first/last
+timestamps. For a distributed block run it once per
 container log (the test log with any one of them); a request crosses containers (deploy on `apim-cp`, route and
 handshake on `apim-gw`, throttling on `apim-tm`), so follow each failing resource through all of them. A block that
 boots an external IS also has `<label>.is.log`: digest it too (same `WSO2 Carbon started in` startup boundary) and
 count its post-startup ERROR/WARN with the others; a federated or key-manager failure often shows only there. Startup
-noise (catalogued in `references/benign-catalogue.md`) is listed once and set aside. Read the block's definition in
-`testng-v2.xml` (parameters, overlays, runners, any XML comment explaining why it is separate) and each runner's
+WARN noise (catalogued in `references/benign-catalogue.md`) is listed once and set aside; an ERROR is a finding even
+before startup completes. Read the block's definition in the suite file that ran (parameters, overlays, runners, any
+XML comment explaining why it is separate) and each runner's
 `@CucumberOptions(features = ...)`.
 
 ### 2. Attribute
@@ -118,12 +122,17 @@ what was checked for empty sections.
 ## Gate criteria (when used as the test-coverage Phase 6 gate)
 
 The block passes the gate only when, for the scenarios added or changed by the work under review:
-- no item in A, C or D, and no E item without a readiness/robustness fix;
+- no item in A, B, C or D, and no E item without a readiness/robustness fix;
 - every ERROR/WARN they produce is in G with a verified reason, or is a catalogued product issue (F) the change does
   not make worse;
 - every new negative assertion is exact (status AND error code/message field where the product provides one) and
   has been shown able to fail;
-- the cleanup sweep logs no `may leak` WARN and the server logs no not-found ERROR from cleanup re-deletes;
+- the cleanup sweep logs no WARN indicating a failed or unverified delete, deregistration, or unsubscribe, including
+  `may leak`, `may have leaked`, `Cleanup failed to delete`, `Failed to delete ... on the external IS`, `cannot delete`,
+  `deleteUser ... returned HTTP`, `deregister ... returned HTTP`, `Cleanup failed to deregister`, `STILL EXISTS`,
+  `NOT deleted`, an IS sweep skipped despite registered resources, a WebSub unsubscribe or removal that failed, or
+  persisted WebSub rows that remain, differ, or could not be verified after unsubscribe, and the server logs no
+  not-found ERROR from cleanup re-deletes;
 - the complete block (every runner, verbatim `thread-count`, order and parameters) ran green after the fixes, with
   the run cited in the report; a run of a subset of the block does not count.
 Pre-existing findings in untouched scenarios are reported but do not block; list them separately.

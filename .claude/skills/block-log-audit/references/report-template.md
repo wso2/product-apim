@@ -7,7 +7,7 @@ One report per block. Markdown. IDs are prefixed with the block label so several
 # Log audit — block <label> (IntegrationV2-<TestName>), <run identity: commit/branch + date + CI or local>
 
 Runners / features: <runner → feature list>. Scenarios run: <n>. Failures in this block: <n or none>.
-Unique ERROR/WARN after startup: <n> (<n> test-side). Startup noise: <one line, see benign catalogue>.
+Unique ERROR (any time)/WARN after startup: <n> (<n> test-side). Startup WARN noise: <one line, see benign catalogue>.
 
 ## 0. Failures in this block            (omit if none)
 ## A. Assertions that pass for the wrong reason
