@@ -493,6 +493,26 @@
         </classes>
     </test>
 
+    <!-- Mirrors IntegrationV2-MultiTenantSsoSharedHost. The distributed Control Plane is advertised as apim-cp, so
+         here the Identity Server on localhost:9444 sits on a different cookie host from APIM; the scenario still
+         pins that single logout ends the Identity Server session. -->
+    <test name="IntegrationV2-Distributed-MultiTenantSsoSharedHost" parallel="classes" thread-count="1">
+        <parameter name="blockLabel" value="distributed-mt-sso-shared-host"/>
+        <parameter name="apimCpuLimit" value="1"/>
+        <parameter name="lifecycleLock" value="browser-sso"/>
+        <parameter name="bootExternalIdentityServer" value="true"/>
+        <parameter name="isHostname" value="localhost"/>
+        <parameter name="isPortOffset" value="1"/>
+        <parameter name="isCpuLimit" value="1"/>
+        <parameter name="receiveExternalIsNotifications" value="true"/>
+        <parameter name="isTomlExtraOverlayPath" value="src/test/resources/artifacts/configFiles/multiTenantSso/is-tenant-sync-overlay.toml"/>
+        <parameter name="tomlExtraOverlayPath.cp" value="src/test/resources/artifacts/configFiles/multiTenantSso/deployment.toml"/>
+        <parameter name="tomlExtraOverlayPath.gateway" value="src/test/resources/artifacts/configFiles/multiTenantSso/deployment.toml"/>
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.MultiTenantSsoSharedHostRunner"/>
+        </classes>
+    </test>
+
     <!-- Certificate-chain validation is Gateway-wide; keep default-mode mTLS tests separate. -->
     <test name="IntegrationV2-Distributed-BackendJwtUrlSafeAndMtlsChain" parallel="classes" thread-count="2">
         <parameter name="blockLabel" value="distributed-backend-jwt-urlsafe-mtls-chain"/>
