@@ -63,6 +63,7 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
@@ -81,6 +82,10 @@ import java.util.stream.IntStream;
 import java.util.zip.ZipFile;
 
 public class ApplicationBaseSteps {
+
+    private static final int UNIFIED_SEARCH_HISTORY_LIMIT = 24;
+    private static final int UNIFIED_SEARCH_BODY_EXCERPT_LIMIT = 200;
+    private static final String UNIFIED_SEARCH_HISTORY_CONTEXT_KEY = "unifiedSearchPollHistory";
 
     /** Captures the exhausted bucket's natural expiry so reset readiness cannot pass on minute-window rollover. */
     public static final String THROTTLE_RESET_ORIGINAL_EXPIRY = "throttleResetOriginalExpiry";
@@ -6430,13 +6435,17 @@ public class ApplicationBaseSteps {
                 Utils.resolveContextPlaceholders(query));
         Map<String, String> headers = "publisher".equals(plane)
                 ? Identity.publisherHeaders() : Identity.devportalHeaders();
+        UnifiedSearchPollHistory history = new UnifiedSearchPollHistory();
         HttpResponse response = Utils.retryUntil(seconds * 1000L,
-                () -> Requests.get(url, headers),
+                () -> getUnifiedSearchPoll(url, headers, history),
                 result -> Utils.listCountOf(result) == expectedCount);
-        Assert.assertNotNull(response, "No unified-search response from the " + plane + " plane");
+        publishUnifiedSearchHistory(history);
+        Assert.assertNotNull(response, "No unified-search response from the " + plane + " plane"
+                + "; poll history: " + history.render());
         Assert.assertEquals(Utils.listCountOf(response), expectedCount,
                 "Unified search on the " + plane + " plane for '" + query
-                        + "' did not reach the expected count; last body: " + response.getData());
+                        + "' did not reach the expected count; last body: " + response.getData()
+                        + "; poll history: " + history.render());
     }
 
     /**
@@ -6447,9 +6456,18 @@ public class ApplicationBaseSteps {
     @When("I unified-search the {string} plane once for {string}")
     public void iUnifiedSearchOnce(String plane, String query) throws IOException {
 
-        Requests.get(Utils.getUnifiedSearchURL(Utils.getBaseUrl(), plane,
-                        Utils.resolveContextPlaceholders(query)),
-                "publisher".equals(plane) ? Identity.publisherHeaders() : Identity.devportalHeaders());
+        UnifiedSearchPollHistory history = new UnifiedSearchPollHistory();
+        HttpResponse response;
+        try {
+            response = getUnifiedSearchPoll(Utils.getUnifiedSearchURL(Utils.getBaseUrl(), plane,
+                            Utils.resolveContextPlaceholders(query)),
+                    "publisher".equals(plane) ? Identity.publisherHeaders() : Identity.devportalHeaders(), history);
+        } catch (IOException e) {
+            publishUnifiedSearchHistory(history);
+            throw new IOException("One-shot unified search on the " + plane + " plane failed; poll history: "
+                    + history.render(), e);
+        }
+        publishUnifiedSearchHistory(history, response);
     }
 
     /**
@@ -6461,6 +6479,46 @@ public class ApplicationBaseSteps {
             throws InterruptedException {
 
         assertUnifiedSearchDocument(plane, query, apiIdKey, seconds, true);
+    }
+
+    /**
+     * Waits for one exact document's metadata entry to become searchable before a subsequent document-content
+     * update is submitted. Registry indexing is asynchronous; this gate prevents the create and content-update
+     * events for the same document from racing each other in the indexer.
+     */
+    @When("I unified-search the {string} plane for {string} until document {string} of API {string} is present within {int} seconds")
+    public void iUnifiedSearchUntilSpecificDocumentPresent(String plane, String query, String documentIdKey,
+                                                            String apiIdKey, int seconds)
+            throws InterruptedException {
+
+        String resolvedQuery = Utils.resolveContextPlaceholders(query);
+        Object apiIdValue = TestContext.get(Utils.normalizeContextKey(apiIdKey));
+        Object documentIdValue = TestContext.get(Utils.normalizeContextKey(documentIdKey));
+        Assert.assertNotNull(apiIdValue, "No API id found in context for key '" + apiIdKey + "'");
+        Assert.assertNotNull(documentIdValue, "No document id found in context for key '" + documentIdKey + "'");
+        String apiId = apiIdValue.toString();
+        String documentId = documentIdValue.toString();
+        Assert.assertFalse(apiId.isBlank(), "API id in context for key '" + apiIdKey + "' is blank");
+        Assert.assertFalse(documentId.isBlank(), "Document id in context for key '" + documentIdKey + "' is blank");
+
+        String url = Utils.getUnifiedSearchURL(Utils.getBaseUrl(), plane, resolvedQuery);
+        Map<String, String> headers = "publisher".equals(plane)
+                ? Identity.publisherHeaders() : Identity.devportalHeaders();
+        UnifiedSearchPollHistory history = new UnifiedSearchPollHistory();
+        HttpResponse response = Utils.retryUntil(seconds * 1000L,
+                () -> getUnifiedSearchPoll(url, headers, history),
+                result -> result != null && result.getResponseCode() == 200
+                        && hasUnifiedSearchDocument(result, apiId, documentId));
+        publishUnifiedSearchHistory(history, response);
+        Requests.publishPollResult(response);
+        if (response == null || response.getResponseCode() != 200
+                || !hasUnifiedSearchDocument(response, apiId, documentId)) {
+            String diagnostics = unifiedSearchDocumentDiagnostics(plane, apiId, documentId, resolvedQuery, headers);
+            Assert.fail("Document " + documentId + " linked to API " + apiId + " did not appear in " + plane
+                    + " unified-search results for query '" + resolvedQuery + "'; last response: "
+                    + (response == null ? "none" : response.getResponseCode() + " / " + response.getData())
+                    + "; poll history: " + history.render() + "; diagnostics: " + diagnostics);
+        }
     }
 
     /**
@@ -6483,21 +6541,28 @@ public class ApplicationBaseSteps {
         Object apiIdValue = TestContext.get(Utils.normalizeContextKey(apiIdKey));
         Assert.assertNotNull(apiIdValue, "No API id found in context for key '" + apiIdKey + "'");
         String apiId = apiIdValue.toString();
+        if (resolvedQuery.startsWith("name:")) {
+            TestContext.set(unifiedSearchApiNameContextKey(apiId), resolvedQuery.substring("name:".length()));
+        }
         String url = Utils.getUnifiedSearchURL(Utils.getBaseUrl(), plane, resolvedQuery);
         Map<String, String> headers = "publisher".equals(plane)
                 ? Identity.publisherHeaders() : Identity.devportalHeaders();
+        UnifiedSearchPollHistory history = new UnifiedSearchPollHistory();
         HttpResponse response = Utils.retryUntil(seconds * 1000L,
-                () -> Requests.get(url, headers),
+                () -> getUnifiedSearchPoll(url, headers, history),
                 result -> result != null && result.getResponseCode() == 200
                         && hasUnifiedSearchApi(result, apiId));
+        publishUnifiedSearchHistory(history, response);
         Requests.publishPollResult(response);
-        Assert.assertNotNull(response, "No unified-search response from the " + plane + " plane");
+        Assert.assertNotNull(response, "No unified-search response from the " + plane + " plane"
+                + "; poll history: " + history.render());
         Assert.assertEquals(response.getResponseCode(), 200,
                 "Unified search on the " + plane + " plane did not return HTTP 200; last body: "
-                        + response.getData());
+                        + response.getData() + "; poll history: " + history.render());
         Assert.assertTrue(hasUnifiedSearchApi(response, apiId),
                 "API " + apiId + " did not appear in " + plane + " unified-search results for query '"
-                        + resolvedQuery + "'; last body: " + response.getData());
+                        + resolvedQuery + "'; last body: " + response.getData()
+                        + "; poll history: " + history.render());
     }
 
     private void assertUnifiedSearchDocument(String plane, String query, String apiIdKey, int seconds,
@@ -6511,23 +6576,162 @@ public class ApplicationBaseSteps {
         String url = Utils.getUnifiedSearchURL(Utils.getBaseUrl(), plane, resolvedQuery);
         Map<String, String> headers = "publisher".equals(plane)
                 ? Identity.publisherHeaders() : Identity.devportalHeaders();
+        UnifiedSearchPollHistory history = new UnifiedSearchPollHistory();
         HttpResponse response = Utils.retryUntil(seconds * 1000L,
-                () -> Requests.get(url, headers),
+                () -> getUnifiedSearchPoll(url, headers, history),
                 result -> result != null && result.getResponseCode() == 200
                         && hasUnifiedSearchDocument(result, apiId) == expectedPresent);
+        publishUnifiedSearchHistory(history, response);
         Requests.publishPollResult(response);
-        Assert.assertNotNull(response, "No unified-search response from the " + plane + " plane");
+        Assert.assertNotNull(response, "No unified-search response from the " + plane + " plane"
+                + "; poll history: " + history.render());
         Assert.assertEquals(response.getResponseCode(), 200,
                 "Unified search on the " + plane + " plane did not return HTTP 200; last body: "
-                        + response.getData());
+                        + response.getData() + "; poll history: " + history.render());
         Assert.assertEquals(hasUnifiedSearchDocument(response, apiId), expectedPresent,
                 "Expected document linked to API " + apiId + " to be "
                         + (expectedPresent ? "present" : "absent") + " in " + plane
                         + " unified-search results for query '" + resolvedQuery + "'; last body: "
-                        + response.getData());
+                        + response.getData() + "; poll history: " + history.render());
+    }
+
+    private HttpResponse getUnifiedSearchPoll(String url, Map<String, String> headers,
+                                              UnifiedSearchPollHistory history) throws IOException {
+        try {
+            HttpResponse response = Requests.get(url, headers);
+            history.record(response, null);
+            return response;
+        } catch (IOException e) {
+            history.record(null, e);
+            throw e;
+        }
+    }
+
+    private void publishUnifiedSearchHistory(UnifiedSearchPollHistory history) {
+        TestContext.set(UNIFIED_SEARCH_HISTORY_CONTEXT_KEY, history.render());
+    }
+
+    private void publishUnifiedSearchHistory(UnifiedSearchPollHistory history, HttpResponse response) {
+        publishUnifiedSearchHistory(history);
+        TestContext.set("unifiedSearchPollResponse", response);
+    }
+
+    /** Returns the latest one-shot unified-search history for downstream response assertions. */
+    public static String unifiedSearchFailureHistory(HttpResponse response) {
+        Object history = TestContext.get(UNIFIED_SEARCH_HISTORY_CONTEXT_KEY);
+        return history == null || TestContext.get("unifiedSearchPollResponse") != response
+                ? "" : "; poll history: " + history;
+    }
+
+    private String unifiedSearchDocumentDiagnostics(String plane, String apiId, String documentId, String query,
+                                                     Map<String, String> headers) {
+        StringBuilder diagnostics = new StringBuilder();
+        try {
+            HttpResponse document = Requests.get(Utils.getAPIDocument(Utils.getBaseUrl(), apiId, documentId),
+                    Identity.publisherHeaders());
+            diagnostics.append("document GET status=").append(document == null ? "none" : document.getResponseCode())
+                    .append(" present=").append(document != null && document.getResponseCode() == 200)
+                    .append(" fields=").append(documentFieldSummary(document));
+        } catch (IOException e) {
+            diagnostics.append("document GET error=").append(e.getClass().getSimpleName()).append(": ")
+                    .append(bodyExcerpt(e.getMessage()));
+        }
+        try {
+            String bareToken = query.startsWith("content:") ? query.substring("content:".length()) : query;
+            HttpResponse bareSearch = Requests.get(Utils.getUnifiedSearchURL(Utils.getBaseUrl(), plane, bareToken),
+                    headers);
+            diagnostics.append("; bare-token search status=")
+                    .append(bareSearch == null ? "none" : bareSearch.getResponseCode())
+                    .append(" count=").append(searchCount(bareSearch))
+                    .append(" body=").append(bodyExcerpt(bareSearch == null ? null : bareSearch.getData()));
+        } catch (IOException e) {
+            diagnostics.append("; bare-token search error=").append(e.getClass().getSimpleName()).append(": ")
+                    .append(bodyExcerpt(e.getMessage()));
+        }
+        String apiName = Objects.toString(TestContext.get(unifiedSearchApiNameContextKey(apiId)), "");
+        if (apiName.isBlank()) {
+            diagnostics.append("; parent API name search unavailable (name was not captured)");
+        } else {
+            try {
+                HttpResponse apiSearch = Requests.get(Utils.getUnifiedSearchURL(Utils.getBaseUrl(), "publisher",
+                        "name:" + apiName), Identity.publisherHeaders());
+                diagnostics.append("; parent API name search query='name:").append(apiName).append("' status=")
+                        .append(apiSearch == null ? "none" : apiSearch.getResponseCode())
+                        .append(" count=").append(searchCount(apiSearch))
+                        .append(" body=").append(bodyExcerpt(apiSearch == null ? null : apiSearch.getData()));
+            } catch (IOException e) {
+                diagnostics.append("; parent API name search error=").append(e.getClass().getSimpleName())
+                        .append(": ").append(bodyExcerpt(e.getMessage()));
+            }
+        }
+        return diagnostics.toString();
+    }
+
+    private static String unifiedSearchApiNameContextKey(String apiId) {
+        return "unifiedSearchApiName:" + apiId;
+    }
+
+    private static int searchCount(HttpResponse response) {
+        if (response == null || response.getData() == null) {
+            return -1;
+        }
+        try {
+            return new JSONObject(response.getData()).optInt("count", -1);
+        } catch (JSONException ignored) {
+            return -1;
+        }
+    }
+
+    private static String bodyExcerpt(String body) {
+        if (body == null) {
+            return "<none>";
+        }
+        String compact = body.replace('\n', ' ').replace('\r', ' ');
+        return compact.length() <= UNIFIED_SEARCH_BODY_EXCERPT_LIMIT ? compact
+                : compact.substring(0, UNIFIED_SEARCH_BODY_EXCERPT_LIMIT) + "…";
+    }
+
+    private static String documentFieldSummary(HttpResponse response) {
+        if (response == null || response.getData() == null) {
+            return "<none>";
+        }
+        try {
+            JSONObject body = new JSONObject(response.getData());
+            return "{documentId=" + body.optString("documentId", body.optString("id", "<missing>"))
+                    + ", name=" + body.optString("name", "<missing>")
+                    + ", type=" + body.optString("type", "<missing>")
+                    + ", sourceType=" + body.optString("sourceType", "<missing>") + "}";
+        } catch (JSONException malformed) {
+            return bodyExcerpt(response.getData());
+        }
+    }
+
+    private static final class UnifiedSearchPollHistory {
+        private final List<String> attempts = new ArrayList<>();
+
+        private void record(HttpResponse response, IOException error) {
+            String status = error != null ? "IO_ERROR" : response == null ? "NO_RESPONSE"
+                    : Integer.toString(response.getResponseCode());
+            String body = response == null ? error == null ? null : error.getMessage() : response.getData();
+            String line = Instant.now() + " status=" + status + " count=" + searchCount(response)
+                    + " body=" + bodyExcerpt(body);
+            if (attempts.size() == UNIFIED_SEARCH_HISTORY_LIMIT) {
+                attempts.remove(0);
+            }
+            attempts.add(line);
+        }
+
+        private String render() {
+            return attempts.toString();
+        }
     }
 
     private boolean hasUnifiedSearchDocument(HttpResponse response, String apiId) {
+
+        return hasUnifiedSearchDocument(response, apiId, null);
+    }
+
+    private boolean hasUnifiedSearchDocument(HttpResponse response, String apiId, String documentId) {
 
         if (response == null || response.getData() == null || response.getData().isBlank()) {
             return false;
@@ -6540,7 +6744,8 @@ public class ApplicationBaseSteps {
             for (int i = 0; i < results.length(); i++) {
                 JSONObject result = results.optJSONObject(i);
                 if (result != null && "DOC".equals(result.optString("type"))
-                        && apiId.equals(result.optString("apiUUID"))) {
+                        && apiId.equals(result.optString("apiUUID"))
+                        && (documentId == null || documentId.equals(result.optString("id")))) {
                     return true;
                 }
             }

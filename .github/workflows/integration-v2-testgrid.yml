@@ -1,0 +1,433 @@
+name: APIM integration-v2 testgrid
+
+on:
+  workflow_dispatch:
+    inputs:
+      database:
+        description: Database used by the all-in-one integration-v2 suite
+        type: choice
+        required: true
+        default: h2
+        options:
+          - h2
+          - mysql
+          - postgresql
+          - mssql
+          - oracle_23c
+          - oracle-rac
+          - db2
+
+permissions:
+  contents: read
+
+jobs:
+  build-images:
+    name: Build integration-v2 images
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Run hostname
+        run: hostname
+      - name: Fix host entry
+        run: sudo sh -c 'echo "127.0.0.1 $(hostname)" >> /etc/hosts'
+      - name: Checkout
+        uses: actions/checkout@v4
+      # Suite registration parity includes block order, provisioning and declared topology omissions.
+      - name: Verify integration-v2 suite alignment
+        working-directory: all-in-one-apim/modules/integration-v2
+        run: python3 docs/devs/suite_alignment.py
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: temurin
+      - name: Set up Maven
+        uses: ./.github/actions/setup-maven
+      - name: Cache Maven repository
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: m2-v2-hosted-db-${{ github.run_id }}
+          restore-keys: ${{ runner.os }}-m2
+      - name: Resolve APIM product versions
+        run: |
+          APIM_VERSION="$(mvn -q -f all-in-one-apim/pom.xml help:evaluate -Dexpression=project.version -DforceStdout)"
+          APIM_SERVER_NAME="$(mvn -q -f all-in-one-apim/modules/integration-v2/pom.xml \
+            -Dapim.server.version="$APIM_VERSION" help:evaluate -Dexpression=apim.server.name -DforceStdout)"
+          echo "APIM_VERSION=$APIM_VERSION" >> "$GITHUB_ENV"
+          echo "APIM_SERVER_NAME=$APIM_SERVER_NAME" >> "$GITHUB_ENV"
+      - name: Build APIM distributions (skip tests)
+        run: >
+          mvn clean install --file all-in-one-apim/pom.xml
+          -Dmaven.test.skip=true -DskipBenchMarkTest=true -DskipRestartTests=true
+          -Dapim.server.version="$APIM_VERSION"
+      - name: Build integration Docker images (no suite)
+        working-directory: all-in-one-apim/modules/integration-v2
+        run: >
+          mvn install -pl tests-integration/cucumber-tests -am -DskipTests
+          -Dapim.server.version="$APIM_VERSION"
+          -Ddocker.extra.hosts="--add-host=host.docker.internal:host-gateway"
+      - name: Resolve Docker image names
+        working-directory: all-in-one-apim/modules/integration-v2
+        run: |
+          echo "APIM_IMAGE=$(mvn -q -N help:evaluate -Dexpression=apim.docker.image.name -Dapim.server.version="$APIM_VERSION" -DforceStdout)" >> "$GITHUB_ENV"
+          echo "SOLACE_SHIM_IMAGE=$(mvn -q -N help:evaluate -Dexpression=solace.shim.docker.image.name -DforceStdout)" >> "$GITHUB_ENV"
+          echo "SQUID_IMAGE=$(mvn -q -N help:evaluate -Dexpression=squid.docker.image.name -DforceStdout)" >> "$GITHUB_ENV"
+      - name: Save Docker images, product ZIP, and IS staging
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/v2-hosted-db-assets"
+          docker save \
+            "$APIM_IMAGE" \
+            node-app-server:latest \
+            "$SOLACE_SHIM_IMAGE" \
+            "$SQUID_IMAGE" | gzip > "$RUNNER_TEMP/v2-hosted-db-assets/images.tar.gz"
+          cp "all-in-one-apim/modules/distribution/product/target/${APIM_SERVER_NAME}.zip" \
+            "$RUNNER_TEMP/v2-hosted-db-assets/apim-product.zip"
+          tar -C all-in-one-apim/modules/integration-v2/tests-common/testcontainers/target \
+            -czf "$RUNNER_TEMP/v2-hosted-db-assets/is7-staging.tar.gz" is7
+      - name: Upload built images and test inputs
+        uses: actions/upload-artifact@v4
+        with:
+          name: v2-hosted-db-assets
+          path: ${{ runner.temp }}/v2-hosted-db-assets/
+          retention-days: 3
+          if-no-files-found: error
+
+  run-suite:
+    name: Run all-in-one v2 suite (${{ inputs.database }})
+    needs: build-images
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      checks: write
+    steps:
+      - name: Run hostname
+        run: hostname
+      - name: Fix host entry
+        run: sudo sh -c 'echo "127.0.0.1 $(hostname)" >> /etc/hosts'
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: temurin
+      - name: Set up Maven
+        uses: ./.github/actions/setup-maven
+      - name: Restore Maven repository
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: m2-v2-hosted-db-${{ github.run_id }}
+          restore-keys: ${{ runner.os }}-m2
+      - name: Download built images and test inputs
+        uses: actions/download-artifact@v4
+        with:
+          name: v2-hosted-db-assets
+          path: ${{ runner.temp }}/v2-hosted-db-assets
+      - name: Load Docker images
+        run: docker load < "$RUNNER_TEMP/v2-hosted-db-assets/images.tar.gz"
+      - name: Resolve APIM product versions
+        run: |
+          echo "APIM_VERSION=$(mvn -q -f all-in-one-apim/pom.xml help:evaluate -Dexpression=project.version -DforceStdout)" >> "$GITHUB_ENV"
+      - name: Restore IS staging
+        run: |
+          mkdir -p all-in-one-apim/modules/integration-v2/tests-common/testcontainers/target
+          tar -C all-in-one-apim/modules/integration-v2/tests-common/testcontainers/target \
+            -xzf "$RUNNER_TEMP/v2-hosted-db-assets/is7-staging.tar.gz"
+      - name: Create all-in-one browser cgroup
+        env:
+          BROWSER_CGROUP_PATH: /sys/fs/cgroup/pw-browser
+          BROWSER_MEMORY_LIMIT_BYTES: 2684354560
+          BROWSER_SWAP_LIMIT_BYTES: 0
+        run: sudo bash all-in-one-apim/modules/integration-v2/tests-integration/cucumber-tests/src/test/resources/browser-cgroup/setup-browser-cgroup.sh "$BROWSER_CGROUP_PATH" "$BROWSER_MEMORY_LIMIT_BYTES" "$BROWSER_SWAP_LIMIT_BYTES"
+      - name: Configure browser network isolation
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y socat iproute2
+          sudo bash all-in-one-apim/modules/integration-v2/tests-integration/cucumber-tests/src/test/resources/browser-cgroup/setup-browser-network.sh
+      - name: Prepare Ubuntu host clock
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y chrony
+          CLOCK_LOG_DIR="$GITHUB_WORKSPACE/all-in-one-apim/modules/integration-v2/tests-integration/cucumber-tests/target/logs/host-clock/preparation"
+          mkdir -p "$CLOCK_LOG_DIR"
+          sudo bash all-in-one-apim/modules/integration-v2/tests-integration/cucumber-tests/src/test/resources/host-clock/prepare-test-clock.sh prepare "$CLOCK_LOG_DIR"
+          echo "APIM_CLOCK_PREPARED_FILE=$CLOCK_LOG_DIR/prepared.json" >> "$GITHUB_ENV"
+      - name: Prepare selected hosted database and private env file
+        if: inputs.database != 'h2'
+        env:
+          DATABASE_PROFILE: ${{ inputs.database }}
+          DATABASE_ENV_FILE: ${{ runner.temp }}/database.env
+          ORACLE_RAC_JDBC_URL: ${{ secrets.ORACLE_RAC_JDBC_URL }}
+          ORACLE_RAC_PROVISION_USERNAME: ${{ secrets.ORACLE_RAC_PROVISION_USERNAME }}
+          ORACLE_RAC_PROVISION_PASSWORD: ${{ secrets.ORACLE_RAC_PROVISION_PASSWORD }}
+        run: |
+          set -euo pipefail
+          umask 077
+          root_password="$(openssl rand -hex 32)"
+          runtime_password="$(openssl rand -hex 32)"
+
+          if [[ "$DATABASE_PROFILE" == mysql ]]; then
+            docker run --detach --name apim-hosted-db --publish 3306:3306 \
+              --env MYSQL_ROOT_PASSWORD="$root_password" \
+              --env MYSQL_ROOT_HOST=% \
+              mysql:8.4.0-oraclelinux8 --max_connections=300
+            ready=false
+            for attempt in $(seq 1 90); do
+              if docker exec -e MYSQL_PWD="$root_password" apim-hosted-db \
+                mysqladmin --user=root --host=127.0.0.1 ping --silent >/dev/null 2>&1; then
+                ready=true
+                break
+              fi
+              sleep 2
+            done
+            [[ "$ready" == true ]] || { docker logs apim-hosted-db; exit 1; }
+            docker exec -i -e MYSQL_PWD="$root_password" apim-hosted-db \
+              mysql --user=root --batch --silent <<SQL
+          CREATE USER 'apim_runtime'@'%' IDENTIFIED BY '$runtime_password';
+          GRANT ALL PRIVILEGES ON *.* TO 'apim_runtime'@'%';
+          FLUSH PRIVILEGES;
+          SQL
+            cat > "$DATABASE_ENV_FILE" <<ENV
+          database.type=mysql
+          database.driver=com.mysql.cj.jdbc.Driver
+          database.provision.url=jdbc:mysql://127.0.0.1:3306/?allowPublicKeyRetrieval=true&useSSL=false
+          database.provision.urlTemplate=jdbc:mysql://127.0.0.1:3306/{database}?allowPublicKeyRetrieval=true&useSSL=false
+          database.provision.username=root
+          database.provision.password=$root_password
+          database.jdbc.urlTemplate=jdbc:mysql://host.docker.internal:3306/{database}?allowPublicKeyRetrieval=true&useSSL=false
+          database.runtime.username=apim_runtime
+          database.runtime.password=$runtime_password
+          database.validationQuery=SELECT 1
+          ENV
+          elif [[ "$DATABASE_PROFILE" == postgresql ]]; then
+            docker run --detach --name apim-hosted-db --publish 5432:5432 \
+              --env POSTGRES_PASSWORD="$root_password" \
+              postgres:16 -c max_connections=300
+            ready=false
+            for attempt in $(seq 1 90); do
+              if docker exec apim-hosted-db pg_isready --username=postgres --dbname=postgres >/dev/null 2>&1; then
+                ready=true
+                break
+              fi
+              sleep 2
+            done
+            [[ "$ready" == true ]] || { docker logs apim-hosted-db; exit 1; }
+            docker exec apim-hosted-db psql --username=postgres --dbname=postgres \
+              --set=ON_ERROR_STOP=1 --quiet \
+              --command="CREATE ROLE apim_runtime LOGIN PASSWORD '$runtime_password';"
+            cat > "$DATABASE_ENV_FILE" <<ENV
+          database.type=postgre
+          database.driver=org.postgresql.Driver
+          database.provision.url=jdbc:postgresql://127.0.0.1:5432/postgres
+          database.provision.urlTemplate=jdbc:postgresql://127.0.0.1:5432/{database}
+          database.provision.username=postgres
+          database.provision.password=$root_password
+          database.jdbc.urlTemplate=jdbc:postgresql://host.docker.internal:5432/{database}
+          database.runtime.username=apim_runtime
+          database.runtime.password=$runtime_password
+          database.validationQuery=SELECT 1
+          ENV
+          elif [[ "$DATABASE_PROFILE" == mssql ]]; then
+            # SQL Server enforces password complexity for the sa login; the fixed prefix satisfies all classes,
+            # and the cryptographic suffix keeps the credential unpredictable without SQL string metacharacters.
+            root_password="Aa1!$(openssl rand -hex 28)"
+            runtime_password="Aa1!$(openssl rand -hex 28)"
+            docker run --detach --name apim-hosted-db --publish 1433:1433 \
+              --env ACCEPT_EULA=Y \
+              --env MSSQL_PID=Developer \
+              --env MSSQL_SA_PASSWORD="$root_password" \
+              mcr.microsoft.com/mssql/server:2022-latest
+            ready=false
+            for attempt in $(seq 1 90); do
+              if docker exec apim-hosted-db /opt/mssql-tools18/bin/sqlcmd \
+                -C -S localhost -U sa -P "$root_password" -b -Q "SELECT 1" >/dev/null 2>&1; then
+                ready=true
+                break
+              fi
+              sleep 2
+            done
+            [[ "$ready" == true ]] || { docker logs apim-hosted-db; exit 1; }
+            docker exec apim-hosted-db /opt/mssql-tools18/bin/sqlcmd \
+              -C -S localhost -U sa -P "$root_password" -b \
+              -Q "CREATE LOGIN [apim_runtime] WITH PASSWORD = '$runtime_password';"
+            cat > "$DATABASE_ENV_FILE" <<ENV
+          database.type=mssql
+          database.driver=com.microsoft.sqlserver.jdbc.SQLServerDriver
+          database.provision.url=jdbc:sqlserver://127.0.0.1:1433;databaseName=master;encrypt=true;trustServerCertificate=true;SendStringParametersAsUnicode=false
+          database.provision.urlTemplate=jdbc:sqlserver://127.0.0.1:1433;databaseName={database};encrypt=true;trustServerCertificate=true;SendStringParametersAsUnicode=false
+          database.provision.username=sa
+          database.provision.password=$root_password
+          database.jdbc.urlTemplate=jdbc:sqlserver://host.docker.internal:1433;databaseName={database};encrypt=true;trustServerCertificate=true;SendStringParametersAsUnicode=false
+          database.runtime.username=apim_runtime
+          database.runtime.password=$runtime_password
+          database.validationQuery=SELECT 1
+          ENV
+          elif [[ "$DATABASE_PROFILE" == oracle-rac ]]; then
+            : "${ORACLE_RAC_JDBC_URL:?Set the ORACLE_RAC_JDBC_URL repository or environment secret to the RAC SCAN service JDBC URL}"
+            : "${ORACLE_RAC_PROVISION_USERNAME:?Set the ORACLE_RAC_PROVISION_USERNAME repository or environment secret}"
+            : "${ORACLE_RAC_PROVISION_PASSWORD:?Set the ORACLE_RAC_PROVISION_PASSWORD repository or environment secret}"
+            runtime_password="Bb2!$(openssl rand -hex 28)"
+            cat > "$DATABASE_ENV_FILE" <<ENV
+          database.type=oracle
+          database.driver=oracle.jdbc.driver.OracleDriver
+          database.provision.url=$ORACLE_RAC_JDBC_URL
+          database.provision.urlTemplate=$ORACLE_RAC_JDBC_URL
+          database.provision.username=$ORACLE_RAC_PROVISION_USERNAME
+          database.provision.password=$ORACLE_RAC_PROVISION_PASSWORD
+          database.jdbc.urlTemplate=$ORACLE_RAC_JDBC_URL
+          database.runtime.password=$runtime_password
+          database.validationQuery=SELECT 1 FROM DUAL
+          ENV
+          elif [[ "$DATABASE_PROFILE" == oracle_23c ]]; then
+            # Oracle user passwords require mixed case, digits, and special characters by default.
+            root_password="Aa1!$(openssl rand -hex 28)"
+            runtime_password="Bb2!$(openssl rand -hex 28)"
+            docker run --detach --name apim-hosted-db --publish 1521:1521 \
+              --env ORACLE_PASSWORD="$root_password" \
+              --health-cmd healthcheck.sh --health-interval 10s --health-timeout 5s --health-retries 30 \
+              gvenzl/oracle-free:23.9-slim-faststart
+            ready=false
+            for attempt in $(seq 1 180); do
+              if [[ "$(docker inspect --format='{{.State.Health.Status}}' apim-hosted-db 2>/dev/null || true)" == healthy ]]; then
+                ready=true
+                break
+              fi
+              sleep 5
+            done
+            [[ "$ready" == true ]] || { docker logs apim-hosted-db; exit 1; }
+            docker exec -u oracle apim-hosted-db bash -lc \
+              'printf "alter system set processes=500 scope=spfile;\nshutdown immediate;\nstartup;\nexit\n" | sqlplus -s / as sysdba'
+            # The health status stays healthy across the restart; readiness is a listener connection to FREEPDB1.
+            ready=false
+            for attempt in $(seq 1 60); do
+              if docker exec -i apim-hosted-db sqlplus -s -L /nolog 2>/dev/null <<SQL | grep -q '^APIM_READY$'
+          connect system/"$root_password"@//127.0.0.1:1521/FREEPDB1
+          select 'APIM_READY' from dual;
+          exit
+          SQL
+              then
+                ready=true
+                break
+              fi
+              sleep 2
+            done
+            [[ "$ready" == true ]] || { docker logs apim-hosted-db; exit 1; }
+            cat > "$DATABASE_ENV_FILE" <<ENV
+          database.type=oracle
+          database.driver=oracle.jdbc.driver.OracleDriver
+          database.provision.url=jdbc:oracle:thin:@//127.0.0.1:1521/FREEPDB1
+          database.provision.urlTemplate=jdbc:oracle:thin:@//127.0.0.1:1521/FREEPDB1
+          database.provision.username=system
+          database.provision.password=$root_password
+          database.jdbc.urlTemplate=jdbc:oracle:thin:@//host.docker.internal:1521/FREEPDB1
+          database.runtime.password=$runtime_password
+          database.validationQuery=SELECT 1 FROM DUAL
+          ENV
+          elif [[ "$DATABASE_PROFILE" == db2 ]]; then
+            root_password="$(openssl rand -hex 32)"
+            # Db2 Community Edition 12.1.5.0, pinned to the image used for profile verification.
+            docker run --detach --name apim-hosted-db --privileged=true --publish 50000:50000 \
+              --env LICENSE=accept \
+              --env DB2INSTANCE=db2inst1 \
+              --env DB2INST1_PASSWORD="$root_password" \
+              --env DBNAME=APIMBOOT \
+              --env BLU=false \
+              --env ENABLE_ORACLE_COMPATIBILITY=false \
+              --env UPDATEAVAIL=NO \
+              --env TO_CREATE_SAMPLEDB=false \
+              --env REPODB=false \
+              --env PERSISTENT_HOME=true \
+              --env HADR_ENABLED=false \
+              icr.io/db2_community/db2@sha256:2de8151713c261843868c5c3411b57be6ae79d99d70a5b3022337836776bfda6
+            ready=false
+            for attempt in $(seq 1 180); do
+              if docker exec apim-hosted-db bash -lc \
+                "test -f /database/config/.shared-data/setup_complete && su - db2inst1 -c 'db2 connect to APIMBOOT >/dev/null 2>&1 && db2 terminate >/dev/null 2>&1'"; then
+                ready=true
+                break
+              fi
+              sleep 5
+            done
+            [[ "$ready" == true ]] || { docker logs apim-hosted-db; exit 1; }
+            cat > "$DATABASE_ENV_FILE" <<ENV
+          database.type=db2
+          database.driver=com.ibm.db2.jcc.DB2Driver
+          database.provision.url=jdbc:db2://127.0.0.1:50000/APIMBOOT
+          database.provision.urlTemplate=jdbc:db2://127.0.0.1:50000/{database}
+          database.provision.username=db2inst1
+          database.provision.password=$root_password
+          database.provision.container=apim-hosted-db
+          database.jdbc.urlTemplate=jdbc:db2://host.docker.internal:50000/{database}
+          database.runtime.username=db2inst1
+          database.runtime.password=$root_password
+          database.validationQuery=SELECT 1 FROM SYSIBM.SYSDUMMY1
+          ENV
+          else
+            echo "Unsupported database profile: $DATABASE_PROFILE" >&2
+            exit 1
+          fi
+          chmod 600 "$DATABASE_ENV_FILE"
+          if [[ "$DATABASE_PROFILE" == oracle-rac ]]; then
+            echo "Configured the external Oracle RAC endpoint and wrote credentials to a runner-private env file."
+          else
+            echo "Initialized ephemeral $DATABASE_PROFILE database and wrote credentials to a runner-private env file."
+          fi
+      - name: Run all-in-one integration-v2 suite
+        working-directory: all-in-one-apim/modules/integration-v2
+        env:
+          DATABASE_PROFILE: ${{ inputs.database }}
+          DATABASE_ENV_FILE: ${{ runner.temp }}/database.env
+          APIM_PRODUCT_ZIP: ${{ runner.temp }}/v2-hosted-db-assets/apim-product.zip
+        run: |
+          set -euo pipefail
+          DB_ARGS=()
+          if [[ "$DATABASE_PROFILE" != h2 ]]; then
+            DB_ARGS+=("-Dapim.test.db.profile=$DATABASE_PROFILE")
+            DB_ARGS+=("-Dapim.test.db.envFile=$DATABASE_ENV_FILE")
+            DB_ARGS+=("-Dapim.product.zip.path=$APIM_PRODUCT_ZIP")
+          fi
+          python3 tests-integration/cucumber-tests/src/test/resources/host-diagnostics/run-with-host-diagnostics.py \
+            --output tests-integration/cucumber-tests/target/logs/host-diagnostics -- \
+            mvn test -pl tests-integration/cucumber-tests -am \
+              -Dsurefire.suite.xml=testng-v2.xml \
+              -Dapim.server.version="$APIM_VERSION" \
+              -Dplaywright.sso=true \
+              -Dapim.clock.prepared.file="$APIM_CLOCK_PREPARED_FILE" \
+              -Ddocker.extra.hosts="--add-host=host.docker.internal:host-gateway" \
+              "${DB_ARGS[@]}"
+      - name: Stop host diagnostics collector
+        if: always()
+        working-directory: all-in-one-apim/modules/integration-v2
+        run: >
+          python3 tests-integration/cucumber-tests/src/test/resources/host-diagnostics/run-with-host-diagnostics.py
+          --output tests-integration/cucumber-tests/target/logs/host-diagnostics --stop
+      - name: Capture and remove temporary database service
+        if: always() && inputs.database != 'h2'
+        run: |
+          if docker container inspect apim-hosted-db >/dev/null 2>&1; then
+            docker logs apim-hosted-db > "$RUNNER_TEMP/hosted-database.log" 2>&1 || true
+            docker rm --force apim-hosted-db
+          fi
+      - name: Archive test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: integration-v2-hosted-db-reports-${{ github.run_attempt }}
+          path: |
+            all-in-one-apim/modules/integration-v2/tests-integration/cucumber-tests/target/surefire-reports/**
+            all-in-one-apim/modules/integration-v2/tests-integration/cucumber-tests/target/cucumber-report/**
+            all-in-one-apim/modules/integration-v2/tests-integration/cucumber-tests/target/logs/**
+            ${{ runner.temp }}/hosted-database.log
+          if-no-files-found: warn
+      - name: Publish v2 test report
+        if: always()
+        uses: malinthaprasan/action-surefire-report@v1
+        env:
+          NODE_OPTIONS: --max-old-space-size=8192
+        with:
+          report_paths: 'all-in-one-apim/modules/integration-v2/tests-integration/cucumber-tests/target/surefire-reports/TEST-*.xml'
+          check_name: 'integration-v2 hosted database results'

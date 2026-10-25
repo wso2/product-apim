@@ -1,6 +1,6 @@
 # Overlay for the IntegrationV2-LoggingAndElkAnalytics block: AnalyticsElkMetricsRunner, AnalyticsCorrelationLoggingRunner,
-# AnalyticsPerApiLoggingRunner and GatewayWebSocketProxyAnonRoutingRunner, one runner at a time. Merged on top of the shared `basic` overlay. The logging/
-# and elkAnalytics/ overlays stay for the other blocks and suites that use them.
+# AnalyticsPerApiLoggingRunner, GatewayWebSocketProxyAnonRoutingRunner and NetworkAccessControlTenantConfRunner,
+# one runner at a time. The distributed twin applies this file to Gateway and logging/deployment.toml to CP.
 #
 # The tables are mutually inert for these runners:
 #   - [apim.analytics] (ELK reporter) writes one event per gateway request to apim_metrics.log through a log4j
@@ -38,7 +38,7 @@ type = "elk"
 enable_restart_from_api = true
 
 # ---------------------------------------------------------------------------------------------
-# GatewayWebSocketProxyAnonRoutingRunner (WebSocketProxyProfileTestCase), from wsProxyAnonRouting/deployment.toml. [[transport.ws.proxy_profile]] only
+# GatewayWebSocketProxyAnonRoutingRunner (WebSocketProxyProfileTestCase). [[transport.ws.proxy_profile]] only
 # routes the gateway's OUTBOUND WebSocket connections; no other runner in this block invokes a WebSocket API,
 # so the proxy sees only this runner's traffic and its exact Squid CONNECT counts stay valid.
 # ---------------------------------------------------------------------------------------------

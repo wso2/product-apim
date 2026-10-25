@@ -344,6 +344,7 @@ public class BaseSteps {
     /**
      * Obtains a valid Admin access token for the default actor (super-tenant admin).
      */
+    @Given("I have a valid Admin access token for the current user")
     public void iHaveValidAdminAccessToken() throws Exception {
 
         mintAdminToken(Identity.actingActor());
@@ -912,7 +913,8 @@ public class BaseSteps {
     public void theResponseStatusCodeShouldBe(int expectedStatusCode) {
 
         HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
-        Assert.assertEquals(response.getResponseCode(), expectedStatusCode, response.getData());
+        Assert.assertEquals(response.getResponseCode(), expectedStatusCode,
+                response.getData() + ApplicationBaseSteps.unifiedSearchFailureHistory(response));
     }
 
     @Then("The response status code should not be {int}")
@@ -943,7 +945,8 @@ public class BaseSteps {
                         + (response == null ? "no response at all" : "status " + response.getResponseCode()
                         + " with an empty body"));
         Assert.assertTrue(response.getData().contains(expectedValue),
-                "Expected response to contain '" + expectedValue + "' but it did not: " + response.getData());
+                "Expected response to contain '" + expectedValue + "' but it did not: " + response.getData()
+                        + ApplicationBaseSteps.unifiedSearchFailureHistory(response));
     }
 
     /**

@@ -370,7 +370,7 @@ public class SsoSteps {
         String apiId = browser.createRestApi(unique, context, "1.0.0",
                 "http://nodebackend:3001/jaxrs_basic/services/customers/customerservice");
         TestContext.set("ssoApiId", apiId);
-        ResourceCleanup.register(Constants.CREATED_API_IDS, apiId);
+        ResourceCleanup.registerForeignOwnedApi(apiId, null);
         TestContext.set("ssoApiName", unique);
         TestContext.set("ssoApiContext", context);
         // Pins WHO the Publisher session acts as: the provider APIM recorded must be the federated user, so
@@ -416,7 +416,7 @@ public class SsoSteps {
         String appName = Names.unique(name);
         String appId = browser.createDevportalApp(appName);
         TestContext.set("ssoAppId", appId);
-        ResourceCleanup.register(Constants.CREATED_APPLICATION_IDS, appId);
+        ResourceCleanup.registerForeignOwnedApplication(appId, null);
         TestContext.set("ssoAppName", appName);
         // Pins WHO the DevPortal session acts as (see the publisher-side check): the owner APIM recorded must be
         // the federated user, not merely some authenticated user.
@@ -459,8 +459,6 @@ public class SsoSteps {
         int status = browser.changeApiProviderViaAdminSession(apiId, provider);
         Assert.assertEquals(status, 200, "change-provider via the SSO admin session should return 200 — the "
                 + "federated admin session's token must authorize this admin-only operation.");
-        ResourceCleanup.deregister(Constants.CREATED_API_IDS, apiId);
-        ResourceCleanup.registerFor(Constants.CREATED_API_IDS, apiId, actorRef);
         TestContext.set("ssoApiProvider", provider);
     }
 

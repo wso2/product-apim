@@ -178,6 +178,29 @@ public class PlatformGatewaySteps {
         publisher.iDeployApiRevisionGivenPayload("<revisionId>", "apis", apiIdKey, "<deployRevisionPayload>");
     }
 
+    /**
+     * Waits until the deployed route reaches the platform gateway and its API-key policy is enforcing requests.
+     * A no-key request must be rejected specifically by the policy; other responses (including a missing route)
+     * mean the deployment is not ready yet. This gate keeps key generation from racing the gateway's asynchronous
+     * deployment event processing.
+     */
+    @Then("the platform gateway has installed API {string} and requires its API key within {int} seconds")
+    public void platformGatewayRequiresApiKeyForApi(String apiIdKey, int timeoutSeconds)
+            throws InterruptedException {
+
+        String apiId = String.valueOf(TestContext.resolve(apiIdKey));
+        String url = platformGatewayInvokeUrl();
+        HttpResponse response = Utils.retryUntil(timeoutSeconds * 1000L,
+                () -> Requests.get(url, new HashMap<>()),
+                PlatformGatewaySteps::isApiKeyRequiredResponse);
+        Requests.publishPollResult(response);
+        Assert.assertTrue(isApiKeyRequiredResponse(response),
+                "Platform gateway route for API " + apiId
+                        + " did not reach API-key enforcement within " + timeoutSeconds + " seconds; last response: "
+                        + (response == null ? "null" : "HTTP " + response.getResponseCode() + ": "
+                        + response.getData()));
+    }
+
     @When("I invoke the deployed API on the platform gateway with access token {string} "
             + "until response status code becomes {int} within {int} seconds")
     public void invokeThroughPlatformGateway(String tokenKey, int expectedStatus, int timeoutSeconds)
@@ -325,6 +348,11 @@ public class PlatformGatewaySteps {
         String base = dataPlaneUrl.endsWith("/") ? dataPlaneUrl.substring(0, dataPlaneUrl.length() - 1) : dataPlaneUrl;
         String path = context.startsWith("/") ? context : "/" + context;
         return base + path + "/1.0.0/reflect-headers";
+    }
+
+    private static boolean isApiKeyRequiredResponse(HttpResponse response) {
+        return response != null && response.getResponseCode() == 401 && response.getData() != null
+                && response.getData().contains("Valid API key required");
     }
 
     private void invokeAndAssert(Map<String, String> headers, int expectedStatus, int timeoutSeconds)

@@ -17,6 +17,9 @@ Feature: API Platform Gateway lifecycle
     Then The response status code should be 201
     When I publish the "apis" resource with id "pgApiId"
     Then The lifecycle status of API "pgApiId" should be "Published"
+    # Wait for the route and its API-key policy to reach the data plane before generating a key. Key publication
+    # can otherwise overtake the asynchronous API deployment event at the platform gateway controller.
+    Then the platform gateway has installed API "pgApiId" and requires its API key within 120 seconds
     When I generate an internal API key for API "pgApiId" and store it as "pgApiKey"
     # The control plane publishes the key to the gateway as an APIKeyState xDS resource exactly ONCE, and nothing
     # re-sends a dropped push — CI run 24b29536 lost it (APIKeyState stuck at version=0/num_resources=0 while

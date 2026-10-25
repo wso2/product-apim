@@ -1,0 +1,24 @@
+# CP configuration for the ApprovalWorkflow block.
+# Application attributes and management-plane URL access control are applied on CP; the WebSocket proxy is on Gateway.
+[[apim.devportal.application_attributes]]
+name = "External Reference ID"
+description = "Used for internal billing tracking"
+required = false
+hidden = false
+
+[[apim.devportal.application_attributes]]
+name = "Technical Contact"
+description = "Email address of the primary developer or lead"
+required = false
+hidden = false
+
+[[apim.devportal.application_attributes]]
+name = "Department Name"
+description = "The department owning this app"
+required = false
+hidden = false
+
+
+[server.network_security.access_control]
+mode = "allow"
+hosts = ["nodebackend"]

@@ -1,7 +1,7 @@
 # Overlay for the IntegrationV2-BackendJwtUrlSafeAndMtlsChain block: KeyManagerBackendJwtUrlSafeRunner,
 # PublisherStreamingDesignRunner, GatewayMutualSslChainValidationRunner and GatewayWebSocketProxySpecificBypassRunner.
-# Merged on top of the shared `basic` overlay. The distributed suite keeps these keys in backendJwtUrlSafe/,
-# solaceMtlsChain/ and wsProxySpecificBypass/.
+# Merged on top of the shared `basic` overlay. The distributed twin applies this file to Gateway and
+# backendJwtUrlSafe/deployment.toml to CP.
 #
 # The tables are mutually inert for these runners:
 #   - [apimgt.mutual_ssl] only switches the gateway's MutualSSLAuthenticator onto the chain-walking code path, and
@@ -89,7 +89,7 @@ period = "10s"
 enable_restart_from_api = true
 
 # ---------------------------------------------------------------------------------------------
-# GatewayWebSocketProxySpecificBypassRunner (WebSocketProxyProfileTestCase), from wsProxySpecificBypass/deployment.toml. [[transport.ws.proxy_profile]] only
+# GatewayWebSocketProxySpecificBypassRunner (WebSocketProxyProfileTestCase). [[transport.ws.proxy_profile]] only
 # routes the gateway's OUTBOUND WebSocket connections; no other runner in this block invokes a WebSocket API,
 # so the proxy sees only this runner's traffic and its exact Squid CONNECT counts stay valid.
 # ---------------------------------------------------------------------------------------------

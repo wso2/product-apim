@@ -1,5 +1,14 @@
 # Distributed CP delta from the product ZIP default. Runtime values are supplied by the composite container.
 
+[diagnostic_tool.server_configuration]
+diagnostic_tool_enabled = false
+
+[governance_data]
+enable_cache = false
+
+[config_data]
+enable_cache = false
+
 [database.apim_db]
 type = "mysql"
 username = "wso2carbon"
@@ -15,6 +24,10 @@ driver = "com.mysql.cj.jdbc.Driver"
 [apim.key_manager]
 username = "$ref{super_admin.username}"
 password = "$ref{super_admin.password}"
+
+# TM executes the policies; CP retains policy management and event publication.
+[apim.throttling]
+enable_policy_deployment = false
 
 [apim.event_hub]
 enable = true

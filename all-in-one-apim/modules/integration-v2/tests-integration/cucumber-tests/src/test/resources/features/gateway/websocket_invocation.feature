@@ -26,6 +26,7 @@ Feature: Gateway WebSocket API Invocation
     Then The response status code should be 200
 
     # Open a WebSocket through the gateway WS inbound and assert the backend echoes the message uppercased
+    When I wait until WebSocket API at gateway ws context "{{wsContext}}/1.0.0" echoes message "readiness-check" with access token "generatedAccessToken" as "READINESS-CHECK" within 60 seconds
     When I invoke the WebSocket API at gateway ws context "{{wsContext}}/1.0.0" with message "hello websocket" using access token "generatedAccessToken" expecting echo "HELLO WEBSOCKET" within 60 seconds
 
     Examples:
@@ -47,6 +48,7 @@ Feature: Gateway WebSocket API Invocation
     And I extract response field "context" and store it as "wsContext"
     When I have set up a "<tokenType>" token type application with keys, subscribed to API "wsApiId" with plan "AsyncUnlimited", and obtained access token for "wsSubId"
     Then The response status code should be 200
+    When I wait until WebSocket API at gateway ws context "{{wsContext}}/1.0.0" echoes message "readiness-check" with access token "generatedAccessToken" as "READINESS-CHECK" within 60 seconds
     When I invoke the WebSocket API at gateway ws context "{{wsContext}}/1.0.0" with message "hello ws" using access token "generatedAccessToken" expecting echo "HELLO WS" within 60 seconds
 
     Examples:
@@ -101,6 +103,7 @@ Feature: Gateway WebSocket API Invocation
     {"keyName": "WsTestAPIKey", "validityPeriod": 3600, "additionalProperties": {"permittedIP": "", "permittedReferer": ""}}
     """
     And I obtain a "<keyFormat>" API key for application id "createdAppId" using payload "wsApiKeyGenPayload"
+    When I wait until WebSocket API at gateway ws context "{{wsContext}}/1.0.0" echoes message "readiness-check" with api key "apiKey" as "READINESS-CHECK" within 60 seconds
     When I invoke the WebSocket API at gateway ws context "{{wsContext}}/1.0.0" with message "hello ws" using api key "apiKey" expecting echo "HELLO WS" within 60 seconds
     And I invoke the WebSocket API at gateway ws context "{{wsContext}}/1.0.0" with message "hello ws" using api key query param "apiKey" expecting echo "HELLO WS" within 60 seconds
     And I invoke the WebSocket API at gateway ws context "{{wsContext}}/1.0.0" with message "hello ws" using access token query param "generatedAccessToken" expecting echo "HELLO WS" within 60 seconds
@@ -164,6 +167,7 @@ Feature: Gateway WebSocket API Invocation
     And I replace "GATEWAY_CLIENT_IP" with "{{gatewayClientIp}}" in the payload "wsMatchKeyPayload"
     And I request an api key for application id "createdAppId" using payload "wsMatchKeyPayload"
     Then The response status code should be 200
+    When I wait until WebSocket API at gateway ws context "{{wsContext}}/1.0.0" echoes message "readiness-check" with api key "apiKey" as "READINESS-CHECK" within 60 seconds
     When I invoke the WebSocket API at gateway ws context "{{wsContext}}/1.0.0" with message "hello ws" using api key "apiKey" expecting echo "HELLO WS" within 60 seconds
     # NEGATIVE: a key restricted to a different IP → rejected
     When I put the following JSON payload in context as "wsWrongKeyPayload"
@@ -239,10 +243,12 @@ Feature: Gateway WebSocket API Invocation
     # A token WITH the scope connects and echoes
     When I request an OAuth access token for the current user using password grant with scope "{{wsScopeName}}"
     Then The response status code should be 200
-    When I invoke the WebSocket API at gateway ws context "{{wsContext}}/1.0.0" with message "hello ws" using access token "generatedAccessToken" expecting echo "HELLO WS" within 60 seconds
-    # A token WITHOUT the scope is rejected (allow time for the freshly-attached scope gate to propagate under load)
+    And I extract response field "access_token" and store it as "wsScopeAccessToken"
     When I request an OAuth access token for the current user using password grant with scope "openid"
     Then The response status code should be 200
+    And I wait until the gateway rejects WebSocket access token "generatedAccessToken" with HTTP 401 at context "{{wsContext}}/1.0.0" within 60 seconds
+    When I invoke the WebSocket API at gateway ws context "{{wsContext}}/1.0.0" with message "hello ws" using access token "wsScopeAccessToken" expecting echo "HELLO WS" within 60 seconds
+    # A token WITHOUT the scope remains rejected after the gateway applies the scope gate
     When I invoke the WebSocket API at gateway ws context "{{wsContext}}/1.0.0" using access token "generatedAccessToken" expecting rejection within 60 seconds
 
     Examples:
@@ -349,6 +355,7 @@ Feature: Gateway WebSocket API Invocation
     And I request an api key for application id "createdAppId" using payload "wssApiKeyGenPayload"
     Then The response status code should be 200
     # Secure WS over wss://:8099 — with an OAuth token, then with an API key
+    When I wait until WebSocket API at gateway wss context "{{wsContext}}/1.0.0" echoes message "readiness-check" with api key "apiKey" as "READINESS-CHECK" within 60 seconds
     When I invoke the WebSocket API at gateway wss context "{{wsContext}}/1.0.0" with message "hello wss" using access token "generatedAccessToken" expecting echo "HELLO WSS" within 60 seconds
     When I invoke the WebSocket API at gateway wss context "{{wsContext}}/1.0.0" with message "hello wss" using api key "apiKey" expecting echo "HELLO WSS" within 60 seconds
 
@@ -401,6 +408,7 @@ Feature: Gateway WebSocket API Invocation
     And I request an api key for application id "createdAppId" using payload "wsRefererKeyPayload"
     Then The response status code should be 200
     # POSITIVE: a matching Referer header → echoes
+    When I wait until WebSocket API at gateway ws context "{{wsContext}}/1.0.0" echoes message "readiness-check" with api key "apiKey" and referer "www.wso2.com" as "READINESS-CHECK" within 60 seconds
     When I invoke the WebSocket API at gateway ws context "{{wsContext}}/1.0.0" with message "hello ws" using api key "apiKey" and referer "www.wso2.com" expecting echo "HELLO WS" within 60 seconds
     # NEGATIVE: a non-matching Referer → rejected
     When I invoke the WebSocket API at gateway ws context "{{wsContext}}/1.0.0" using api key "apiKey" and referer "www.wso2.org" expecting rejection within 30 seconds
@@ -507,6 +515,7 @@ Feature: Gateway WebSocket API Invocation
     Then The response status code should be 201
     When I request an OAuth access token for the current user using password grant with scope "SANDBOX"
     Then The response status code should be 200
+    When I wait until WebSocket API at gateway ws context "{{wsContext}}/1.0.0" echoes message "readiness-check" with access token "generatedAccessToken" as "READINESS-CHECK" within 60 seconds
     When I invoke the WebSocket API at gateway ws context "{{wsContext}}/1.0.0" with message "hello ws" using access token "generatedAccessToken" expecting echo "HELLO WS" within 60 seconds
     # PRODUCTION credentials + a production token → no production endpoint configured → rejected (negative)
     When I put the following JSON payload in context as "wsProdKeysPayload"
@@ -603,6 +612,7 @@ Feature: Gateway WebSocket API Invocation
     Then The response status code should be 200
     And The response should contain "{{wsTplScopeA}}"
     And The value of response field "expires_in" should be "3600"
+    And I wait until the gateway rejects WebSocket access token "generatedAccessToken" with HTTP 401 at context "{{wsTplContext}}/1.0.0/products/popular" within 60 seconds
     When I invoke the WebSocket API at gateway ws context "{{wsTplContext}}/1.0.0/products/catalog/1" with message "hello ws" using access token "generatedAccessToken" expecting echo "HELLO WS" within 60 seconds
     When I invoke the WebSocket API at gateway ws context "{{wsTplContext}}/1.0.0/products/popular" using access token "generatedAccessToken" expecting rejection within 30 seconds
     When I invoke the WebSocket API at gateway ws context "{{wsTplContext}}/1.0.0/orders" using access token "generatedAccessToken" expecting rejection within 30 seconds

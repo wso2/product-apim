@@ -19,7 +19,9 @@ package org.wso2.am.integration.cucumbertests.utils;
 
 import org.testng.Assert;
 import org.wso2.am.integration.cucumbertests.utils.clients.SimpleHTTPClient;
+import org.wso2.am.integration.cucumbertests.utils.listeners.BlockLifecycleListener;
 import org.wso2.am.integration.test.utils.Constants;
+import org.wso2.am.testcontainers.DistributedDynamicApimContainer;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import java.nio.charset.StandardCharsets;
@@ -77,6 +79,11 @@ public final class GracefulServerRestart {
                 : ServerReadiness.awaitRestart(baseUrl);
         Assert.assertTrue(restarted, "APIM server did not come back ready within "
                 + (Constants.SERVER_STARTUP_WAIT_TIME / 1000) + "s after a graceful restart");
+        Object runtime = TestContext.get(BlockLifecycleListener.CONTAINER_KEY);
+        if (!controlPlane || !(runtime instanceof DistributedDynamicApimContainer)) {
+            BlockLifecycleListener.awaitGatewayTenantsAfterRestart();
+        }
+        BlockLifecycleListener.awaitThrottleDataAfterRestart();
     }
 
     private static void restartTrafficManager(String baseUrl) throws Exception {
@@ -101,5 +108,6 @@ public final class GracefulServerRestart {
         Assert.assertTrue(ServerReadiness.awaitComponentRestart(baseUrl),
                 "Traffic Manager did not come back ready within "
                         + (Constants.SERVER_STARTUP_WAIT_TIME / 1000) + "s after a graceful restart");
+        BlockLifecycleListener.awaitThrottleDataAfterRestart();
     }
 }

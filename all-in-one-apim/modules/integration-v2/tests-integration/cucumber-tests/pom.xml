@@ -36,6 +36,7 @@
         <surefire.suite.xml>testng-v2.xml</surefire.suite.xml>
         <surefire.groups/>
         <surefire.excludedGroups>migrationTest</surefire.excludedGroups>
+        <playwright.browser.cgroup>/sys/fs/cgroup/pw-browser</playwright.browser.cgroup>
     </properties>
     <dependencies>
         <dependency>
@@ -188,6 +189,7 @@
                     <systemPropertyVariables>
                         <testcontainers.reuse.enable>true</testcontainers.reuse.enable>
                         <org.apache.http.wire.level>OFF</org.apache.http.wire.level>
+                        <apim.product.zip.path>${project.basedir}/../../../../modules/distribution/product/target/${apim.server.name}.zip</apim.product.zip.path>
                         <!-- External-KM (IS7) build artifacts are staged by the testcontainers module's
                              pre-integration-test execs under tests-common/testcontainers/target/is7. Resolve them
                              relative to THIS module's basedir so the external-KM block finds them without a -D
@@ -199,6 +201,7 @@
                         <distributed.apim.cp.image.name>${distributed.apim.cp.image.name}</distributed.apim.cp.image.name>
                         <distributed.apim.tm.image.name>${distributed.apim.tm.image.name}</distributed.apim.tm.image.name>
                         <distributed.apim.gateway.image.name>${distributed.apim.gateway.image.name}</distributed.apim.gateway.image.name>
+                        <playwright.browser.cgroup>${playwright.browser.cgroup}</playwright.browser.cgroup>
                     </systemPropertyVariables>
                 </configuration>
             </plugin>

@@ -1,9 +1,19 @@
 /*
- * Copyright (c) 2026, WSO2 LLC. (http://wso2.com) All Rights Reserved.
+ * Copyright (c) 2026, WSO2 LLC. (http://www.wso2.org) All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
+
 package org.wso2.am.testcontainers;
 
 import org.testcontainers.containers.GenericContainer;
@@ -15,6 +25,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.sql.DriverManager;
 import java.time.Duration;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -45,10 +56,14 @@ public class DistributedMySqlContainer extends GenericContainer<DistributedMySql
     public static final String APIM_DATABASE = "WSO2AM_DB";
     public static final String SHARED_DATABASE = "WSO2AM_SHARED_DB";
 
+    private static final CpuLimit CPU_LIMIT = CpuLimit.of(0.5);
+    private static final long MEMORY_LIMIT_BYTES = 384L * 1024 * 1024;
     private static final String SEED_MARKER_TABLE = "INTEGRATION_V2_SCHEMA_SEED";
 
     private final Map<String, Path> schemaFiles = new LinkedHashMap<>();
     private boolean initialized;
+    private boolean registryLogMillisecondPrecision;
+    private String blockLabel;
 
     public DistributedMySqlContainer(Network network) {
         this(DEFAULT_IMAGE, network);
@@ -63,9 +78,20 @@ public class DistributedMySqlContainer extends GenericContainer<DistributedMySql
         withEnv("MYSQL_ROOT_PASSWORD", ROOT_PASSWORD);
         withEnv("MYSQL_USER", DATABASE_USER);
         withEnv("MYSQL_PASSWORD", DATABASE_PASSWORD);
-        // The database is block-scoped. Keeping its data on tmpfs makes teardown
-        // deterministic and prevents state leaking between focused blocks.
-        withTmpFs(Map.of("/var/lib/mysql", "rw"));
+        withCreateContainerCmdModifier(cmd -> {
+            CPU_LIMIT.applyTo(cmd);
+            cmd.getHostConfig().withMemory(MEMORY_LIMIT_BYTES)
+                    .withMemorySwap(DistributedMemoryLimits.memoryAndSwapLimitBytes(MEMORY_LIMIT_BYTES));
+        });
+        // Keep buffers and instrumentation within the container's 384 MiB budget.
+        withCommand("--performance-schema=OFF",
+                "--innodb-buffer-pool-size=64M",
+                "--innodb-log-buffer-size=16M",
+                "--temptable-max-ram=16M",
+                "--table-open-cache=512",
+                "--table-definition-cache=512");
+        // The image supplies a private anonymous disk volume at /var/lib/mysql.
+        // Testcontainers removes that volume with the container, preserving block isolation.
         waitingFor(Wait.forLogMessage(".*ready for connections.*\\n", 2)
                 .withStartupTimeout(Duration.ofMinutes(5)));
     }
@@ -98,11 +124,20 @@ public class DistributedMySqlContainer extends GenericContainer<DistributedMySql
         }
     }
 
+    public DistributedMySqlContainer withRegistryLogMillisecondPrecision(String label, boolean enabled) {
+        blockLabel = Objects.requireNonNull(label, "label");
+        registryLogMillisecondPrecision = enabled;
+        return this;
+    }
+
     @Override
     public void start() {
         super.start();
         try {
             initializeDatabases();
+            RegistryLogTimestampPrecision.configure(registryLogMillisecondPrecision, "mysql", blockLabel,
+                    SHARED_DATABASE, () -> DriverManager.getConnection(getHostJdbcUrl(SHARED_DATABASE),
+                            DATABASE_USER, DATABASE_PASSWORD));
             initialized = true;
         } catch (Exception e) {
             stop();

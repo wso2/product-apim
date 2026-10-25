@@ -25,10 +25,12 @@ import org.testng.ITestListener;
 import org.testng.xml.XmlTest;
 import org.wso2.am.integration.cucumbertests.utils.CoverageSupport;
 import org.wso2.am.integration.cucumbertests.utils.GracefulServerRestart;
+import org.wso2.am.integration.cucumbertests.utils.GatewayTenantLoadGate;
 import org.wso2.am.integration.cucumbertests.utils.Identity;
 import org.wso2.am.integration.cucumbertests.utils.IntegrationActors;
 import org.wso2.am.integration.cucumbertests.utils.ModulePathResolver;
 import org.wso2.am.integration.cucumbertests.utils.RegistryAdminService;
+import org.wso2.am.integration.cucumbertests.utils.RegistryBootstrapDiagnostics;
 import org.wso2.am.integration.cucumbertests.utils.ServerReadiness;
 import org.wso2.am.integration.cucumbertests.utils.SecondaryUserStoreProvisioner;
 import org.wso2.am.integration.cucumbertests.utils.TenantUserProvisioner;
@@ -40,11 +42,15 @@ import org.wso2.am.integration.test.utils.Constants;
 import org.testcontainers.containers.Network;
 import org.wso2.am.testcontainers.DynamicApimContainer;
 import org.wso2.am.testcontainers.ApimRuntime;
+import org.wso2.am.testcontainers.DistributedDynamicApimContainer;
 import org.wso2.am.testcontainers.CpuLimit;
 import org.wso2.am.testcontainers.DynamicISContainer;
 import org.wso2.am.testcontainers.DynamicPlatformGatewayContainer;
 import org.wso2.am.testcontainers.JacocoCoverage;
 import org.wso2.am.testcontainers.DynamicSolaceBroker;
+import org.wso2.am.testcontainers.HostedDatabaseBlock;
+import org.wso2.am.testcontainers.HybridUserRoleKeyIncludesDomain;
+import org.wso2.am.testcontainers.RegistryLogTimestampPrecision;
 import org.wso2.am.testcontainers.NodeAppServer;
 import org.wso2.am.testcontainers.SquidProxyServer;
 
@@ -54,6 +60,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Map;
 import java.util.Optional;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Semaphore;
 
@@ -77,7 +84,11 @@ public class BlockLifecycleListener implements ITestListener {
     /** Must match {@code BaseBlockRunner.BOOT_ERROR_ATTRIBUTE}. */
     static final String BOOT_ERROR_ATTRIBUTE = "bootError";
 
-    static final String CONTAINER_KEY = "blockApimContainer";
+    public static final String CONTAINER_KEY = "blockApimContainer";
+    static final String GATEWAY_TENANTS_KEY = "blockGatewayTenants";
+    private static final String THROTTLE_DATA_READINESS_SECONDS_KEY = "blockThrottleDataReadinessSeconds";
+    static final String BLOCK_LABEL_KEY = "blockLabel";
+    private static final String HOSTED_DATABASE_KEY = "blockHostedDatabase";
     static final String BASE_URL_KEY = "baseUrl";
     static final String BASE_GATEWAY_URL_KEY = "baseGatewayUrl";
     static final String BASE_GATEWAY_HTTP_URL_KEY = "baseGatewayHttpUrl";
@@ -113,6 +124,9 @@ public class BlockLifecycleListener implements ITestListener {
             "src/test/resources/artifacts/configFiles/emailUserName/deployment.toml";
     /** When {@code true}, onStart provisions tenants/users into the block's own container after readiness. */
     static final String PARAM_INIT_TENANT_USERS = "initTenantUsers";
+    /** Opt-in millisecond precision for the block's MySQL registry activity timestamps. */
+    static final String PARAM_REGISTRY_LOG_MILLISECOND_PRECISION = "registryLogMillisecondPrecision";
+    static final String PARAM_HYBRID_USER_ROLE_KEY_INCLUDES_DOMAIN = "hybridUserRoleKeyIncludesDomain";
     /** When {@code true}, provisions a second non-super tenant for cross-tenant subscription coverage. */
     static final String PARAM_INIT_CROSS_TENANT_PEER = "initCrossTenantPeer";
     /**
@@ -192,7 +206,7 @@ public class BlockLifecycleListener implements ITestListener {
     static final String PARAM_INIT_BACKEND = "initBackend";
     /** When set, fail block bootstrap unless the TM-to-Gateway throttle-data pipeline is healthy. */
     static final String PARAM_THROTTLE_DATA_READINESS_SECONDS = "throttleDataReadinessSeconds";
-    /** When true, repair the registry-backed throttle-data hierarchy and recover its event pipeline during boot. */
+    /** When true, initialize throttle-data prerequisites using the topology's bootstrap phase. */
     static final String PARAM_BOOTSTRAP_THROTTLE_DATA = "bootstrapThrottleData";
     /**
      * When set, wait up to this many seconds for the Gateway's HTTPS listener to start and restart the Gateway once if
@@ -352,6 +366,7 @@ public class BlockLifecycleListener implements ITestListener {
         // leaks a live Docker container for the JVM lifetime (only reaped later by Ryuk).
         ApimRuntime container = null;
         try {
+            ClockStabilityListener.assertHealthy(context.getSuite());
             acquireLifecycleLock(context, label);
             // Every block runs on its OWN private docker network, which is what makes the lane's fixed aliases
             // (wso2am / wso2is / apimforsolace / solaceshim / nodebackend) network-scoped instead of JVM-unique.
@@ -364,14 +379,14 @@ public class BlockLifecycleListener implements ITestListener {
             // APIM resolves "nodebackend". The flag is set only AFTER a successful attach, so teardown never
             // tries to detach something that was never attached.
             if (Boolean.parseBoolean(param(context, PARAM_INIT_BACKEND))) {
-                NodeAppServer.getInstance().attachToNetwork(blockNetwork);
+                nodeAppServer().attachToNetwork(blockNetwork);
                 TestContext.setShared(BACKEND_ATTACHED_KEY, Boolean.TRUE);
                 logger.info("Block '" + label + "' attached the shared NodeAppServer backend to its network");
             }
 
             if (Boolean.parseBoolean(param(context, PARAM_INIT_PROXY))) {
                 // Publish before start() so a partial startup is still visible to failure-safe teardown.
-                SquidProxyServer proxy = new SquidProxyServer(label, blockNetwork);
+                SquidProxyServer proxy = createSquidProxyServer(label, blockNetwork);
                 TestContext.setShared(SQUID_PROXY_KEY, proxy);
                 proxy.start();
                 logger.info("Block '" + label + "' booted its per-block Squid proxy");
@@ -398,6 +413,7 @@ public class BlockLifecycleListener implements ITestListener {
                         + " but does not set " + PARAM_BOOT_EXTERNAL_IS + "=true");
             }
 
+            provisionHostedDatabaseIfSelected(label, context);
             container = createApimContainer(label, context, blockNetwork);
             configureServerFiles(context, container);
             if (apimCpuLimit.isPresent()) {
@@ -465,6 +481,18 @@ public class BlockLifecycleListener implements ITestListener {
             if (Boolean.parseBoolean(param(context, PARAM_INIT_CROSS_TENANT_PEER))) {
                 provisionCrossTenantPeer();
             }
+            List<String> gatewayTenants = new java.util.ArrayList<>();
+            if (Boolean.parseBoolean(param(context, PARAM_INIT_TENANT_USERS))) {
+                gatewayTenants.add("tenant1.com");
+            }
+            if (Boolean.parseBoolean(param(context, PARAM_INIT_CROSS_TENANT_PEER))) {
+                gatewayTenants.add("crossconsumer.com");
+            }
+            if (!gatewayTenants.isEmpty()) {
+                TestContext.setShared(GATEWAY_TENANTS_KEY, List.copyOf(gatewayTenants));
+                TestContext.setShared(BLOCK_LABEL_KEY, label);
+                GatewayTenantLoadGate.await(container, label, gatewayTenants);
+            }
             // Runtime secondary user store (replaces the seeded .mv.db fixture). After tenant provisioning so the
             // tenant admin SOAP credentials exist. Registered + seeded for BOTH tenants — one shared H2 DB,
             // isolated by UM_TENANT_ID — so scenarios exercise the ×4 matrix (2 tenants × 2 store-user actors).
@@ -484,6 +512,7 @@ public class BlockLifecycleListener implements ITestListener {
                     throw new IllegalStateException("Throttle-data infrastructure for block '" + label
                             + "' did not become ready within " + timeoutSeconds + "s: " + readiness.diagnostics());
                 }
+                TestContext.setShared(THROTTLE_DATA_READINESS_SECONDS_KEY, timeoutSeconds);
             }
 
             String listenerSslReloadSeconds = param(context, PARAM_LISTENER_SSL_RELOAD_READINESS_SECONDS);
@@ -537,23 +566,25 @@ public class BlockLifecycleListener implements ITestListener {
     }
 
     /**
-     * Repairs the registry parent hierarchy before any block scenario can trigger a throttle-data subscription.
-     * The product components start before the registry SOAP service is available, so repair is necessarily a
-     * post-boot bootstrap operation. The ordered component recovery (a graceful restart) runs only when the
+     * All-in-one bootstrap: its registry SOAP service is available only after the server has started.
+     * DistributedLifecycleListener overrides this hook and establishes the shared broker hierarchy between
+     * CP and TM startup. The all-in-one recovery (a graceful restart) runs only when the
      * current start's throttle-data pipeline is not ready, which is what a rejected startup binding produces: its
      * {@code REG_PATH}/subscription failure is newer than any consumer marker. A repaired registry alone does not
      * trigger it, because the hierarchy is created on every fresh database while the binding normally succeeds.
      * Existing tests still assert the same enforcement responses; this only prepares the infrastructure they
      * consume.
      */
-    private void bootstrapThrottleDataInfrastructure(ApimRuntime runtime, String label, boolean tenantUsersEnabled)
+    protected void bootstrapThrottleDataInfrastructure(ApimRuntime runtime, String label, boolean tenantUsersEnabled)
             throws Exception {
 
         boolean repaired = RegistryAdminService.ensureThrottleDataHierarchy(Utils.getBaseUrl(),
-                Identity.resolveActor("admin"));
+                Identity.resolveActor("admin"),
+                RegistryBootstrapDiagnostics.forRuntime(runtime, label, "carbon.super"));
         if (tenantUsersEnabled) {
             repaired |= RegistryAdminService.ensureThrottleDataHierarchy(Utils.getBaseUrl(),
-                    Identity.resolveActor("admin@tenant1.com"));
+                    Identity.resolveActor("admin@tenant1.com"),
+                    RegistryBootstrapDiagnostics.forRuntime(runtime, label, "tenant1.com"));
         }
 
         ThrottleDataReadiness.Result observed = ThrottleDataReadiness.await(runtime, THROTTLE_DATA_OBSERVE_SECONDS);
@@ -565,14 +596,7 @@ public class BlockLifecycleListener implements ITestListener {
 
         logger.warn("Throttle-data bootstrap for block '" + label + "' requires component recovery: repaired="
                 + repaired + ", observed=" + observed.diagnostics());
-        boolean unifiedRuntime = runtime.getServletHttpsUrl().equals(runtime.getGatewayManagementHttpsUrl());
-        if (unifiedRuntime) {
-            GracefulServerRestart.gateway();
-        } else {
-            GracefulServerRestart.controlPlane();
-            GracefulServerRestart.trafficManager();
-            GracefulServerRestart.gateway();
-        }
+        GracefulServerRestart.gateway();
 
         ThrottleDataReadiness.Result recovered = ThrottleDataReadiness.await(runtime, 180);
         if (!recovered.ready()) {
@@ -749,7 +773,7 @@ public class BlockLifecycleListener implements ITestListener {
             if (Boolean.TRUE.equals(TestContext.get(BACKEND_ATTACHED_KEY))) {
                 TestContext.removeShared(BACKEND_ATTACHED_KEY);
                 try {
-                    NodeAppServer.getInstance().detachFromNetwork(network);
+                    nodeAppServer().detachFromNetwork(network);
                 } catch (Throwable e) {
                     logger.warn("Block '" + label + "' NodeAppServer detach failed (network may leak): "
                             + e.getMessage());
@@ -761,6 +785,18 @@ public class BlockLifecycleListener implements ITestListener {
             } catch (Throwable e) {
                 logger.warn("Block '" + label + "' network close() FAILED — this network has LEAKED: "
                         + e.getMessage());
+            }
+        }
+        Object hostedDatabase = TestContext.get(HOSTED_DATABASE_KEY);
+        if (hostedDatabase instanceof HostedDatabaseBlock database) {
+            TestContext.removeShared(HOSTED_DATABASE_KEY);
+            try {
+                database.close();
+                logger.info("Block '" + label + "' dropped its hosted APIM and Shared databases");
+            } catch (Exception e) {
+                logger.error("Block '" + label + "' could not drop its hosted databases; manual cleanup may be "
+                        + "required. Database names: APIM='" + database.apimDatabaseName() + "', Shared='"
+                        + database.sharedDatabaseName() + "'", e);
             }
         }
     }
@@ -904,6 +940,35 @@ public class BlockLifecycleListener implements ITestListener {
         logger.info("Provisioned cross-tenant peer tenant '" + tenantDomain + "' and subscriber actor");
     }
 
+    /** Re-establishes tenant readiness after a Gateway JVM restart when this block provisions tenants. */
+    public static void awaitGatewayTenantsAfterRestart() {
+
+        Object runtime = TestContext.get(CONTAINER_KEY);
+        Object tenants = TestContext.get(GATEWAY_TENANTS_KEY);
+        if (runtime instanceof ApimRuntime apimRuntime && tenants instanceof List<?> tenantList
+                && !tenantList.isEmpty()) {
+            List<String> domains = tenantList.stream().map(String::valueOf).toList();
+            Object label = TestContext.get(BLOCK_LABEL_KEY);
+            GatewayTenantLoadGate.await(apimRuntime, label == null ? "unknown" : label.toString(), domains);
+        }
+    }
+
+    /** Re-establishes the block's configured distributed throttle-data readiness after a component restart. */
+    public static void awaitThrottleDataAfterRestart() throws InterruptedException {
+        Object runtime = TestContext.get(CONTAINER_KEY);
+        Object timeout = TestContext.get(THROTTLE_DATA_READINESS_SECONDS_KEY);
+        if (runtime instanceof DistributedDynamicApimContainer distributed && timeout instanceof Integer seconds) {
+            ThrottleDataReadiness.Result readiness = ThrottleDataReadiness.await(distributed, seconds);
+            if (readiness == null || !readiness.ready()) {
+                throw new IllegalStateException("Distributed throttle-data restart gate failed for block '"
+                        + TestContext.get(BLOCK_LABEL_KEY) + "' within " + seconds + "s: "
+                        + (readiness == null ? "no readiness sample" : readiness.diagnostics()));
+            }
+            logger.info("Distributed throttle-data restart gate passed for block '"
+                    + TestContext.get(BLOCK_LABEL_KEY) + "': " + readiness.diagnostics());
+        }
+    }
+
     /**
      * Starts THIS block's own external WSO2 IS container on the block's private network (alias {@code wso2is}),
      * waits for its OIDC discovery to serve 200, and publishes its host-mapped base URL under
@@ -931,7 +996,7 @@ public class BlockLifecycleListener implements ITestListener {
             String moduleDir = ModulePathResolver.getModuleDir(BlockLifecycleListener.class);
             extraContent = Files.readString(Paths.get(moduleDir, isTomlExtraOverlayPath).normalize());
         }
-        DynamicISContainer is = new DynamicISContainer(label, extraContent);
+        DynamicISContainer is = createExternalIdentityServer(label, extraContent);
         is.withNetwork(blockNetwork).withNetworkAliases(DynamicISContainer.NETWORK_ALIAS);
         if (cpuLimit.isPresent()) {
             is.withCpuLimit(cpuLimit.get());
@@ -957,16 +1022,72 @@ public class BlockLifecycleListener implements ITestListener {
         return is;
     }
 
+    /** Factory hook for topology-specific external IS settings; all-in-one retains the container defaults. */
+    protected DynamicISContainer createExternalIdentityServer(String label, String extraOverlayContent) {
+        return new DynamicISContainer(label, extraOverlayContent);
+    }
+
+    /** Shared backend factory; all-in-one leaves its memory unlimited. */
+    protected NodeAppServer nodeAppServer() {
+        return NodeAppServer.getInstance();
+    }
+
+    /** Per-block proxy factory; all-in-one leaves its memory unlimited. */
+    protected SquidProxyServer createSquidProxyServer(String label, Network blockNetwork) {
+        return new SquidProxyServer(label, blockNetwork);
+    }
+
     /** Factory hook used by the distributed listener; all remaining block lifecycle is shared. */
     protected ApimRuntime createApimContainer(String label, ITestContext context, Network blockNetwork)
             throws java.io.IOException {
-        DynamicApimContainer container = new DynamicApimContainer(label, resolveTomlContent(context));
+        Object hostedDatabase = TestContext.get(HOSTED_DATABASE_KEY);
+        DynamicApimContainer container = new DynamicApimContainer(label, resolveTomlContent(context),
+                hostedDatabase instanceof HostedDatabaseBlock database ? database.connectionSettings() : null);
         java.util.List<String> templates = Utils.applyDefaultTemplates(container,
                 ModulePathResolver.getModuleDir(BlockLifecycleListener.class));
         logger.info("Block '" + label + "' applies template overlays to " + templates);
         container.withLabel("block", label);
         container.withNetwork(blockNetwork);
         return container;
+    }
+
+    /** Only this all-in-one listener consumes the opt-in profile; distributed runs explicitly decline it. */
+    protected boolean supportsHostedDatabaseProfile() {
+        return true;
+    }
+
+    private void provisionHostedDatabaseIfSelected(String label, ITestContext context) throws Exception {
+        if (!supportsHostedDatabaseProfile()) {
+            return;
+        }
+        String profile = System.getProperty(HostedDatabaseBlock.PROFILE_SYSTEM_PROPERTY);
+        boolean registryLogMillisecondPrecision =
+                Boolean.parseBoolean(param(context, PARAM_REGISTRY_LOG_MILLISECOND_PRECISION));
+        boolean hybridUserRoleKeyIncludesDomain =
+                Boolean.parseBoolean(param(context, PARAM_HYBRID_USER_ROLE_KEY_INCLUDES_DOMAIN));
+        if (profile == null || profile.isBlank()) {
+            RegistryLogTimestampPrecision.configure(registryLogMillisecondPrecision, "h2", label,
+                    "default shared database", null);
+            HybridUserRoleKeyIncludesDomain.configure(hybridUserRoleKeyIncludesDomain, "h2", label,
+                    "default shared database", null);
+            return;
+        }
+        String normalizedProfile = HostedDatabaseBlock.normalizeProfile(profile);
+        String moduleDir = ModulePathResolver.getModuleDir(BlockLifecycleListener.class);
+        String envFileArgument = System.getProperty(HostedDatabaseBlock.ENV_FILE_SYSTEM_PROPERTY);
+        Path envFile = envFileArgument == null || envFileArgument.isBlank()
+                ? Paths.get(moduleDir, "src/test/resources/artifacts/configFiles/basic/database.env")
+                : Paths.get(envFileArgument).toAbsolutePath().normalize();
+        String productZipArgument = System.getProperty("apim.product.zip.path");
+        if (productZipArgument == null || productZipArgument.isBlank()) {
+            throw new IllegalStateException("Hosted database profile requires -Dapim.product.zip.path pointing to the "
+                    + "APIM distribution ZIP used by this test run");
+        }
+        HostedDatabaseBlock database = HostedDatabaseBlock.provision(label, envFile, Path.of(productZipArgument),
+                registryLogMillisecondPrecision, hybridUserRoleKeyIncludesDomain);
+        TestContext.setShared(HOSTED_DATABASE_KEY, database);
+        logger.info("Block '" + label + "' provisioned hosted " + normalizedProfile + " databases APIM='"
+                + database.apimDatabaseName() + "' Shared='" + database.sharedDatabaseName() + "'");
     }
 
     protected boolean awaitApimReady(ApimRuntime container) {

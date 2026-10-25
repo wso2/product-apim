@@ -95,6 +95,9 @@ public final class ResourceCleanup {
      */
     public static final String CREATED_FOREIGN_OWNED_APPLICATION_IDS = "createdForeignOwnedApplicationIds";
 
+    /** APIs created by federated users without a registered APIM Publisher token. */
+    public static final String CREATED_FOREIGN_OWNED_API_IDS = "createdForeignOwnedApiIds";
+
     /**
      * Teardown list for endpoint certificates uploaded via the Publisher {@code /endpoint-certificates} REST API,
      * holding each certificate's ALIAS (the delete path segment). An endpoint certificate is tenant-global config
@@ -191,6 +194,9 @@ public final class ResourceCleanup {
     private record ForeignOwnedApplication(String id, String tenantAdminRef) {
     }
 
+    private record ForeignOwnedApi(String id, String tenantAdminRef) {
+    }
+
     /**
      * Registers a created resource for teardown under the given {@code CREATED_*} list, tagged with the actor
      * currently acting (so cleanup deletes it as its owner). Use this instead of
@@ -269,6 +275,12 @@ public final class ResourceCleanup {
     public static void registerForeignOwnedApplication(Object applicationId, String tenantAdminRef) {
         TestContext.addToList(CREATED_FOREIGN_OWNED_APPLICATION_IDS,
                 new ForeignOwnedApplication(String.valueOf(applicationId), tenantAdminRef));
+    }
+
+    /** Registers an API that cleanup must transfer to the tenant admin before deletion. */
+    public static void registerForeignOwnedApi(Object apiId, String tenantAdminRef) {
+        TestContext.addToList(CREATED_FOREIGN_OWNED_API_IDS,
+                new ForeignOwnedApi(String.valueOf(apiId), tenantAdminRef));
     }
 
     public static void registerSubscription(Object subscriptionId, String providerTenant) {
@@ -351,6 +363,7 @@ public final class ResourceCleanup {
             CREATED_MCP_SERVER_IDS,
             CREATED_DCR_CLIENT_IDS,
             CREATED_FOREIGN_OWNED_APPLICATION_IDS,
+            CREATED_FOREIGN_OWNED_API_IDS,
             CREATED_ENDPOINT_CERTIFICATE_ALIASES,
             CREATED_PLATFORM_GATEWAY_IDS,
             CREATED_USER_NAMES,
@@ -450,6 +463,9 @@ public final class ResourceCleanup {
         if (registration instanceof ForeignOwnedApplication application) {
             return application.id();
         }
+        if (registration instanceof ForeignOwnedApi api) {
+            return api.id();
+        }
         if (registration instanceof ApplicationKeyMapping mapping) {
             return mapping.applicationId() + "/" + mapping.keyMappingId();
         }
@@ -508,6 +524,7 @@ public final class ResourceCleanup {
             // rejected while a product still uses it. Deleted with the publisher token.
             deleteResources(Constants.CREATED_API_PRODUCT_IDS, Identity::publisherTokenKey,
                     id -> Utils.getResourceEndpointURL(baseUrl, "api-products", id));
+            deleteForeignOwnedApis(baseUrl);
             deleteResources(Constants.CREATED_API_IDS, Identity::publisherTokenKey,
                     id -> Utils.getResourceEndpointURL(baseUrl, "apis", id));
             // Custom AI service providers AFTER the AIAPI-subtype APIs that reference them — an AI provider
@@ -682,6 +699,46 @@ public final class ResourceCleanup {
             } catch (Exception | AssertionError e) {
                 logger.warn("Cleanup failed to delete application " + application.id() + " via tenant admin '"
                         + application.tenantAdminRef() + "': " + e);
+            }
+        }
+    }
+
+    /** Transfers federated-user APIs to the tenant admin before deleting them through the Publisher API. */
+    private static void deleteForeignOwnedApis(String baseUrl) {
+        for (Object o : TestContext.getList(CREATED_FOREIGN_OWNED_API_IDS)) {
+            if (!(o instanceof ForeignOwnedApi api)) {
+                continue;
+            }
+            try {
+                User admin = Identity.resolveActor(api.tenantAdminRef());
+                Object adminToken = TestContext.get(Identity.adminTokenKey(admin));
+                Object publisherToken = TestContext.get(Identity.publisherTokenKey(admin));
+                if (adminToken == null || publisherToken == null) {
+                    logger.warn("Cleanup: no admin/Publisher token for tenant admin '" + api.tenantAdminRef()
+                            + "'; cannot delete federated API " + api.id() + " — it may leak.");
+                    continue;
+                }
+                HttpResponse transfer = SimpleHTTPClient.getInstance().doPost(
+                        Utils.getAPIProvider(baseUrl, api.id(), admin.getUserName()),
+                        Identity.bearerHeaders(adminToken.toString()), "", null);
+                if (transfer == null || transfer.getResponseCode() != 200) {
+                    logger.warn("Cleanup: transfer of API " + api.id() + " to '" + admin.getUserName()
+                            + "' returned HTTP " + (transfer == null ? "none"
+                            : transfer.getResponseCode() + ": " + transfer.getData()) + " — it may leak.");
+                    continue;
+                }
+                HttpResponse delete = SimpleHTTPClient.getInstance().doDelete(
+                        Utils.getResourceEndpointURL(baseUrl, "apis", api.id()),
+                        Identity.bearerHeaders(publisherToken.toString()));
+                int code = delete == null ? -1 : delete.getResponseCode();
+                if (code < 200 || code >= 300) {
+                    logger.warn("Cleanup: delete of federated API " + api.id() + " as '" + admin.getUserName()
+                            + "' returned HTTP " + code + " — resource NOT deleted; it may leak: "
+                            + (delete == null ? "" : delete.getData()));
+                }
+            } catch (Exception | AssertionError e) {
+                logger.warn("Cleanup failed to delete federated API " + api.id() + " via tenant admin '"
+                        + api.tenantAdminRef() + "': " + e);
             }
         }
     }

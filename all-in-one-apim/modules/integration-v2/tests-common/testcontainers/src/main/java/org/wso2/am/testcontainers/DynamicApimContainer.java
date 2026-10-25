@@ -31,6 +31,8 @@ import org.wso2.am.integration.test.utils.Constants;
 import java.io.File;
 import java.io.IOException;
 import java.time.Duration;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * APIM container variant for the parallel-on-shared lane. Unlike {@link APIMContainer}, this
@@ -52,16 +54,26 @@ public class DynamicApimContainer extends GenericContainer<DynamicApimContainer>
      */
     static final String SERVER_HEAP_OPTS = "-Xms1g -Xmx1536m";
     private static final String JVM_MEM_OPTS = "JVM_MEM_OPTS";
+    private static final String MYSQL_CONNECTOR_SERVER_PATH = "repository/components/lib/mysql-connector-j.jar";
+    private static final String POSTGRESQL_CONNECTOR_SERVER_PATH = "repository/components/lib/postgresql-jdbc.jar";
+    private static final String MSSQL_CONNECTOR_SERVER_PATH = "repository/components/lib/mssql-jdbc.jar";
+    private static final String ORACLE_CONNECTOR_SERVER_PATH = "repository/components/lib/ojdbc11.jar";
+    private static final String DB2_CONNECTOR_SERVER_PATH = "repository/components/lib/db2jcc4.jar";
 
     public DynamicApimContainer(String containerLabel, String deploymentTomlContent) {
+        this(containerLabel, deploymentTomlContent, null);
+    }
+
+    /** Creates an APIM block with an explicit hosted database pair; null retains Maven's existing DB environment. */
+    public DynamicApimContainer(String containerLabel, String deploymentTomlContent,
+                                HostedDatabaseBlock.ConnectionSettings hostedDatabase) {
 
         super(requiredImage(APIM_IMAGE_PROPERTY));
 
-        String apimDbUrl = System.getenv(Constants.API_MANAGER_DATABASE_URL).replace("&", "&amp;");
-        String sharedDbUrl = System.getenv(Constants.SHARED_DATABASE_URL).replace("&", "&amp;");
-
-        logger.info("APIM DB URL: {}", apimDbUrl);
-        logger.info("SHARED DB URL: {}", sharedDbUrl);
+        String apimDbUrl = (hostedDatabase == null ? System.getenv(Constants.API_MANAGER_DATABASE_URL)
+                : hostedDatabase.apimUrl()).replace("&", "&amp;");
+        String sharedDbUrl = (hostedDatabase == null ? System.getenv(Constants.SHARED_DATABASE_URL)
+                : hostedDatabase.sharedUrl()).replace("&", "&amp;");
 
         // Expose canonical ports; Docker assigns ephemeral host ports resolved via getMappedPort.
         // GATEWAY_WS_PORT (9099) is the gateway WebSocket inbound; GATEWAY_WSS_PORT (8099) is the SECURE WebSocket
@@ -75,22 +87,46 @@ public class DynamicApimContainer extends GenericContainer<DynamicApimContainer>
                 Constants.GATEWAY_WSS_PORT, Constants.WEBSUB_EVENT_RECEIVER_PORT);
 
         // Env vars for APIMGT_DB
-        withEnv(Constants.API_MANAGER_DATABASE_TYPE, System.getenv(Constants.API_MANAGER_DATABASE_TYPE));
-        withEnv(Constants.API_MANAGER_DATABASE_DRIVER, System.getenv(Constants.API_MANAGER_DATABASE_DRIVER));
+        withEnv(Constants.API_MANAGER_DATABASE_TYPE, hostedDatabase == null
+                ? System.getenv(Constants.API_MANAGER_DATABASE_TYPE) : hostedDatabase.type());
+        withEnv(Constants.API_MANAGER_DATABASE_DRIVER, hostedDatabase == null
+                ? System.getenv(Constants.API_MANAGER_DATABASE_DRIVER) : hostedDatabase.driver());
         withEnv(Constants.API_MANAGER_DATABASE_URL, apimDbUrl);
-        withEnv(Constants.API_MANAGER_DATABASE_USERNAME, System.getenv(Constants.API_MANAGER_DATABASE_USERNAME));
-        withEnv(Constants.API_MANAGER_DATABASE_PASSWORD, System.getenv(Constants.API_MANAGER_DATABASE_PASSWORD));
-        withEnv(Constants.API_MANAGER_DATABASE_VALIDATION_QUERY, System.getenv(Constants.
-                API_MANAGER_DATABASE_VALIDATION_QUERY));
+        withEnv(Constants.API_MANAGER_DATABASE_USERNAME, hostedDatabase == null
+                ? System.getenv(Constants.API_MANAGER_DATABASE_USERNAME) : hostedDatabase.apimUsername());
+        withEnv(Constants.API_MANAGER_DATABASE_PASSWORD, hostedDatabase == null
+                ? System.getenv(Constants.API_MANAGER_DATABASE_PASSWORD) : hostedDatabase.password());
+        withEnv(Constants.API_MANAGER_DATABASE_VALIDATION_QUERY, hostedDatabase == null
+                ? System.getenv(Constants.API_MANAGER_DATABASE_VALIDATION_QUERY) : hostedDatabase.validationQuery());
 
         // Env vars for SHARED_DB
-        withEnv(Constants.SHARED_DATABASE_TYPE, System.getenv(Constants.SHARED_DATABASE_TYPE));
-        withEnv(Constants.SHARED_DATABASE_DRIVER, System.getenv(Constants.SHARED_DATABASE_DRIVER));
+        withEnv(Constants.SHARED_DATABASE_TYPE, hostedDatabase == null
+                ? System.getenv(Constants.SHARED_DATABASE_TYPE) : hostedDatabase.type());
+        withEnv(Constants.SHARED_DATABASE_DRIVER, hostedDatabase == null
+                ? System.getenv(Constants.SHARED_DATABASE_DRIVER) : hostedDatabase.driver());
         withEnv(Constants.SHARED_DATABASE_URL, sharedDbUrl);
-        withEnv(Constants.SHARED_DATABASE_USERNAME, System.getenv(Constants.SHARED_DATABASE_USERNAME));
-        withEnv(Constants.SHARED_DATABASE_PASSWORD, System.getenv(Constants.SHARED_DATABASE_PASSWORD));
-        withEnv(Constants.SHARED_DATABASE_VALIDATION_QUERY, System.getenv(Constants.
-                SHARED_DATABASE_VALIDATION_QUERY));
+        withEnv(Constants.SHARED_DATABASE_USERNAME, hostedDatabase == null
+                ? System.getenv(Constants.SHARED_DATABASE_USERNAME) : hostedDatabase.sharedUsername());
+        withEnv(Constants.SHARED_DATABASE_PASSWORD, hostedDatabase == null
+                ? System.getenv(Constants.SHARED_DATABASE_PASSWORD) : hostedDatabase.password());
+        withEnv(Constants.SHARED_DATABASE_VALIDATION_QUERY, hostedDatabase == null
+                ? System.getenv(Constants.SHARED_DATABASE_VALIDATION_QUERY) : hostedDatabase.validationQuery());
+
+        if (hostedDatabase != null) {
+            if ("mysql".equalsIgnoreCase(hostedDatabase.type())) {
+                withServerFile(mysqlConnectorPath(), MYSQL_CONNECTOR_SERVER_PATH);
+            } else if ("postgre".equalsIgnoreCase(hostedDatabase.type())) {
+                withServerFile(postgresqlConnectorPath(), POSTGRESQL_CONNECTOR_SERVER_PATH);
+            } else if ("mssql".equalsIgnoreCase(hostedDatabase.type())) {
+                withServerFile(mssqlConnectorPath(), MSSQL_CONNECTOR_SERVER_PATH);
+            } else if ("oracle".equalsIgnoreCase(hostedDatabase.type())) {
+                withServerFile(oracleConnectorPath(), ORACLE_CONNECTOR_SERVER_PATH);
+            } else if ("db2".equalsIgnoreCase(hostedDatabase.type())) {
+                withServerFile(db2ConnectorPath(), DB2_CONNECTOR_SERVER_PATH);
+            } else {
+                throw new IllegalArgumentException("Unsupported hosted database type: " + hostedDatabase.type());
+            }
+        }
 
         withEnv(JVM_MEM_OPTS, SERVER_HEAP_OPTS);
 
@@ -132,6 +168,52 @@ public class DynamicApimContainer extends GenericContainer<DynamicApimContainer>
 
         withLogConsumer(logConsumer);
         waitingFor(Wait.forListeningPort().withStartupTimeout(Duration.ofMinutes(20)));
+    }
+
+    private static String mysqlConnectorPath() {
+        try {
+            return new File(com.mysql.cj.jdbc.Driver.class.getProtectionDomain().getCodeSource().getLocation()
+                    .toURI()).getAbsolutePath();
+        } catch (Exception e) {
+            throw new IllegalStateException("Unable to locate the MySQL JDBC connector for hosted DB profile", e);
+        }
+    }
+
+    private static String postgresqlConnectorPath() {
+        try {
+            return new File(org.postgresql.Driver.class.getProtectionDomain().getCodeSource().getLocation()
+                    .toURI()).getAbsolutePath();
+        } catch (Exception e) {
+            throw new IllegalStateException("Unable to locate the PostgreSQL JDBC connector for hosted DB profile", e);
+        }
+    }
+
+    private static String mssqlConnectorPath() {
+        try {
+            return new File(com.microsoft.sqlserver.jdbc.SQLServerDriver.class.getProtectionDomain().getCodeSource()
+                    .getLocation().toURI()).getAbsolutePath();
+        } catch (Exception e) {
+            throw new IllegalStateException("Unable to locate the Microsoft SQL Server JDBC connector for hosted DB "
+                    + "profile", e);
+        }
+    }
+
+    private static String oracleConnectorPath() {
+        try {
+            return new File(oracle.jdbc.driver.OracleDriver.class.getProtectionDomain().getCodeSource()
+                    .getLocation().toURI()).getAbsolutePath();
+        } catch (Exception e) {
+            throw new IllegalStateException("Unable to locate the Oracle JDBC connector for hosted DB profile", e);
+        }
+    }
+
+    private static String db2ConnectorPath() {
+        try {
+            return new File(com.ibm.db2.jcc.DB2Driver.class.getProtectionDomain().getCodeSource().getLocation()
+                    .toURI()).getAbsolutePath();
+        } catch (Exception e) {
+            throw new IllegalStateException("Unable to locate the IBM Db2 JDBC connector for hosted DB profile", e);
+        }
     }
 
     private static String requiredImage(String property) {
@@ -351,6 +433,22 @@ public class DynamicApimContainer extends GenericContainer<DynamicApimContainer>
             }
         }
         throw new IllegalStateException("Could not determine the container network gateway IP");
+    }
+
+    @Override
+    public Set<String> getGatewayBrokerClientAddresses() {
+        // Gateway and broker share this container. Their connection can use loopback or a container interface.
+        Set<String> addresses = new HashSet<>(Set.of("127.0.0.1", "::1", "0:0:0:0:0:0:0:1"));
+        for (com.github.dockerjava.api.model.ContainerNetwork value
+                : getContainerInfo().getNetworkSettings().getNetworks().values()) {
+            if (value.getIpAddress() != null && !value.getIpAddress().isBlank()) {
+                addresses.add(value.getIpAddress());
+            }
+            if (value.getGlobalIPv6Address() != null && !value.getGlobalIPv6Address().isBlank()) {
+                addresses.add(value.getGlobalIPv6Address());
+            }
+        }
+        return Set.copyOf(addresses);
     }
 
     public String getContainerTomlPath() {

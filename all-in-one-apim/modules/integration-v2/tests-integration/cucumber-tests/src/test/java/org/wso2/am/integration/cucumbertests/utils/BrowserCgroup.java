@@ -32,9 +32,9 @@ import java.util.stream.Stream;
 
 /**
  * Configures the Linux Chromium wrapper: a private network namespace and, when present, the browser cgroup-v2
- * budget (1 CPU, 2.5 GiB, no swap). The wrapper's processes inherit the cgroup and the browser keeps its caller's
- * user identity. The wrapper is used on Linux hosts prepared by {@code setup-browser-network.sh} (CI); other
- * hosts launch Chromium directly.
+ * budget (1 CPU, 2.5 GiB and no swap for all-in-one; 512 MiB and up to 128 MiB swap for distributed CI). The
+ * wrapper's processes inherit the cgroup and the browser keeps its caller's user identity. The wrapper is used on
+ * Linux hosts prepared by {@code setup-browser-network.sh} (CI); other hosts launch Chromium directly.
  */
 final class BrowserCgroup {
 
