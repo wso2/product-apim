@@ -137,11 +137,11 @@ Feature: Multi-tenant console SSO via an external Identity Server
   # and the Identity Server's, where the credentials were checked. If the Identity Server's survives, the next
   # login through the broker signs the user back in without a password.
   #
-  # This scenario also runs in the IntegrationV2-MultiTenantSsoSharedHost block (selected by its
-  # @mt-sso-single-logout tag), where the Identity Server shares API Manager's host. Browser cookies are scoped
-  # by host, not port, so there the two servers' session cookies coincide, and API Manager clearing its own ends
-  # the Identity Server's by accident. In THIS block the Identity Server has its own host, so only a logout that
-  # really reaches the Identity Server passes.
+  # This scenario also runs through MultiTenantSsoSharedHostRunner (selected by its @mt-sso-single-logout tag), in
+  # the IntegrationV2-MandatoryPropertiesAndDisplayDeprecated block, where the Identity Server shares API Manager's
+  # host. Browser cookies are scoped by host, not port, so there the two servers' session cookies coincide, and API
+  # Manager clearing its own ends the Identity Server's by accident. In THIS block the Identity Server has its own
+  # host, so only a logout that really reaches the Identity Server passes.
   @cap:admin @feat:sso @rule:multitenant-sso @type:regression @mt-sso-single-logout
   Scenario: A tenant user who signs out must enter credentials at the identity server again to sign back in
 

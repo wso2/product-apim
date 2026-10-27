@@ -1,6 +1,7 @@
-# Overlay for the IntegrationV2-MandatoryPropertiesAndDisplayDeprecated block: PublisherMandatoryPropertiesRunner and
-# DevPortalDeprecatedApiDiscoverabilityRunner, one runner at a time. Merged on top of the shared `basic` overlay.
-# The distributed twin applies both settings to CP.
+# Overlay for the IntegrationV2-MandatoryPropertiesAndDisplayDeprecated block: PublisherMandatoryPropertiesRunner,
+# DevPortalDeprecatedApiDiscoverabilityRunner and MultiTenantSsoSharedHostRunner, one runner at a time. Merged on top
+# of the shared `basic` overlay. The distributed twin applies this file to CP and multiTenantSso/deployment.toml to
+# the Gateway.
 #
 # The two keys are mutually inert for these runners:
 #   - [apim.devportal] display_deprecated_apis only widens the lcState filter RegistrySearchUtil
@@ -11,6 +12,10 @@
 #     feature creates its API from create_apim_test_api_with_mandatory_property.json, which carries a non-empty
 #     PropertyName, so its publish passes and its Deprecate action is not gated.
 # Any further runner that publishes a property-less API or asserts devportal search counts cannot join this block.
+#
+# The multi-tenant SSO section at the end is multiTenantSso/deployment.toml (see that file for its rationale) and shares
+# no keys with the two settings above. MultiTenantSsoSharedHostRunner only provisions tenants and users and drives
+# console logins; it publishes no API and makes no devportal search.
 
 # --- PublisherMandatoryPropertiesRunner (MandatoryPropertiesTestWithRestart): a required custom API property, so
 # updating an API with the property present-but-empty is rejected (400). ---
@@ -24,3 +29,104 @@ description = "Property Description"
 # distribution ships it false; the false direction is asserted in devportal/subscribe.feature. ---
 [apim.devportal]
 display_deprecated_apis = true
+
+# --- MultiTenantSsoSharedHostRunner: the multi-tenant console-SSO configuration of multiTenantSso/deployment.toml.
+# Keep the two in step. ---
+[keystore.tls]
+file_name = "wso2am.p12"
+type = "PKCS12"
+password = "wso2carbon"
+alias = "wso2carbon"
+key_password = "wso2carbon"
+
+[tenant_context]
+enable_tenant_qualified_urls = true
+enable_tenanted_sessions = true
+skip_tenant_validation_for_oauth_endpoints = true
+session_manager = "org.apache.catalina.session.StandardManager"
+
+# Disabled so it does not provision the federated user into the service provider's own tenant, which is the
+# super tenant here.
+[event.default_listener.jit_provisioning_handler]
+enable = false
+
+# An overlay's [[event_listener]] array replaces the distribution's whole array, so the distribution's default
+# token_revocation listener is restated here. It configures the notification sender that the OAuth application
+# listener uses to publish token revocations when an OAuth application with active tokens is removed.
+[[event_listener]]
+id = "token_revocation"
+type = "org.wso2.carbon.identity.core.handler.AbstractIdentityHandler"
+name = "org.wso2.is.notification.ApimOauthEventInterceptor"
+order = 1
+[event_listener.properties]
+notification_endpoint = "https://localhost:${mgt.transport.https.port}/internal/data/v1/notify"
+username = "${admin.username}"
+password = "${admin.password}"
+'header.X-WSO2-KEY-MANAGER' = "default"
+
+# The organization-aware provisioning handler that replaces the default one, at the same order.
+[[event_listener]]
+id = "org_jit_provisioning_handler"
+type = "org.wso2.carbon.identity.core.handler.AbstractIdentityHandler"
+name = "org.wso2.carbon.identity.outbound.organization.auth.OrganizationJITProvisioningHandler"
+order = 20
+
+[[resource.access_control]]
+context = "(.*)/keymanager-operations/user-info/claims(.*)"
+secure = true
+http_method = "GET"
+permissions = ["/permission/admin/manage/identity/usermgt/list"]
+scopes = ["internal_user_mgt_list"]
+
+[[resource.access_control]]
+context = "(.*)/keymanager-operations/user-info/claims/generate(.*)"
+secure = true
+http_method = "POST"
+permissions = ["/permission/admin/manage/identity/usermgt/list"]
+scopes = ["internal_user_mgt_list"]
+
+[[resource.access_control]]
+context = "(.*)/keymanager-operations/dcr/register"
+secure = true
+http_method = "POST"
+permissions = ["/permission/admin/manage/identity/applicationmgt/create"]
+scopes = ["internal_application_mgt_create"]
+
+[[resource.access_control]]
+context = "(.*)/keymanager-operations/dcr/register(.*)"
+secure = true
+http_method = "GET"
+permissions = ["/permission/admin/manage/identity/applicationmgt/view"]
+scopes = ["internal_application_mgt_view"]
+
+[[resource.access_control]]
+context = "(.*)/keymanager-operations/dcr/register(.*)"
+secure = true
+http_method = "PUT"
+permissions = ["/permission/admin/manage/identity/applicationmgt/update"]
+scopes = ["internal_application_mgt_update"]
+
+[[resource.access_control]]
+context = "(.*)/keymanager-operations/dcr/register(.*)"
+secure = true
+http_method = "POST"
+permissions = ["/permission/admin/manage/identity/applicationmgt/update"]
+scopes = ["internal_application_mgt_update"]
+
+[[resource.access_control]]
+context = "(.*)/keymanager-operations/dcr/register(.*)"
+secure = true
+http_method = "DELETE"
+permissions = ["/permission/admin/manage/identity/applicationmgt/delete"]
+scopes = ["internal_application_mgt_delete"]
+
+[[resource.access_control]]
+context = "(.*)/keymanager-operations/revoke-one-time-token(.*)"
+secure = true
+http_method = "POST"
+permissions = ["/permission/admin"]
+
+[[resource.access_control]]
+context = "(.*)/select-tenant(.*)"
+secure = false
+http_method = "all"
