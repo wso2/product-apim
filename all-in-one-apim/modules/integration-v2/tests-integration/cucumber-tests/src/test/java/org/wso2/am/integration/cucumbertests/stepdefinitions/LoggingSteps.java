@@ -31,6 +31,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wso2.am.integration.test.utils.Constants;
 import org.wso2.am.testcontainers.ApimRuntime;
+import org.wso2.am.testcontainers.ContainerLogHistory;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import java.io.IOException;
@@ -61,12 +62,9 @@ import java.util.concurrent.atomic.AtomicLong;
  * </ul>
  *
  * <h2>Reading the log files</h2>
- * Legacy held a {@code BufferedReader} open on the log file for the life of the test class and consumed
- * forward from wherever the last read stopped. There is no such handle here (the file is inside the
- * container), so the equivalent is an explicit BYTE OFFSET: a scenario marks the file's current length, does
- * something, and then asserts only over what was appended after that mark. That makes each assertion about
- * the lines THIS scenario provoked and immune to whatever a previous scenario left behind — which matters far
- * more here than it did upstream, because in v2 the container is shared across a block.
+ * A scenario records a boot-scoped position in the container's retained log history, performs an action,
+ * and asserts only over text appended after that position. The mark survives rollover; evidence from an earlier
+ * scenario or boot cannot satisfy it. Separate files and components have separate marks.
  *
  * <h2>On the marker strings</h2>
  * The markers the features match are the literals the product actually emits, not the loose substrings legacy
@@ -100,7 +98,7 @@ public class LoggingSteps {
     private static final String CORRELATION_CONFIG_PATH = "api/am/devops/v0/config/correlation";
     private static final String TENANT_LOGS_PATH = "api/am/devops/v0/tenant-logs/";
 
-    /** Context key prefix under which {@link #iRecordLogFileLength} stores a file's marked length. */
+    /** Context key prefix under which {@link #iRecordLogFileLength} stores a file's marked position. */
     private static final String LOG_MARK_PREFIX = "logFileMark::";
     private static final long LOG_EFFECT_POLL_MILLIS = 1000L;
 
@@ -264,7 +262,7 @@ public class LoggingSteps {
     private LogProbe gatewayLogProbe(String fileName, String marker, String context, String accessToken)
             throws IOException {
 
-        int offset = readLogFile(fileName).length();
+        ContainerLogHistory.Mark mark = container().readGatewayLogHistory(fileName).mark();
         new APIInvocationSteps().invokeApiByContextOnce(context, "GET", accessToken, "");
         HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
         Assert.assertTrue(response != null && response.getResponseCode() == 200,
@@ -272,12 +270,12 @@ public class LoggingSteps {
                         + (response == null ? "no response" : response.getResponseCode() + " / "
                         + response.getData()));
         return new LogProbe(response.getResponseCode(),
-                containsMarker(appendedFromOffset(readLogFile(fileName), offset), marker), 0L);
+                containsMarker(container().readGatewayLogHistory(fileName).since(mark), marker), 0L);
     }
 
     private LogProbe controlPlaneLogProbe(String fileName, String marker) throws IOException {
 
-        int offset = readControlPlaneLogFile(fileName).length();
+        ContainerLogHistory.Mark mark = container().readControlPlaneLogHistory(fileName).mark();
         new PublisherBaseSteps().iRetrieveAllApis();
         HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
         Assert.assertTrue(response != null && response.getResponseCode() == 200,
@@ -285,11 +283,7 @@ public class LoggingSteps {
                         + (response == null ? "no response" : response.getResponseCode() + " / "
                         + response.getData()));
         return new LogProbe(response.getResponseCode(),
-                containsMarker(appendedFromOffset(readControlPlaneLogFile(fileName), offset), marker), 0L);
-    }
-
-    private static String appendedFromOffset(String content, int offset) {
-        return offset <= content.length() ? content.substring(offset) : content;
+                containsMarker(container().readControlPlaneLogHistory(fileName).since(mark), marker), 0L);
     }
 
     private static final class LogProbe {
@@ -398,19 +392,19 @@ public class LoggingSteps {
     // ---------------------------------------------------------------------------------------------
 
     /**
-     * Marks a server log file's current length, so later assertions consider only what is appended after this
+     * Marks a server log file's current end, so later assertions consider only what is appended after this
      * point. The mark is per file name, so a scenario can track correlation.log and api.log independently.
      */
     @When("I mark the current end of the server log file {string}")
     public void iRecordLogFileLength(String fileName) {
-        TestContext.set(LOG_MARK_PREFIX + fileName, readLogFile(fileName).length());
+        TestContext.set(LOG_MARK_PREFIX + fileName, container().readGatewayLogHistory(fileName).mark());
     }
 
     /** Marks a control-plane log for a management-plane assertion. */
     @When("I mark the current end of the control-plane server log file {string}")
     public void iRecordControlPlaneLogFileLength(String fileName) {
         TestContext.set(LOG_MARK_PREFIX + "control-plane::" + fileName,
-                readControlPlaneLogFile(fileName).length());
+                container().readControlPlaneLogHistory(fileName).mark());
     }
 
     /**
@@ -720,10 +714,7 @@ public class LoggingSteps {
             throw new IllegalStateException("The end of " + fileName + " was never marked — the scenario must "
                     + "mark it before asserting on what was appended.");
         }
-        String content = readLogFile(fileName);
-        int from = Integer.parseInt(mark.toString());
-        // The file rolls over at 10MB, which resets its length; treat a shrink as "read it all".
-        return from <= content.length() ? content.substring(from) : content;
+        return container().readGatewayLogHistory(fileName).since((ContainerLogHistory.Mark) mark);
     }
 
     private String appendedSinceControlPlaneMark(String fileName) {
@@ -732,20 +723,7 @@ public class LoggingSteps {
             throw new IllegalStateException("The end of the control-plane " + fileName
                     + " was never marked — the scenario must mark it before asserting on what was appended.");
         }
-        String content = readControlPlaneLogFile(fileName);
-        int from = Integer.parseInt(mark.toString());
-        return from <= content.length() ? content.substring(from) : content;
-    }
-
-    private String readLogFile(String fileName) {
-        // Path shape owned by DynamicApimContainer alongside getContainerLog4j2Path(), so the in-container
-        // layout lives in one module; the accessor also validates apim.server.name instead of silently
-        // resolving a path containing "null".
-        return container().readGatewayLogFile(fileName);
-    }
-
-    private String readControlPlaneLogFile(String fileName) {
-        return container().readControlPlaneLogFile(fileName);
+        return container().readControlPlaneLogHistory(fileName).since((ContainerLogHistory.Mark) mark);
     }
 
     private ApimRuntime container() {

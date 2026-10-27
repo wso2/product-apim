@@ -32,20 +32,20 @@ jobs:
       - name: Fix host entry
         run: sudo sh -c 'echo "127.0.0.1 $(hostname)" >> /etc/hosts'
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
       # Suite registration parity includes block order, provisioning and declared topology omissions.
       - name: Verify integration-v2 suite alignment
         working-directory: all-in-one-apim/modules/integration-v2
         run: python3 docs/devs/suite_alignment.py
       - name: Set up JDK 21
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v6
         with:
           java-version: '21'
           distribution: temurin
       - name: Set up Maven
         uses: ./.github/actions/setup-maven
       - name: Cache Maven repository
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ~/.m2/repository
           key: m2-v2-hosted-db-${{ github.run_id }}
@@ -88,7 +88,7 @@ jobs:
           tar -C all-in-one-apim/modules/integration-v2/tests-common/testcontainers/target \
             -czf "$RUNNER_TEMP/v2-hosted-db-assets/is7-staging.tar.gz" is7
       - name: Upload built images and test inputs
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: v2-hosted-db-assets
           path: ${{ runner.temp }}/v2-hosted-db-assets/
@@ -108,22 +108,22 @@ jobs:
       - name: Fix host entry
         run: sudo sh -c 'echo "127.0.0.1 $(hostname)" >> /etc/hosts'
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
       - name: Set up JDK 21
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v6
         with:
           java-version: '21'
           distribution: temurin
       - name: Set up Maven
         uses: ./.github/actions/setup-maven
       - name: Restore Maven repository
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ~/.m2/repository
           key: m2-v2-hosted-db-${{ github.run_id }}
           restore-keys: ${{ runner.os }}-m2
       - name: Download built images and test inputs
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: v2-hosted-db-assets
           path: ${{ runner.temp }}/v2-hosted-db-assets
@@ -414,20 +414,30 @@ jobs:
           fi
       - name: Archive test reports
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: integration-v2-hosted-db-reports-${{ github.run_attempt }}
           path: |
             all-in-one-apim/modules/integration-v2/tests-integration/cucumber-tests/target/surefire-reports/**
+            all-in-one-apim/modules/integration-v2/tests-integration/cucumber-tests/target/block-timeline.json
             all-in-one-apim/modules/integration-v2/tests-integration/cucumber-tests/target/cucumber-report/**
             all-in-one-apim/modules/integration-v2/tests-integration/cucumber-tests/target/logs/**
             ${{ runner.temp }}/hosted-database.log
           if-no-files-found: warn
       - name: Publish v2 test report
         if: always()
-        uses: malinthaprasan/action-surefire-report@v1
+        uses: ScalableCapital/action-surefire-report@v2
         env:
           NODE_OPTIONS: --max-old-space-size=8192
         with:
           report_paths: 'all-in-one-apim/modules/integration-v2/tests-integration/cucumber-tests/target/surefire-reports/TEST-*.xml'
+          report_mode: check-run
+          fail_on_test_failures: false
+          fail_if_no_tests: true
           check_name: 'integration-v2 hosted database results'
+      # The execution map is best effort, including jobs whose test JVM did not finish.
+      - name: Summarize v2 suite execution
+        if: always()
+        continue-on-error: true
+        working-directory: all-in-one-apim/modules/integration-v2
+        run: python3 docs/devs/render_block_timeline.py

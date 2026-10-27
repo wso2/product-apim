@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+<!--
+  Block timeline: BlockTimelineListener records each block's lane, timings and runner results in
+  target/block-timeline.json. The test class drives the listener with in-memory TestNG contexts; no Docker required.
+-->
+<suite name="Framework Verification Block Timeline" parallel="false">
+    <test name="BlockTimeline">
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.utils.listeners.BlockTimelineListenerTest"/>
+        </classes>
+    </test>
+</suite>

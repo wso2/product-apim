@@ -3,17 +3,16 @@
 <suite name="Integration Tests v2 Distributed" parallel="tests" thread-count="4">
     <parameter name="apim.topology" value="distributed"/>
     <listeners>
+        <listener class-name="org.wso2.am.integration.cucumbertests.utils.listeners.SuiteGroupSelectionListener"/>
         <listener class-name="org.wso2.am.integration.cucumbertests.utils.listeners.ClockStabilityListener"/>
         <listener class-name="org.wso2.am.integration.cucumbertests.utils.listeners.DistributedLifecycleListener"/>
         <listener class-name="org.wso2.am.integration.cucumbertests.utils.listeners.BlockScopeListener"/>
         <listener class-name="org.wso2.am.integration.cucumbertests.utils.listeners.CoverageAggregationListener"/>
+        <listener class-name="org.wso2.am.integration.cucumbertests.utils.listeners.BlockTimelineListener"/>
     </listeners>
-    <!-- Block and runner layout mirrors testng-v2.xml; only component configuration differs. -->
-    <!-- Blocks are listed longest first (by all-in-one CI duration): TestNG starts them in this order, each on the first of
-         the 4 threads to free up, so the longest blocks start first and the short ones fill the gaps. The two
-         blocks sharing the browser-sso lifecycle lock are placed so that their runs do not overlap. -->
     <!-- Keep UnifiedSearch first and throttling enforcement last to isolate their runtime state. -->
     <test name="IntegrationV2-Distributed-EmailUserName-DevPortal" parallel="classes" thread-count="1">
+        <parameter name="group" value="group1"/>
         <parameter name="blockLabel" value="distributed-email-username-devportal"/>
         <!-- Millisecond MySQL registry activity timestamps for indexing assertions. -->
         <parameter name="registryLogMillisecondPrecision" value="true"/>
@@ -43,6 +42,7 @@
     <!-- Keep GovernanceComplianceBlockingRunner last and sequential: its temporary global BLOCK policy can reject
          sibling API deployments if cleanup fails. -->
     <test name="IntegrationV2-Distributed-Publisher" parallel="classes" thread-count="1">
+        <parameter name="group" value="group2"/>
         <parameter name="blockLabel" value="distributed-publisher"/>
         <parameter name="apimCpuLimit" value="1"/>
         <parameter name="initTenantUsers" value="true"/>
@@ -74,6 +74,7 @@
     <!-- Gateway throttling runtime: request-count, bandwidth and application-tier limits enforced on live throttle
          counters, one runner at a time. -->
     <test name="IntegrationV2-Distributed-GatewayIsolatedRuntime-Throttling" parallel="classes" thread-count="1">
+        <parameter name="group" value="group2"/>
         <parameter name="blockLabel" value="distributed-gateway-isolated-throttling"/>
         <parameter name="apimCpuLimit" value="1"/>
         <parameter name="initTenantUsers" value="true"/>
@@ -90,6 +91,7 @@
     </test>
 
     <test name="IntegrationV2-Distributed-EmailUserName-Publisher" parallel="classes" thread-count="1">
+        <parameter name="group" value="group1"/>
         <parameter name="blockLabel" value="distributed-email-username-publisher"/>
         <parameter name="apimCpuLimit" value="1"/>
         <parameter name="initTenantUsers" value="true"/>
@@ -108,6 +110,7 @@
     </test>
 
     <test name="IntegrationV2-Distributed-Gateway-A" parallel="classes" thread-count="2">
+        <parameter name="group" value="group1"/>
         <parameter name="blockLabel" value="distributed-gateway-a"/>
         <parameter name="apimCpuLimit" value="1"/>
         <parameter name="initTenantUsers" value="true"/>
@@ -129,6 +132,7 @@
 
     <!-- SSO blocks share a lifecycle lock to prevent concurrent use of the external IS. -->
     <test name="IntegrationV2-Distributed-ExternalIdpConsoleSso" parallel="classes" thread-count="1">
+        <parameter name="group" value="group1"/>
         <parameter name="blockLabel" value="distributed-external-idp-sso"/>
         <parameter name="apimCpuLimit" value="1"/>
         <parameter name="lifecycleLock" value="browser-sso"/>
@@ -145,6 +149,7 @@
          AllowSubscriptionValidationDisabling setting, so it runs after, never beside,
          GatewaySubscriptionValidationDisableRunner. -->
     <test name="IntegrationV2-Distributed-GatewayIsolatedRuntime-Eventing" parallel="classes" thread-count="1">
+        <parameter name="group" value="group2"/>
         <parameter name="blockLabel" value="distributed-gateway-isolated-eventing"/>
         <parameter name="apimCpuLimit" value="1"/>
         <parameter name="initTenantUsers" value="true"/>
@@ -165,13 +170,13 @@
     <!-- Keep AdminOrganizationVisibilityRunner last and sequential: it registers the organizationId local claim and
          tags each tenant admin with an organization; neither is removed when the runner finishes. -->
     <test name="IntegrationV2-Distributed-DevPortal" parallel="classes" thread-count="1">
+        <parameter name="group" value="group1"/>
         <parameter name="blockLabel" value="distributed-devportal"/>
         <!-- Millisecond MySQL registry activity timestamps for indexing assertions. -->
         <parameter name="registryLogMillisecondPrecision" value="true"/>
         <parameter name="apimCpuLimit" value="1"/>
         <parameter name="initTenantUsers" value="true"/>
         <parameter name="initSecondaryUserStore" value="true"/>
-        <!-- The Auth0 key manager fixtures' token endpoint is the backend's oauth-token-stub. -->
         <parameter name="initBackend" value="true"/>
         <classes>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.DevPortalUnifiedSearchRunner"/>
@@ -203,6 +208,7 @@
     </test>
 
     <test name="IntegrationV2-Distributed-Gateway-C" parallel="classes" thread-count="2">
+        <parameter name="group" value="group2"/>
         <parameter name="blockLabel" value="distributed-gateway-c"/>
         <parameter name="apimCpuLimit" value="1"/>
         <parameter name="initTenantUsers" value="true"/>
@@ -235,6 +241,7 @@
          fail to start polling on first boot; the bootstrap repairs the throttle-data registry hierarchy and, if the
          pipeline is not ready, restarts the Gateway once (enable_restart_from_api is in this block's overlay). -->
     <test name="IntegrationV2-Distributed-LoggingAndElkAnalytics" parallel="classes" thread-count="1">
+        <parameter name="group" value="group1"/>
         <parameter name="blockLabel" value="distributed-logging-elk-analytics"/>
         <parameter name="apimCpuLimit" value="1"/>
         <parameter name="initTenantUsers" value="true"/>
@@ -254,6 +261,7 @@
     </test>
 
     <test name="IntegrationV2-Distributed-Gateway-B" parallel="classes" thread-count="2">
+        <parameter name="group" value="group1"/>
         <parameter name="blockLabel" value="distributed-gateway-b"/>
         <parameter name="apimCpuLimit" value="1"/>
         <parameter name="initTenantUsers" value="true"/>
@@ -277,6 +285,7 @@
 
     <!-- Restart scenarios mutate the shared APIM runtime. -->
     <test name="IntegrationV2-Distributed-ServerRestart" parallel="classes" thread-count="1">
+        <parameter name="group" value="group1"/>
         <parameter name="blockLabel" value="distributed-server-restart"/>
         <parameter name="apimCpuLimit" value="1"/>
         <parameter name="initTenantUsers" value="true"/>
@@ -297,6 +306,7 @@
     <!-- Keep AdminThrottlingPolicyRunner first (async key-manager config race) and RemoteLoggingRunner last
          (a failed log4j2.properties restore affects sibling logs). -->
     <test name="IntegrationV2-Distributed-KeyManager" parallel="classes" thread-count="1">
+        <parameter name="group" value="group1"/>
         <parameter name="blockLabel" value="distributed-keymanager"/>
         <parameter name="apimCpuLimit" value="1"/>
         <parameter name="initTenantUsers" value="true"/>
@@ -322,6 +332,7 @@
          the gateway process, and its post-delete 500 leg needs no other runner holding the same backend's
          certificate in the gateway's shared trust store. -->
     <test name="IntegrationV2-Distributed-MutualSslWsCors" parallel="classes" thread-count="1">
+        <parameter name="group" value="group2"/>
         <parameter name="blockLabel" value="distributed-mtls-ws-cors"/>
         <parameter name="apimCpuLimit" value="1"/>
         <parameter name="initTenantUsers" value="true"/>
@@ -343,6 +354,7 @@
 
     <!-- Keep FederatedBackendJwtRunner last: its IdP remains referenced until block teardown. -->
     <test name="IntegrationV2-Distributed-Is7KeyManager" parallel="classes" thread-count="1">
+        <parameter name="group" value="group2"/>
         <parameter name="blockLabel" value="distributed-is7-km"/>
         <parameter name="apimCpuLimit" value="1"/>
         <parameter name="initTenantUsers" value="true"/>
@@ -369,6 +381,7 @@
 
     <!-- Email-mode Gateway runners require the node backend. -->
     <test name="IntegrationV2-Distributed-EmailUserName-Gateway" parallel="classes" thread-count="2">
+        <parameter name="group" value="group1"/>
         <parameter name="blockLabel" value="distributed-email-username-gateway"/>
         <parameter name="apimCpuLimit" value="1"/>
         <parameter name="initTenantUsers" value="true"/>
@@ -388,6 +401,7 @@
     </test>
 
     <test name="IntegrationV2-Distributed-ThrottlingAndAllowedScopes" parallel="classes" thread-count="2">
+        <parameter name="group" value="group1"/>
         <parameter name="blockLabel" value="distributed-throttling-allowed-scopes"/>
         <parameter name="apimCpuLimit" value="1"/>
         <parameter name="initTenantUsers" value="true"/>
@@ -405,6 +419,7 @@
 
     <!-- Run the redirect runner first to avoid stale workflow-executor cache from earlier config writes. -->
     <test name="IntegrationV2-Distributed-ApprovalWorkflow" parallel="classes" thread-count="1">
+        <parameter name="group" value="group1"/>
         <parameter name="blockLabel" value="distributed-approval-workflow"/>
         <parameter name="apimCpuLimit" value="1"/>
         <parameter name="initTenantUsers" value="true"/>
@@ -424,6 +439,7 @@
     </test>
 
     <test name="IntegrationV2-Distributed-CrossTenantSubscription" parallel="classes" thread-count="1">
+        <parameter name="group" value="group1"/>
         <parameter name="blockLabel" value="distributed-cross-tenant-sub"/>
         <parameter name="apimCpuLimit" value="1"/>
         <parameter name="initTenantUsers" value="true"/>
@@ -442,22 +458,21 @@
 
     <!-- Keep tenant key-generation runners out: Solace key generation fails for tenant users. -->
     <test name="IntegrationV2-Distributed-Solace" parallel="classes" thread-count="1">
+        <parameter name="group" value="group2"/>
         <parameter name="blockLabel" value="distributed-solace"/>
         <parameter name="apimCpuLimit" value="1"/>
         <parameter name="initTenantUsers" value="true"/>
         <parameter name="initBackend" value="true"/>
         <parameter name="initProxy" value="true"/>
-        <!-- <parameter name="initSolaceBroker" value="true"/> -->
-        <!-- <parameter name="tomlExtraOverlayPath.cp" value="src/test/resources/artifacts/configFiles/solace/distributed-cp-overlay.toml"/> -->
         <parameter name="tomlExtraOverlayPath.gateway" value="src/test/resources/artifacts/configFiles/wsProxyNoMatch/deployment.toml"/>
         <classes>
-            <!-- <class name="org.wso2.am.integration.cucumbertests.runners.block.SolaceApiLifecycleRunner"/> -->
             <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewayWebSocketProxyNoMatchRunner"/>
         </classes>
     </test>
 
     <!-- Keep GatewayCustomHandlerRunner last: it changes Gateway-wide Synapse configuration. -->
     <test name="IntegrationV2-Distributed-GatewayAuthAndApplicationConfig" parallel="classes" thread-count="1">
+        <parameter name="group" value="group2"/>
         <parameter name="blockLabel" value="distributed-gateway-auth-app-config"/>
         <parameter name="apimCpuLimit" value="1"/>
         <parameter name="initTenantUsers" value="true"/>
@@ -478,6 +493,7 @@
 
     <!-- Shares the external-IS lifecycle lock with IntegrationV2-ExternalIdpConsoleSso. -->
     <test name="IntegrationV2-Distributed-MultiTenantSso" parallel="classes" thread-count="1">
+        <parameter name="group" value="group1"/>
         <parameter name="blockLabel" value="distributed-mt-sso"/>
         <parameter name="apimCpuLimit" value="1"/>
         <parameter name="lifecycleLock" value="browser-sso"/>
@@ -495,6 +511,7 @@
 
     <!-- Certificate-chain validation is Gateway-wide; keep default-mode mTLS tests separate. -->
     <test name="IntegrationV2-Distributed-BackendJwtUrlSafeAndMtlsChain" parallel="classes" thread-count="2">
+        <parameter name="group" value="group1"/>
         <parameter name="blockLabel" value="distributed-backend-jwt-urlsafe-mtls-chain"/>
         <parameter name="apimCpuLimit" value="1"/>
         <parameter name="initTenantUsers" value="true"/>
@@ -513,6 +530,7 @@
 
     <!-- NewVersionNotificationRunner changes email delivery and tenant notification settings. -->
     <test name="IntegrationV2-Distributed-NewVersionNotification" parallel="classes" thread-count="1">
+        <parameter name="group" value="group2"/>
         <parameter name="blockLabel" value="distributed-new-version-notification"/>
         <parameter name="apimCpuLimit" value="1"/>
         <parameter name="initTenantUsers" value="true"/>
@@ -527,6 +545,7 @@
     </test>
 
     <test name="IntegrationV2-Distributed-SandboxAndTokenExchangeDisabled" parallel="classes" thread-count="2">
+        <parameter name="group" value="group1"/>
         <parameter name="blockLabel" value="distributed-sandbox-tx-disabled"/>
         <parameter name="apimCpuLimit" value="1"/>
         <parameter name="initTenantUsers" value="true"/>
@@ -541,6 +560,7 @@
 
     <!-- ConfigurableDefaultPolicyRunner mutates the shared tenant default-tier configuration. -->
     <test name="IntegrationV2-Distributed-UnlimitedTierDisabled" parallel="classes" thread-count="1">
+        <parameter name="group" value="group1"/>
         <parameter name="blockLabel" value="distributed-unlimited-tier-disabled"/>
         <parameter name="apimCpuLimit" value="1"/>
         <parameter name="initTenantUsers" value="true"/>
@@ -557,6 +577,7 @@
 
     <!-- Suppressing the Resident Key Manager breaks API creation. -->
     <test name="IntegrationV2-Distributed-Is7DefaultKeyManager" parallel="classes" thread-count="1">
+        <parameter name="group" value="group2"/>
         <parameter name="blockLabel" value="distributed-is7-default-km"/>
         <parameter name="apimCpuLimit" value="1"/>
         <parameter name="initTenantUsers" value="true"/>
@@ -568,6 +589,7 @@
 
     <!-- Platform Gateway integration tests. -->
     <test name="IntegrationV2-Distributed-PlatformGateway" parallel="classes" thread-count="1">
+        <parameter name="group" value="group1"/>
         <parameter name="blockLabel" value="distributed-platform-gateway"/>
         <parameter name="apimCpuLimit" value="1"/>
         <parameter name="initTenantUsers" value="true"/>
@@ -579,6 +601,7 @@
     </test>
 
     <test name="IntegrationV2-Distributed-SecurityAuditCorsDisabledAndSecretRotation" parallel="classes" thread-count="2">
+        <parameter name="group" value="group1"/>
         <parameter name="blockLabel" value="distributed-security-audit-cors-disabled-secret-rotation"/>
         <parameter name="apimCpuLimit" value="1"/>
         <parameter name="initTenantUsers" value="true"/>
@@ -595,6 +618,7 @@
     </test>
 
     <test name="IntegrationV2-Distributed-MandatoryPropertiesAndDisplayDeprecated" parallel="classes" thread-count="1">
+        <parameter name="group" value="group2"/>
         <parameter name="blockLabel" value="distributed-mandatory-properties-display-deprecated"/>
         <parameter name="apimCpuLimit" value="1"/>
         <parameter name="initTenantUsers" value="true"/>
@@ -607,6 +631,7 @@
 
     <!-- Suppressing the Resident Key Manager breaks API creation. -->
     <test name="IntegrationV2-Distributed-Is7TenantSharingOff" parallel="classes" thread-count="1">
+        <parameter name="group" value="group1"/>
         <parameter name="blockLabel" value="distributed-is7-no-km"/>
         <parameter name="apimCpuLimit" value="1"/>
         <parameter name="initTenantUsers" value="true"/>
@@ -618,6 +643,7 @@
 
     <!-- Network access-control: outbound remote-reference host validation. -->
     <test name="IntegrationV2-Distributed-NetworkAccessControlPrivateBlock" parallel="classes" thread-count="2">
+        <parameter name="group" value="group2"/>
         <parameter name="blockLabel" value="distributed-network-access-control-private-block"/>
         <parameter name="initTenantUsers" value="true"/>
         <parameter name="tomlExtraOverlayPath.cp" value="src/test/resources/artifacts/configFiles/networkAccessControlPrivateBlock/deployment.toml"/>
@@ -631,6 +657,7 @@
 
     <!-- Restart scenarios mutate the shared APIM runtime. -->
     <test name="IntegrationV2-Distributed-ServerRestart-Throttling-A" parallel="classes" thread-count="1">
+        <parameter name="group" value="group2"/>
         <parameter name="blockLabel" value="distributed-server-restart-throttling-a"/>
         <parameter name="apimCpuLimit" value="1"/>
         <parameter name="initTenantUsers" value="true"/>
@@ -647,6 +674,7 @@
 
     <!-- Restart scenarios mutate the shared APIM runtime. -->
     <test name="IntegrationV2-Distributed-ServerRestart-Throttling-B" parallel="classes" thread-count="1">
+        <parameter name="group" value="group2"/>
         <parameter name="blockLabel" value="distributed-server-restart-throttling-b"/>
         <parameter name="apimCpuLimit" value="1"/>
         <parameter name="initTenantUsers" value="true"/>
@@ -663,6 +691,7 @@
 
     <!-- Restart scenarios mutate the shared APIM runtime. -->
     <test name="IntegrationV2-Distributed-ServerRestart-EmailUser" parallel="classes" thread-count="1">
+        <parameter name="group" value="group2"/>
         <parameter name="blockLabel" value="distributed-server-restart-email-user"/>
         <parameter name="apimCpuLimit" value="1"/>
         <parameter name="emailUserMode" value="true"/>
@@ -681,6 +710,7 @@
 
     <!-- Restart scenarios mutate the shared APIM runtime. -->
     <test name="IntegrationV2-Distributed-ServerRestart-EmailUser-Throttling" parallel="classes" thread-count="1">
+        <parameter name="group" value="group2"/>
         <parameter name="blockLabel" value="distributed-server-restart-email-user-throttling"/>
         <parameter name="apimCpuLimit" value="1"/>
         <parameter name="emailUserMode" value="true"/>
@@ -698,6 +728,7 @@
 
     <!-- Token-persistence Gateway runners. -->
     <test name="IntegrationV2-Distributed-FederatedBackendJwt-TokenPersistence" parallel="classes" thread-count="1">
+        <parameter name="group" value="group2"/>
         <parameter name="blockLabel" value="distributed-federated-backend-jwt-token-persistence"/>
         <parameter name="apimCpuLimit" value="1"/>
         <parameter name="initTenantUsers" value="true"/>
