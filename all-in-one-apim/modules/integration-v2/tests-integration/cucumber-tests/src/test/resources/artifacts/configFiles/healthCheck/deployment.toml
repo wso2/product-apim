@@ -1,0 +1,22 @@
+# Extra overlay: platform health check block.
+#
+# Merged on top of `basic`. The pack ships the carbon-health-check framework and TMHealthChecker but leaves the
+# framework disabled (carbon_health_check.enable defaults to false), so GET /api/health-check/v1.0/health
+# returns an empty list until it is switched on. The built-in DataSource and SuperTenant user store checkers
+# are turned off so the response carries only the tm.* keys the scenarios assert on.
+[carbon_health_check]
+enable = true
+
+[carbon_health_check.health_checker.data_source_health_checker]
+enable = false
+
+[carbon_health_check.health_checker.super_tenant_health_checker]
+enable = false
+
+# The SSL broker port (8672) is not enabled in this container, so only the configured plain broker port
+# (5672) is probed rather than also guessing its SSL pair.
+[[health_checker]]
+name = "TMHealthChecker"
+order = "6"
+[health_checker.properties]
+"broker.ssl.port.enabled" = "false"
