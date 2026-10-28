@@ -1,0 +1,14 @@
+# Feature-specific overlay for the IntegrationV2-OpaqueTokenRenewal block. Enables issuing a NEW opaque
+# access token without revoking the tokens already issued, for client_credentials ONLY.
+#
+# allowed_grant_types deliberately lists client_credentials and NOT password: that makes the password
+# grant the in-block negative control, proving the behaviour is driven by this list rather than by token
+# binding (which would give every request a fresh token regardless). Merged on top of the shared `basic`
+# overlay.
+#
+# This config is also the regression guard for the mapping itself: it only reaches the server if
+# identity.xml.j2 maps [oauth.opaque.renew_token_without_revoking_existing] into identity.xml. The opaque
+# mapping was absent while the JWT one was present, so the setting was silently inert.
+[oauth.opaque.renew_token_without_revoking_existing]
+enable = true
+allowed_grant_types = ["client_credentials"]
