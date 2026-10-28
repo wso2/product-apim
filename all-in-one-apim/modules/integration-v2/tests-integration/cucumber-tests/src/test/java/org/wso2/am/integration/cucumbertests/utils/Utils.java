@@ -526,6 +526,12 @@ public class Utils {
         return baseUrl + Constants.DEFAULT_APIM_USERINFO_EP;
     }
 
+    /** The carbon-health-check framework's REST endpoint: {@code GET /api/health-check/v1.0/health}. Unauthenticated. */
+    public static String getHealthCheckEndpointURL(String baseUrl) {
+
+        return baseUrl + Constants.DEFAULT_HEALTH_CHECK_EP;
+    }
+
     /**
      * Tenant-aware OIDC userinfo endpoint. A super-tenant token uses {@code oauth2/userinfo}; a TENANT token must
      * be presented at the tenant-qualified {@code t/<tenant>/oauth2/userinfo} path — the actor's {@code @domain}

@@ -752,4 +752,14 @@
             <class name="org.wso2.am.integration.cucumbertests.runners.block.FederatedUserJwtTokenPersistenceRunner"/>
         </classes>
     </test>
+    <!-- Platform health check: GET /api/health-check/v1.0/health is served by the carbon-health-check
+         framework and reports the TM health check probe (TMHealthChecker). The framework ships disabled, so the
+         healthCheck overlay switches it on. Unauthenticated endpoint, no tenant/token provisioning needed. -->
+    <test name="IntegrationV2-PlatformHealthCheck" parallel="classes" thread-count="1">
+        <parameter name="blockLabel" value="platform-health-check"/>
+        <parameter name="tomlExtraOverlayPath" value="src/test/resources/artifacts/configFiles/healthCheck/deployment.toml"/>
+        <classes>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.PlatformHealthCheckRunner"/>
+        </classes>
+    </test>
 </suite>

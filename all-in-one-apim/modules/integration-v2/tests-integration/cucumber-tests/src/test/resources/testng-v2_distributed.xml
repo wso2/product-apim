@@ -742,4 +742,11 @@
             <class name="org.wso2.am.integration.cucumbertests.runners.block.FederatedUserJwtTokenPersistenceRunner"/>
         </classes>
     </test>
+    <!-- Platform health check: all-in-one only (see suite-alignment.ignore). -->
+    <test name="IntegrationV2-Distributed-PlatformHealthCheck" parallel="classes" thread-count="1">
+        <parameter name="blockLabel" value="distributed-platform-health-check"/>
+        <classes>
+            <!-- <class name="org.wso2.am.integration.cucumbertests.runners.block.PlatformHealthCheckRunner"/> -->
+        </classes>
+    </test>
 </suite>
