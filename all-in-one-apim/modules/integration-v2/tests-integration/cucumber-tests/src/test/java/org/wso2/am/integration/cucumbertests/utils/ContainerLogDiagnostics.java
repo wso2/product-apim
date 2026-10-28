@@ -119,12 +119,12 @@ public final class ContainerLogDiagnostics {
             StringBuilder report = new StringBuilder();
             if (runtime instanceof DistributedDynamicApimContainer) {
                 // Distinct JVMs in this topology: the control plane writes the trust store, the gateway reads it.
-                appendSource(report, "control plane", safeRead(() -> runtime.readControlPlaneLogFile(fileName)),
+                appendSource(report, "control plane", safeRead(() -> runtime.readControlPlaneLogHistory(fileName).text()),
                         patterns);
-                appendSource(report, "gateway", safeRead(() -> runtime.readGatewayLogFile(fileName)), patterns);
+                appendSource(report, "gateway", safeRead(() -> runtime.readGatewayLogHistory(fileName).text()), patterns);
             } else {
                 // All-in-one: one JVM, and readGatewayLogFile/readControlPlaneLogFile resolve to the same file.
-                appendSource(report, "server", safeRead(() -> runtime.readGatewayLogFile(fileName)), patterns);
+                appendSource(report, "server", safeRead(() -> runtime.readGatewayLogHistory(fileName).text()), patterns);
             }
             if (report.length() == 0) {
                 return "";
@@ -174,7 +174,7 @@ public final class ContainerLogDiagnostics {
             if (!(candidate instanceof ApimRuntime runtime)) {
                 return "";
             }
-            String content = safeRead(() -> runtime.readControlPlaneLogFile(SERVER_LOG));
+            String content = safeRead(() -> runtime.readControlPlaneLogHistory(SERVER_LOG).text());
             if (content == null) {
                 return "";
             }

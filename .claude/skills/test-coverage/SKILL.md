@@ -82,7 +82,8 @@ Dev selects items and gives feedback; iterate until they're confident. **Lead-ap
 item until the dev confirms lead sign-off):
 - a **new `@cap`** (the vocabulary in `capability-map.yml` is closed),
 - a **new `@feat`** (also edits the closed vocabulary),
-- a **new `<test>` block / container** (real wall-clock + host-budget cost).
+- a **new `<test>` block / container** (real wall-clock + host-budget cost) — bring the `suite-layout-consultant`
+  report: measured isolated runtime, the cheaper placements it rejected and why, and the modelled suite time.
 Warn against dodging the `@cap`/`@feat` gate by mis-filing a genuinely-new capability under an existing tag.
 
 ## Phase 5 — Implementation (implement mode only)
@@ -91,6 +92,12 @@ artifact (grep the glue for a reusable step; confirm no existing feature fits).
 - **Unit:** extend the existing test class without duplication, in the module's idiom. **Patch persona — prove
   the regression:** check out the fix's PARENT commit, run the candidate test, confirm it FAILS; check out the
   fix, confirm it PASSES. A test that can't fail on the old code doesn't guard anything.
+- **Placement (MANDATORY for integration work).** Before adding a runner, a feature file, a block or an overlay,
+  or growing an existing feature/runner noticeably, run the `suite-layout-consultant` skill: measure the work's
+  isolated runtime, model it against the current 4-lane layout, and take the cheapest valid placement (extend an
+  existing feature/runner → join a compatible block → merge an orthogonal overlay → split by time → new block only
+  with lead approval). Never add a block, a long runner to a `thread-count="1"` block, or an oversized feature by
+  default — the suite's ~1 h 10 min wall time depends on it.
 - **Integration:** reuse/extend steps (never near-duplicate), extend existing feature files where one fits,
   correct folder + `@cap`, isolation/cleanup/actor rules, `Copyright (c) 2026` on new `.java`, ×2 tenant, strict
   **exact-value** assertions (never `401 || 403`).
@@ -98,8 +105,23 @@ artifact (grep the glue for a reusable step; confirm no existing feature fits).
   (doc bug vs impl bug) — never silently encode one.
 
 ## Phase 6 — Verify
-- **Minimal first:** unit → run the affected class(es); integration → a scratch/minimal testng suite with just
-  the new block(s). Confirm green.
+- **Minimal first:** unit → run the affected class(es); integration → a scratch testng suite with just the affected
+  block(s), each `<test>` element copied complete and verbatim (all runners, `thread-count`, order, parameters) —
+  never only the new runner, since leaks, collisions and ordering defects appear only alongside the block's other
+  runners. Confirm green. Name every temporary suite `zz-<purpose>.xml` (in
+  `tests-integration/cucumber-tests/src/test/resources/`) so it is recognisable as scratch; it is never part of the
+  deliverable.
+- **Block log audit (MANDATORY for integration work).** Green is necessary, not sufficient. For every block that
+  runs a new or changed scenario, run the `block-log-audit` skill on that run's logs (split per block with its
+  `scripts/split_block_logs.py`) and meet its gate: no assertion passing for the wrong reason, no coverage gap, no
+  leak, no cleanup re-delete or other hygiene defect, no open question about the new scenarios, every ERROR/WARN
+  the new scenarios produce explained (expected and asserted, or benign with a reason, or a catalogued product issue
+  the change does not worsen), every new negative assertion exact and shown able to fail. Fix what it finds, re-run
+  the block, and attach the audit report to the work. A test that passes while its block logs show the wrong cause,
+  a leak or a race is not done.
+- **Layout check (MANDATORY when Phase 5 changed placement).** Meet the `suite-layout-consultant` gate: isolated
+  runtimes measured, the placement is the cheapest valid option, the modelled suite time and packing stay within
+  budget (state before/after), no block over ~3,600 s, and the affected blocks ran green in their new layout.
 - **Then ASK** before the full local suite. Run it with `-Dapim.coverage=true` to capture the coverage delta
   (the quantitative re-eval). The exec dir is auto-purged at suite start, so no manual cleanup is needed.
 - **Blockers** (infra gaps, product quirks) → surface and discuss; park with a documented reason if unresolved
@@ -108,7 +130,12 @@ artifact (grep the glue for a reusable step; confirm no existing feature fits).
 ## Phase 7 — Wrap
 - If a new `@cap`/`@feat` was approved: update `capability-map.yml`, regenerate the tree
   (`python3 docs/devs/render_coverage_tree.py`, require `invalid: 0`), and mark the new flows covered.
-- Report the coverage delta (unit + integration, before/after) as the closing artifact.
+- **Remove every temporary focused suite (MANDATORY).** Delete the `zz-*.xml` (and any other scratch suite the work
+  created, e.g. `testng-*-focused.xml`) before handing over; confirm with `git status --porcelain` that no scratch
+  suite, run log or probe file remains, staged or untracked. Only `testng-v2.xml` / `testng-v2_distributed.xml`
+  changes that are part of the approved layout are deliverables.
+- Report the coverage delta (unit + integration, before/after), the block-log-audit report(s) for every block the
+  work touched, and the suite-layout-consultant report when placement changed, as the closing artifacts.
 
 ---
 
@@ -125,11 +152,14 @@ artifact (grep the glue for a reusable step; confirm no existing feature fits).
 **Cost is block-level.** The unit of integration cost is the **container boot** (minutes + host budget). A
 scenario appended to an existing feature/block is near-free; a new block with its own overlay/restart is a whole
 container → lead-approval gate. This reorders priority: *extend an existing block* dominates *new block* even when
-a new block is cleaner.
+a new block is cleaner. Runtime matters as much as boots: a long runner in a `thread-count="1"` block or a growing
+feature can become the suite's critical path — the `suite-layout-consultant` measures and models it.
 
 **Failure modes to guard against:** hallucinated placement (read the real feature files) · duplicate tests
 (mandatory grep) · over-mocked units that pass but don't protect (the parent-commit fail check kills these) ·
-plan bloat (opportunistic quarantine) · `@cap`-gate gaming · docs ahead of impl (surface divergence).
+integration tests that pass for the wrong reason, leak, or race behind retries (the mandatory block log audit
+kills these) · plan bloat (opportunistic quarantine) · `@cap`-gate gaming · docs ahead of impl (surface
+divergence).
 
 ## References
 - `references/change-analysis.md` — diff → semantic-unit classification
@@ -137,3 +167,5 @@ plan bloat (opportunistic quarantine) · `@cap`-gate gaming · docs ahead of imp
 - `references/duplication-check.md` — the pre-write search discipline
 - `references/plan-template.md` — the TEST-PLAN.md shape
 - `references/repo-config.md` — repo-location config file format
+- `../block-log-audit/SKILL.md` — the mandatory Phase 6 block log audit and its gate
+- `../suite-layout-consultant/SKILL.md` — the mandatory placement decision (Phase 5) and layout gate (Phase 6)

@@ -19,6 +19,8 @@ package org.wso2.am.integration.cucumbertests.utils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.am.testcontainers.ApimRuntime;
+import org.wso2.am.integration.test.utils.Constants;
+import org.wso2.am.testcontainers.ContainerLogHistory;
 
 /**
  * Tells a deploy's synapse artifact from one already on the gateway, using the gateway log.
@@ -26,17 +28,19 @@ import org.wso2.am.testcontainers.ApimRuntime;
  * <p>The gateway artifact endpoint is keyed on name and version only, so after a RE-deploy it answers 200 from the
  * artifact that was already there. Synapse logs {@code <type> : <artifact> was added to the Synapse configuration
  * successfully} each time it hot-swaps an artifact in, so "the log gained this artifact's line since the deploy" is
- * true only once the new artifact is live. A deploy step {@link #mark marks} the log length (keyed by resource id)
+ * true only once the new artifact is live. A deploy step {@link #mark marks} the log end (keyed by resource id)
  * before deploying; the readiness gate then {@link #artifactAddedSinceMark checks} the appended part.</p>
  *
- * <p>Best-effort by design: no mark, no container, or an unreadable log yields {@link HealGate.Ready}, which is the
- * artifact-existence behaviour the gate has without this check. It can only make the gate stricter.</p>
+ * <p>Without a block container or a deploy mark, the gate uses artifact existence. A marked deploy requires
+ * readable history after that mark; a lost mark, or a mark from another container or log file, cannot confirm the
+ * deploy. After a restart in the same container and log file, the whole later boot follows the mark. Container
+ * transport failures keep polling within the existing deadline.</p>
  */
 public final class GatewaySynapseLog {
 
     private static final Log logger = LogFactory.getLog(GatewaySynapseLog.class);
 
-    /** Context key prefix for the gateway-log offset captured immediately before a resource's deploy. */
+    /** Context key prefix for the gateway-log position captured immediately before a resource's deploy. */
     private static final String MARK_PREFIX = "deployGatewayLogMark::";
 
     /** Synapse's per-artifact hot-swap line. */
@@ -45,24 +49,43 @@ public final class GatewaySynapseLog {
     private GatewaySynapseLog() {
     }
 
-    /** Records the gateway log's current length for {@code resourceId}, ahead of deploying that resource. */
+    /** Records the gateway log's current end for {@code resourceId}, ahead of deploying that resource. */
     public static void mark(String resourceId) {
-        try {
-            Object candidate = TestContext.get("blockApimContainer");
-            if (candidate instanceof ApimRuntime runtime) {
+        mark(resourceId, Constants.RUNTIME_PROPAGATION_TIMEOUT, Constants.RETRY_INTERVAL_TIME);
+    }
+
+    static void mark(String resourceId, long timeoutMillis, long intervalMillis) {
+        Object candidate = TestContext.get("blockApimContainer");
+        if (!(candidate instanceof ApimRuntime runtime)) {
+            return;
+        }
+        long start = System.currentTimeMillis();
+        long deadline = System.nanoTime() + java.util.concurrent.TimeUnit.MILLISECONDS.toNanos(timeoutMillis);
+        while (true) {
+            try {
                 TestContext.set(MARK_PREFIX + resourceId,
-                        runtime.readGatewayLogFile(ContainerLogDiagnostics.SERVER_LOG).length());
+                        runtime.readGatewayLogHistory(ContainerLogDiagnostics.SERVER_LOG).mark());
+                return;
+            } catch (ContainerLogHistory.ReadUnavailableException unavailable) {
+                if (Thread.currentThread().isInterrupted() || System.nanoTime() >= deadline) {
+                    throw new IllegalStateException("Could not mark gateway log before deploying " + resourceId,
+                            unavailable);
+                }
+                try {
+                    Utils.pollPause(start, intervalMillis);
+                } catch (InterruptedException interrupted) {
+                    Thread.currentThread().interrupt();
+                    throw new IllegalStateException("Interrupted marking gateway log before deploying " + resourceId,
+                            interrupted);
+                }
             }
-        } catch (Throwable unreadable) {
-            // Deliberately Throwable: this only sharpens a later gate; it must never break the deploy itself.
-            logger.warn("Could not mark the gateway log before deploying " + resourceId + " (the readiness gate"
-                    + " will fall back to artifact existence): " + unreadable);
         }
     }
 
     /**
      * {@link HealGate.Ready} once the gateway log has gained {@code artifact}'s synapse hot-swap line since the mark
-     * taken for {@code resourceId}; {@link HealGate.NotReady} while it has not. Matching is on the full synapse
+     * taken for {@code resourceId}; {@link HealGate.NotReady} while it has not, including while a restarted gateway has
+     * not logged its {@code Starting WSO2 Carbon} line yet. Matching is on the full synapse
      * artifact name, which is scenario-unique because resource names are unique by construction: block classes share
      * one container and one log, so anything less specific could match a sibling scenario's deploy.
      */
@@ -71,24 +94,34 @@ public final class GatewaySynapseLog {
         if (mark == null) {
             return new HealGate.Ready();
         }
-        String log;
+        ContainerLogHistory.Snapshot log;
         try {
             Object candidate = TestContext.get("blockApimContainer");
             if (!(candidate instanceof ApimRuntime runtime)) {
-                return new HealGate.Ready();
+                return new HealGate.Fatal("Marked deploy has no block runtime for its gateway log");
             }
-            log = runtime.readGatewayLogFile(ContainerLogDiagnostics.SERVER_LOG);
-        } catch (Throwable unreadable) {
-            logger.warn("Could not read the gateway log to confirm the synapse hot-swap of " + artifact
-                    + " (accepting the artifact-endpoint 200): " + unreadable);
-            return new HealGate.Ready();
+            log = runtime.readGatewayLogHistory(ContainerLogDiagnostics.SERVER_LOG);
+        } catch (ContainerLogHistory.ReadUnavailableException unreadable) {
+            logger.warn("Could not read the gateway log to confirm the synapse hot-swap of " + artifact, unreadable);
+            return new HealGate.NotReady("Could not read marked gateway log: " + unreadable);
+        } catch (RuntimeException invalid) {
+            return new HealGate.Fatal("Invalid marked gateway log: " + invalid);
         }
         if (log == null) {
-            return new HealGate.Ready();
+            return new HealGate.NotReady("Marked gateway log is unavailable");
         }
-        int from = Integer.parseInt(mark.toString());
-        // A rotated/truncated log can leave the mark past the end; scan the whole file rather than throw.
-        String appended = from <= log.length() ? log.substring(from) : log;
+        if (!(mark instanceof ContainerLogHistory.Mark)) {
+            return new HealGate.Fatal("Invalid gateway log mark for " + resourceId);
+        }
+        if (!log.bootFound()) {
+            return new HealGate.NotReady("the gateway's current boot has not logged 'Starting WSO2 Carbon' yet");
+        }
+        String appended;
+        try {
+            appended = log.since((ContainerLogHistory.Mark) mark);
+        } catch (IllegalStateException invalid) {
+            return new HealGate.Fatal("Invalid gateway log mark for " + resourceId + ": " + invalid.getMessage());
+        }
         for (String line : appended.split("\\R")) {
             if (line.contains(artifact) && line.contains(SYNAPSE_ADDED)) {
                 return new HealGate.Ready();

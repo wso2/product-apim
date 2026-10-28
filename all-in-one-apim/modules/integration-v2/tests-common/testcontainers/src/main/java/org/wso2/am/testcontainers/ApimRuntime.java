@@ -108,6 +108,15 @@ public interface ApimRuntime {
     /** Read a log file from the component that publishes traffic-manager events. */
     String readTrafficManagerLogFile(String fileName);
 
+    /** Retained, chronological log history for the current Carbon boot on the Gateway. */
+    ContainerLogHistory.Snapshot readGatewayLogHistory(String fileName);
+
+    /** Retained, chronological log history for the current Carbon boot on the Control Plane. */
+    ContainerLogHistory.Snapshot readControlPlaneLogHistory(String fileName);
+
+    /** Retained, chronological log history for the current Carbon boot on the Traffic Manager. */
+    ContainerLogHistory.Snapshot readTrafficManagerLogHistory(String fileName);
+
     String readContainerFile(String containerPath);
 
     void writeContainerFile(String containerPath, String content);

@@ -191,6 +191,9 @@ public class EndpointCertificateSteps {
         auth.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + token);
         String what = "gateway trust of endpoint certificate '" + resolvedAlias + "'";
         boolean[] recoveryStarted = {false};
+        // Log history covers the current boot only, so each heal's restart would drop the evidence for the
+        // failure it recovers from; it is captured here before every restart.
+        StringBuilder earlierBootEvidence = new StringBuilder();
 
         try {
             HealGate.awaitOrHeal(what,
@@ -222,13 +225,15 @@ public class EndpointCertificateSteps {
                     },
                     attempt -> {
                         recoveryStarted[0] = true;
+                        earlierBootEvidence.append(ContainerLogDiagnostics.explainTrustStoreRace(
+                                what + " before the gateway restart for attempt " + attempt));
                         return restartAndReUploadCertificate(resolvedAlias);
                     },
                     TRUST_GATE_ATTEMPTS);
         } catch (AssertionError gateFailed) {
             // The chain that causes this lives ONLY in the server log; without it the report is a bare
             // "expected 200 but found 500" that names neither the trust store nor the dropped event.
-            throw new AssertionError(gateFailed.getMessage()
+            throw new AssertionError(gateFailed.getMessage() + earlierBootEvidence
                     + ContainerLogDiagnostics.explainTrustStoreRace(what), gateFailed);
         }
     }
@@ -371,6 +376,9 @@ public class EndpointCertificateSteps {
         auth.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + token);
         String what = "gateway removal of endpoint certificate '" + resolvedAlias + "'";
         boolean[] recoveryStarted = {false};
+        // Log history covers the current boot only, so each heal's restart would drop the evidence for the
+        // failure it recovers from; it is captured here before every restart.
+        StringBuilder earlierBootEvidence = new StringBuilder();
 
         Object reloadBaseline = TestContext.get(CERT_REMOVAL_RELOAD_BASELINE_PREFIX + resolvedAlias);
         Object removalLogBaseline = TestContext.get(CERT_REMOVAL_LOG_BASELINE_PREFIX + resolvedAlias);
@@ -417,12 +425,14 @@ public class EndpointCertificateSteps {
                         String gatewayLog = readGatewayLog();
                         reloadCountBaseline[0] = countOccurrences(gatewayLog, SSL_PROFILE_RELOAD_LOG);
                         TestContext.set(CERT_REMOVAL_RELOAD_BASELINE_PREFIX + resolvedAlias, reloadCountBaseline[0]);
+                        earlierBootEvidence.append(ContainerLogDiagnostics.explainTrustStoreRace(
+                                what + " before the gateway restart for attempt " + attempt));
                         GracefulServerRestart.gateway();
                         return new HealGate.NotReady("gateway restarted; waiting for its fresh SSL sender reload");
                     },
                     REMOVAL_GATE_ATTEMPTS);
         } catch (AssertionError gateFailed) {
-            throw new AssertionError(gateFailed.getMessage()
+            throw new AssertionError(gateFailed.getMessage() + earlierBootEvidence
                     + ContainerLogDiagnostics.explainTrustStoreRace(what), gateFailed);
         }
     }
@@ -478,7 +488,7 @@ public class EndpointCertificateSteps {
             return null;
         }
         try {
-            return runtime.readGatewayLogFile(ContainerLogDiagnostics.SERVER_LOG);
+            return runtime.readGatewayLogHistory(ContainerLogDiagnostics.SERVER_LOG).text();
         } catch (RuntimeException logUnavailable) {
             return null;
         }
