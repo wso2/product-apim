@@ -305,12 +305,33 @@ public class MultiTenantSsoSteps {
 
     @Then("the {string} console must demand a fresh login after multi-tenant logout")
     public void theConsoleMustDemandFreshLoginAfterMultiTenantLogout(String console) {
-        browser.assertConsoleDemandsFreshLogin(console);
+        assertFreshLoginThroughTheBroker(console);
     }
 
     @Then("the Admin console must demand a fresh login after multi-tenant logout")
     public void theAdminConsoleMustDemandFreshLoginAfterMultiTenantLogout() {
-        browser.assertConsoleDemandsFreshLogin("admin");
+        assertFreshLoginThroughTheBroker("admin");
+    }
+
+    @Then("the identity server must demand the tenant user's credentials again")
+    public void theIdentityServerMustDemandCredentialsAgain() {
+        browser.assertIdentityServerDemandsCredentials();
+    }
+
+    /**
+     * Asserts a console demands a fresh login after logout at BOTH ends of the broker chain.
+     *
+     * <p>The console's own login page coming back proves only that API Manager's sessions ended: these consoles
+     * offer the local authenticator beside the broker, so API Manager always asks which to use, whatever the
+     * Identity Server still holds. The Identity Server's session is what a tenant user is signed back in with, so
+     * the login is followed through the broker and the tenant selection to the Identity Server, which must ask for
+     * credentials rather than return the user to the console.
+     */
+    private void assertFreshLoginThroughTheBroker(String console) {
+        browser.assertConsoleDemandsFreshLogin(console);
+        iSelectTheMultiTenantBrokerAuthenticator();
+        browser.selectTenant(TestContext.resolve("mtTenantDomain").toString());
+        browser.assertIdentityServerDemandsCredentials();
     }
 
     @Then("the DevPortal session must no longer authorize the MT application")
@@ -319,9 +340,11 @@ public class MultiTenantSsoSteps {
                 "/api/am/devportal/v3/applications/" + TestContext.resolve("mtAppId"), "/devportal");
     }
 
+    /** Neither API Manager's session cookies nor the Identity Server's may survive the logout. */
     @Then("no multi-tenant console session cookies should remain")
     public void noMultiTenantConsoleSessionCookiesShouldRemain() {
         browser.assertNoSessionCookieResidue();
+        browser.assertNoIdentityServerSessionCookie();
     }
 
     @And("I authenticate at the identity server as the tenant's SSO user")

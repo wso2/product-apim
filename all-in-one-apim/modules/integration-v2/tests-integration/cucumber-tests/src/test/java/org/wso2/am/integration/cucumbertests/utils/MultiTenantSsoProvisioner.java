@@ -125,12 +125,32 @@ public final class MultiTenantSsoProvisioner {
     }
 
     /**
-     * Identity Server SERVER-facing base ({@code https://wso2is:9443/}). The identity providers point their
-     * authorize/token/userinfo endpoints here so the {@code id_token} issuer is the same host API Manager calls
-     * server-to-server, and so the browser (through its CONNECT proxy) sees the same authority.
+     * Identity Server SERVER-facing base ({@code https://wso2is:9443/}, or the offset port when the block moves
+     * IS off 9443): what API Manager calls server-to-server, so the identity providers' token and userinfo
+     * endpoints point here.
      */
     private static String isServerBase() {
-        return "https://" + org.wso2.am.testcontainers.DynamicISContainer.NETWORK_ALIAS + ":9443/";
+        return blockIdentityServer().getInternalBaseUrl();
+    }
+
+    /**
+     * The base the Identity Server advertises to browsers: the identity providers' authorize and logout
+     * endpoints, which the browser follows. The same as {@link #isServerBase()} unless the block advertises IS
+     * under API Manager's own host ({@code https://localhost:9444/}), where the two servers share one cookie
+     * host.
+     */
+    private static String isAdvertisedBase() {
+        return blockIdentityServer().getAdvertisedBaseUrl();
+    }
+
+    /** This block's Identity Server container, which owns its hostname and port. */
+    private static org.wso2.am.testcontainers.DynamicISContainer blockIdentityServer() {
+        Object is = TestContext.get("blockIsContainer");
+        if (!(is instanceof org.wso2.am.testcontainers.DynamicISContainer)) {
+            throw new IllegalStateException("This block booted no external Identity Server; set "
+                    + "bootExternalIdentityServer=true on its <test> block.");
+        }
+        return (org.wso2.am.testcontainers.DynamicISContainer) is;
     }
 
     /** {@code ""} for the super tenant, else {@code t/<domain>/} — the tenant-qualified URL prefix. */
@@ -499,14 +519,15 @@ public final class MultiTenantSsoProvisioner {
     public static void registerTenantOidcIdp(String tenantDomain, String idpName, String clientId,
             String clientSecret, String admin, String password) throws IOException {
         String isTenant = isServerBase() + tenantPrefix(tenantDomain);
+        String isTenantAdvertised = isAdvertisedBase() + tenantPrefix(tenantDomain);
         String federated = "<m:federatedAuthenticatorConfigs><m:displayName>openidconnect</m:displayName>"
                 + "<m:enabled>true</m:enabled><m:name>OpenIDConnectAuthenticator</m:name>"
                 + property("ClientId", clientId)
                 + property("ClientSecret", clientSecret)
-                + property("OAuth2AuthzEPUrl", isTenant + "oauth2/authorize")
+                + property("OAuth2AuthzEPUrl", isTenantAdvertised + "oauth2/authorize")
                 + property("OAuth2TokenEPUrl", isTenant + "oauth2/token")
                 + property("UserInfoUrl", isTenant + "oauth2/userinfo")
-                + property("OIDCLogoutEPUrl", isTenant + "oidc/logout")
+                + property("OIDCLogoutEPUrl", isTenantAdvertised + "oidc/logout")
                 // This is the redirect_uri sent to the identity server, so it must be byte-identical to the
                 // callback registered on the tenant application there — the tenant's own commonauth, not the
                 // super tenant's, because this leg of the chain runs in the tenant's context.
@@ -622,10 +643,10 @@ public final class MultiTenantSsoProvisioner {
                 + "<m:enabled>true</m:enabled><m:name>multiTenantAuthenticator</m:name>"
                 + property("ClientId", clientId)
                 + property("ClientSecret", clientSecret)
-                + property("OAuth2AuthzEPUrl", isServerBase() + "oauth2/authorize")
+                + property("OAuth2AuthzEPUrl", isAdvertisedBase() + "oauth2/authorize")
                 + property("OAuth2TokenEPUrl", isServerBase() + "oauth2/token")
                 + property("UserInfoUrl", isServerBase() + "oauth2/userinfo")
-                + property("OIDCLogoutEPUrl", isServerBase() + "oidc/logout")
+                + property("OIDCLogoutEPUrl", isAdvertisedBase() + "oidc/logout")
                 + property("callbackUrl", apimInternal() + "commonauth")
                 // 'groups' is required alongside 'openid': the identity server releases group memberships
                 // only when that scope is requested, and without them no role mapping can happen.

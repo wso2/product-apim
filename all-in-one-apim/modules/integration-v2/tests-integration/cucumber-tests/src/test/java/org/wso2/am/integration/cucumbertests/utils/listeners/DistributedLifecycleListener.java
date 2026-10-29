@@ -62,8 +62,9 @@ public class DistributedLifecycleListener extends BlockLifecycleListener {
     }
 
     @Override
-    protected DynamicISContainer createExternalIdentityServer(String label, String extraOverlayContent) {
-        return new DynamicISContainer(label, extraOverlayContent)
+    protected DynamicISContainer createExternalIdentityServer(String label, String extraOverlayContent,
+            String hostname, int portOffset) {
+        return new DynamicISContainer(label, extraOverlayContent, hostname, portOffset)
                 .withEnv("JVM_MEM_OPTS", EXTERNAL_IS_HEAP_OPTS)
                 .withMemoryLimit(EXTERNAL_IS_MEMORY_LIMIT_BYTES,
                         DistributedMemoryLimits.memoryAndSwapLimitBytes(EXTERNAL_IS_MEMORY_LIMIT_BYTES))

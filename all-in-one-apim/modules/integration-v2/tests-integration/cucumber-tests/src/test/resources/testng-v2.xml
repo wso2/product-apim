@@ -620,15 +620,26 @@
         </classes>
     </test>
 
+    <!-- Also hosts MultiTenantSsoSharedHostRunner: the multi-tenant SSO topology with the Identity Server advertised on
+         APIM's own host (localhost:9444), so the two servers share one cookie host as a single-machine deployment
+         does. The other runners never touch the Identity Server. -->
     <test name="IntegrationV2-MandatoryPropertiesAndDisplayDeprecated" parallel="classes" thread-count="1">
         <parameter name="group" value="group2"/>
         <parameter name="blockLabel" value="mandatory-properties-display-deprecated"/>
         <parameter name="apimCpuLimit" value="1"/>
         <parameter name="initTenantUsers" value="true"/>
+        <parameter name="lifecycleLock" value="browser-sso"/>
+        <parameter name="bootExternalIdentityServer" value="true"/>
+        <parameter name="isHostname" value="localhost"/>
+        <parameter name="isPortOffset" value="1"/>
+        <parameter name="isCpuLimit" value="1"/>
+        <parameter name="receiveExternalIsNotifications" value="true"/>
+        <parameter name="isTomlExtraOverlayPath" value="src/test/resources/artifacts/configFiles/multiTenantSso/is-tenant-sync-overlay.toml"/>
         <parameter name="tomlExtraOverlayPath" value="src/test/resources/artifacts/configFiles/mandatoryPropertiesDisplayDeprecated/deployment.toml"/>
         <classes>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.PublisherMandatoryPropertiesRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.DevPortalDeprecatedApiDiscoverabilityRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.MultiTenantSsoSharedHostRunner"/>
         </classes>
     </test>
 
