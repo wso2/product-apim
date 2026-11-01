@@ -39,6 +39,15 @@ Rules you must obey when changing test layout: `all-in-one-apim/modules/integrat
   existing block whose overlay and behaviour already suit it; (3) merge a small, orthogonal overlay into a compatible
   block (how WsProxy and NetworkAccessControl were absorbed); (4) split an oversized runner or feature across lanes or
   blocks; (5) a new block — only when no compatible block exists, with the measured case and lead approval.
+- **Any block can be the host, not only blocks of the same feature area.** A block that lacks a component the runner
+  needs (an external IS, Squid, Solace, a platform gateway) can still host it: the block gains that component and its
+  overlay, and the suite saves the runner's own block boot. Evaluate every block, and prefer hosts that are small (one
+  to three runners), boot-dominated (short runners, so the addition does not create a new long block), not sensitive to
+  what the addition changes (an overlay's tenant, session, URL or key-manager settings apply to every runner of the
+  host), and free of server restarts. A large block is a poor host even when compatible: the added component holds its
+  memory and CPU for the whole block while most runners never use it, and every runner is exposed to its overlay.
+  Compare each candidate's saving (one boot minus the added component's start-up) with merging into the block that
+  already has the component, and verify the chosen host at runtime.
 - **Consolidation must not change what a test proves.** Before co-locating, read each block's suite comment and runner
   javadoc, verify the claim behind any "keep separate" note (comments can be stale), list every block that runs a shared
   feature, and check that neither overlay changes the other's behaviour. A test that goes green because its config
@@ -56,8 +65,20 @@ Given a pull request (URL or number), a branch or a diff: list every runner, fea
 `serverFilesToCopy` it adds or changes, and every block whose runner list or `thread-count` it touches (diff the suite
 file against the base). These are what you evaluate. If it changes `tests-common/testcontainers/src/main/resources/
 nodeapps`, every run you make needs a backend image built from that change (`mvn test` does not rebuild images): build
-a private tag from the worktree's `nodeapps` and pass `-Dnode.docker.image.name=<tag>`; remove it afterwards. Work
-on a local checkout only: **never push to, comment on, review or otherwise act on the pull request.**
+a private tag from the worktree's `nodeapps` and pass `-Dnode.docker.image.name=<tag>`; remove it afterwards. If it
+changes the product itself (a dependency version in a product `pom.xml`, or any module a distribution is built from),
+the existing APIM images do not contain the change: build them from the worktree natively (never reuse CI's amd64
+images) the way CI's `v2-build-images` job does, under private tags so the shared tags other checkouts use stay intact:
+(1) `mvn clean install -Dmaven.test.skip=true -DskipBenchMarkTest=true -DskipRestartTests=true` from the **repository
+root** (its reactor includes `api-control-plane`, `gateway` and `traffic-manager`; `-f all-in-one-apim/pom.xml` leaves
+them out, and the image step then silently packages stale component zips from an earlier build); (2) in
+`all-in-one-apim/modules/integration-v2`, `mvn install -Pinclude-distributed-images -pl tests-integration/cucumber-tests
+-am -DskipTests`. Pass the same `-Dapim.docker.image.name`, `-Ddistributed.apim.{cp,tm,gateway}.image.name` and
+`-Dnode.docker.image.name` private tags to both steps and to every run; a focused distributed run also needs
+`-Ddistributed.apim.defaults.directory=<integration-v2>/tests-common/testcontainers/target/distributed-apim/defaults`,
+which the image step stages and a focused `mvn test` does not. A full build needs about 30 GB free on the host: check
+`df -h /` before and during it and stop below 3 GB (a full host disk corrupts the Colima VM). Remove the tags
+afterwards. Work on a local checkout only: **never push to, comment on, review or otherwise act on the pull request.**
 
 When asked to optimise the whole suite rather than place one change, the scope is every block: work from the hotspots
 the metrics show (critical-path and boot-dominated blocks, tail runners, imbalanced lanes, multi-block registrations,
@@ -78,6 +99,8 @@ Take the baseline from an existing full run, never from a new full local run. In
    `BlockLifecycleListener` lines; runner times then come from your isolated runs (step 2).
 3. **A local `testng-results.xml` from a full local run** (last resort, only when no CI data exists): state in the
    report that it reflects local conditions (different CPU, concurrency and platform from CI).
+If the suite at the change's commit declares no `group` (a branch from before the group split), its CI ran each topology
+as one job: model it as one group, say so, and state where the change would belong once rebased onto the grouped layout.
 Run `scripts/suite_timings.py <testng-results.xml | job log> <suite xml> --features <out dir>/features`: it prints
 the deterministic metrics the report pastes (run summary, blocks, top runners, top features, slowest scenarios,
 multi-block runners, layout model per group, group balance and longest-first regrouping). `--group <name>` limits it to one
@@ -100,8 +123,11 @@ a heuristic candidate order (greedy longest-first packing), not a guaranteed opt
 order: propose a reorder only when its modelled time is actually lower, and model any other order you consider with
 `position` lines. Any block a change adds or lengthens must be placed in the group and file position where the model
 says it costs least. Longest-first regrouping is likewise a heuristic: a lower figure suggests a group rebalance to
-model with `group` lines (and to apply in both suites). Compare modelled suite time, the fullest queue and packing efficiency. See `references/layout-model.md` for the model and its limits, and
-`references/consolidation-playbook.md` / `references/splitting-playbook.md` for what makes an option valid.
+model with `group` lines (and to apply in both suites). Compare modelled suite time, the fullest queue and packing
+efficiency. A measured block span includes any lifecycle-lock wait; the wait occupies a slot, so never subtract it from
+the span when modelling: removing or regrouping a lock holder saves the whole span. See `references/layout-model.md` for
+the model and its limits, and `references/consolidation-playbook.md` / `references/splitting-playbook.md` for what makes
+an option valid.
 
 ### 4. Check compatibility of the chosen option
 Overlay orthogonality (TOML tables and keys, j2 templates, arrays that replace defaults), server-global state and
@@ -109,6 +135,13 @@ restarts (`thread-count` must be 1 if anything restarts or flips global config),
 `thread-count`, wait-bound runners can share lanes), lifecycle locks and fixed aliases (browser blocks, external-IS
 notification alias), ordering constraints, shared feature files run by other blocks, tenant/actor provisioning the
 block needs (`initTenantUsers`, `initSecondaryUserStore`, `emailUserMode`).
+
+**Lifecycle locks** (`lifecycleLock`, e.g. `browser-sso` for blocks that drive the browser against an external IS) are a
+JVM-wide semaphore that `BlockLifecycleListener` acquires at block start on the block's own TestNG thread. A block
+waiting for the lock holds one of its group's 4 slots idle until the holder finishes; that slot runs nothing else.
+Blocks sharing a lock in the same group must therefore be far apart in file order (so the first finishes before the
+next starts); blocks in different groups run in separate CI jobs and JVMs and never wait on each other. Prefer placing a
+new lock-holding block in a group without another holder.
 
 ### 5. Apply and verify
 Make the change in the suite (and overlays/runners/feature splits), regenerate the coverage tree if features or runners
@@ -118,7 +151,8 @@ changed (`render_coverage_tree.py`, require `invalid: 0` and `not-executed: 0`),
 ### Running blocks locally
 Runs are focused suites of complete blocks, from `all-in-one-apim/modules/integration-v2`:
 `mvn -o -B test -pl tests-integration/cucumber-tests -am -Dsurefire.suite.xml=<suite>` (`-am` is required: without it
-stale upstream modules are used; `test`, never `install`, so the product image is not rebuilt). On macOS with Colima
+stale upstream modules are used; `test`, never `install`, so the product image is not rebuilt, except for the
+private-tag image build in §0). On macOS with Colima
 export first: `DOCKER_HOST=unix://$HOME/.colima/default/docker.sock`,
 `TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE=/var/run/docker.sock`, `TESTCONTAINERS_HOST_OVERRIDE=localhost`,
 `TESTCONTAINERS_RYUK_DISABLED=true`. A fresh worktree lacks the generated IS trust material: copy
