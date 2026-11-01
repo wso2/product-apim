@@ -74,9 +74,10 @@ root** (its reactor includes `api-control-plane`, `gateway` and `traffic-manager
 them out, and the image step then silently packages stale component zips from an earlier build); (2) in
 `all-in-one-apim/modules/integration-v2`, `mvn install -Pinclude-distributed-images -pl tests-integration/cucumber-tests
 -am -DskipTests`. Pass the same `-Dapim.docker.image.name`, `-Ddistributed.apim.{cp,tm,gateway}.image.name` and
-`-Dnode.docker.image.name` private tags to both steps and to every run; a focused distributed run also needs
-`-Ddistributed.apim.defaults.directory=<integration-v2>/tests-common/testcontainers/target/distributed-apim/defaults`,
-which the image step stages and a focused `mvn test` does not. A full build needs about 30 GB free on the host: check
+`-Dnode.docker.image.name` private tags to both steps and to every run. A distributed run reads the image defaults the
+image step stages under `tests-common/testcontainers/target/distributed-apim/defaults` and finds them itself; a
+checkout that did not run the image step needs `-Ddistributed.apim.defaults.directory` pointing at a built
+checkout's copy (a focused `mvn test` does not stage them). A full build needs about 30 GB free on the host: check
 `df -h /` before and during it and stop below 3 GB (a full host disk corrupts the Colima VM). Remove the tags
 afterwards. Work on a local checkout only: **never push to, comment on, review or otherwise act on the pull request.**
 
@@ -139,9 +140,10 @@ block needs (`initTenantUsers`, `initSecondaryUserStore`, `emailUserMode`).
 **Lifecycle locks** (`lifecycleLock`, e.g. `browser-sso` for blocks that drive the browser against an external IS) are a
 JVM-wide semaphore that `BlockLifecycleListener` acquires at block start on the block's own TestNG thread. A block
 waiting for the lock holds one of its group's 4 slots idle until the holder finishes; that slot runs nothing else.
-Blocks sharing a lock in the same group must therefore be far apart in file order (so the first finishes before the
-next starts); blocks in different groups run in separate CI jobs and JVMs and never wait on each other. Prefer placing a
-new lock-holding block in a group without another holder.
+Blocks sharing a lock in the same group must therefore be far apart in file order: the distance lets the first usually
+finish before the next is dispatched, which reduces idle lock waiting but does not guarantee it, so model the placement
+(§3) to confirm; blocks in different groups run in separate CI jobs and JVMs and never wait on each other. Prefer
+placing a new lock-holding block in a group without another holder.
 
 ### 5. Apply and verify
 Make the change in the suite (and overlays/runners/feature splits), regenerate the coverage tree if features or runners
@@ -156,7 +158,9 @@ private-tag image build in §0). On macOS with Colima
 export first: `DOCKER_HOST=unix://$HOME/.colima/default/docker.sock`,
 `TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE=/var/run/docker.sock`, `TESTCONTAINERS_HOST_OVERRIDE=localhost`,
 `TESTCONTAINERS_RYUK_DISABLED=true`. A fresh worktree lacks the generated IS trust material: copy
-`tests-common/testcontainers/target/is7` from a built checkout before running external-IS blocks.
+`tests-common/testcontainers/target/is7` from a built checkout before running external-IS blocks. It also lacks the
+staged distributed image defaults: for distributed blocks pass `-Ddistributed.apim.defaults.directory` pointing at a
+built checkout's `tests-common/testcontainers/target/distributed-apim/defaults`.
 
 **Contention.** Before and during every timed run, check what else runs on the Docker host (`docker ps`, other Maven
 processes). A span measured while another block or agent ran is contaminated: label it so in the report, never use it

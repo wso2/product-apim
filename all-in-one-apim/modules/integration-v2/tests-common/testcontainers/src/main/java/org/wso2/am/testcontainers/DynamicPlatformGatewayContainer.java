@@ -113,6 +113,7 @@ public class DynamicPlatformGatewayContainer {
             // Local mode is the path proven against Colima — the dist lives under $HOME so its bind-mounts resolve.
             compose = new ComposeContainer(distDir.resolve("docker-compose.yaml").toFile())
                     .withEnv("PG_GATEWAY_VERSION", GW_VERSION)
+                    .withEnv("HOST_DOCKER_INTERNAL", HostDockerInternal.target())
                     .withExposedService(RUNTIME_SERVICE, DATA_PLANE_HTTPS_PORT,
                             Wait.forHttp(HEALTH_READY_PATH).usingTls().allowInsecure()
                                     .forStatusCode(200).withStartupTimeout(Duration.ofMinutes(3)))

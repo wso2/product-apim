@@ -106,6 +106,7 @@ public final class PlaywrightSsoClient implements AutoCloseable {
     /** {@code docTrail} size when the current SSO console open began; later hops belong to that open. */
     private int trailMarkAtConsoleOpen;
     private java.util.List<String> lastLogoutHops = java.util.Collections.emptyList();
+    private java.util.List<String> lastLogoutRequests = java.util.Collections.emptyList();
 
     /**
      * The resident-IS session the first console landing established. Every later console must present the same
@@ -708,7 +709,7 @@ public final class PlaywrightSsoClient implements AutoCloseable {
     /** Polls the cookie store until an {@code AM_ACC_TOKEN…} cookie appears or the timeout elapses. */
     private boolean waitForAccessTokenCookie(String consoleContext, int timeoutMs) {
         long deadline = System.currentTimeMillis() + timeoutMs;
-        // CHECKSTYLE:OFF deadlineLoop - browser cookie-store poll (Playwright); Utils.retryUntil is HTTP-only, N/A here
+        // CHECKSTYLE:OFF deadlineLoop - browser cookie-store poll; page.waitForTimeout keeps browser events flowing
         while (System.currentTimeMillis() < deadline) {
             // CHECKSTYLE:ON
             if (hasAccessTokenCookie(consoleContext)) {
@@ -953,7 +954,11 @@ public final class PlaywrightSsoClient implements AutoCloseable {
      * which leaves the session intact and makes a logout assertion look like a product failure.
      */
     public void logoutFromConsole(String consoleContext) {
+        // A console SPA left on the page keeps checking its session and starts its own navigation while the logout
+        // redirects are in flight, so it is unloaded first.
+        leaveCurrentConsole();
         int mark = docTrail.size();
+        int requestMark = docRequests.size();
         try {
             page.navigate(apimInternal + "/" + consoleContext + "/services/logout",
                     new Page.NavigateOptions().setWaitUntil(WaitUntilState.DOMCONTENTLOADED)
@@ -977,6 +982,10 @@ public final class PlaywrightSsoClient implements AutoCloseable {
         // assertions below report a global-logout failure, which reads as a product defect rather than a bad URL.
         java.util.List<String> all = new java.util.ArrayList<>(docTrail);
         lastLogoutHops = new java.util.ArrayList<>(all.subList(Math.min(mark, all.size()), all.size()));
+        lastLogoutRequests = logoutDocumentRequestsSince(requestMark);
+        for (String request : lastLogoutRequests) {
+            log.info("[SSO-LOGOUT] " + request);
+        }
         for (String hop : lastLogoutHops) {
             if (hop.contains("/services/logout") && !hop.startsWith("2") && !hop.startsWith("3")) {
                 throw new AssertionError("the '" + consoleContext + "' console logout endpoint did not answer: "
@@ -1031,7 +1040,7 @@ public final class PlaywrightSsoClient implements AutoCloseable {
         boolean returnedThroughCallback = lastLogoutHops.stream().anyMatch(hop -> hop.contains(callback));
         if (!returnedThroughCallback) {
             throw new AssertionError("the '" + consoleContext + "' logout did not return through its callback '"
-                    + callback + "': " + pageDiagnostic());
+                    + callback + "'. Logout document requests: " + lastLogoutRequests + ". " + pageDiagnostic());
         }
         log.info("[SSO] logout returned through '" + callback + "'");
     }
@@ -1136,8 +1145,9 @@ public final class PlaywrightSsoClient implements AutoCloseable {
         }
         if (!residue.isEmpty()) {
             throw new AssertionError("single logout left the identity server's session cookie on '" + isHost
-                    + "': " + residue + " — the logout never reached the identity server, so its session "
-                    + "survives and the next login through the broker is signed in without credentials.");
+                    + "': " + residue + " — the browser still holds the external session cookie, so the logout "
+                    + "did not clear the identity server's session. "
+                    + "Logout document requests: " + lastLogoutRequests);
         }
         log.info("[SSO] no identity server session cookie remains on '" + isHost + "' after logout");
     }
@@ -2151,28 +2161,39 @@ public final class PlaywrightSsoClient implements AutoCloseable {
         }
         String accessToken = new org.json.JSONObject(tokenBody).getString("access_token");
         String url = "https://localhost:8243" + context + "/" + version + resourcePath;
-        // A freshly (re)deployed API takes a moment to become routable at the gateway — retry until 200 or timeout.
-        int status = 0;
-        String body = "";
-        long deadline = System.currentTimeMillis() + SERVER_BACKED_WAIT_MS;
-        // CHECKSTYLE:OFF deadlineLoop - poll the gateway for invoke-propagation via page.request; not an HTTP retry loop
-        while (System.currentTimeMillis() < deadline) {
-            // CHECKSTYLE:ON
-            APIResponse inv = page.request().get(url,
-                    RequestOptions.create().setHeader("Authorization", "Bearer " + accessToken));
-            status = inv.status();
-            body = safeText(inv).replaceAll("\\s+", " ").trim();
-            if (status == 200) {
-                break;
-            }
-            try {
-                page.waitForTimeout(2500);
-            } catch (RuntimeException e) {
-                break;
-            }
+        // A freshly (re)deployed API takes a moment to become routable at the gateway. The request goes through the
+        // browser's request context so it reaches the gateway via the browser proxy.
+        long pollStart = System.currentTimeMillis();
+        GatewayInvocation last;
+        try {
+            last = Utils.retryUntil(SERVER_BACKED_WAIT_MS, () -> {
+                try {
+                    APIResponse inv = page.request().get(url,
+                            RequestOptions.create().setHeader("Authorization", "Bearer " + accessToken));
+                    return new GatewayInvocation(inv.status(), safeText(inv).replaceAll("\\s+", " ").trim());
+                } catch (PlaywrightException transportFailure) {
+                    throw new java.io.IOException("gateway request failed: " + transportFailure.getMessage(),
+                            transportFailure);
+                }
+            }, invocation -> invocation.status() == 200);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new AssertionError("interrupted while invoking " + url, e);
         }
-        log.info("[SSO-WORK] invoke " + url + " -> status=" + status + " body=" + body);
-        return status;
+        if (last == null) {
+            throw new AssertionError("no response from the gateway for " + url
+                    + " within the propagation window; every attempt failed at the transport level.");
+        }
+        if (last.status() == 401) {
+            Utils.logAuthRejection("SSO application invocation of " + url, null, accessToken, last.status(),
+                    last.body(), System.currentTimeMillis() - pollStart);
+        }
+        log.info("[SSO-WORK] invoke " + url + " -> status=" + last.status() + " body=" + last.body());
+        return last.status();
+    }
+
+    /** One gateway invocation's outcome: the status and a shortened, whitespace-collapsed body. */
+    private record GatewayInvocation(int status, String body) {
     }
 
     private static String safeText(APIResponse r) {
@@ -2250,7 +2271,7 @@ public final class PlaywrightSsoClient implements AutoCloseable {
         String authorize = externalAuthorizeRequestUrl();
         int from = firstDocRequestIndex(u -> u.equals(authorize), 0) + 1;
         long deadline = System.currentTimeMillis() + timeoutMs;
-        // CHECKSTYLE:OFF deadlineLoop - browser request-trail poll (Playwright); Utils.retryUntil is HTTP-only, N/A here
+        // CHECKSTYLE:OFF deadlineLoop - browser request-trail poll; page.waitForTimeout keeps browser events flowing
         while (true) {
             // CHECKSTYLE:ON
             com.microsoft.playwright.Request error = firstDocRequest(u -> Utils.queryParam(u, "error") != null, from);
@@ -2290,7 +2311,7 @@ public final class PlaywrightSsoClient implements AutoCloseable {
                     + "federated callback to check for a console session. " + pageDiagnostic());
         }
         long deadline = System.currentTimeMillis() + timeoutMs;
-        // CHECKSTYLE:OFF deadlineLoop - browser redirect-chain poll (Playwright); Utils.retryUntil is HTTP-only, N/A here
+        // CHECKSTYLE:OFF deadlineLoop - browser redirect-chain poll; page.waitForTimeout keeps browser events flowing
         while (true) {
             // CHECKSTYLE:ON
             while (hop.redirectedTo() != null) {
@@ -2326,6 +2347,37 @@ public final class PlaywrightSsoClient implements AutoCloseable {
             }
         }
         return -1;
+    }
+
+    /** Returns the document request sequence since a logout began without exposing redirect query parameters. */
+    private java.util.List<String> logoutDocumentRequestsSince(int requestMark) {
+        java.util.List<com.microsoft.playwright.Request> requests = new java.util.ArrayList<>(docRequests);
+        java.util.List<String> result = new java.util.ArrayList<>();
+        for (com.microsoft.playwright.Request request : requests.subList(Math.min(requestMark, requests.size()),
+                requests.size())) {
+            String status = "no response";
+            try {
+                com.microsoft.playwright.Response response = request.response();
+                if (response != null) {
+                    status = "HTTP " + response.status();
+                }
+            } catch (RuntimeException ignored) {
+                // The redirect may have aborted the document request before a response was received.
+            }
+            result.add(request.method() + " " + safeNavigationUrl(request.url()) + " -> " + status);
+        }
+        return result;
+    }
+
+    /** Returns a document URL without query parameters that can contain authentication material. */
+    private static String safeNavigationUrl(String url) {
+        try {
+            URI uri = URI.create(url);
+            int port = uri.getPort();
+            return uri.getScheme() + "://" + uri.getHost() + (port < 0 ? "" : ":" + port) + uri.getPath();
+        } catch (RuntimeException e) {
+            return "<unparseable document URL>";
+        }
     }
 
     // ─────────────────────────── helpers ───────────────────────────

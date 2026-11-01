@@ -31,6 +31,9 @@
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.target>21</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <!-- host.docker.internal target for the containers the suite starts (HostDockerInternal), given as the
+             docker build add-host option the image build uses; empty means host-gateway. -->
+        <docker.extra.hosts></docker.extra.hosts>
         <runGroupTest>false</runGroupTest>
         <!-- Default suite (filename under src/test/resources); override with -Dsurefire.suite.xml=<file> for framework-verification lanes. -->
         <surefire.suite.xml>testng-v2.xml</surefire.suite.xml>
@@ -187,6 +190,7 @@
                         <suiteXmlFile>src/test/resources/${surefire.suite.xml}</suiteXmlFile>
                     </suiteXmlFiles>
                     <systemPropertyVariables>
+                        <docker.extra.hosts>${docker.extra.hosts}</docker.extra.hosts>
                         <testcontainers.reuse.enable>true</testcontainers.reuse.enable>
                         <org.apache.http.wire.level>OFF</org.apache.http.wire.level>
                         <apim.product.zip.path>${project.basedir}/../../../../modules/distribution/product/target/${apim.server.name}.zip</apim.product.zip.path>

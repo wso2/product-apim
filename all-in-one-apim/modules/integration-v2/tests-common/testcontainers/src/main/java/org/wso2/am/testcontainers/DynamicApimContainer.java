@@ -130,8 +130,8 @@ public class DynamicApimContainer extends GenericContainer<DynamicApimContainer>
 
         withEnv(JVM_MEM_OPTS, SERVER_HEAP_OPTS);
 
-        // Add host.docker.internal mapping for Linux compatibility (needed for accessing host services)
-        withExtraHost("host.docker.internal", "host-gateway");
+        // host.docker.internal reaches services on the test machine (target from -Ddocker.extra.hosts)
+        withExtraHost(HostDockerInternal.ALIAS, HostDockerInternal.target());
 
         // The docker network is assigned by the CALLER: BlockLifecycleListener creates one private network per
         // block and joins APIM plus that block's IS/Solace to it, so the wso2am / wso2is / apimforsolace aliases
