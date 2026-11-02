@@ -41,9 +41,12 @@ import java.util.Comparator;
  *
  * <p>Boot flow (mirrors the distribution's {@code scripts/setup.sh}, done in Java):
  * <ol>
- *   <li>materialize the compose + config.toml + listener certs into a fresh dist dir UNDER {@code $HOME} —
- *       Colima does NOT share {@code /tmp} into its VM, so a file bind-mount from {@code /tmp} silently becomes
- *       an empty directory and the gateway fails closed on "config.toml: is a directory";</li>
+ *   <li>materialize the compose + config.toml + listener certs into a fresh dist dir under the work-dir base
+ *       ({@value #WORK_DIR_PROPERTY}, default {@code $HOME/.wso2-pgw-testcontainers}). The compose bind-mounts
+ *       these files, so the Docker daemon must see the same path: Colima does NOT share {@code /tmp} into its VM,
+ *       and a runner container beside the host's daemon only shares the directories mounted from the host. A
+ *       bind-mount from a path the daemon cannot see silently becomes an empty directory and the gateway fails
+ *       closed on "config.toml: is a directory";</li>
  *   <li>generate the AES-256 at-rest key and {@code api-platform.env} (the controller admin basic-auth cred and,
  *       when connecting, the control-plane host / token / gateway-name);</li>
  *   <li>run the compose and wait on the runtime's {@code /_gateway-health/ready} (HTTPS 8443).</li>
@@ -70,6 +73,8 @@ public class DynamicPlatformGatewayContainer {
 
     private static final String DEFAULT_GW_VERSION = "1.2.0";
     private static final String GW_VERSION = System.getProperty("pg.gateway.version", DEFAULT_GW_VERSION);
+    /** Base directory for the per-instance dist dirs; must be a path the Docker daemon sees at the same location. */
+    static final String WORK_DIR_PROPERTY = "pg.gateway.work.dir";
 
     /** The controller's OWN mgmt-API basic-auth cred — never called by tests; only needs to be valid config. */
     private static final String CONTROLLER_ADMIN_USER = "admin";
@@ -197,11 +202,21 @@ public class DynamicPlatformGatewayContainer {
         }
     }
 
+    /**
+     * The base directory for dist dirs: {@code configured} when set, otherwise {@code $HOME/.wso2-pgw-testcontainers},
+     * which the Colima VM shares.
+     */
+    static Path workDirBase(String configured) {
+        if (configured != null && !configured.isBlank()) {
+            return Path.of(configured.trim());
+        }
+        return Path.of(System.getProperty("user.home"), ".wso2-pgw-testcontainers");
+    }
+
     private Path materializeDist() {
         Path dir = null;
         try {
-            // Under $HOME so the file bind-mounts are visible inside the Colima VM (it does not share /tmp).
-            Path base = Path.of(System.getProperty("user.home"), ".wso2-pgw-testcontainers");
+            Path base = workDirBase(System.getProperty(WORK_DIR_PROPERTY));
             Files.createDirectories(base);
             dir = Files.createTempDirectory(base, "gw-");
             for (String rel : RESOURCE_FILES) {

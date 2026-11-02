@@ -126,9 +126,12 @@ order: propose a reorder only when its modelled time is actually lower, and mode
 says it costs least. Longest-first regrouping is likewise a heuristic: a lower figure suggests a group rebalance to
 model with `group` lines (and to apply in both suites). Compare modelled suite time, the fullest queue and packing
 efficiency. A measured block span includes any lifecycle-lock wait; the wait occupies a slot, so never subtract it from
-the span when modelling: removing or regrouping a lock holder saves the whole span. See `references/layout-model.md` for
-the model and its limits, and `references/consolidation-playbook.md` / `references/splitting-playbook.md` for what makes
-an option valid.
+the span when modelling. Removing a lock holder takes its whole span out of its group. Regrouping moves that span: model
+both groups (`group` lines) and compare both groups' modelled times. Measured spans do not show the lock waits
+regrouping changes: a block that waited on the moved holder no longer waits in the source group, and the moved block
+can wait behind another holder in the target group, so adjust those spans by hand and state the adjustment. See
+`references/layout-model.md` for the model and its limits, and `references/consolidation-playbook.md` /
+`references/splitting-playbook.md` for what makes an option valid.
 
 ### 4. Check compatibility of the chosen option
 Overlay orthogonality (TOML tables and keys, j2 templates, arrays that replace defaults), server-global state and

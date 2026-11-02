@@ -34,6 +34,9 @@
         <!-- host.docker.internal target for the containers the suite starts (HostDockerInternal), given as the
              docker build add-host option the image build uses; empty means host-gateway. -->
         <docker.extra.hosts></docker.extra.hosts>
+        <!-- Base directory for the platform gateway's bind-mounted compose files (DynamicPlatformGatewayContainer);
+             empty means $HOME/.wso2-pgw-testcontainers. -->
+        <pg.gateway.work.dir></pg.gateway.work.dir>
         <runGroupTest>false</runGroupTest>
         <!-- Default suite (filename under src/test/resources); override with -Dsurefire.suite.xml=<file> for framework-verification lanes. -->
         <surefire.suite.xml>testng-v2.xml</surefire.suite.xml>
@@ -191,6 +194,7 @@
                     </suiteXmlFiles>
                     <systemPropertyVariables>
                         <docker.extra.hosts>${docker.extra.hosts}</docker.extra.hosts>
+                        <pg.gateway.work.dir>${pg.gateway.work.dir}</pg.gateway.work.dir>
                         <testcontainers.reuse.enable>true</testcontainers.reuse.enable>
                         <org.apache.http.wire.level>OFF</org.apache.http.wire.level>
                         <apim.product.zip.path>${project.basedir}/../../../../modules/distribution/product/target/${apim.server.name}.zip</apim.product.zip.path>
