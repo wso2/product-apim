@@ -102,6 +102,7 @@ public class NodeAppServer {
             GenericContainer<?> candidate = buildContainer();
             try {
                 candidate.start();
+                pinHomeNetworkAsDefaultGateway(candidate);
                 // Logged because a stale host port is otherwise invisible: the failure it causes is a bare
                 // "connection refused" from a test, with nothing tying it back to this mapping.
                 logger.info("NodeAppServer published on stable host ports (containerPort->hostPort): "
@@ -109,20 +110,49 @@ public class NodeAppServer {
                 return candidate;
             } catch (RuntimeException e) {
                 if (!isPortConflict(e) || attempt == START_ATTEMPTS) {
+                    stopFailedCandidate(candidate);
                     throw e;
                 }
                 logger.warn("NodeAppServer boot hit a host-port conflict on attempt " + attempt + " of "
                         + START_ATTEMPTS + "; redrawing ports and retrying. Cause: " + e.getMessage());
                 // The half-started container holds nothing useful and would leak; drop it before redrawing.
-                try {
-                    candidate.stop();
-                } catch (RuntimeException stopFailure) {
-                    logger.warn("Could not drop the half-started NodeAppServer container (it may leak): "
-                            + stopFailure.getMessage());
-                }
+                stopFailedCandidate(candidate);
             }
         }
         throw new IllegalStateException("unreachable: START_ATTEMPTS must be >= 1");
+    }
+
+    /**
+     * Pins the permanent home network above every dynamically attached block network. Testcontainers initially
+     * joins the home network with the default gateway priority (0); reconnect it with priority 1 before any block
+     * can attach. Docker may briefly rebuild published-port forwarding during this one-time startup reconnect, but
+     * no tests have received the backend URL yet.
+     */
+    private void pinHomeNetworkAsDefaultGateway(GenericContainer<?> candidate) {
+        String containerId = candidate.getContainerId();
+        String homeNetworkId = ContainerNetwork.BACKEND_HOME_NETWORK.getId();
+        DockerClientFactory.instance().client().disconnectFromNetworkCmd()
+                .withContainerId(containerId)
+                .withNetworkId(homeNetworkId)
+                .exec();
+
+        HomeNetworkEndpoint endpoint = new HomeNetworkEndpoint();
+        endpoint.withAliases(NETWORK_ALIAS, TENANT_NETWORK_ALIAS);
+        DockerClientFactory.instance().client().connectToNetworkCmd()
+                .withContainerId(containerId)
+                .withNetworkId(homeNetworkId)
+                .withContainerNetwork(endpoint)
+                .exec();
+        logger.info("NodeAppServer pinned its home network as the default gateway (gw-priority=1)");
+    }
+
+    private void stopFailedCandidate(GenericContainer<?> candidate) {
+        try {
+            candidate.stop();
+        } catch (RuntimeException stopFailure) {
+            logger.warn("Could not drop the failed NodeAppServer container (it may leak): "
+                    + stopFailure.getMessage());
+        }
     }
 
     private GenericContainer<?> buildContainer() {
@@ -290,13 +320,14 @@ public class NodeAppServer {
      * removes it at block teardown, before the network is closed (Docker refuses to remove a network that still
      * has a container connected).
      *
-     * <p>The block network is attached with a gateway priority below the home network's default, so the home
-     * network stays the container's default gateway while block networks come and go. Docker rebuilds a
-     * container's published port forwarding whenever its default gateway changes, and a host connection to a
-     * published port is refused while that happens; the test JVM reads several node apps through those ports.
+     * <p>The permanent home network has gateway priority 1, while block networks keep Docker's default priority 0.
+     * Docker rebuilds a container's published port forwarding whenever its default gateway changes, and a host
+     * connection to a published port is refused while that happens; the test JVM reads several node apps through
+     * those ports.
      */
     public void attachToNetwork(Network network) {
-        BlockNetworkEndpoint endpoint = new BlockNetworkEndpoint();
+        com.github.dockerjava.api.model.ContainerNetwork endpoint =
+                new com.github.dockerjava.api.model.ContainerNetwork();
         endpoint.withAliases(Arrays.asList(NETWORK_ALIAS, TENANT_NETWORK_ALIAS));
         DockerClientFactory.instance().client().connectToNetworkCmd()
                 .withContainerId(container.getContainerId())
@@ -337,17 +368,17 @@ public class NodeAppServer {
     }
 
     /**
-     * A block network endpoint for this backend: docker-java's endpoint model plus Docker's {@code GwPriority}
-     * (Engine API 1.48+), which that model does not carry. The home network keeps the default priority 0.
+     * The backend's permanent endpoint: docker-java's endpoint model plus Docker's {@code GwPriority}
+     * (Engine API 1.48+), which that model does not carry. Block network endpoints use Docker's default priority 0.
      */
-    private static final class BlockNetworkEndpoint extends com.github.dockerjava.api.model.ContainerNetwork {
+    private static final class HomeNetworkEndpoint extends com.github.dockerjava.api.model.ContainerNetwork {
 
         private static final long serialVersionUID = 1L;
 
-        /** Below the home network's default priority, so attaching this network never moves the gateway. */
+        /** Higher than attached block networks' default priority, so the home network remains the gateway. */
         @JsonProperty("GwPriority")
         public int getGwPriority() {
-            return -1;
+            return 1;
         }
     }
 }

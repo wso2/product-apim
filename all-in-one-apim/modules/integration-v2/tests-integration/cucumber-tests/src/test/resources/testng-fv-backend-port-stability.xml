@@ -5,8 +5,8 @@
 
   One block, one class. initBackend=true starts the shared backend singleton (and attaches it to this block's
   private network, which is itself part of what is being verified); the probe then drives three further
-  attach/detach cycles on throwaway networks and asserts the published port, the URL the tests would build,
-  and reachability all hold.
+  attach/detach cycles on throwaway networks while continuously issuing HTTP requests through the host-published
+  BPMN port. It asserts the published port, the URL the tests would build, and reachability all hold during churn.
 
   Deliberately its own suite rather than a block in testng-framework-verification.xml, whose gate asserts a
   specific set of Phase-6.1 blocks and container counts.
