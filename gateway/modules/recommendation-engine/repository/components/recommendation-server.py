@@ -78,7 +78,7 @@ def recommend_apis():
 @basic_auth.required
 def receive_events():
     """
-    Recive events related to API recommendations feature.
+    Receive events related to API recommendations feature.
     """
     data = request.data
     jsonData = json.loads(data[36:-4].decode("utf-8"))
