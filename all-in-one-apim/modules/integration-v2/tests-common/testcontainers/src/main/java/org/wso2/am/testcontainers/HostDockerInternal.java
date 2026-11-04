@@ -22,7 +22,8 @@ package org.wso2.am.testcontainers;
  * services on the machine running the tests.
  *
  * <p>The target comes from the {@code docker.extra.hosts} system property, the same {@code docker build} option
- * fragment the image build uses (e.g. {@code --add-host=host.docker.internal:172.17.0.2}). Without a mapping for
+ * fragment the image build uses (e.g. {@code --add-host=host.docker.internal:172.17.0.2}, or Docker's {@code =}
+ * separator form {@code --add-host=host.docker.internal=172.17.0.2}). Without a mapping for
  * {@code host.docker.internal} the target is Docker's {@code host-gateway}, which is the test machine only when it
  * also runs the Docker daemon; a runner that is itself a container beside the daemon passes its own address.</p>
  */
@@ -33,7 +34,7 @@ public final class HostDockerInternal {
     static final String DEFAULT_TARGET = "host-gateway";
 
     private static final String ADD_HOST_OPTION = "--add-host";
-    private static final String MAPPING_PREFIX = ALIAS + ":";
+    private static final String[] MAPPING_PREFIXES = {ALIAS + ":", ALIAS + "="};
 
     private HostDockerInternal() {
     }
@@ -45,7 +46,8 @@ public final class HostDockerInternal {
 
     /**
      * The {@code host.docker.internal} target in a {@code docker.extra.hosts} value. Accepts both
-     * {@code --add-host=NAME:ADDRESS} and {@code --add-host NAME:ADDRESS}; mappings for other names are ignored.
+     * {@code --add-host=NAME:ADDRESS} and {@code --add-host NAME:ADDRESS}, with {@code :} or {@code =} between name
+     * and address; mappings for other names are ignored. Brackets around an IPv6 address are removed.
      *
      * @throws IllegalArgumentException if the value maps {@code host.docker.internal} to an empty address
      */
@@ -61,13 +63,22 @@ public final class HostDockerInternal {
             } else if (tokens[i].equals(ADD_HOST_OPTION) && i + 1 < tokens.length) {
                 mapping = tokens[++i];
             }
-            if (mapping != null && mapping.startsWith(MAPPING_PREFIX)) {
-                String address = mapping.substring(MAPPING_PREFIX.length());
-                if (address.isEmpty()) {
-                    throw new IllegalArgumentException(EXTRA_HOSTS_PROPERTY + " maps " + ALIAS
-                            + " to an empty address: '" + extraHosts + "'");
+            if (mapping == null) {
+                continue;
+            }
+            for (String prefix : MAPPING_PREFIXES) {
+                if (mapping.startsWith(prefix)) {
+                    String address = mapping.substring(prefix.length());
+                    // Docker accepts a bracketed IPv6 address; containers need it without the brackets.
+                    if (address.length() >= 2 && address.startsWith("[") && address.endsWith("]")) {
+                        address = address.substring(1, address.length() - 1);
+                    }
+                    if (address.isEmpty()) {
+                        throw new IllegalArgumentException(EXTRA_HOSTS_PROPERTY + " maps " + ALIAS
+                                + " to an empty address: '" + extraHosts + "'");
+                    }
+                    return address;
                 }
-                return address;
             }
         }
         return DEFAULT_TARGET;

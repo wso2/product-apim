@@ -46,7 +46,12 @@ public class HostDockerInternalTest {
                 {"--add-host=host.docker.internal:172.17.0.2", "172.17.0.2"},
                 {"  --add-host   host.docker.internal:172.17.0.2  ", "172.17.0.2"},
                 {"--add-host=other.host:10.0.0.5 --add-host=host.docker.internal:10.1.0.4", "10.1.0.4"},
-                {"--add-host=host.docker.internal:fd00::2", "fd00::2"}};
+                {"--add-host=host.docker.internal:fd00::2", "fd00::2"},
+                {"--add-host=host.docker.internal=172.17.0.2", "172.17.0.2"},
+                {"--add-host host.docker.internal=fd00::2", "fd00::2"},
+                {"--add-host=other.host=10.0.0.5 --add-host=host.docker.internal=10.1.0.4", "10.1.0.4"},
+                {"--add-host=host.docker.internal=[fd00::2]", "fd00::2"},
+                {"--add-host host.docker.internal:[fd00::2]", "fd00::2"}};
     }
 
     @Test(dataProvider = "valuesWithMapping")
@@ -54,8 +59,16 @@ public class HostDockerInternalTest {
         Assert.assertEquals(HostDockerInternal.target(extraHosts), expectedTarget);
     }
 
-    @Test(expectedExceptions = IllegalArgumentException.class)
-    public void shouldRejectEmptyMappedAddress() {
-        HostDockerInternal.target("--add-host=host.docker.internal:");
+    @DataProvider
+    public Object[][] valuesWithEmptyAddress() {
+        return new Object[][]{
+                {"--add-host=host.docker.internal:"},
+                {"--add-host=host.docker.internal="},
+                {"--add-host=host.docker.internal=[]"}};
+    }
+
+    @Test(dataProvider = "valuesWithEmptyAddress", expectedExceptions = IllegalArgumentException.class)
+    public void shouldRejectEmptyMappedAddress(String extraHosts) {
+        HostDockerInternal.target(extraHosts);
     }
 }

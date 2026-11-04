@@ -133,6 +133,9 @@ public final class PlaywrightSsoClient implements AutoCloseable {
      */
     private final java.util.List<com.microsoft.playwright.Request> docRequests =
             java.util.Collections.synchronizedList(new java.util.ArrayList<>());
+    /** HTTP status of each document request that received a response, recorded as the response arrives. */
+    private final java.util.concurrent.ConcurrentMap<com.microsoft.playwright.Request, Integer>
+            docResponseStatuses = new java.util.concurrent.ConcurrentHashMap<>();
     /** Management-plane XHR/fetch calls (status method path) — diagnostic for stuck SPA form validation. */
     private final java.util.List<String> apiCalls = java.util.Collections.synchronizedList(new java.util.ArrayList<>());
     private final java.util.concurrent.atomic.AtomicLong apiRequestSequence =
@@ -324,6 +327,7 @@ public final class PlaywrightSsoClient implements AutoCloseable {
             try {
                 if ("document".equals(resp.request().resourceType())) {
                     docTrail.add(resp.status() + " " + resp.url());
+                    docResponseStatuses.put(resp.request(), resp.status());
                 }
             } catch (RuntimeException ignored) {
                 // response object may be gone; ignore
@@ -2355,16 +2359,10 @@ public final class PlaywrightSsoClient implements AutoCloseable {
         java.util.List<String> result = new java.util.ArrayList<>();
         for (com.microsoft.playwright.Request request : requests.subList(Math.min(requestMark, requests.size()),
                 requests.size())) {
-            String status = "no response";
-            try {
-                com.microsoft.playwright.Response response = request.response();
-                if (response != null) {
-                    status = "HTTP " + response.status();
-                }
-            } catch (RuntimeException ignored) {
-                // The redirect may have aborted the document request before a response was received.
-            }
-            result.add(request.method() + " " + safeNavigationUrl(request.url()) + " -> " + status);
+            // Read the status recorded by the response listener; Request.response() would block on a pending request.
+            Integer status = docResponseStatuses.get(request);
+            result.add(request.method() + " " + safeNavigationUrl(request.url()) + " -> "
+                    + (status != null ? "HTTP " + status : "no response"));
         }
         return result;
     }
