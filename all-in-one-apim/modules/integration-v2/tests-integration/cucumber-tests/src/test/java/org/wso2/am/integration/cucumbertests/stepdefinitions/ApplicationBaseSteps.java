@@ -1108,6 +1108,14 @@ public class ApplicationBaseSteps {
         createGatewayEnvironment(name, name, host, gatewayType);
     }
 
+    /** Creates an environment with the provider and gateway type explicitly specified in its Admin API payload. */
+    @When("I create a gateway environment with payload {string}")
+    public void iCreateGatewayEnvironmentWithPayload(String payloadKey) throws IOException {
+        TestContext.remove("httpResponse");
+        String payload = Utils.resolveContextPlaceholders(TestContext.resolve(payloadKey).toString());
+        postEnvironment(new JSONObject(payload));
+    }
+
     /**
      * Create a gateway environment carrying a role visibility permission. {@code permissionType} is one of the
      * types {@code EnvironmentsApiServiceImpl#validatePermissions} accepts ({@code PUBLIC}/{@code ALLOW}/
@@ -2403,6 +2411,19 @@ public class ApplicationBaseSteps {
     @When("I register an OAuth client {string} as {string}")
     public void iRegisterOAuthClient(String clientName, String idKey) throws IOException {
 
+        registerOAuthClient(clientName, idKey, null);
+    }
+
+    /** Registers an actor-owned client with an explicit token format for a resource server requiring JWTs. */
+    @When("I register an OAuth client {string} as {string} with token type {string}")
+    public void iRegisterOAuthClientWithTokenType(String clientName, String idKey, String tokenType)
+            throws IOException {
+
+        registerOAuthClient(clientName, idKey, tokenType);
+    }
+
+    private void registerOAuthClient(String clientName, String idKey, String tokenType) throws IOException {
+
         User actor = Identity.resolveActor(Identity.actingActorRef());
         String uniqueName = Names.unique(clientName);
 
@@ -2412,6 +2433,9 @@ public class ApplicationBaseSteps {
         json.put("grantType", "client_credentials password refresh_token");
         json.put("saasApp", true);
         json.put("owner", actor.getUserName());
+        if (tokenType != null) {
+            json.put("tokenType", tokenType);
+        }
 
         String encodedCredentials = Base64.getEncoder().encodeToString(
                 (actor.getUserName() + ":" + actor.getPassword()).getBytes(StandardCharsets.UTF_8));
@@ -2427,8 +2451,9 @@ public class ApplicationBaseSteps {
         TestContext.set(idKey + "ClientId", clientId);
         TestContext.set(idKey + "ClientSecret", Utils.extractValueFromPayload(response.getData(), "clientSecret"));
         // A DCR client is a standalone OAuth service provider not removed by app deletion, and the DCR REST
-        // endpoint has no delete — so register its consumer key for teardown, which deregisters it via the
-        // OAuthAdminService SOAP admin service (as its owner) rather than leaking it onto the shared server.
+        // endpoint has no delete — so register its consumer key for teardown. The owner's tenant admin resolves
+        // its service-provider name via OAuthAdminService and deletes it via IdentityApplicationManagementService,
+        // which also removes the inbound OAuth client; teardown verifies the service provider is absent.
         ResourceCleanup.register(ResourceCleanup.CREATED_DCR_CLIENT_IDS, clientId);
     }
 
@@ -2966,9 +2991,13 @@ public class ApplicationBaseSteps {
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.devportalToken());
 
+        TestContext.remove("generatedAccessToken");
         HttpResponse response = Requests.post(Utils.getGenerateApplicationTokenURL(Utils.getBaseUrl(), actualAppId, keyMappingId), headers, jsonPayload,
                         Constants.CONTENT_TYPES.APPLICATION_JSON);
-        String accessToken = Utils.extractValueFromPayload(response.getData(), "accessToken").toString();
+        JSONObject tokenBody = Utils.requireJsonBody(response, "Issuing application access token for " + actualAppId);
+        Object accessToken = tokenBody.opt("accessToken");
+        Assert.assertTrue(accessToken instanceof String && !((String) accessToken).isBlank(),
+                "Application-token response for " + actualAppId + " must contain a nonblank string accessToken");
         TestContext.set("generatedAccessToken", accessToken);
     }
 
@@ -2988,6 +3017,11 @@ public class ApplicationBaseSteps {
         requestPasswordGrantTokenForUser(currentUser.getUserName(), currentUser.getPassword(), scope);
     }
 
+    /** Password-grant entry point retained for Java callers. */
+    public void iRequestOAuthAccessTokenAsActorWithScope(String actorRef, String scope) throws Exception {
+        iRequestOAuthAccessTokenAsActorWithScope("password", actorRef, scope);
+    }
+
     /**
      * As the acting-actor password-grant step, but for a NAMED actor (resolved through {@link Identity}) — so the
      * resource owner of the token is somebody OTHER than whoever the scenario is acting as, while the request is
@@ -2995,15 +3029,25 @@ public class ApplicationBaseSteps {
      * APIScopeTestCase uses: ONE keyed application mints tokens for several users of different roles so the
      * per-role scope filtering and the gateway's role-bound-scope enforcement can be compared on identical
      * credentials. Resolving through {@code Identity} (rather than passing a literal username) keeps the
-     * tenant-qualification correct for a {@code <actor>@<domain>} reference.
+     * tenant-qualification correct for a {@code <actor>@<domain>} reference. The client_credentials variant
+     * delegates to the shared client-token step and sends no resource-owner credentials.
      *
-     * @param actorRef actor reference (e.g. {@code subscriberUser}, {@code publisherUser@tenant1.com})
+     * @param grant    password or client_credentials; the latter sends only the context's client credentials
+     * @param actorRef actor reference (used as the resource owner for password grant)
      * @param scope    OAuth scope to request (may be empty; may carry {@code {{contextKey}}} placeholders)
      */
-    @When("I request an OAuth access token using password grant as {string} with scope {string}")
-    public void iRequestOAuthAccessTokenAsActorWithScope(String actorRef, String scope) throws Exception {
+    @When("I request an OAuth access token using {word} grant as {string} with scope {string}")
+    public void iRequestOAuthAccessTokenAsActorWithScope(String grant, String actorRef, String scope) throws Exception {
 
         User actor = Identity.resolveActor(Utils.resolveContextPlaceholders(actorRef));
+        if ("client_credentials".equals(grant)) {
+            // Client credentials authenticate the client owner; no resource-owner password is sent.
+            new KeyManagerAdminSteps().iRequestClientCredentialsTokenWithScope("consumerKey", "consumerSecret", scope);
+            return;
+        }
+        if (!"password".equals(grant)) {
+            throw new IllegalArgumentException("Unsupported OAuth grant: " + grant);
+        }
         // The scope MUST be placeholder-resolved: a scenario-unique API scope name only exists in context, and IS
         // echoes an unregistered scope back verbatim in the token, so an unresolved "{{key}}" is granted silently
         // and the role-filtering assertion then compares against a scope that was never the API's.

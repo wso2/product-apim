@@ -4386,8 +4386,8 @@ public class PublisherBaseSteps {
      * Ports the import arc of AsyncAPITestWithValidationCase (V2 + V3).
      *
      * @param filepath       classpath path to the AsyncAPI YAML definition
-     * @param additionalData classpath path to the additional-properties JSON (name/context/version/type/policies/
-     *                       advertiseInfo, {@code ${UNIQUE}}/{@code {{...}}} resolved)
+     * @param additionalData context key or classpath path to the additional-properties JSON
+     *                       (name/context/version/type/policies/advertiseInfo, {@code ${UNIQUE}}/{@code {{...}}} resolved)
      * @param resourceId     context key to store the created API id under (null for negative attempts)
      */
     @When("I import asyncapi definition from {string} with additional properties {string} as {string}")
@@ -4442,17 +4442,24 @@ public class PublisherBaseSteps {
             throws IOException {
 
         File asyncApiFile = Utils.classpathToTempFile(filepath, "fixture", ".yaml");
-        File additionalPropertiesFile;
-        try (InputStream inputStream = getClass().getClassLoader().getResourceAsStream(additionalData)) {
-            if (inputStream == null) {
-                throw new FileNotFoundException("Additional properties file not found: " + additionalData);
+        // Accept a prepared payload as well as a classpath fixture. Keeping the resolved request in context
+        // lets features assert generated names/contexts against the input, independently of the response.
+        String additionalProperties;
+        if (TestContext.contains(Utils.normalizeContextKey(additionalData))) {
+            additionalProperties = TestContext.resolve(additionalData).toString();
+        } else {
+            try (InputStream inputStream = getClass().getClassLoader().getResourceAsStream(additionalData)) {
+                if (inputStream == null) {
+                    throw new FileNotFoundException("Additional properties file not found: " + additionalData);
+                }
+                additionalProperties = Utils.resolvePayloadPlaceholders(
+                        IOUtils.toString(inputStream, StandardCharsets.UTF_8));
             }
-            String additionalProperties = Utils.resolvePayloadPlaceholders(
-                    IOUtils.toString(inputStream, StandardCharsets.UTF_8));
-            additionalPropertiesFile = File.createTempFile("data", ".json");
-            additionalPropertiesFile.deleteOnExit();
-            Files.write(additionalPropertiesFile.toPath(), additionalProperties.getBytes(StandardCharsets.UTF_8));
         }
+        additionalProperties = Utils.resolveContextPlaceholders(additionalProperties);
+        File additionalPropertiesFile = File.createTempFile("data", ".json");
+        additionalPropertiesFile.deleteOnExit();
+        Files.write(additionalPropertiesFile.toPath(), additionalProperties.getBytes(StandardCharsets.UTF_8));
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
         Map<String, File> files = new HashMap<>();
@@ -4725,19 +4732,24 @@ public class PublisherBaseSteps {
     }
 
     /**
-     * Validates an OpenAPI definition file (POST /apis/validate-openapi, multipart {@code file}). The response
-     * carries an {@code isValid} flag; the feature asserts it (a valid def → isValid true; an invalid one →
-     * isValid false).
+     * Validates an OpenAPI or AsyncAPI definition file through its Publisher validation endpoint (multipart
+     * {@code file}). Publishes the response so the feature asserts the exact status and {@code isValid} flag.
+     * The OpenAPI wording and upload format remain compatible with the existing validation scenarios.
      */
-    @When("I validate the openapi definition from file {string}")
-    public void iValidateOpenApiFromFile(String filepath) throws IOException {
+    @When("I validate the {word} definition from file {string}")
+    public void iValidateDefinitionFromFile(String definitionType, String filepath) throws IOException {
 
+        String url = switch (definitionType) {
+            case "openapi" -> Utils.getValidateOpenAPIURL(Utils.getBaseUrl());
+            case "asyncapi" -> Utils.getValidateAsyncApiURL(Utils.getBaseUrl());
+            default -> throw new IllegalArgumentException("Unsupported definition type: " + definitionType);
+        };
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
         Map<String, File> files = new HashMap<>();
-        files.put("file", loadJsonResourceAsTempFile(filepath));
-        Requests.postMultipart(Utils.getValidateOpenAPIURL(Utils.getBaseUrl()), headers, files,
-                new HashMap<>());
+        files.put("file", "openapi".equals(definitionType) ? loadJsonResourceAsTempFile(filepath)
+                : Utils.classpathToTempFile(filepath, "fixture", ".yaml"));
+        Requests.postMultipart(url, headers, files, new HashMap<>());
     }
 
     /**

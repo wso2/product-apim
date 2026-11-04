@@ -6,18 +6,24 @@
 # [apim.solace_config] is NOT confined to Solace-typed APIs: it activates SolaceKeyGenNotifier, which runs on EVERY
 # application key generation in the container and, in a tenant, dereferences a null application lookup
 # (SolaceKeyGenNotifier.java:67, NPE -> HTTP 500 from POST /applications/{id}/generate-keys). Any runner that
-# generates keys as a tenant user therefore cannot share this container (measured with AnalyticsElkMetricsRunner).
+# generates keys as a tenant user therefore cannot share this container.
 #
 # Solace is integrated through NOTIFIERS on the v2 Event-Portal API (SolaceSubscriptionsNotifier,
 # SolaceKeyGenNotifier, SolaceApplicationNotifier), registered by SolaceManagerComponent as OSGi
 # `Notifier` services. There is deliberately NO [[apim.gateway.environment]] provider = "solace" block:
-# SolaceBrokerDeployer implements only the retired ExternalGatewayDeployer SPI, which nothing binds, so
-# deploying a revision to a Solace environment fails 207 / 902060. The notifiers read only the config
-# below.
+# SolaceBrokerDeployer implements only the retired ExternalGatewayDeployer SPI, which nothing binds;
+# the controlled deployment diagnostic checks the missing-deployer response. The normal integration
+# uses the notifier configuration below.
 #
 # apim_api_endpoint is the shim's NETWORK ALIAS, not localhost: APIM calls it from inside the container,
 # so a host-mapped port would be unreachable. DynamicSolaceBroker publishes the alias `solaceshim` and
 # the block starts it BEFORE APIM.
+# The product's default gateway types plus solace. Advertising solace lets the deployment diagnostic reach
+# deployer resolution instead of being rejected by EnvironmentsApiServiceImpl at environment creation. This
+# does not install a Solace gateway deployer.
+[apim]
+gateway_type = "Regular,APK,AWS,Azure,Kong,Envoy,APIPlatform,solace"
+
 [apim.solace_config]
 apim_api_endpoint = "http://solaceshim:8081"
 # Any non-empty value. The shim LOGS the bearer token but never rejects it -- a 401 from the double
@@ -33,8 +39,8 @@ token = "integration-v2-solace-token"
 # without going through any proxy.
 #
 #   Profile — target_hosts = ["proxied\\.backend\\.test"]: only this specific hostname is affected.
-#             proxy_port 19099 is intentionally unreachable. Any backend whose hostname does NOT match
-#             this pattern falls outside all profiles and the gateway connects directly.
+#             proxy_port 3128 is Squid's port; no backend in this block matches the profile. Any
+#             backend whose hostname does NOT match this pattern falls outside all profiles and the gateway connects directly.
 #
 # The test API uses ws://nodebackend:3001. "nodebackend" does not match "proxied\.backend\.test",
 # so no profile is selected and the gateway connects to nodebackend directly. A passing echo proves

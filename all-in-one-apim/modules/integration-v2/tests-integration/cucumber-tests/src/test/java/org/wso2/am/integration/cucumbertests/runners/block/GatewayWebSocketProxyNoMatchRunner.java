@@ -22,7 +22,7 @@ import io.cucumber.testng.CucumberOptions;
 
 /**
  * Runner for WS proxy profile — no profile match. Runs in IntegrationV2-Solace (all-in-one) and
- * IntegrationV2-Distributed-Gateway-WsProxyNoMatch, whose overlay (wsProxyNoMatch) loads a single [[transport.ws.proxy_profile]] that
+ * IntegrationV2-Distributed-Solace. Their gateway configuration loads a single [[transport.ws.proxy_profile]] that
  * only targets "proxied\.backend\.test". The test API uses ws://nodebackend:3001, which does not
  * match the pattern, so no profile is selected and the gateway connects directly. A passing echo
  * proves that unmatched hostnames are not inadvertently routed through the proxy.

@@ -37,6 +37,7 @@ import org.wso2.carbon.automation.engine.context.beans.User;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -212,7 +213,7 @@ public class WorkflowAdminSteps {
                 originalsByTenant.put(tenant, original);
             }
         }
-        String replacementXml = Utils.readClasspathResource(resourcePath);
+        String replacementXml = Utils.resolveXmlContextPlaceholders(Utils.readClasspathResource(resourcePath));
         boolean written = updateRegistryTextContent(WF_EXTENSIONS_REGISTRY_PATH, replacementXml);
         Assert.assertTrue(written, "ResourceAdminService.updateTextContent did not return true for the "
                 + "workflow-extensions.xml write — the executor change did not take effect.");
@@ -339,8 +340,57 @@ public class WorkflowAdminSteps {
      */
     @When("I retrieve the process start request recorded by the BPMN process server")
     public void iRetrieveTheRecordedBpmnStartRequest() throws IOException {
-        Requests.get(Utils.getNodeBackendUrl(BPMN_PROCESS_SERVER_PORT)
+        HttpResponse response = Requests.get(Utils.getNodeBackendUrl(BPMN_PROCESS_SERVER_PORT)
                 + "/runtime/process-instances?debugInfo=startRequest", Map.of());
+        // Configured clients are already registered for cleanup as their creating actor; registerFor preserves
+        // that owner. Any unregistered emitted client comes from automatic workflow DCR under the global admin.
+        // Adopt it immediately so later assertion failures still remove both its OAuth and SP records.
+        if (response != null && response.getResponseCode() == 200
+                && response.getData() != null && !response.getData().isBlank()) {
+            JSONArray variables = new JSONObject(response.getData()).optJSONArray("variables");
+            if (variables != null) {
+                for (int i = 0; i < variables.length(); i++) {
+                    JSONObject variable = variables.getJSONObject(i);
+                    if ("clientId".equals(variable.optString("name"))) {
+                        String clientId = variable.optString("value", "");
+                        if (!clientId.isBlank()) {
+                            ResourceCleanup.registerFor(ResourceCleanup.CREATED_DCR_CLIENT_IDS, clientId,
+                                    Constants.ADMIN_USER_KEY);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Sends a callback with attributes and business key from the selected BPMN request and an explicit token.
+     * Callers may supply the original snapshot or a separate compatibility copy; any edits remain visible in
+     * the feature instead of being applied implicitly by this helper.
+     */
+    @When("I attempt to {string} the BPMN workflow recorded in {string} using access token {string}")
+    public void iAttemptBpmnCallbackWithToken(String decision, String requestKey, String tokenKey) throws IOException {
+        Object snapshot = TestContext.resolve(requestKey);
+        JSONObject recorded = snapshot instanceof Map<?, ?> map
+                ? new JSONObject(map) : new JSONObject(snapshot.toString());
+        JSONArray variables = recorded.getJSONArray("variables");
+        JSONObject attributes = new JSONObject();
+        Set<String> attributeNames = Set.of("apiCurrentState", "apiLCAction", "apiName",
+                "apiVersion", "apiProvider", "invoker");
+        for (int i = 0; i < variables.length(); i++) {
+            JSONObject variable = variables.getJSONObject(i);
+            String name = variable.getString("name");
+            if (attributeNames.contains(name)) {
+                attributes.put(name, variable.get("value"));
+            }
+        }
+        Assert.assertEquals(attributes.keySet(), attributeNames, "Recorded BPMN callback attributes are incomplete");
+        String body = new JSONObject().put("status", decision)
+                .put("description", "integration-v2 BPMN callback authorization check")
+                .put("attributes", attributes).toString();
+        Requests.post(Utils.getUpdateWorkflowStatusURL(Utils.getBaseUrl(), recorded.getString("businessKey")),
+                Identity.bearerHeaders(TestContext.resolve(tokenKey).toString()), body,
+                Constants.CONTENT_TYPES.APPLICATION_JSON);
     }
 
     /** Gets a single workflow task by its external reference and publishes the response for assertion. */

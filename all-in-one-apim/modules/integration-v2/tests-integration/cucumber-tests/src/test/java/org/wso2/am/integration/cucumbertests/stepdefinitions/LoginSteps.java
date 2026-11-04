@@ -251,7 +251,9 @@ public class LoginSteps {
             return dcr;
         }
         JSONObject creds = new JSONObject(dcr.getData());
-        String tokenBasic = Base64.getEncoder().encodeToString((creds.getString("clientId") + ":"
+        String clientId = creds.getString("clientId");
+        ResourceCleanup.register(ResourceCleanup.CREATED_DCR_CLIENT_IDS, clientId);
+        String tokenBasic = Base64.getEncoder().encodeToString((clientId + ":"
                 + creds.getString("clientSecret")).getBytes(java.nio.charset.StandardCharsets.UTF_8));
         Map<String, String> tokenHeaders = new HashMap<>();
         tokenHeaders.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Basic " + tokenBasic);
