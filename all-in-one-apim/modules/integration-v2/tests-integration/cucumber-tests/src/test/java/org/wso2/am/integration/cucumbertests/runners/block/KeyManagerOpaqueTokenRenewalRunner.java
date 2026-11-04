@@ -20,8 +20,8 @@ package org.wso2.am.integration.cucumbertests.runners.block;
 import io.cucumber.testng.CucumberOptions;
 
 /**
- * Runner for opaque access-token renewal without revoking existing tokens. Runs in the
- * IntegrationV2-OpaqueTokenRenewal block, whose overlay sets
+ * Runner for opaque access-token renewal without revoking existing tokens. Co-hosted in the
+ * IntegrationV2-SandboxAndTokenExchangeDisabled block, whose overlay (sandboxTxDisabled) sets
  * [oauth.opaque.renew_token_without_revoking_existing] with client_credentials as the only allowed grant,
  * which also makes the password grant the in-block negative control.
  */

@@ -19,3 +19,9 @@ websub_event_receiver_https_endpoint = "https://localhost:8021"
 
 [oauth.grant_type.token_exchange]
 enable = false
+
+# Opaque-token renewal for client_credentials only; the control plane hosts the key manager that issues tokens.
+# See deployment.toml in this directory for why password is deliberately left out.
+[oauth.opaque.renew_token_without_revoking_existing]
+enable = true
+allowed_grant_types = ["client_credentials"]

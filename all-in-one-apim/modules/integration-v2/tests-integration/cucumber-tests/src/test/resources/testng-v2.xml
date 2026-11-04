@@ -550,6 +550,9 @@
         </classes>
     </test>
 
+    <!-- The overlay also enables [oauth.opaque.renew_token_without_revoking_existing] for client_credentials only. It
+         changes only repeat client_credentials requests on OPAQUE clients, which no other runner here makes (the sandbox
+         runner uses JWT applications; the token-exchange negative is refused before issuance). -->
     <test name="IntegrationV2-SandboxAndTokenExchangeDisabled" parallel="classes" thread-count="2">
         <parameter name="group" value="group1"/>
         <parameter name="blockLabel" value="sandbox-tx-disabled"/>
@@ -561,6 +564,7 @@
             <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewaySandboxEnvRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.TokenExchangeDisabledRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.NetworkAccessControlUrlDisabledRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.KeyManagerOpaqueTokenRenewalRunner"/>
         </classes>
     </test>
 
@@ -668,18 +672,6 @@
             <class name="org.wso2.am.integration.cucumbertests.runners.block.NetworkAccessControlUrlPrivateBlockRunner"/>
         </classes>
     </test>
-    <!-- Opaque-token renewal needs a non-default [oauth.opaque.renew_token_without_revoking_existing];
-         the overlay allows client_credentials only, which doubles as the feature's negative control. -->
-    <test name="IntegrationV2-OpaqueTokenRenewal" parallel="classes" thread-count="1">
-        <parameter name="blockLabel" value="opaque-token-renewal"/>
-        <parameter name="apimCpuLimit" value="1"/>
-        <parameter name="initTenantUsers" value="true"/>
-        <parameter name="tomlExtraOverlayPath" value="src/test/resources/artifacts/configFiles/opaqueTokenRenewal/deployment.toml"/>
-        <classes>
-            <class name="org.wso2.am.integration.cucumbertests.runners.block.KeyManagerOpaqueTokenRenewalRunner"/>
-        </classes>
-    </test>
-
 
     <!-- Restart scenarios mutate the shared APIM server. -->
     <test name="IntegrationV2-ServerRestart-Throttling-A" parallel="classes" thread-count="1">

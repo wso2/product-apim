@@ -3,8 +3,8 @@ Feature: Key Manager Opaque Token Renewal
 
   Key-manager-plane renewal of OPAQUE access tokens without revoking the tokens already issued, driven by
   oauth.opaque.renew_token_without_revoking_existing in deployment.toml. Runs in the
-  IntegrationV2-OpaqueTokenRenewal block, whose overlay enables the setting for the client_credentials grant
-  ONLY. The application's OAuth client is switched to opaque issuance first, because the setting governs
+  IntegrationV2-SandboxAndTokenExchangeDisabled block, whose overlay enables the setting for the client_credentials
+  grant ONLY. The application's OAuth client is switched to opaque issuance first, because the setting governs
   opaque tokens and has no effect on JWT-format tokens.
   Two halves make the assertion meaningful. The allowed grant must hand out a DIFFERENT token on each
   request while every earlier token stays active on introspection, which is the feature itself. The password
