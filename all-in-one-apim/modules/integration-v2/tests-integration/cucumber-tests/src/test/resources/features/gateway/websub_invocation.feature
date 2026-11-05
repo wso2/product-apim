@@ -218,6 +218,9 @@ Feature: Gateway WebSub API Invocation
     And I extract response field "context" and store it as "websubContext"
     When I deploy the API with id "websubApiId"
     Then The response status code should be 201
+    # The first revision keeps serving this context until the gateway swaps in the redeployed one; a subscribe it
+    # accepts during the swap is answered 202 but never persisted, so wait for the new artifact before subscribing.
+    Then the "apis" resource "websubApiId" should be live on the gateway, redeploying if propagation is lost
     When I publish the "apis" resource with id "websubApiId"
     Then The lifecycle status of API "websubApiId" should be "Published"
     When I have set up application with keys, subscribed to API "websubApiId" with plan "AsyncWHUnlimited", and obtained access token for "websubSubId"

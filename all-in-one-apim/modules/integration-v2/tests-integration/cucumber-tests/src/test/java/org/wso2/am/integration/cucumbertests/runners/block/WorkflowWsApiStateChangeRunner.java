@@ -22,7 +22,7 @@ import org.testng.annotations.AfterClass;
 import org.wso2.am.integration.cucumbertests.stepdefinitions.WorkflowAdminSteps;
 
 /**
- * Runner for the EXTERNAL BPMN {@code APIStateChange} executor — ports the start-request assertions of
+ * Runner for the EXTERNAL BPMN {@code APIStateChange} executor — ports start-request, approval and rejection checks of
  * {@code APIStateChangeWorkflowTestCase}. Its feature routes {@code APIStateChange} at
  * {@code APIStateChangeWSWorkflowExecutor} (pointed at the BPMNProcessServerApp double on
  * {@code nodebackend:3004}) by writing an alternate {@code workflow-extensions.xml} into the governance registry.

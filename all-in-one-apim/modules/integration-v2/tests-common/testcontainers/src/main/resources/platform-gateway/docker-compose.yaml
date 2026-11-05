@@ -30,7 +30,7 @@ services:
     extra_hosts:
       # Lets the controller reach an APIM control plane published on the host (APIM's testcontainers-mapped
       # 9443) at host.docker.internal — the connection wiring used by the harness.
-      - "host.docker.internal:host-gateway"
+      - "host.docker.internal:${HOST_DOCKER_INTERNAL:-host-gateway}"
     networks:
       - gateway-network
 
@@ -49,7 +49,7 @@ services:
     extra_hosts:
       # The runtime (Envoy) dials the API backend; host.docker.internal lets it reach the singleton NodeAppServer
       # on its stable host-published ports.
-      - "host.docker.internal:host-gateway"
+      - "host.docker.internal:${HOST_DOCKER_INTERNAL:-host-gateway}"
     networks:
       - gateway-network
 

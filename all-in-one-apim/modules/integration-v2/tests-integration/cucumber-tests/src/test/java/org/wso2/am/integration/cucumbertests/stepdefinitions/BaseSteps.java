@@ -962,6 +962,21 @@ public class BaseSteps {
         }
     }
 
+    /** Asserts one exact XML error node; selecting no node or multiple nodes is a failure. */
+    @Then("The XML error response at XPath {string} should be {string}")
+    public void theXmlErrorResponseAtXPathShouldBe(String xpath, String expectedValue) throws Exception {
+
+        xpath = Utils.resolveContextPlaceholders(xpath);
+        expectedValue = Utils.resolveContextPlaceholders(expectedValue);
+        HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
+        Assert.assertTrue(response != null && (response.getResponseCode() < 200 || response.getResponseCode() >= 300)
+                        && response.getData() != null && !response.getData().isBlank(),
+                "Expected a non-2xx response with an XML error body for XPath '" + xpath + "'");
+        java.util.List<String> values = Utils.getNodeTextsByXPath(response.getData(), xpath);
+        Assert.assertEquals(values.size(), 1, "Expected exactly one XML error node at '" + xpath + "'");
+        Assert.assertEquals(values.get(0), expectedValue, "XML error node at '" + xpath + "'");
+    }
+
     /**
      * Asserts that a named field in a non-2xx JSON response contains the expected fragment. This keeps error
      * diagnostics scoped to the field under test rather than allowing the text to match elsewhere in the payload.
@@ -1569,6 +1584,12 @@ public class BaseSteps {
     public void iCopyContextValueTo(String fromKey, String toKey) {
         Object value = TestContext.resolve(fromKey);
         TestContext.set(Utils.normalizeContextKey(toKey), value);
+    }
+
+    /** Serializes a structured context value into an independent JSON string for explicit payload edits. */
+    @When("I serialize context value {string} as JSON into {string}")
+    public void iSerializeContextValueAsJson(String fromKey, String toKey) {
+        TestContext.set(Utils.normalizeContextKey(toKey), JSONObject.valueToString(TestContext.resolve(fromKey)));
     }
 
     /**

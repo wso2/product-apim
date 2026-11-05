@@ -1864,6 +1864,11 @@ public class Utils {
         return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "apis/import-asyncapi";
     }
 
+    /** Publisher REST API — AsyncAPI definition validation (multipart file / url). */
+    public static String getValidateAsyncApiURL(String baseUrl) {
+        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "apis/validate-asyncapi";
+    }
+
     /** Publisher REST API — OpenAPI definition validation (multipart file / url). */
     public static String getValidateOpenAPIURL(String baseUrl) {
         return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "apis/validate-openapi";
@@ -2360,6 +2365,16 @@ public class Utils {
      * @return the input string with all placeholders resolved using values from {@link TestContext}
      */
     public static String resolveContextPlaceholders(String input) {
+        return resolveContextPlaceholders(input, java.util.function.UnaryOperator.identity());
+    }
+
+    /** Resolves context placeholders in XML, escaping each substituted value. */
+    public static String resolveXmlContextPlaceholders(String input) {
+        return resolveContextPlaceholders(input, Utils::escapeXml);
+    }
+
+    private static String resolveContextPlaceholders(String input,
+                                                    java.util.function.UnaryOperator<String> transform) {
         if (input == null) {
             return null;
         }
@@ -2375,7 +2390,7 @@ public class Utils {
                 throw new IllegalStateException("No value found in TestContext for key: " + contextKey);
             }
 
-            matcher.appendReplacement(resolved, Matcher.quoteReplacement(String.valueOf(value)));
+            matcher.appendReplacement(resolved, Matcher.quoteReplacement(transform.apply(String.valueOf(value))));
         }
 
         matcher.appendTail(resolved);

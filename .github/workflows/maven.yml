@@ -299,6 +299,32 @@ jobs:
           BROWSER_MEMORY_LIMIT_BYTES: ${{ matrix.topology == 'distributed' && '536870912' || '2684354560' }}
           BROWSER_SWAP_LIMIT_BYTES: ${{ matrix.topology == 'distributed' && '134217728' || '0' }}
         run: sudo bash all-in-one-apim/modules/integration-v2/tests-integration/cucumber-tests/src/test/resources/browser-cgroup/setup-browser-cgroup.sh "$BROWSER_CGROUP_PATH" "$BROWSER_MEMORY_LIMIT_BYTES" "$BROWSER_SWAP_LIMIT_BYTES"
+      # The browser network wrapper keeps Playwright's pipe descriptors across sudo (sudo -C with a closefrom_override
+      # rule). sudo-rs, the default sudo from Ubuntu 25.10, supports neither, so classic sudo and visudo are selected
+      # where the image offers both. Images without sudo alternatives already use classic sudo.
+      - name: Select classic sudo
+        run: |
+          if update-alternatives --list sudo > /dev/null 2>&1; then
+            sudo apt-get update
+            sudo apt-get install -y sudo
+            for tool in sudo visudo; do
+              if update-alternatives --list "$tool" > /dev/null 2>&1; then
+                classic=$(update-alternatives --list "$tool" | grep -v -e cargo -e sudo-rs | head -1)
+                if [ -z "$classic" ]; then
+                  echo "::error::no classic $tool alternative: $(update-alternatives --list "$tool" | tr '\n' ' ')"
+                  exit 1
+                fi
+                sudo update-alternatives --set "$tool" "$classic"
+              fi
+            done
+          fi
+          sudo --version | head -1
+          sudo visudo --version | head -1
+          if ! sudo --version | head -1 | grep -q '^Sudo version' \
+              || ! sudo visudo --version | head -1 | grep -q '^visudo version'; then
+            echo "::error::the active sudo or visudo is not classic sudo"
+            exit 1
+          fi
       # Runs the host Playwright browser in a private network namespace, so the bridges and veths the parallel blocks
       # create and remove never reach Chromium (which cancels in-flight requests on any host address change).
       - name: Configure browser network isolation
@@ -381,7 +407,8 @@ jobs:
           if-no-files-found: warn
       # Guard against a silent all-in-one coverage regression. Distributed coverage is intentionally excluded.
       - name: Verify coverage report was generated
-        if: matrix.coverage
+        id: verify-coverage
+        if: ${{ always() && matrix.coverage }}
         run: |
           REPORT=all-in-one-apim/modules/integration-v2/tests-integration/cucumber-tests/target/coverage/output/txt/jacoco-it.xml
           # Check validity, not mere existence: -s rejects a 0-byte file, and the grep for the LINE counter
@@ -416,7 +443,7 @@ jobs:
           fi
           echo "Coverage dumps: $dumped/$expected blocks, $restarts pre-restart dump(s)"
       - name: Upload v2 integration coverage to Codecov
-        if: ${{ always() && matrix.coverage }}
+        if: ${{ always() && matrix.coverage && steps.verify-coverage.outcome == 'success' }}
         uses: codecov/codecov-action@v7
         with:
           files: all-in-one-apim/modules/integration-v2/tests-integration/cucumber-tests/target/coverage/output/txt/jacoco-it.xml

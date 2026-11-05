@@ -306,7 +306,7 @@ public class SsoSteps {
      */
     @Then("the external Identity Server must reject the authorization request with error {string} and description {string}")
     public void theExternalIdentityServerMustRejectTheAuthorizationRequest(String error, String description) {
-        String response = browser.externalAuthorizeErrorResponseUrl(30000);
+        String response = browser.externalAuthorizeErrorResponseUrl();
         Assert.assertNotNull(response, "the external IS returned no OAuth error response for the federated "
                 + "authorization request. " + browser.pageDiagnostic());
         Assert.assertEquals(Utils.queryParam(response, "error"), error,

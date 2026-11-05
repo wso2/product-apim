@@ -40,8 +40,8 @@ import java.time.Duration;
  * the Feign interface {@code SolaceV2ApimApisClient} in {@code org.wso2.carbon.apimgt.solace} and
  * cross-checked against Solace's published API walkthrough. NOT the v1 connector surface
  * ({@code /{org}/environments}, {@code /apis}, {@code /apiProducts}, {@code /developers}) that the legacy
- * {@code SolaceTestCase} WireMock stubs described: that mechanism is gone on this product, which is also why
- * the legacy deploy-to-Solace-environment rows are not ported (see solace_event_api.feature).
+ * {@code SolaceTestCase} WireMock stubs described. The current gateway dispatcher cannot use the older Solace
+ * deployer; {@code solace_event_api.feature} pins that deployment failure as HTTP 207 / code 902060.
  *
  * <p><b>Why the data plane is REAL.</b> The broker is the only component in the arc we did not author, so
  * it is the only one that can contradict us: it REJECTS malformed topic syntax and unsupported protocol
@@ -49,10 +49,11 @@ import java.time.Duration;
  * {@code ?topicSyntax=mqtt} and carries an smf/mqtt/amqp/ws/jms/kafka vocabulary), and a real broker is
  * what makes that translation falsifiable.
  *
- * <p><b>Assertion rule (non-negotiable).</b> A shim built to satisfy APIM passes BY CONSTRUCTION. Scenarios
- * MUST assert broker state through SEMP ({@link #getSempUrl()}), never the shim's own responses. The shim's
- * {@code GET /_mock/state} and {@code POST /_mock/reset} endpoints exist for debugging only and are not
- * assertion targets.
+ * <p><b>Assertion rule (non-negotiable).</b> Never use the shim's canned responses as independent evidence of
+ * APIM behavior. Scenarios may assert what the shim recorded from APIM, such as application registrations and
+ * access requests. Broker state must be asserted independently through SEMP ({@link #getSempUrl()}), and
+ * authorization through real broker invocations. The shim's {@code GET /_mock/state} and
+ * {@code POST /_mock/reset} endpoints remain debugging tools, not scenario assertion targets.
  *
  * <p><b>Why two GenericContainers rather than {@code DockerComposeContainer}.</b> Compose support creates
  * its OWN network, so APIM — which lives on the block's private network — could not resolve the shim by network
@@ -94,7 +95,7 @@ public class DynamicSolaceBroker {
      * a plain authenticated HTTP POST, so it rides the suite's existing {@code Requests}/{@code SimpleHTTPClient}
      * funnels with no messaging client dependency.
      *
-     * <p>MEASURED on this image: {@code POST /TOPIC/<topic>} with {@code Authorization: Bearer <APIM access
+     * <p>On this image, {@code POST /TOPIC/<topic>} with {@code Authorization: Bearer <APIM access
      * token>} returns 200, and 403 for a tampered, malformed or absent token.
      *
      * <p>The credential form is REST-SPECIFIC and cost a wrong turn worth recording. Solace's tutorials show
@@ -138,8 +139,8 @@ public class DynamicSolaceBroker {
      * stateless instance can serve every block's network at once; this pair CALLS BACK INTO APIM — the shim's
      * {@code APIM_JWKS_URL} resolves {@link #APIM_JWKS_ALIAS} to fetch APIM's JWKS. A container attached to two
      * block networks would resolve that alias on both, so which APIM answers would be arbitrary. Giving each
-     * block its own broker on its own private network makes the alias unambiguous by construction, which is what
-     * removed the JVM-wide alias permit these blocks previously serialized on.
+     * block its own broker on its own private network makes the alias unambiguous by construction, so these blocks
+     * need no JVM-wide alias permit.
      *
      * <p>Per-block also isolates broker STATE (VPN client-usernames, OAuth profile) that scenarios provision
      * over SEMP, which a shared broker could not offer. The cost is one broker boot per opting-in block (~1-2
@@ -162,7 +163,7 @@ public class DynamicSolaceBroker {
                 .withExposedPorts(SEMP_PORT, SMF_PORT, MQTT_PORT, WS_MQTT_PORT, AMQP_PORT, REST_PORT)
                 .withNetwork(network)
                 .withNetworkAliases(BROKER_ALIAS)
-                // MEASURED: these two names are exact. An invented single
+                // These two names are exact. An invented single
                 // "username_admin_globalaccess_password" makes SolOS abort during config render with
                 // ERROR "Either password, passwordfilepath, or encryptedpassword must be specified."
                 // followed by FATAL Config check failed, and the container exits 0 -- which reads as a
@@ -174,10 +175,9 @@ public class DynamicSolaceBroker {
                     cmd.getHostConfig().withShmSize(1024L * 1024L * 1024L);
                     cmd.getHostConfig().withUlimits(new Ulimit[]{new Ulimit("nofile", 2448, 1048576)});
                 })
-                // Wait on SEMP answering, NOT on a log line. MEASURED: this image (SolOS 10.26.0) never
-                // logs "Primary Virtual Router is now active" -- greps for ready|active|started|Virtual
-                // Router return nothing -- while SEMP /config/about was already returning 200. A
-                // log-message wait therefore hangs the full timeout and fails a working broker. SEMP is
+                // Wait on SEMP answering, NOT on a log line. This image (SolOS 10.26.0) never logs
+                // "Primary Virtual Router is now active" or any other readiness line, while SEMP
+                // /config/about already returns 200. A log-message wait therefore hangs the full timeout and fails a working broker. SEMP is
                 // also precisely what scenarios assert against, so this waits on the real dependency.
                 .waitingFor(Wait.forHttp("/SEMP/v2/config/about")
                         .forPort(SEMP_PORT)
@@ -221,6 +221,11 @@ public class DynamicSolaceBroker {
                  */
                 .withEnv("OAUTH_PROFILE", OAUTH_PROFILE_NAME)
                 .withEnv("APIM_JWKS_URL", "http://" + APIM_JWKS_ALIAS + ":9763/oauth2/jwks")
+                // Both tenant issuers are identical; their signing keys are distinct. The shim only combines
+                // APIM's public JWKS responses, retaining broker-side signature verification.
+                .withEnv("APIM_ADDITIONAL_JWKS_URLS", "[\"http://" + APIM_JWKS_ALIAS
+                        + ":9763/t/tenant1.com/oauth2/jwks\"]")
+                .withEnv("BROKER_JWKS_URL", "http://" + SHIM_ALIAS + ":" + SHIM_PORT + "/_mock/jwks")
                 .withEnv("APIM_TOKEN_ISSUER", "https://localhost:9443/oauth2/token")
                 .waitingFor(Wait.forListeningPort().withStartupTimeout(Duration.ofMinutes(2)));
         shim.withLogConsumer(new JclLogConsumer(logger));
@@ -277,7 +282,7 @@ public class DynamicSolaceBroker {
         return "http://" + SHIM_ALIAS + ":" + SHIM_PORT;
     }
 
-    /** Host-side connector URL, for a test that needs to inspect the shim directly (debugging only). */
+    /** Host-side control-plane URL for registration-state observations; broker credentials and ACLs use SEMP. */
     public String getConnectorHostUrl() {
         return "http://" + shim.getHost() + ":" + shim.getMappedPort(SHIM_PORT);
     }

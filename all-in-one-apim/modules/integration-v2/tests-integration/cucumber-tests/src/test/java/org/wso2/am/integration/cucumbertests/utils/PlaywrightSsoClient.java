@@ -84,10 +84,10 @@ public final class PlaywrightSsoClient implements AutoCloseable {
     private static final int LEAVE_CONSOLE_ATTEMPTS = 3;
 
     /**
-     * How long a console page may take to render the control a step enters it for. The control appears only once
-     * the page has loaded its bundle and its data.
+     * Bounds browser waits whose completion depends on APIM or Identity Server work: the suite's readiness deadline
+     * for server-side work ("... within 60 seconds" in the features).
      */
-    private static final int PAGE_READY_TIMEOUT_MS = 30000;
+    private static final int SERVER_BACKED_WAIT_MS = 60_000;
 
     /** Observes the console's own OIDC session checks in each top-level document. */
     private static final String OIDC_SESSION_OBSERVER = "(() => {"
@@ -106,6 +106,7 @@ public final class PlaywrightSsoClient implements AutoCloseable {
     /** {@code docTrail} size when the current SSO console open began; later hops belong to that open. */
     private int trailMarkAtConsoleOpen;
     private java.util.List<String> lastLogoutHops = java.util.Collections.emptyList();
+    private java.util.List<String> lastLogoutRequests = java.util.Collections.emptyList();
 
     /**
      * The resident-IS session the first console landing established. Every later console must present the same
@@ -132,6 +133,9 @@ public final class PlaywrightSsoClient implements AutoCloseable {
      */
     private final java.util.List<com.microsoft.playwright.Request> docRequests =
             java.util.Collections.synchronizedList(new java.util.ArrayList<>());
+    /** HTTP status of each document request that received a response, recorded as the response arrives. */
+    private final java.util.concurrent.ConcurrentMap<com.microsoft.playwright.Request, Integer>
+            docResponseStatuses = new java.util.concurrent.ConcurrentHashMap<>();
     /** Management-plane XHR/fetch calls (status method path) — diagnostic for stuck SPA form validation. */
     private final java.util.List<String> apiCalls = java.util.Collections.synchronizedList(new java.util.ArrayList<>());
     private final java.util.concurrent.atomic.AtomicLong apiRequestSequence =
@@ -323,6 +327,7 @@ public final class PlaywrightSsoClient implements AutoCloseable {
             try {
                 if ("document".equals(resp.request().resourceType())) {
                     docTrail.add(resp.status() + " " + resp.url());
+                    docResponseStatuses.put(resp.request(), resp.status());
                 }
             } catch (RuntimeException ignored) {
                 // response object may be gone; ignore
@@ -373,11 +378,13 @@ public final class PlaywrightSsoClient implements AutoCloseable {
     /** Navigates to the console's login endpoint, which redirects to the (multi-option) login page. */
     public void openConsoleLoginPage(String consoleContext) {
         page.navigate(consoleEntryUrl(consoleContext),
-                new Page.NavigateOptions().setWaitUntil(WaitUntilState.DOMCONTENTLOADED));
-        page.waitForLoadState();
+                new Page.NavigateOptions().setWaitUntil(WaitUntilState.DOMCONTENTLOADED)
+                        .setTimeout(SERVER_BACKED_WAIT_MS));
+        page.waitForLoadState(com.microsoft.playwright.options.LoadState.LOAD,
+                new Page.WaitForLoadStateOptions().setTimeout(SERVER_BACKED_WAIT_MS));
         if ("devportal".equals(consoleContext)) {
             page.waitForURL("**/authenticationendpoint/login.do**",
-                    new Page.WaitForURLOptions().setTimeout(30000));
+                    new Page.WaitForURLOptions().setTimeout(SERVER_BACKED_WAIT_MS));
             settle();
         }
     }
@@ -470,7 +477,7 @@ public final class PlaywrightSsoClient implements AutoCloseable {
     public void authenticateWithLocalAuthenticator(String username, String password) {
         try {
             page.waitForSelector("input[type=password]",
-                    new Page.WaitForSelectorOptions().setTimeout(25000));
+                    new Page.WaitForSelectorOptions().setTimeout(SERVER_BACKED_WAIT_MS));
         } catch (com.microsoft.playwright.TimeoutError e) {
             assertNot17744();
             throw new AssertionError("the console's local credential form never appeared on the multi-option "
@@ -571,7 +578,8 @@ public final class PlaywrightSsoClient implements AutoCloseable {
      */
     public void selectTenant(String tenantDomain) {
         try {
-            page.waitForURL("**/select-tenant/**", new Page.WaitForURLOptions().setTimeout(30000));
+            page.waitForURL("**/select-tenant/**",
+                    new Page.WaitForURLOptions().setTimeout(SERVER_BACKED_WAIT_MS));
         } catch (com.microsoft.playwright.TimeoutError e) {
             assertNot17744();
             throw new AssertionError("the multi-tenant broker never served its tenant-selection page, so no "
@@ -585,7 +593,7 @@ public final class PlaywrightSsoClient implements AutoCloseable {
             // ATTACHED, not the default VISIBLE: an <option> inside a <select> is never "visible", so waiting on
             // visibility times out even once the tenant is listed.
             page.waitForSelector("#tenantIdentifier option[value='" + tenantDomain + "']",
-                    new Page.WaitForSelectorOptions().setTimeout(30000)
+                    new Page.WaitForSelectorOptions().setTimeout(SERVER_BACKED_WAIT_MS)
                             .setState(com.microsoft.playwright.options.WaitForSelectorState.ATTACHED));
         } catch (com.microsoft.playwright.TimeoutError e) {
             throw new AssertionError("the broker's tenant-selection page never offered tenant '" + tenantDomain
@@ -627,7 +635,7 @@ public final class PlaywrightSsoClient implements AutoCloseable {
         // rejects the authorization request - and the federated credentials would be typed into APIM instead.
         try {
             page.waitForURL(url -> url.startsWith(externalIsBase()),
-                    new Page.WaitForURLOptions().setTimeout(25000));
+                    new Page.WaitForURLOptions().setTimeout(SERVER_BACKED_WAIT_MS));
         } catch (com.microsoft.playwright.TimeoutError e) {
             assertNot17744();
             throw new AssertionError("the browser never reached the external IS login page after selecting the "
@@ -635,7 +643,7 @@ public final class PlaywrightSsoClient implements AutoCloseable {
         }
         try {
             page.waitForSelector("input[type=password]",
-                    new Page.WaitForSelectorOptions().setTimeout(25000));
+                    new Page.WaitForSelectorOptions().setTimeout(SERVER_BACKED_WAIT_MS));
         } catch (com.microsoft.playwright.TimeoutError e) {
             assertNot17744(); // if the redirect hit a /commonauth 400, surface #17744 with a clear message
             throw new AssertionError("the external IS login form never appeared after selecting the IdP. "
@@ -654,7 +662,7 @@ public final class PlaywrightSsoClient implements AutoCloseable {
     private void settle() {
         try {
             page.waitForLoadState(com.microsoft.playwright.options.LoadState.LOAD,
-                    new Page.WaitForLoadStateOptions().setTimeout(15000));
+                    new Page.WaitForLoadStateOptions().setTimeout(SERVER_BACKED_WAIT_MS));
         } catch (RuntimeException ignored) {
             // mid-redirect / slow chain — the explicit selector/cookie waits downstream are the real gates
         }
@@ -668,14 +676,14 @@ public final class PlaywrightSsoClient implements AutoCloseable {
     public void assertLandedInConsole(String consoleContext) {
         // The federated redirect chain + SPA callback are asynchronous; poll the cookie store (safe to read
         // while the page navigates, unlike page.content()) until the console back-end issues the session cookie.
-        if (!waitForAccessTokenCookie(consoleContext, 30000)) {
+        if (!waitForAccessTokenCookie(consoleContext, SERVER_BACKED_WAIT_MS)) {
             throw new AssertionError("did not land authenticated in the '" + consoleContext + "' console — it "
-                    + "issued no session token cookie of its own within 30s (the federated auth / JIT / token "
-                    + "exchange did not complete). " + pageDiagnostic());
+                    + "issued no session token cookie of its own within " + SERVER_BACKED_WAIT_MS
+                    + " ms (the federated auth / JIT / token exchange did not complete). " + pageDiagnostic());
         }
         // The token cookie can be issued by the callback before the browser finishes its final SPA navigation.
         // Do not let the next step start a second navigation while that callback is still redirecting.
-        waitForAuthenticatedConsoleRoute(consoleContext, 30000);
+        waitForAuthenticatedConsoleRoute(consoleContext, SERVER_BACKED_WAIT_MS);
         awaitUnchangedConsoleSession(consoleContext);
     }
 
@@ -705,7 +713,7 @@ public final class PlaywrightSsoClient implements AutoCloseable {
     /** Polls the cookie store until an {@code AM_ACC_TOKEN…} cookie appears or the timeout elapses. */
     private boolean waitForAccessTokenCookie(String consoleContext, int timeoutMs) {
         long deadline = System.currentTimeMillis() + timeoutMs;
-        // CHECKSTYLE:OFF deadlineLoop - browser cookie-store poll (Playwright); Utils.retryUntil is HTTP-only, N/A here
+        // CHECKSTYLE:OFF deadlineLoop - browser cookie-store poll; page.waitForTimeout keeps browser events flowing
         while (System.currentTimeMillis() < deadline) {
             // CHECKSTYLE:ON
             if (hasAccessTokenCookie(consoleContext)) {
@@ -741,19 +749,29 @@ public final class PlaywrightSsoClient implements AutoCloseable {
         trailMarkAtConsoleOpen = docTrail.size();
         try {
             page.navigate(consoleEntryUrl(consoleContext),
-                    new Page.NavigateOptions().setWaitUntil(WaitUntilState.DOMCONTENTLOADED));
-            page.waitForLoadState(com.microsoft.playwright.options.LoadState.NETWORKIDLE);
+                    new Page.NavigateOptions().setWaitUntil(WaitUntilState.DOMCONTENTLOADED)
+                            .setTimeout(SERVER_BACKED_WAIT_MS));
+            page.waitForLoadState(com.microsoft.playwright.options.LoadState.NETWORKIDLE,
+                    new Page.WaitForLoadStateOptions().setTimeout(SERVER_BACKED_WAIT_MS));
         } catch (PlaywrightException e) {
             // A post-logout console open is expected to redirect through the authentication endpoint. Chromium
             // can report ERR_ABORTED when that redirect replaces the document while navigate() is waiting for
             // DOMContentLoaded. The document response trail still records the redirect and is what the fresh-login
             // assertion evaluates; unrelated navigation failures must remain visible to the test.
             if (!isRedirectAborted(e)) {
+                try {
+                    snap("console-navigation-failed");
+                    dumpDiagnostics("console-navigation-failed");
+                    log.warn("[SSO] console '" + consoleContext + "' navigation failed: " + pageDiagnostic(), e);
+                } catch (RuntimeException diagnosticError) {
+                    log.warn("[SSO] could not collect diagnostics for failed navigation to console '"
+                            + consoleContext + "': " + diagnosticError.getMessage(), diagnosticError);
+                }
                 throw e;
             }
             log.info("[SSO] console '" + consoleContext
                     + "' navigation was interrupted by a redirect; waiting for the redirect chain to settle");
-            waitForConsoleNavigationOutcome(consoleContext, 30000);
+            waitForConsoleNavigationOutcome(consoleContext, SERVER_BACKED_WAIT_MS);
         }
     }
 
@@ -777,14 +795,16 @@ public final class PlaywrightSsoClient implements AutoCloseable {
             trailMarkAtConsoleOpen = docTrail.size();
             try {
                 page.navigate(consoleEntryUrl("admin"),
-                        new Page.NavigateOptions().setWaitUntil(WaitUntilState.DOMCONTENTLOADED));
-                page.waitForLoadState(com.microsoft.playwright.options.LoadState.NETWORKIDLE);
+                        new Page.NavigateOptions().setWaitUntil(WaitUntilState.DOMCONTENTLOADED)
+                                .setTimeout(SERVER_BACKED_WAIT_MS));
+                page.waitForLoadState(com.microsoft.playwright.options.LoadState.NETWORKIDLE,
+                        new Page.WaitForLoadStateOptions().setTimeout(SERVER_BACKED_WAIT_MS));
             } catch (PlaywrightException retryFailure) {
                 if (!isRedirectAborted(retryFailure)) {
                     throw retryFailure;
                 }
                 try {
-                    waitForConsoleNavigationOutcome("admin", 30000);
+                    waitForConsoleNavigationOutcome("admin", SERVER_BACKED_WAIT_MS);
                 } catch (AssertionError secondAttempt) {
                     throw adminNavigationRecoveryFailure(firstAttempt, secondAttempt);
                 }
@@ -938,11 +958,17 @@ public final class PlaywrightSsoClient implements AutoCloseable {
      * which leaves the session intact and makes a logout assertion look like a product failure.
      */
     public void logoutFromConsole(String consoleContext) {
+        // A console SPA left on the page keeps checking its session and starts its own navigation while the logout
+        // redirects are in flight, so it is unloaded first.
+        leaveCurrentConsole();
         int mark = docTrail.size();
+        int requestMark = docRequests.size();
         try {
             page.navigate(apimInternal + "/" + consoleContext + "/services/logout",
-                    new Page.NavigateOptions().setWaitUntil(WaitUntilState.DOMCONTENTLOADED));
-            page.waitForLoadState(com.microsoft.playwright.options.LoadState.NETWORKIDLE);
+                    new Page.NavigateOptions().setWaitUntil(WaitUntilState.DOMCONTENTLOADED)
+                            .setTimeout(SERVER_BACKED_WAIT_MS));
+            page.waitForLoadState(com.microsoft.playwright.options.LoadState.NETWORKIDLE,
+                    new Page.WaitForLoadStateOptions().setTimeout(SERVER_BACKED_WAIT_MS));
         } catch (PlaywrightException e) {
             // Federated logout replaces the current document several times (APIM -> resident IS -> external IdP ->
             // APIM callback). Chromium can report ERR_ABORTED when one redirect replaces the document while
@@ -953,13 +979,17 @@ public final class PlaywrightSsoClient implements AutoCloseable {
             }
             log.info("[SSO] '" + consoleContext
                     + "' logout navigation was interrupted by a redirect; waiting for its callback");
-            waitForLogoutNavigationOutcome(consoleContext, mark, 30000);
+            waitForLogoutNavigationOutcome(consoleContext, mark, SERVER_BACKED_WAIT_MS);
         }
         settle();
         // Fail HERE if the logout endpoint did not answer. Otherwise the session simply survives and the residue
         // assertions below report a global-logout failure, which reads as a product defect rather than a bad URL.
         java.util.List<String> all = new java.util.ArrayList<>(docTrail);
         lastLogoutHops = new java.util.ArrayList<>(all.subList(Math.min(mark, all.size()), all.size()));
+        lastLogoutRequests = logoutDocumentRequestsSince(requestMark);
+        for (String request : lastLogoutRequests) {
+            log.info("[SSO-LOGOUT] " + request);
+        }
         for (String hop : lastLogoutHops) {
             if (hop.contains("/services/logout") && !hop.startsWith("2") && !hop.startsWith("3")) {
                 throw new AssertionError("the '" + consoleContext + "' console logout endpoint did not answer: "
@@ -981,7 +1011,7 @@ public final class PlaywrightSsoClient implements AutoCloseable {
             if (all.subList(from, all.size()).stream().anyMatch(hop -> hop.contains(callback))) {
                 try {
                     page.waitForLoadState(com.microsoft.playwright.options.LoadState.LOAD,
-                            new Page.WaitForLoadStateOptions().setTimeout(5000));
+                            new Page.WaitForLoadStateOptions().setTimeout(SERVER_BACKED_WAIT_MS));
                 } catch (RuntimeException ignored) {
                     // The callback itself is the terminal redirect evidence; downstream assertions validate the
                     // callback and session state, so a late load-state notification is not a separate failure.
@@ -1014,7 +1044,7 @@ public final class PlaywrightSsoClient implements AutoCloseable {
         boolean returnedThroughCallback = lastLogoutHops.stream().anyMatch(hop -> hop.contains(callback));
         if (!returnedThroughCallback) {
             throw new AssertionError("the '" + consoleContext + "' logout did not return through its callback '"
-                    + callback + "': " + pageDiagnostic());
+                    + callback + "'. Logout document requests: " + lastLogoutRequests + ". " + pageDiagnostic());
         }
         log.info("[SSO] logout returned through '" + callback + "'");
     }
@@ -1119,8 +1149,9 @@ public final class PlaywrightSsoClient implements AutoCloseable {
         }
         if (!residue.isEmpty()) {
             throw new AssertionError("single logout left the identity server's session cookie on '" + isHost
-                    + "': " + residue + " — the logout never reached the identity server, so its session "
-                    + "survives and the next login through the broker is signed in without credentials.");
+                    + "': " + residue + " — the browser still holds the external session cookie, so the logout "
+                    + "did not clear the identity server's session. "
+                    + "Logout document requests: " + lastLogoutRequests);
         }
         log.info("[SSO] no identity server session cookie remains on '" + isHost + "' after logout");
     }
@@ -1204,7 +1235,8 @@ public final class PlaywrightSsoClient implements AutoCloseable {
      */
     public String createRestApi(String name, String context, String version, String endpoint) {
         page.navigate(apimInternal + "/publisher/apis/create/rest",
-                new Page.NavigateOptions().setWaitUntil(WaitUntilState.DOMCONTENTLOADED));
+                new Page.NavigateOptions().setWaitUntil(WaitUntilState.DOMCONTENTLOADED)
+                        .setTimeout(SERVER_BACKED_WAIT_MS));
         awaitPageElement(page.getByTestId("default-api-form"), "the Create API form", "create-form-missing");
         try {
             // Uniqueness callbacks aggregate the API inputs captured on blur. Name is validated last, with all
@@ -1229,14 +1261,16 @@ public final class PlaywrightSsoClient implements AutoCloseable {
                     + pageDiagnostic());
         }
         try {
-            clickAndAwaitWriteResponse(create, "Create API", "POST", "/publisher/v4/apis", 30000);
+            clickAndAwaitWriteResponse(create, "Create API", "POST", "/publisher/v4/apis",
+                    SERVER_BACKED_WAIT_MS);
         } catch (RuntimeException | AssertionError e) {
             snap("create-api-no-response");
             dumpDiagnostics("create-api-no-response");
             throw e;
         }
         try {
-            page.waitForURL("**/publisher/apis/*/overview**", new Page.WaitForURLOptions().setTimeout(15000));
+            page.waitForURL("**/publisher/apis/*/overview**",
+                    new Page.WaitForURLOptions().setTimeout(SERVER_BACKED_WAIT_MS));
         } catch (RuntimeException e) {
             snap("create-api-no-navigation");
             dumpDiagnostics("create-api-no-navigation");
@@ -1260,7 +1294,7 @@ public final class PlaywrightSsoClient implements AutoCloseable {
             return "POST".equals(candidate.request().method())
                     && "/api/am/publisher/v4/apis/validate".equals(url.getPath()) && url.getQuery() != null
                     && java.util.Arrays.asList(url.getQuery().split("&")).contains(query);
-        }, new Page.WaitForResponseOptions().setTimeout(PAGE_READY_TIMEOUT_MS),
+        }, new Page.WaitForResponseOptions().setTimeout(SERVER_BACKED_WAIT_MS),
                 () -> fillAndBlur("input[name=" + field + "]", value));
         String failure = response.finished();
         if (failure != null || response.status() != 404) {
@@ -1285,10 +1319,11 @@ public final class PlaywrightSsoClient implements AutoCloseable {
      */
     public void deployApi() {
         page.navigate(apimInternal + "/publisher/apis/" + currentApiId + "/deployments",
-                new Page.NavigateOptions().setWaitUntil(WaitUntilState.DOMCONTENTLOADED));
+                new Page.NavigateOptions().setWaitUntil(WaitUntilState.DOMCONTENTLOADED)
+                        .setTimeout(SERVER_BACKED_WAIT_MS));
         Locator deploy = page.locator("#deploy-btn");
         awaitPageElement(deploy, "the Deploy button", "deploy-btn-missing");
-        if (!waitForEnabled(deploy, 30000)) {
+        if (!waitForEnabled(deploy, SERVER_BACKED_WAIT_MS)) {
             snap("deploy-btn-disabled");
             dumpDiagnostics("deploy-btn-disabled");
             throw new AssertionError("the Deploy button never enabled (the API likely has no production "
@@ -1299,7 +1334,8 @@ public final class PlaywrightSsoClient implements AutoCloseable {
         com.microsoft.playwright.Response resp;
         try {
             resp = clickAndAwaitWriteResponse(deploy, "Deploy", "POST",
-                    "/publisher/v4/apis/" + currentApiId + "/revisions", "/deploy-revision", 45000);
+                    "/publisher/v4/apis/" + currentApiId + "/revisions", "/deploy-revision",
+                    SERVER_BACKED_WAIT_MS);
         } catch (RuntimeException | AssertionError e) {
             snap("deploy-no-call");
             dumpDiagnostics("deploy-no-call");
@@ -1314,17 +1350,19 @@ public final class PlaywrightSsoClient implements AutoCloseable {
      */
     public void publishApi() {
         page.navigate(apimInternal + "/publisher/apis/" + currentApiId + "/lifecycle",
-                new Page.NavigateOptions().setWaitUntil(WaitUntilState.DOMCONTENTLOADED));
+                new Page.NavigateOptions().setWaitUntil(WaitUntilState.DOMCONTENTLOADED)
+                        .setTimeout(SERVER_BACKED_WAIT_MS));
         Locator publish = page.locator("[data-testid=Publish-btn]");
         awaitPageElement(publish, "the Publish button", "publish-btn-missing");
-        if (!waitForEnabled(publish, 20000)) {
+        if (!waitForEnabled(publish, SERVER_BACKED_WAIT_MS)) {
             snap("publish-btn-disabled");
             throw new AssertionError("the Publish button never enabled. " + pageDiagnostic());
         }
         // The publish POSTs .../change-lifecycle?action=Publish — wait for that as the deterministic success signal.
         com.microsoft.playwright.Response resp;
         try {
-            resp = clickAndAwaitWriteResponse(publish, "Publish", "POST", "/change-lifecycle", 45000);
+            resp = clickAndAwaitWriteResponse(publish, "Publish", "POST", "/change-lifecycle",
+                    SERVER_BACKED_WAIT_MS);
         } catch (RuntimeException | AssertionError e) {
             snap("publish-no-call");
             dumpDiagnostics("publish-no-call");
@@ -1340,18 +1378,19 @@ public final class PlaywrightSsoClient implements AutoCloseable {
      */
     public void redeployApi() {
         page.navigate(apimInternal + "/publisher/apis/" + currentApiId + "/deployments",
-                new Page.NavigateOptions().setWaitUntil(WaitUntilState.DOMCONTENTLOADED));
+                new Page.NavigateOptions().setWaitUntil(WaitUntilState.DOMCONTENTLOADED)
+                        .setTimeout(SERVER_BACKED_WAIT_MS));
         awaitUnchangedConsoleSession("publisher");
         Locator dnr = page.getByRole(AriaRole.BUTTON,
                 new Page.GetByRoleOptions().setName("Deploy New Revision"));
         try {
-            dnr.waitFor(new Locator.WaitForOptions().setTimeout(PAGE_READY_TIMEOUT_MS));
+            dnr.waitFor(new Locator.WaitForOptions().setTimeout(SERVER_BACKED_WAIT_MS));
         } catch (RuntimeException e) {
             snap("redeploy-no-button");
             throw new AssertionError("'Deploy New Revision' not found on the deployments page (did the admin→"
                     + "publisher round-trip land unauthenticated?). " + pageDiagnostic(), e);
         }
-        if (!waitForEnabled(dnr, 20000)) {
+        if (!waitForEnabled(dnr, SERVER_BACKED_WAIT_MS)) {
             snap("redeploy-new-revision-disabled");
             dumpDiagnostics("redeploy-new-revision-disabled");
             throw new AssertionError("'Deploy New Revision' stayed disabled. " + pageDiagnostic());
@@ -1364,14 +1403,14 @@ public final class PlaywrightSsoClient implements AutoCloseable {
         try {
             clickOnce(dnr, "Deploy New Revision");
             try {
-                confirm.waitFor(new Locator.WaitForOptions().setTimeout(PAGE_READY_TIMEOUT_MS));
+                confirm.waitFor(new Locator.WaitForOptions().setTimeout(SERVER_BACKED_WAIT_MS));
             } catch (RuntimeException e) {
                 snap("redeploy-dialog-missing");
                 dumpDiagnostics("redeploy-dialog-missing");
                 throw new AssertionError("The Deploy New Revision dialog did not open. " + pageDiagnostic(), e);
             }
             try {
-                defaultGateway.waitFor(new Locator.WaitForOptions().setTimeout(PAGE_READY_TIMEOUT_MS));
+                defaultGateway.waitFor(new Locator.WaitForOptions().setTimeout(SERVER_BACKED_WAIT_MS));
             } catch (RuntimeException e) {
                 snap("redeploy-default-gateway-missing");
                 dumpDiagnostics("redeploy-default-gateway-missing");
@@ -1392,7 +1431,8 @@ public final class PlaywrightSsoClient implements AutoCloseable {
             log.info("[SSO-DIAG] redeploy dialog ready to submit: "
                     + redeployUiDiagnostic(dialog, defaultGateway, confirm));
             com.microsoft.playwright.Response resp = clickAndAwaitWriteResponse(confirm, "Redeploy API", "POST",
-                    "/publisher/v4/apis/" + currentApiId + "/revisions", "/deploy-revision", 45000);
+                    "/publisher/v4/apis/" + currentApiId + "/revisions", "/deploy-revision",
+                    SERVER_BACKED_WAIT_MS);
             log.info("[SSO-WORK] redeployed API id=" + currentApiId + " (deploy-revision " + resp.status() + ")");
         } catch (RuntimeException | AssertionError e) {
             snap("redeploy-no-call");
@@ -1406,7 +1446,7 @@ public final class PlaywrightSsoClient implements AutoCloseable {
         try {
             page.waitForFunction("prefix => location.pathname.startsWith(prefix)"
                             + " && window.__ssoOidcSessionStatus === 'unchanged'", "/" + consoleContext + "/",
-                    new Page.WaitForFunctionOptions().setTimeout(PAGE_READY_TIMEOUT_MS));
+                    new Page.WaitForFunctionOptions().setTimeout(SERVER_BACKED_WAIT_MS));
         } catch (RuntimeException e) {
             snap("console-session-not-current");
             dumpDiagnostics("console-session-not-current");
@@ -1668,7 +1708,8 @@ public final class PlaywrightSsoClient implements AutoCloseable {
     public int changeApiProviderViaAdminSession(String apiId, String newProvider) {
         // Make the Admin console the active context so its split-token cookies are present/fresh.
         page.navigate(apimInternal + "/admin/",
-                new Page.NavigateOptions().setWaitUntil(WaitUntilState.DOMCONTENTLOADED));
+                new Page.NavigateOptions().setWaitUntil(WaitUntilState.DOMCONTENTLOADED)
+                        .setTimeout(SERVER_BACKED_WAIT_MS));
         settle();
         String part1 = consoleTokenPart1("/admin");
         if (part1 == null) {
@@ -1795,7 +1836,8 @@ public final class PlaywrightSsoClient implements AutoCloseable {
      */
     public String createDevportalApp(String appName) {
         page.navigate(apimInternal + "/devportal/applications/create?tenant=" + devportalTenant,
-                new Page.NavigateOptions().setWaitUntil(WaitUntilState.DOMCONTENTLOADED));
+                new Page.NavigateOptions().setWaitUntil(WaitUntilState.DOMCONTENTLOADED)
+                        .setTimeout(SERVER_BACKED_WAIT_MS));
         awaitPageElement(page.locator("input[name=name]"), "the application name field", "dp-app-form-missing");
         // The form enables SAVE before it has loaded its application tiers and attributes, and its save handler
         // reads the attribute list without a null check, so a SAVE in that window fails client-side and sends
@@ -1803,7 +1845,8 @@ public final class PlaywrightSsoClient implements AutoCloseable {
         // means the form is ready.
         try {
             page.waitForFunction("() => { const tier = document.querySelector('input[name=throttlingPolicy]');"
-                    + " return !!(tier && tier.value); }", null, new Page.WaitForFunctionOptions().setTimeout(30000));
+                    + " return !!(tier && tier.value); }", null,
+                    new Page.WaitForFunctionOptions().setTimeout(SERVER_BACKED_WAIT_MS));
         } catch (RuntimeException e) {
             snap("dp-app-form-not-ready");
             throw new AssertionError("the DevPortal application form never loaded its application tiers. "
@@ -1824,7 +1867,7 @@ public final class PlaywrightSsoClient implements AutoCloseable {
         com.microsoft.playwright.Response resp;
         try {
             resp = clickAndAwaitWriteResponse(save, "DevPortal application SAVE", "POST",
-                    "/devportal/v3/applications", 30000);
+                    "/devportal/v3/applications", SERVER_BACKED_WAIT_MS);
         } catch (RuntimeException | AssertionError e) {
             snap("dp-app-no-call");
             dumpDiagnostics("dp-app-no-call");
@@ -1848,7 +1891,7 @@ public final class PlaywrightSsoClient implements AutoCloseable {
             // Fall back to the overview URL the app routes to after save.
             try {
                 page.waitForURL("**/devportal/applications/*/overview**",
-                        new Page.WaitForURLOptions().setTimeout(15000));
+                        new Page.WaitForURLOptions().setTimeout(SERVER_BACKED_WAIT_MS));
                 currentAppId = appIdFromUrl(page.url());
             } catch (RuntimeException ignored) {
                 // leave null; asserted below
@@ -1874,17 +1917,18 @@ public final class PlaywrightSsoClient implements AutoCloseable {
      */
     public void subscribeAppToApi(String apiId, String appName) {
         page.navigate(apimInternal + "/devportal/apis/" + apiId + "/credentials?tenant=" + devportalTenant,
-                new Page.NavigateOptions().setWaitUntil(WaitUntilState.DOMCONTENTLOADED));
+                new Page.NavigateOptions().setWaitUntil(WaitUntilState.DOMCONTENTLOADED)
+                        .setTimeout(SERVER_BACKED_WAIT_MS));
         awaitPageElement(page.locator("#subscribe-to-api-btn"), "the Subscribe button", "dp-subscribe-btn-missing");
         // The "Application" select defaults to DefaultApplication — switch it to OUR app. (The "Business Plan"
         // select already defaults to a valid tier, e.g. Unlimited, so we leave it.) MUI Select is opened by
         // clicking the label-associated combobox, then the matching option is clicked in the popup listbox.
         try {
             Locator appCombo = page.getByLabel("Application", new Page.GetByLabelOptions().setExact(true));
-            appCombo.waitFor(new Locator.WaitForOptions().setTimeout(15000));
+            appCombo.waitFor(new Locator.WaitForOptions().setTimeout(SERVER_BACKED_WAIT_MS));
             clickWhenReady(appCombo, "Application select");
             Locator opt = page.getByRole(AriaRole.OPTION, new Page.GetByRoleOptions().setName(appName));
-            opt.waitFor(new Locator.WaitForOptions().setTimeout(8000));
+            opt.waitFor(new Locator.WaitForOptions().setTimeout(SERVER_BACKED_WAIT_MS));
             clickWhenReady(opt, "app option");
         } catch (RuntimeException e) {
             snap("dp-subscribe-select-fail");
@@ -1895,7 +1939,8 @@ public final class PlaywrightSsoClient implements AutoCloseable {
         waitForEnabled(subscribe, 15000);
         com.microsoft.playwright.Response resp;
         try {
-            resp = clickAndAwaitWriteResponse(subscribe, "Subscribe", "POST", "/devportal/v3/subscriptions", 30000);
+            resp = clickAndAwaitWriteResponse(subscribe, "Subscribe", "POST", "/devportal/v3/subscriptions",
+                    SERVER_BACKED_WAIT_MS);
         } catch (RuntimeException | AssertionError e) {
             snap("dp-subscribe-no-call");
             dumpDiagnostics("dp-subscribe-no-call");
@@ -1919,10 +1964,11 @@ public final class PlaywrightSsoClient implements AutoCloseable {
     public void generateAppKeys() {
         page.navigate(apimInternal + "/devportal/applications/" + currentAppId
                         + "/productionkeys/oauth?tenant=" + devportalTenant,
-                new Page.NavigateOptions().setWaitUntil(WaitUntilState.DOMCONTENTLOADED));
+                new Page.NavigateOptions().setWaitUntil(WaitUntilState.DOMCONTENTLOADED)
+                        .setTimeout(SERVER_BACKED_WAIT_MS));
         Locator gen = page.locator("#generate-keys");
         awaitPageElement(gen, "the Generate Keys button", "dp-generate-keys-missing");
-        if (!waitForEnabled(gen, 20000)) {
+        if (!waitForEnabled(gen, SERVER_BACKED_WAIT_MS)) {
             snap("dp-generate-keys-disabled");
             dumpDiagnostics("dp-generate-keys-disabled");
             throw new AssertionError("The Generate Keys button never enabled after the key page loaded. "
@@ -1970,9 +2016,11 @@ public final class PlaywrightSsoClient implements AutoCloseable {
                     throw new AssertionError("The Create Secret dialog did not become ready. "
                             + keysDialogDiagnostic(), e);
                 }
-                resp = clickAndAwaitWriteResponse(create, "Create Secret", "POST", generatePath, 45000);
+                resp = clickAndAwaitWriteResponse(create, "Create Secret", "POST", generatePath,
+                        SERVER_BACKED_WAIT_MS);
             } else {
-                resp = clickAndAwaitWriteResponse(gen, "Generate Keys", "POST", generatePath, 45000);
+                resp = clickAndAwaitWriteResponse(gen, "Generate Keys", "POST", generatePath,
+                        SERVER_BACKED_WAIT_MS);
             }
         } catch (RuntimeException | AssertionError e) {
             snap("dp-keys-no-call");
@@ -2117,28 +2165,39 @@ public final class PlaywrightSsoClient implements AutoCloseable {
         }
         String accessToken = new org.json.JSONObject(tokenBody).getString("access_token");
         String url = "https://localhost:8243" + context + "/" + version + resourcePath;
-        // A freshly (re)deployed API takes a moment to become routable at the gateway — retry until 200 or timeout.
-        int status = 0;
-        String body = "";
-        long deadline = System.currentTimeMillis() + 40000;
-        // CHECKSTYLE:OFF deadlineLoop - poll the gateway for invoke-propagation via page.request; not an HTTP retry loop
-        while (System.currentTimeMillis() < deadline) {
-            // CHECKSTYLE:ON
-            APIResponse inv = page.request().get(url,
-                    RequestOptions.create().setHeader("Authorization", "Bearer " + accessToken));
-            status = inv.status();
-            body = safeText(inv).replaceAll("\\s+", " ").trim();
-            if (status == 200) {
-                break;
-            }
-            try {
-                page.waitForTimeout(2500);
-            } catch (RuntimeException e) {
-                break;
-            }
+        // A freshly (re)deployed API takes a moment to become routable at the gateway. The request goes through the
+        // browser's request context so it reaches the gateway via the browser proxy.
+        long pollStart = System.currentTimeMillis();
+        GatewayInvocation last;
+        try {
+            last = Utils.retryUntil(SERVER_BACKED_WAIT_MS, () -> {
+                try {
+                    APIResponse inv = page.request().get(url,
+                            RequestOptions.create().setHeader("Authorization", "Bearer " + accessToken));
+                    return new GatewayInvocation(inv.status(), safeText(inv).replaceAll("\\s+", " ").trim());
+                } catch (PlaywrightException transportFailure) {
+                    throw new java.io.IOException("gateway request failed: " + transportFailure.getMessage(),
+                            transportFailure);
+                }
+            }, invocation -> invocation.status() == 200);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new AssertionError("interrupted while invoking " + url, e);
         }
-        log.info("[SSO-WORK] invoke " + url + " -> status=" + status + " body=" + body);
-        return status;
+        if (last == null) {
+            throw new AssertionError("no response from the gateway for " + url
+                    + " within the propagation window; every attempt failed at the transport level.");
+        }
+        if (last.status() == 401) {
+            Utils.logAuthRejection("SSO application invocation of " + url, null, accessToken, last.status(),
+                    last.body(), System.currentTimeMillis() - pollStart);
+        }
+        log.info("[SSO-WORK] invoke " + url + " -> status=" + last.status() + " body=" + last.body());
+        return last.status();
+    }
+
+    /** One gateway invocation's outcome: the status and a shortened, whitespace-collapsed body. */
+    private record GatewayInvocation(int status, String body) {
     }
 
     private static String safeText(APIResponse r) {
@@ -2157,11 +2216,11 @@ public final class PlaywrightSsoClient implements AutoCloseable {
      */
     private void awaitPageElement(Locator element, String what, String label) {
         try {
-            element.waitFor(new Locator.WaitForOptions().setTimeout(PAGE_READY_TIMEOUT_MS));
+            element.waitFor(new Locator.WaitForOptions().setTimeout(SERVER_BACKED_WAIT_MS));
         } catch (RuntimeException e) {
             snap(label);
             dumpDiagnostics(label);
-            throw new AssertionError(what + " did not appear within " + PAGE_READY_TIMEOUT_MS + " ms. "
+            throw new AssertionError(what + " did not appear within " + SERVER_BACKED_WAIT_MS + " ms. "
                     + pageDiagnostic(), e);
         }
     }
@@ -2207,8 +2266,8 @@ public final class PlaywrightSsoClient implements AutoCloseable {
      * 4.1.2.1 delivers it to the client's redirect_uri, APIM's {@code /commonauth}). Waits up to
      * {@code timeoutMs} for the redirect chain to get there; null if no error response arrived.
      */
-    public String externalAuthorizeErrorResponseUrl(int timeoutMs) {
-        com.microsoft.playwright.Request error = externalAuthorizeErrorRequest(timeoutMs);
+    public String externalAuthorizeErrorResponseUrl() {
+        com.microsoft.playwright.Request error = externalAuthorizeErrorRequest(SERVER_BACKED_WAIT_MS);
         return error == null ? null : error.url();
     }
 
@@ -2216,7 +2275,7 @@ public final class PlaywrightSsoClient implements AutoCloseable {
         String authorize = externalAuthorizeRequestUrl();
         int from = firstDocRequestIndex(u -> u.equals(authorize), 0) + 1;
         long deadline = System.currentTimeMillis() + timeoutMs;
-        // CHECKSTYLE:OFF deadlineLoop - browser request-trail poll (Playwright); Utils.retryUntil is HTTP-only, N/A here
+        // CHECKSTYLE:OFF deadlineLoop - browser request-trail poll; page.waitForTimeout keeps browser events flowing
         while (true) {
             // CHECKSTYLE:ON
             com.microsoft.playwright.Request error = firstDocRequest(u -> Utils.queryParam(u, "error") != null, from);
@@ -2236,7 +2295,7 @@ public final class PlaywrightSsoClient implements AutoCloseable {
      * and no {@code AM_ACC_TOKEN} part-1 cookie exists at the console's path.
      */
     public void assertNoConsoleSession(String consoleContext) {
-        awaitErrorCallbackOutcome(30000);
+        awaitErrorCallbackOutcome(SERVER_BACKED_WAIT_MS);
         if (hasAccessTokenCookie(consoleContext)) {
             throw new AssertionError("the '" + consoleContext + "' console issued a session token cookie although "
                     + "the federated authentication was expected to fail. " + pageDiagnostic());
@@ -2256,7 +2315,7 @@ public final class PlaywrightSsoClient implements AutoCloseable {
                     + "federated callback to check for a console session. " + pageDiagnostic());
         }
         long deadline = System.currentTimeMillis() + timeoutMs;
-        // CHECKSTYLE:OFF deadlineLoop - browser redirect-chain poll (Playwright); Utils.retryUntil is HTTP-only, N/A here
+        // CHECKSTYLE:OFF deadlineLoop - browser redirect-chain poll; page.waitForTimeout keeps browser events flowing
         while (true) {
             // CHECKSTYLE:ON
             while (hop.redirectedTo() != null) {
@@ -2292,6 +2351,31 @@ public final class PlaywrightSsoClient implements AutoCloseable {
             }
         }
         return -1;
+    }
+
+    /** Returns the document request sequence since a logout began without exposing redirect query parameters. */
+    private java.util.List<String> logoutDocumentRequestsSince(int requestMark) {
+        java.util.List<com.microsoft.playwright.Request> requests = new java.util.ArrayList<>(docRequests);
+        java.util.List<String> result = new java.util.ArrayList<>();
+        for (com.microsoft.playwright.Request request : requests.subList(Math.min(requestMark, requests.size()),
+                requests.size())) {
+            // Read the status recorded by the response listener; Request.response() would block on a pending request.
+            Integer status = docResponseStatuses.get(request);
+            result.add(request.method() + " " + safeNavigationUrl(request.url()) + " -> "
+                    + (status != null ? "HTTP " + status : "no response"));
+        }
+        return result;
+    }
+
+    /** Returns a document URL without query parameters that can contain authentication material. */
+    private static String safeNavigationUrl(String url) {
+        try {
+            URI uri = URI.create(url);
+            int port = uri.getPort();
+            return uri.getScheme() + "://" + uri.getHost() + (port < 0 ? "" : ":" + port) + uri.getPath();
+        } catch (RuntimeException e) {
+            return "<unparseable document URL>";
+        }
     }
 
     // ─────────────────────────── helpers ───────────────────────────

@@ -17,18 +17,19 @@
 
 package org.wso2.am.integration.cucumbertests.stepdefinitions;
 
-import com.sun.net.httpserver.HttpServer;
 import io.cucumber.java.After;
 import io.cucumber.java.Before;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.json.JSONObject;
 import org.testng.Assert;
 import org.wso2.am.integration.cucumbertests.utils.Identity;
 import org.wso2.am.integration.cucumbertests.utils.Requests;
 import org.wso2.am.integration.cucumbertests.utils.TestContext;
 import org.wso2.am.integration.cucumbertests.utils.Utils;
+import org.wso2.am.integration.cucumbertests.utils.clients.SimpleHTTPClient;
 import org.wso2.am.integration.test.utils.Constants;
 import org.wso2.am.testcontainers.ApimRuntime;
 import org.wso2.carbon.automation.engine.context.beans.User;
@@ -36,12 +37,12 @@ import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -80,8 +81,14 @@ public class RemoteLoggingSteps {
     private static final Log log = LogFactory.getLog(RemoteLoggingSteps.class);
 
     /* Mock HTTP sink shared across steps + the teardown hook. */
-    private static HttpServer sinkServer;
-    private static final List<String> sinkPayloads = new CopyOnWriteArrayList<>();
+    /**
+     * The mock log sink is a named receiver in the shared node backend ({@code websub-receiver} app), which every
+     * {@code initBackend} block network reaches as {@code nodebackend}. The test JVM reads what it received through
+     * the backend's published port, so neither side needs to reach the machine running the test JVM.
+     */
+    private static final int LOG_SINK_PORT = 3022;
+    private static final String NODE_BACKEND_HOST = "nodebackend";
+    private static String sinkName;
 
     /* Log types enabled via addRemoteServerConfig, reset in teardown — failure-safe, since the inline "disable"
        step is skipped if a scenario fails after enabling. */
@@ -313,24 +320,34 @@ public class RemoteLoggingSteps {
     }
 
     /**
-     * Starts a host HTTP sink on an ephemeral port and stores the container-reachable URL under {@code ctxKey}
-     * (via {@code host.docker.internal}, which {@code DynamicApimContainer} maps to the host gateway).
+     * Registers a uniquely named mock log sink in the node backend and stores the URL the server posts its log
+     * payloads to under {@code ctxKey}.
      */
     @When("I start a mock log sink and store its container URL as {string}")
     public void startMockSink(String ctxKey) throws Exception {
-        sinkPayloads.clear();
-        sinkServer = HttpServer.create(new InetSocketAddress(0), 0);
-        int port = sinkServer.getAddress().getPort();
-        sinkServer.createContext("/api/logs/consume", exchange -> {
-            try (InputStream body = exchange.getRequestBody()) {
-                sinkPayloads.add(new String(body.readAllBytes(), StandardCharsets.UTF_8));
-            }
-            exchange.sendResponseHeaders(200, -1);
-            exchange.close();
-        });
-        sinkServer.start();
+        sinkName = "remote-log-sink-" + UUID.randomUUID();
+        String url = Utils.getNodeBackendUrl(LOG_SINK_PORT) + "/register/" + sinkName;
+        HttpResponse response = SimpleHTTPClient.getInstance().doPost(url, new HashMap<>(), "",
+                Constants.CONTENT_TYPES.APPLICATION_JSON);
+        Assert.assertTrue(response != null && response.getResponseCode() == 200,
+                "Failed to register the mock log sink at " + url + "; got="
+                        + (response == null ? "null" : response.getResponseCode() + "/" + response.getData()));
         TestContext.set(Utils.normalizeContextKey(ctxKey),
-                "http://host.docker.internal:" + port + "/api/logs/consume");
+                "http://" + NODE_BACKEND_HOST + ":" + LOG_SINK_PORT + "/silent/" + sinkName);
+    }
+
+    /**
+     * The number of log payloads the mock sink has received, read from the node backend's introspection endpoint.
+     * An intermediate read consumed within the step, so it does not publish {@code httpResponse}.
+     */
+    private static int sinkPayloadCount() throws IOException {
+        String url = Utils.getNodeBackendUrl(LOG_SINK_PORT) + "/events/" + sinkName;
+        HttpResponse response = SimpleHTTPClient.getInstance().doGet(url, new HashMap<>());
+        Assert.assertTrue(response != null && response.getResponseCode() == 200 && response.getData() != null
+                        && !response.getData().isBlank(),
+                "Failed to read the mock log sink at " + url + "; got="
+                        + (response == null ? "null" : response.getResponseCode() + "/" + response.getData()));
+        return new JSONObject(response.getData()).getInt("count");
     }
 
     /** Triggers an action that emits an AUDIT_LOG entry — an authenticated admin GET of the key-managers. */
@@ -347,7 +364,7 @@ public class RemoteLoggingSteps {
         long endStart = System.currentTimeMillis();
         long end = endStart + Math.max(timeoutSeconds * 1000L, 10000L);
         while (System.currentTimeMillis() < end) {
-            if (!sinkPayloads.isEmpty()) {
+            if (sinkPayloadCount() > 0) {
                 return;
             }
             try {
@@ -357,7 +374,7 @@ public class RemoteLoggingSteps {
             }
             Utils.pollPause(endStart, 2000);
         }
-        Assert.assertFalse(sinkPayloads.isEmpty(), "Mock log sink received no log payload within the deadline");
+        Assert.assertTrue(sinkPayloadCount() > 0, "Mock log sink received no log payload within the deadline");
     }
 
     /**
@@ -373,7 +390,7 @@ public class RemoteLoggingSteps {
         int last = -1;
         int stableRounds = 0;
         while (System.currentTimeMillis() < end) {
-            int now = sinkPayloads.size();
+            int now = sinkPayloadCount();
             if (now == last) {
                 if (++stableRounds >= 3) {
                     break;   // count unchanged across ~6s → stream quiesced
@@ -385,17 +402,17 @@ public class RemoteLoggingSteps {
             Utils.pollPause(endStart, 2000);
         }
         // The stream has quiesced — a fresh audit action must now NOT reach the sink (appender is local again).
-        int before = sinkPayloads.size();
+        int before = sinkPayloadCount();
         triggerAuditLogEntry();
         // Bounded NEGATIVE-observation window: absence of a payload cannot be polled for, so we watch for a
         // fixed span and assert nothing arrived — but exit as soon as one does, so a genuine failure surfaces
         // immediately instead of after the whole window. The passing path still observes the full span.
         long watchStart = System.currentTimeMillis();
         long watchEnd = watchStart + 5000L;
-        while (System.currentTimeMillis() < watchEnd && sinkPayloads.size() == before) {
+        while (System.currentTimeMillis() < watchEnd && sinkPayloadCount() == before) {
             Utils.pollPause(watchStart, 500L);
         }
-        Assert.assertEquals(sinkPayloads.size(), before,
+        Assert.assertEquals(sinkPayloadCount(), before,
                 "Mock sink still received a payload after remote logging was disabled and the stream quiesced");
     }
 
@@ -414,7 +431,7 @@ public class RemoteLoggingSteps {
         TestContext.set(UNCONFIRMED_RESET_KEY, false);
     }
 
-    /** Stops the host mock sink and undoes the scenario's server-config mutations (idempotent). */
+    /** Removes the mock log sink and undoes the scenario's server-config mutations (idempotent). */
     @After("@remote-logging")
     public void stopMockSink() {
         // Failure-safe teardown: if a scenario failed before its inline "disable remote logging" step, the server
@@ -432,11 +449,19 @@ public class RemoteLoggingSteps {
         }
         enabledLogTypes.clear();
         restoreLog4j2Configuration();
-        if (sinkServer != null) {
-            sinkServer.stop(0);
-            sinkServer = null;
+        if (sinkName != null) {
+            String url = Utils.getNodeBackendUrl(LOG_SINK_PORT) + "/events/" + sinkName;
+            try {
+                HttpResponse response = SimpleHTTPClient.getInstance().doDelete(url, new HashMap<>());
+                if (response == null || response.getResponseCode() != 200) {
+                    log.warn("Teardown: removing the mock log sink at " + url + " returned "
+                            + (response == null ? "no response" : response.getResponseCode()));
+                }
+            } catch (Exception e) {
+                log.warn("Teardown: failed to remove the mock log sink at " + url + ": " + e.getMessage());
+            }
+            sinkName = null;
         }
-        sinkPayloads.clear();
     }
 
     /**

@@ -101,8 +101,10 @@ mutable.**
     - **Don't assume a bearer-token REST delete exists — and verify the sweep actually deletes.** Some
       resources have no REST delete or don't use a bearer token, so `deleteResources(...)` doesn't fit and they
       need a **bespoke sweep** (see `deleteDcrClients`: a DCR-registered OAuth client has no working REST delete
-      and isn't removed by app deletion, so it is deregistered via the `OAuthAdminService` SOAP admin service as
-      its owner). Whatever the mechanism, **prove it against a container** — a delete that silently 404s/faults
+      and isn't removed by app deletion. The owner's tenant admin resolves its service-provider name through
+      `OAuthAdminService`, deletes it through `IdentityApplicationManagementService` (which also removes the inbound
+      OAuth client), and verifies its absence from the service-provider listing). Whatever the mechanism,
+      **prove it against a container** — a delete that silently 404s/faults
       and is treated as "already gone" looks green while leaking. Log a WARN on any non-2xx so a real leak is visible.
 - Leave zero residue (APIs, apps, subscriptions, tenants, keys).
 

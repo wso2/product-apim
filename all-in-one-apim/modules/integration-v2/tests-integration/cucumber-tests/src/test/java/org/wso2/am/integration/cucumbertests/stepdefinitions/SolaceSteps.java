@@ -17,7 +17,11 @@
 
 package org.wso2.am.integration.cucumbertests.stepdefinitions;
 
+import io.cucumber.datatable.DataTable;
+import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.testng.Assert;
 import org.wso2.am.integration.test.utils.Constants;
 import org.wso2.am.integration.cucumbertests.utils.Identity;
@@ -34,10 +38,13 @@ import java.io.OutputStream;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.Map;
 
 /**
- * Publisher-plane steps for the Solace Event-Portal integration.
+ * Solace Publisher proxy, control-plane observations and real-broker invocation steps.
  *
  * <p>These two endpoints are APIM's own proxy over the Solace API: the Publisher UI calls them while a user
  * walks "Create API -&gt; AsyncAPI -&gt; Solace", and APIM answers by calling Solace's
@@ -107,18 +114,59 @@ public class SolaceSteps {
     }
 
     /**
+     * DevPortal encodes each Solace server's protocol/endpoint object as a JSON STRING in this array.
+     * Decode before comparison so key order is irrelevant; pin cardinality as well as the complete objects.
+     */
+    @Then("The Solace DevPortal transport protocols should be exactly:")
+    public void theSolaceDevPortalTransportProtocolsShouldBeExactly(DataTable expectedTable) {
+
+        JSONObject body = Utils.requireJsonBody((HttpResponse) TestContext.get("httpResponse"),
+                "Solace DevPortal API transport metadata");
+        Assert.assertTrue(body.opt("asyncTransportProtocols") instanceof JSONArray,
+                "Expected a non-null asyncTransportProtocols array: " + body);
+        JSONArray protocols = body.getJSONArray("asyncTransportProtocols");
+        List<Map<String, String>> expected = expectedTable.asMaps(String.class, String.class);
+        Assert.assertEquals(protocols.length(), expected.size(), "Solace DevPortal transport count");
+        Set<Map<String, Object>> actual = new HashSet<>();
+        for (int i = 0; i < protocols.length(); i++) {
+            Assert.assertTrue(protocols.get(i) instanceof String,
+                    "Expected JSON-encoded Solace transport at index " + i + ": " + protocols.get(i));
+            actual.add(new JSONObject(protocols.getString(i)).toMap());
+        }
+        Assert.assertEquals(actual, new HashSet<>(expected),
+                "Solace DevPortal protocol/endpoint metadata; expected " + expected + " but found " + actual);
+    }
+
+    /** Reads an existing registration by its APIM application UUID; this GET never creates or removes it. */
+    @When("I retrieve the Solace application registration for application {string}")
+    public void iRetrieveSolaceApplicationRegistration(String applicationIdKey) throws IOException {
+
+        String applicationId = TestContext.resolve(applicationIdKey).toString();
+        Requests.get(broker().getConnectorHostUrl() + "/appRegistrations/" + Utils.urlEncode(applicationId), Map.of());
+    }
+
+    /** Reads the exact broker ACL profile observed on a provisioned client, independently through SEMP. */
+    @When("I retrieve the Solace broker ACL profile {string}")
+    public void iRetrieveSolaceBrokerAclProfile(String profileName) throws IOException {
+
+        String url = broker().getSempUrl() + "/config/msgVpns/" + DynamicSolaceBroker.SEMP_VPN
+                + "/aclProfiles/" + Utils.urlEncode(Utils.resolveContextPlaceholders(profileName));
+        Requests.get(url, Identity.basicAuthHeaders(DynamicSolaceBroker.SEMP_USER, DynamicSolaceBroker.SEMP_PASSWORD));
+    }
+
+    /**
      * Reads a client username straight off the BROKER via SEMP, so a scenario can assert that a credential
      * APIM pushed really landed there.
      *
-     * <p>This exists because the APIM status code alone is not evidence, which had to be measured rather than
-     * assumed. Mutation runs showed key generation returns 200 BOTH when the notifier never calls Solace at
+     * <p>This exists because the APIM status code alone is not evidence: key generation returns 200 BOTH when the notifier never calls Solace at
      * all (an application with no Solace subscription) AND when Solace answers 500 to the credential push —
      * the notifier swallows both. So a scenario asserting only "200" cannot fail for any Solace-side reason.
-     * SEMP is the independent witness, and it is the assertion channel {@link DynamicSolaceBroker} mandates
-     * (never the shim's own responses, which are satisfied by construction).
+     * SEMP is the independent witness for broker provisioning. As {@link DynamicSolaceBroker} specifies,
+     * scenarios may also assert what the shim recorded from APIM, but never its canned responses as
+     * independent evidence of APIM behavior.
      *
-     * <p>MEASURED: SEMP answers 200 for a provisioned client username and 400 once it is absent — so the
-     * feature asserts 200 here, and the mutation that removes the push turns it into a 400.
+     * <p>SEMP answers 200 for a provisioned client username and 400 once it is absent, so the feature
+     * asserts 200 here and a missing push surfaces as a 400.
      *
      * <p>No polling: the shim AWAITS the SEMP provisioning before answering the credential push, so by the
      * time key generation has returned the username already exists. If that await is ever removed this read
@@ -136,15 +184,14 @@ public class SolaceSteps {
     /*
      * ---- Data plane: publishing to the REAL broker with the token APIM issued ------------------------
      *
-     * This is the only step in the Solace feature that touches the broker rather than the control-plane
-     * double, and the only one whose outcome nothing on this project authored: SolOS decides. Two independent
+     * The data-plane steps send APIM-issued tokens to the real broker. SolOS decides authorization. Two independent
      * links must both hold for a 200, which is what makes it a claim about the arc rather than a status check:
      *   1. the broker fetches APIM's JWKS and verifies the access token's signature, expiry and type;
      *   2. the client username it resolves from the token's client_id claim must have been PROVISIONED, which
      *      only happens via APIM key generation -> SolaceKeyGenNotifier ->
      *      POST /appRegistrations/{app}/credentials -> the connector's SEMP clientUsername.
-     * Break either link and the publish is rejected. Both are mutation-proven against a live broker; see the
-     * shim's configureApimOAuth for the provision/deprovision matrix.
+     * Break either link and the publish is rejected; see the shim's configureApimOAuth for the
+     * provision/deprovision outcomes.
      *
      * Publishing over REST (POST /TOPIC/<topic>) rather than smf/mqtt is deliberate: it needs no messaging
      * client, so it rides Requests/SimpleHTTPClient like every other call in the suite. Note the credential
@@ -154,8 +201,8 @@ public class SolaceSteps {
      * provisioned application, AND it enforces the topics that application's subscription actually granted --
      * the connector double turns an access request's permissions into an ACL profile (default publish action
      * disallow plus an exception per granted topic) attached to the client username. What they still do NOT
-     * cover is subscribe-side enforcement (only publishing is exercised) and protocol translation for
-     * smf/mqtt/amqp, since every publish here goes over REST.
+     * establish is APIM channel-to-permission translation: the mock derives grants from its own AsyncAPI.
+     * REST publish and MQTT subscribe each check actual broker enforcement; SMF/AMQP invocation is not exercised.
      */
     private static String brokerTopicUrl(String topic) {
 

@@ -573,7 +573,7 @@ public class DistributedDynamicApimContainer implements ApimRuntime {
         GenericContainer<?> container = new GenericContainer<>(image)
                 .withNetwork(network)
                 .withNetworkAliases(alias)
-                .withExtraHost("host.docker.internal", "host-gateway")
+                .withExtraHost(HostDockerInternal.ALIAS, HostDockerInternal.target())
                 .withExposedPorts(exposedPorts)
                 .withEnv("JVM_MEM_OPTS", heapOpts)
                 .withCopyToContainer(Transferable.of(toml, 0666), TOML_PATH)

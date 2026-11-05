@@ -81,9 +81,11 @@ public final class ResourceCleanup {
     /**
      * Teardown list for "bring your own" OAuth clients registered via DCR ({@code iRegisterOAuthClient}), holding
      * each client's consumer key. A DCR client is a standalone OAuth service provider that deleting the DevPortal
-     * application does NOT remove, and the DCR REST endpoint exposes no delete — so it is deregistered explicitly
-     * via the Carbon {@code OAuthAdminService} SOAP admin service (as its owner) or it leaks. Swept by
-     * {@link #deleteDcrClients(String)}, not the generic bearer-token {@link #deleteResources}.
+     * application does NOT remove, and the DCR REST endpoint exposes no delete. The owner's tenant admin resolves
+     * its service-provider name via {@code OAuthAdminService}, deletes it via
+     * {@code IdentityApplicationManagementService} (including the inbound OAuth client), and verifies the service
+     * provider is absent. Swept by {@link #deleteDcrClients(String)}, not the generic bearer-token
+     * {@link #deleteResources}.
      */
     public static final String CREATED_DCR_CLIENT_IDS = "createdDcrClientIds";
 
@@ -964,60 +966,142 @@ public final class ResourceCleanup {
     }
 
     /**
-     * Deregisters DCR-registered ("bring your own") OAuth clients. These are NOT deleted with a bearer token: a DCR
-     * client is a standalone service provider that the DevPortal application's deletion does not remove, and the DCR
-     * REST endpoint's own {@code DELETE} is a STUB on this build — it answers "Dynamic Client Registration Service's
-     * resource deletion not implemented" (verified by decompiling {@code RegistrationServiceImpl.unRegister} in the
-     * shipped {@code client-registration#v0.17.war}). So the only working removal is the {@code OAuthAdminService}
-     * SOAP admin service. Best-effort: a 404 (already gone) is fine.
+     * Removes each registered DCR service provider as its owner's tenant admin. Identity application deletion
+     * invokes the product's OAuth pre-delete listener, removing the inbound OAuth client as well as SP_APP and
+     * child rows. OAuthAdminService.removeOAuthApplicationData alone removes only the OAuth records.
      *
-     * <p>Authenticated as the OWNER'S TENANT ADMIN, not as the owner. {@code OAuthAdminService} is a Carbon admin
-     * service, so a non-admin principal is rejected with a SOAP fault ({@code faultcode 50978},
-     * {@code "Access Denied."}) carried on an HTTP 500 — and DCR registration deliberately succeeds for a non-admin
-     * (the endpoint self-registers with the caller's own Basic credentials), so an owner who cannot delete their own
-     * client is the NORMAL case, not an edge one. Sweeping as the owner therefore leaked every client created by a
-     * least-privilege actor: observed as 8 {@code may leak} WARNs from the two OAUTH endpoint-security outlines in
-     * {@code gateway/endpoint_security.feature}, whose Examples include {@code publisherUser} and
-     * {@code publisherUser@tenant1.com} creator rows (2 outlines x 2 non-admin rows x 2 clients).
-     *
-     * <p>The tenant admin is the right principal rather than a widening of the rule: the client lives in the owner's
-     * TENANT, and the admin service is tenant-scoped, so each client is still removed by a principal with authority
-     * over exactly that tenant — {@code publisherUser} -> {@code admin}, {@code publisherUser@tenant1.com} ->
-     * {@code admin@tenant1.com}. For an admin-owned client this resolves to the owner itself, so the path that
-     * already worked is unchanged. Same rationale as {@link Identity#actingTenantAdmin()}, but keyed off the
-     * RECORDED OWNER rather than whoever happens to be acting when teardown runs.
+     * The name is resolved by consumer key before deletion, and its absence is verified through the tenant's
+     * service-provider listing. SOAP bodies contain credentials and are never included in cleanup diagnostics.
+     * Non-admin owners still use their tenant admin for this Carbon admin-service operation.
      */
     private static void deleteDcrClients(String baseUrl) {
-        String serviceUrl = baseUrl + "services/OAuthAdminService";
-        // Axis2 wraps operation elements in this namespace (same as other Carbon admin-service SOAP calls).
+        String oauthUrl = Utils.getOAuthAdminServiceURL(baseUrl);
+        String applicationUrl = Utils.getIdentityApplicationManagementServiceURL(baseUrl);
         String ns = "http://org.apache.axis2/xsd";
         for (Object o : TestContext.getList(CREATED_DCR_CLIENT_IDS)) {
             if (!(o instanceof OwnedResource res) || res.id() == null) {
                 continue;
             }
+            String operation = "resolve-owner";
+            String service = "Identity";
+            String tenant = "unresolved";
+            String adminPassword = null;
+            String ownerPassword = null;
+            HttpResponse observed = null;
             try {
                 User owner = Identity.resolveActor(res.actorRef());
+                tenant = owner.getUserDomain();
+                ownerPassword = owner.getPassword();
                 User tenantAdmin = Identity.tenantOf(owner).getTenantAdmin();
+                adminPassword = tenantAdmin.getPassword();
+                operation = "getOAuthApplicationData";
+                service = "OAuthAdminService";
+                String getEnvelope = "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" "
+                        + "xmlns:xsd=\"" + ns + "\"><soapenv:Body><xsd:getOAuthApplicationData>"
+                        + "<xsd:consumerKey>" + Utils.escapeXml(res.id())
+                        + "</xsd:consumerKey></xsd:getOAuthApplicationData></soapenv:Body></soapenv:Envelope>";
+                HttpResponse before = SimpleHTTPClient.getInstance().sendSoapRequest(oauthUrl, getEnvelope,
+                        "urn:getOAuthApplicationData", tenantAdmin.getUserName(), tenantAdmin.getPassword());
+                observed = before;
+                if (!soapSuccess(before)) {
+                    throw new IOException("DCR service-provider lookup failed");
+                }
+                List<String> names = Utils.getNodeTextsByXPath(before.getData(),
+                        "//*[local-name()='applicationName']");
+                if (names.size() != 1 || names.get(0).isBlank()) {
+                    throw new IOException("Expected exactly one nonblank DCR service-provider name");
+                }
+                String name = names.get(0);
+                // SP deletion invokes the product's OAuth pre-delete listener. Removing only OAuth data leaves
+                // SP_APP and its child rows behind; deleting OAuth first would duplicate that listener's work.
                 String removeEnvelope = "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" "
-                        + "xmlns:xsd=\"" + ns + "\"><soapenv:Header/><soapenv:Body>"
-                        + "<xsd:removeOAuthApplicationData><xsd:consumerKey>" + Utils.escapeXml(res.id())
-                        + "</xsd:consumerKey></xsd:removeOAuthApplicationData></soapenv:Body></soapenv:Envelope>";
-                HttpResponse resp = SimpleHTTPClient.getInstance().sendSoapRequest(serviceUrl, removeEnvelope,
-                        "urn:removeOAuthApplicationData", tenantAdmin.getUserName(), tenantAdmin.getPassword());
-                int code = resp.getResponseCode();
-                if (code >= 200 && code < 300) {
-                    logger.info("Cleanup: deregistered DCR client " + res.id() + " owned by '" + res.actorRef()
-                            + "' as tenant admin '" + tenantAdmin.getUserName() + "' (HTTP " + code + ").");
+                        + "xmlns:xsd=\"" + ns + "\"><soapenv:Body><xsd:deleteApplication><xsd:applicationName>"
+                        + Utils.escapeXml(name) + "</xsd:applicationName></xsd:deleteApplication>"
+                        + "</soapenv:Body></soapenv:Envelope>";
+                operation = "deleteApplication";
+                service = "IdentityApplicationManagementService";
+                observed = null;
+                HttpResponse removed = SimpleHTTPClient.getInstance().sendSoapRequest(applicationUrl, removeEnvelope,
+                        "urn:deleteApplication", tenantAdmin.getUserName(), tenantAdmin.getPassword());
+                observed = removed;
+                if (!soapSuccess(removed)) {
+                    throw new IOException("DCR service-provider deletion failed");
+                }
+                String listEnvelope = "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" "
+                        + "xmlns:xsd=\"" + ns + "\"><soapenv:Body><xsd:getAllApplicationBasicInfo/>"
+                        + "</soapenv:Body></soapenv:Envelope>";
+                operation = "getAllApplicationBasicInfo";
+                observed = null;
+                HttpResponse after = SimpleHTTPClient.getInstance().sendSoapRequest(applicationUrl, listEnvelope,
+                        "urn:getAllApplicationBasicInfo", tenantAdmin.getUserName(), tenantAdmin.getPassword());
+                observed = after;
+                if (!soapSuccess(after) || Utils.getNodeTextsByXPath(after.getData(),
+                        "//*[local-name()='applicationName']").contains(name)) {
+                    throw new IOException("DCR service provider still exists or its absence could not be verified");
                 } else {
-                    logger.warn("Cleanup: deregister of DCR client " + res.id() + " (owner '" + res.actorRef()
-                            + "', as tenant admin '" + tenantAdmin.getUserName() + "') returned HTTP " + code
-                            + " — it may leak: " + trunc(resp.getData()));
+                    logger.info("Cleanup: removed DCR service provider " + name + " and OAuth client " + res.id()
+                            + " owned by '" + res.actorRef() + "' as tenant admin '" + tenantAdmin.getUserName()
+                            + "'; verified service provider absent.");
                 }
             } catch (Exception | AssertionError e) {
-                logger.warn("Cleanup failed to deregister DCR client " + res.id() + " for actor '"
-                        + res.actorRef() + "': " + e);
+                logger.warn(dcrCleanupDiagnostic(res.id(), res.actorRef(), tenant, operation, service,
+                        observed, e, adminPassword, ownerPassword));
             }
         }
+    }
+
+    /** Bounded diagnostics never include SOAP envelopes or credential-bearing response/exception details. */
+    static String dcrCleanupDiagnostic(String clientId, String actor, String tenant, String operation,
+                                       String service, HttpResponse response, Throwable failure, String... secrets) {
+        String fault = "none";
+        if (response != null && response.getData() != null && response.getData().contains("Fault")) {
+            try {
+                List<String> codes = Utils.getNodeTextsByXPath(response.getData(),
+                        "//*[local-name()='Fault']/*[local-name()='faultcode']");
+                List<String> reasons = Utils.getNodeTextsByXPath(response.getData(),
+                        "//*[local-name()='Fault']/*[local-name()='faultstring']");
+                fault = safeCleanupDetail(String.join(", ", codes), secrets) + ": "
+                        + safeCleanupDetail(String.join(", ", reasons), secrets);
+            } catch (Exception e) {
+                fault = "unparseable (" + e.getClass().getSimpleName() + ")";
+            }
+        }
+        StringBuilder cause = new StringBuilder();
+        for (int depth = 0; failure != null && depth < 3; depth++, failure = failure.getCause()) {
+            if (depth > 0) {
+                cause.append(" <- ");
+            }
+            cause.append(failure.getClass().getSimpleName()).append(": ")
+                    .append(safeCleanupDetail(failure.getMessage(), secrets));
+        }
+        return "Cleanup failed to deregister DCR client " + clientId + " for actor '"
+                + (actor == null ? "default super-tenant admin" : actor)
+                + "', tenant '" + tenant + "', operation " + operation + ", service " + service
+                + ", HTTP " + (response == null ? "unavailable" : response.getResponseCode())
+                + ", fault=" + fault + ", cause=" + cause + " — it may leak.";
+    }
+
+    private static String safeCleanupDetail(String detail, String... secrets) {
+        if (detail == null) {
+            return "no detail";
+        }
+        for (String secret : secrets) {
+            if (secret != null && !secret.isEmpty()) {
+                detail = detail.replace(secret, "[REDACTED]");
+            }
+        }
+        // An exception may embed a request, response, auth header or credential field. Do not log that payload.
+        if (detail.matches("(?is).*(?:<|password|secret|authorization|bearer|access.?token|refresh.?token|eyJ).*")) {
+            return "[credential/payload detail omitted]";
+        }
+        detail = detail.replaceAll("[\\r\\n\\t]+", " ").replaceAll("https?://[^\\s/@:]+:[^\\s/@]+@",
+                "[credential URL omitted]");
+        return detail.length() > 240 ? detail.substring(0, 240) + "…" : detail;
+    }
+
+    private static boolean soapSuccess(HttpResponse response) {
+        return response != null && response.getResponseCode() == 200 && response.getData() != null
+                && !response.getData().isBlank() && !response.getData().contains(":Fault>");
     }
 
     private static String trunc(String s) {
