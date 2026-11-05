@@ -233,6 +233,7 @@
         <parameter name="group" value="group1"/>
         <classes>
             <class name="org.wso2.am.integration.tests.prototype.PrototypedAPITestcase"/>
+            <class name="org.wso2.am.integration.tests.prototype.MockEndpointIntegrationTestCase"/>
             <class name="org.wso2.am.integration.tests.prototype.APIM23VisibilityOfPrototypedAPIInStoreTestCase"/>
             <class name="org.wso2.am.integration.tests.prototype.APIM24VisibilityOfPrototypedAPIOfDifferentViewInStoreTestCase"/>
             <class name="org.wso2.am.integration.tests.publisher.APIM18CreateAnAPIThroughThePublisherRestAPITestCase"/>
