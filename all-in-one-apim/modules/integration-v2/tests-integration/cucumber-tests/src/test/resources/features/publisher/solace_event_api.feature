@@ -375,7 +375,7 @@ Feature: Solace event-API integration
     Then The XML error response at XPath "/solace-error-response/code" should be "403"
     And The XML error response at XPath "/solace-error-response/reason" should be "Unauthorized"
 
-  @cap:publisher @feat:solace @rule:solace-import @type:negative
+  @cap:publisher @feat:solace @rule:solace-import @type:negative @dep:admin
   Scenario Outline: A Solace gateway deployment reports its missing deployer as <actor>
     Given I have valid access tokens as "<actor>"
     When I put the following JSON payload in context as "solaceGatewayEnvironmentPayload"
