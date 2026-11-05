@@ -299,6 +299,10 @@ Feature: External BPMN workflow - API state change approval and rejection
     # replacement task; this row does not assert that rejection prevents workflow re-entry.
     When I attempt to "REJECTED" the BPMN workflow recorded in "bpmnBlockCallbackRequest" using access token "bpmnBlockCallbackToken"
     Then The response status code should be 200
+    # A re-entered Block workflow registers its own automatic client. Reading the recorder registers that client
+    # for cleanup; an already registered Block or configured client keeps its existing cleanup owner.
+    When I retrieve the process start request recorded by the BPMN process server
+    Then The response status code should be 200
     When I get the workflow with reference "bpmnBlockWfRef"
     # Admin's get-by-reference resolves only CREATED tasks: the same reference must stop being pending after
     # rejection. Completed tasks correctly return 404; this endpoint cannot expose a REJECTED status payload.

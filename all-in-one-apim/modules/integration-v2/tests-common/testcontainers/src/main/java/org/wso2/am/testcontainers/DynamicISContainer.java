@@ -307,7 +307,7 @@ public class DynamicISContainer extends GenericContainer<DynamicISContainer> {
     }
 
     /**
-     * Absolute path of the notification-handler jar the Maven {@code download-is-notification-jar} exec places
+     * Absolute path of the notification-handler jar the Maven {@code copy-is-notification-jar} execution copies
      * under the testcontainers module's {@code target/} at build time. Overridable via
      * {@code -Dis.notification.jar.path} for callers that stage it elsewhere. Fails fast with a clear message
      * if the jar is absent, rather than letting the container start without the class the event_listener needs.
@@ -320,8 +320,8 @@ public class DynamicISContainer extends GenericContainer<DynamicISContainer> {
         File jar = new File(path);
         if (!jar.isFile()) {
             throw new IllegalStateException("IS notification handler jar not found at '" + path
-                    + "'. It is downloaded by the testcontainers pre-integration-test exec "
-                    + "(download-is-notification-jar); run the build so the jar is staged, or set "
+                    + "'. It is copied by the testcontainers pre-integration-test execution "
+                    + "(copy-is-notification-jar); run the build so the jar is staged, or set "
                     + "-Dis.notification.jar.path to its location.");
         }
         return jar.getAbsolutePath();
