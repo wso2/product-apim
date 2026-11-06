@@ -335,6 +335,56 @@ public class AiApiSteps {
     }
 
     /**
+     * Asserts the AI service provider an AIAPI-subtype API is bound to, read from the captured Publisher API
+     * response: the stored {@code llmProviderId} must be EXACTLY the expected provider's id, together with its
+     * {@code llmProviderName} and {@code llmProviderApiVersion}. The id is the binding the product persists, so
+     * this is what proves which provider a reference resolved to — e.g. that an API created with another
+     * environment's id but a valid name and version is bound to the LOCAL provider, not to the id it was sent.
+     *
+     * <p>The Publisher returns {@code subtypeConfiguration.configuration} as a serialized JSON string rather than
+     * a nested object, so a JsonPath field assertion cannot reach the provider fields; an object is accepted too
+     * so the step does not depend on that serialization choice.</p>
+     *
+     * @param name       the expected provider name (e.g. {@code OpenAI})
+     * @param apiVersion the expected provider apiVersion (e.g. {@code 2.0.0})
+     * @param idKey      context key holding the expected provider id
+     */
+    @Then("The AI API in the response should be bound to AI service provider {string} version {string} with id {string}")
+    public void aiApiShouldBeBoundToAiServiceProvider(String name, String apiVersion, String idKey) {
+
+        String expectedId = TestContext.resolve(idKey).toString();
+        HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
+        Assert.assertTrue(response != null && response.getResponseCode() == 200
+                        && response.getData() != null && !response.getData().isBlank(),
+                "Expected a 200 API response with a body, got: "
+                        + (response == null ? "no response" : response.getResponseCode() + " / " + response.getData()));
+
+        JSONObject subtypeConfiguration = new JSONObject(response.getData()).optJSONObject("subtypeConfiguration");
+        Assert.assertNotNull(subtypeConfiguration, "API carries no subtypeConfiguration: " + response.getData());
+        Assert.assertEquals(subtypeConfiguration.optString("subtype"), "AIAPI",
+                "API is not an AIAPI-subtype API: " + subtypeConfiguration);
+        Object configuration = subtypeConfiguration.opt("configuration");
+        JSONObject aiConfiguration = null;
+        try {
+            if (configuration instanceof JSONObject) {
+                aiConfiguration = (JSONObject) configuration;
+            } else if (configuration instanceof String) {
+                aiConfiguration = new JSONObject((String) configuration);
+            }
+        } catch (JSONException e) {
+            Assert.fail("AI configuration is not a JSON object: " + configuration, e);
+        }
+        Assert.assertNotNull(aiConfiguration, "AIAPI-subtype API carries no AI configuration: " + subtypeConfiguration);
+
+        Assert.assertEquals(aiConfiguration.optString("llmProviderId"), expectedId,
+                "AI API is bound to the wrong LLM provider id: " + aiConfiguration);
+        Assert.assertEquals(aiConfiguration.optString("llmProviderName"), name,
+                "AI API is bound to the wrong LLM provider name: " + aiConfiguration);
+        Assert.assertEquals(aiConfiguration.optString("llmProviderApiVersion"), apiVersion,
+                "AI API is bound to the wrong LLM provider apiVersion: " + aiConfiguration);
+    }
+
+    /**
      * Publisher — GET /ai-service-providers/{id}/api-definition. Retrieves the provider's OWN OpenAPI definition
      * and publishes it as the response under test, so the feature asserts the 200 and then imports the retrieved
      * body verbatim (see the {@code import openapi definition captured as} step). Ports the
