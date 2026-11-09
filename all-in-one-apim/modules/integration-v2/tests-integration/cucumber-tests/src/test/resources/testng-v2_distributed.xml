@@ -555,6 +555,7 @@
             <class name="org.wso2.am.integration.cucumbertests.runners.block.GatewaySandboxEnvRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.TokenExchangeDisabledRunner"/>
             <class name="org.wso2.am.integration.cucumbertests.runners.block.NetworkAccessControlUrlDisabledRunner"/>
+            <class name="org.wso2.am.integration.cucumbertests.runners.block.KeyManagerOpaqueTokenRenewalRunner"/>
         </classes>
     </test>
 

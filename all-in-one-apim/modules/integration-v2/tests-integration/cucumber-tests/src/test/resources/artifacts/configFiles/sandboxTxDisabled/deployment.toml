@@ -8,6 +8,9 @@
 # NOTE (empirical, 903015): MandatoryProperties was co-hosted here and REVERTED — its required-property
 # config rejects the lifecycle PUBLISH of any API lacking the property, which the sandbox runner's publish
 # tripped. Do not add API-publishing runners to a container carrying that overlay.
+# KeyManagerOpaqueTokenRenewalRunner is co-hosted too (token endpoint + introspection only). Its renewal key
+# changes only repeat client_credentials requests on OPAQUE clients: the sandbox runner's applications are JWT
+# and the token-exchange negative is refused before any token is issued, so neither sees a difference.
 
 # --- SandboxGateway: replace the default env with a sandbox-only environment (production tokens rejected). ---
 [[apim.gateway.environment]]
@@ -32,3 +35,14 @@ websub_event_receiver_https_endpoint = "https://localhost:8021"
 # refuses the grant (the enabled state lives in IntegrationV2-Is7TokenExchange — they cannot coexist). ---
 [oauth.grant_type.token_exchange]
 enable = false
+
+# --- OpaqueTokenRenewal: issue a NEW opaque access token without revoking the tokens already issued, for
+# client_credentials ONLY. allowed_grant_types deliberately lists client_credentials and NOT password: that makes
+# the password grant the in-block negative control, proving the behaviour is driven by this list rather than by
+# token binding (which would give every request a fresh token regardless).
+# This is also the regression guard for the mapping itself: it only reaches the server if identity.xml.j2 maps
+# [oauth.opaque.renew_token_without_revoking_existing] into identity.xml. The opaque mapping was absent while the
+# JWT one was present, so the setting was silently inert. ---
+[oauth.opaque.renew_token_without_revoking_existing]
+enable = true
+allowed_grant_types = ["client_credentials"]
