@@ -90,6 +90,18 @@ public class AiApiSteps {
     }
 
     /**
+     * Publisher — GET /ai-service-providers. Lists the AI service providers of the acting actor's organization with
+     * the Publisher token ({@code apim:llm_provider_read}, granted to the creator and publisher roles), which is how
+     * an API creator looks up a provider's id. Stores the response.
+     */
+    @When("I retrieve the AI service providers from the publisher")
+    public void iRetrieveAiServiceProvidersFromPublisher() throws Exception {
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
+        Requests.get(Utils.getPublisherAIServiceProvidersURL(Utils.getBaseUrl()), headers);
+    }
+
+    /**
      * Asserts the captured {@code GET /ai-service-providers} listing carries EVERY named provider, each flagged
      * {@code builtInSupport=true} and each carrying a non-blank {@code id}, {@code apiVersion} and
      * {@code description}. Ports AIAPITestCase#testPredefinedAiServiceProviders, whose point is the whole shipped
@@ -409,8 +421,8 @@ public class AiApiSteps {
     public void iRetrieveAiServiceProviderModels(String idKey) throws Exception {
         Object id = TestContext.resolve(idKey);
         Map<String, String> headers = new HashMap<>();
-        // The publisher models endpoint requires apim:llm_provider_read — carried by the admin token (llm provider
-        // scopes are admin-oriented; the publisher token's role does not grant them).
+        // The publisher models endpoint requires apim:llm_provider_read, which both the admin and the publisher
+        // token request; this step uses the admin token.
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.adminToken());
         HttpResponse response = Requests.get(Utils.getAIServiceProviderModelsURL(Utils.getBaseUrl(), id.toString()),
                 headers);

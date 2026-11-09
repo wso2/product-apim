@@ -1643,6 +1643,11 @@ public class Utils {
         return baseUrl + Constants.DEFAULT_APIM_ADMIN + "ai-service-providers";
     }
 
+    /** Publisher REST API — AI service providers of the caller's organization (list). */
+    public static String getPublisherAIServiceProvidersURL(String baseUrl) {
+        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "ai-service-providers";
+    }
+
     /** Admin REST API — a single AI service provider by id (get/update/delete). */
     public static String getAIServiceProviderByIdURL(String baseUrl, String providerId) {
         return baseUrl + Constants.DEFAULT_APIM_ADMIN + "ai-service-providers/" + providerId;
