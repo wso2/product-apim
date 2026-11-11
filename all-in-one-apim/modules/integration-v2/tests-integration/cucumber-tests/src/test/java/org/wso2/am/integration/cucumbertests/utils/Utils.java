@@ -1508,8 +1508,18 @@ public class Utils {
 
     /** Publisher REST API — export an API as an archive (GET, returns a zip). */
     public static String getApiExportURL(String baseUrl, String apiId, String format) {
-        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "apis/export?apiId="
-                + URLEncoder.encode(apiId, StandardCharsets.UTF_8) + "&format="
+        return getResourceExportURL(baseUrl, "apis", apiId, format);
+    }
+
+    /** Publisher REST — export an API or MCP server using its resource-specific identifier parameter. */
+    public static String getResourceExportURL(String baseUrl, String resourceType, String id, String format) {
+        String idParameter = switch (resourceType) {
+            case "apis" -> "apiId";
+            case "mcp-servers" -> "mcpServerId";
+            default -> throw new IllegalArgumentException("Unsupported export resource: " + resourceType);
+        };
+        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + resourceType + "/export?" + idParameter + "="
+                + URLEncoder.encode(id, StandardCharsets.UTF_8) + "&format="
                 + URLEncoder.encode(format, StandardCharsets.UTF_8);
     }
 

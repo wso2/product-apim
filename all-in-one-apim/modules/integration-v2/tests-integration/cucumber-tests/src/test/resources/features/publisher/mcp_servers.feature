@@ -28,6 +28,10 @@ Feature: MCP Server authoring (publisher plane)
     And The response should contain "viewPizzaMenu"
     And The response should not contain "get_pets"
     And the MCP server operations should be exactly "add,echo,viewPizzaMenu" in that order
+    # The generated declaration distinguishes unsupported SSE GET from authenticated JSON-RPC POST.
+    When I export the "mcp-servers" resource "mcpId" to an archive as "mcpArchive"
+    Then The swagger in exported archive "mcpArchive" should have field "paths['/mcp'].post['x-auth-type']" equal to "Application & Application User"
+    And The swagger in exported archive "mcpArchive" should have field "paths['/mcp'].get['x-auth-type']" equal to "None"
     # Tool FIDELITY for viewPizzaMenu, checked while it is still exposed (the UPDATE below replaces it with get_pets).
     And the MCP server "mcpId" tool "viewPizzaMenu" should have schema definition:
       """
@@ -126,6 +130,10 @@ Feature: MCP Server authoring (publisher plane)
     Then The response status code should be 200
     And The response field "operations[?(@.target=='get_pets')].target" should be exactly the list "get_pets"
     And The response should contain "get_pets_by_petId"
+    # The generated declaration distinguishes unsupported SSE GET from authenticated JSON-RPC POST.
+    When I export the "mcp-servers" resource "mcpId" to an archive as "mcpArchive"
+    Then The swagger in exported archive "mcpArchive" should have field "paths['/mcp'].post['x-auth-type']" equal to "Application & Application User"
+    And The swagger in exported archive "mcpArchive" should have field "paths['/mcp'].get['x-auth-type']" equal to "None"
     # UPDATE (REMOVE) — narrow the exposed tools to just get_pets (docs "select tools to import" / least-privilege).
     When I update the MCP server "mcpId" removing tool "get_pets_by_petId"
     Then The response status code should be 200
@@ -199,6 +207,10 @@ Feature: MCP Server authoring (publisher plane)
     And The response should contain "get_pets_by_petId"
     # Same submission-order guarantee as the OpenAPI flow, over the API's resources this time.
     And the MCP server operations should be exactly "get_pets,get_pets_by_petId" in that order
+    # The generated declaration distinguishes unsupported SSE GET from authenticated JSON-RPC POST.
+    When I export the "mcp-servers" resource "mcpId" to an archive as "mcpArchive"
+    Then The swagger in exported archive "mcpArchive" should have field "paths['/mcp'].post['x-auth-type']" equal to "Application & Application User"
+    And The swagger in exported archive "mcpArchive" should have field "paths['/mcp'].get['x-auth-type']" equal to "None"
     When I retrieve the "mcp-servers" resource with id "mcpId"
     Then The response status code should be 200
     And The response field "operations[?(@.target=='get_pets')].target" should be exactly the list "get_pets"

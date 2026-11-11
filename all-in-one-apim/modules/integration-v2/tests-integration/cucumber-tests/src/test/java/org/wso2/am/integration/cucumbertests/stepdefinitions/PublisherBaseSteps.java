@@ -3163,13 +3163,33 @@ public class PublisherBaseSteps {
      */
     @When("I export the API {string} to an archive as {string}")
     public void iExportApiToArchive(String apiId, String archivePathKey) throws IOException, InterruptedException {
-        String actualApiId = TestContext.resolve(apiId).toString();
-        Map<String, String> headers = new HashMap<>();
-        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
-        String url = Utils.getApiExportURL(Utils.getBaseUrl(), actualApiId, "JSON");
-        SimpleHTTPClient.DownloadResult result = exportUntilComplete(url, headers, "API export for " + actualApiId,
-                "api.yaml", "api.json");
+        iExportResourceToArchive("apis", apiId, archivePathKey);
+    }
+
+    /** Exports an API or MCP server through the shared binary-download and completeness checks. */
+    @When("I export the {string} resource {string} to an archive as {string}")
+    public void iExportResourceToArchive(String resourceType, String idKey, String archivePathKey)
+            throws IOException, InterruptedException {
+        String id = TestContext.resolve(idKey).toString();
+        String url = Utils.getResourceExportURL(Utils.getBaseUrl(), resourceType, id, "JSON");
+        String[] definitions = "mcp-servers".equals(resourceType)
+                ? new String[]{"mcp_server.json", "mcp_server.yaml"} : new String[]{"api.json", "api.yaml"};
+        SimpleHTTPClient.DownloadResult result = exportUntilComplete(url, Identity.publisherHeaders(),
+                resourceType + " export for " + id, definitions);
         TestContext.set(Utils.normalizeContextKey(archivePathKey), result.getFile().getAbsolutePath());
+    }
+
+    /** Checks the generated OpenAPI document in an export, independently of its tool/backend definitions. */
+    @Then("The swagger in exported archive {string} should have field {string} equal to {string}")
+    public void exportedSwaggerFieldShouldEqual(String archivePathKey, String field, String expected)
+            throws IOException {
+        File archive = new File(TestContext.resolve(archivePathKey).toString());
+        String swagger = Utils.zipEntryText(archive, "swagger.json");
+        Assert.assertTrue(swagger != null && !swagger.isBlank(),
+                "Export " + archive + " has no non-blank swagger.json");
+        Object actual = Utils.extractValueFromPayload(swagger, field);
+        Assert.assertNotNull(actual, "Exported swagger has no field '" + field + "'");
+        Assert.assertEquals(String.valueOf(actual), expected, "Exported swagger field '" + field + "'");
     }
 
     /**
