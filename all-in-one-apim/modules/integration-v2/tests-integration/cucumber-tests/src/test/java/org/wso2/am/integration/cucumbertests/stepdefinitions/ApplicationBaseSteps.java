@@ -4193,10 +4193,29 @@ public class ApplicationBaseSteps {
     @When("I revoke the OAuth access token {string}")
     public void iRevokeOAuthAccessToken(String tokenKey) throws Exception {
 
+        iRevokeOAuthTokenWithTokenTypeHint(tokenKey, "");
+    }
+
+    /**
+     * Revokes the given OAuth token (access or refresh) via the revocation endpoint, authenticated with the
+     * application's client credentials, sending the given {@code token_type_hint}. An empty hint sends no
+     * {@code token_type_hint} parameter at all, so the key manager has to identify the token type itself. Stores
+     * the response in context.
+     *
+     * @param tokenKey      Context key holding the token to revoke
+     * @param tokenTypeHint {@code access_token}, {@code refresh_token}, or empty to send no hint
+     */
+    @When("I revoke the OAuth token {string} with token type hint {string}")
+    public void iRevokeOAuthTokenWithTokenTypeHint(String tokenKey, String tokenTypeHint) throws Exception {
+
         String token = TestContext.resolve(tokenKey).toString();
+        StringBuilder body = new StringBuilder("token=").append(Utils.urlEncode(token));
+        if (tokenTypeHint != null && !tokenTypeHint.isBlank()) {
+            body.append("&token_type_hint=").append(Utils.urlEncode(tokenTypeHint));
+        }
 
         Requests.post(Utils.getRevokeEndpointURL(Utils.getBaseUrl()),
-                clientCredentialsHeader(), "token=" + Utils.urlEncode(token),
+                clientCredentialsHeader(), body.toString(),
                 Constants.CONTENT_TYPES.APPLICATION_X_WWW_FORM_URLENCODED);
     }
 
