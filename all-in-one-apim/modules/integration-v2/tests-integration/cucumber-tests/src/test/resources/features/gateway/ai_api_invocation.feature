@@ -465,6 +465,117 @@ Feature: Gateway AI API Invocation
       | admin             |
       | admin@tenant1.com |
 
+  # The target endpoint fails without replying (a hang, or a connection reset): the fault-path failover moves to the
+  # fallback. Then the Model Failover policy is removed and the API redeployed: the same failure now ends in the API's
+  # normal fault sequence (500) instead of failing over. One setup covers both halves.
+  @cap:gateway @feat:failover @rule:model-fault-failover @type:regression @dep:admin
+  Scenario Outline: Fail an AI API over on a <kind> of the target endpoint, then stop failing over once the policy is removed as <actor>
+    Given The system is ready
+    And I have valid access tokens as "<actor>"
+    When I create an AI service provider "TestAIService" version "1.0.0" with config "artifacts/payloads/ai/ai-service-provider-config-no-auth.json" and definition "artifacts/payloads/ai/mistral-def.json" as "aiProviderId"
+    Then The response status code should be 201
+    When I import openapi definition from "artifacts/payloads/ai/mistral-def.json" with additional properties "artifacts/payloads/ai/mistral_no_auth_add_props.json" as "aiApiId"
+    Then The response status code should be 201
+    When I put the following JSON payload in context as "faultEndpointPayload"
+    """
+    {"name": "Fault <kind> Endpoint", "deploymentStage": "PRODUCTION", "endpointConfig": {"endpoint_type": "http", "production_endpoints": {"url": "http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/<route>"}}}
+    """
+    And I add an endpoint to API "aiApiId" with payload "faultEndpointPayload" as "faultEndpointId"
+    Then The response status code should be 201
+    When I set the primary production endpoint of API "aiApiId" to "faultEndpointId"
+    Then The response status code should be 200
+    When I put the following JSON payload in context as "faultFailoverConfig"
+    """
+    {"production":{"targetModel":{"model":"mistral-small-latest","endpointId":"{{faultEndpointId}}","endpointName":"Fault <kind> Endpoint"},"fallbackModels":[{"model":"mistral-large-latest","endpointId":"default_production_endpoint","endpointName":"Default Production Endpoint"}]},"sandbox":{"targetModel":{},"fallbackModels":[]},"requestTimeout":"<requestTimeout>","suspendDuration":"0"}
+    """
+    And I apply the AI mediation policy "modelFailover" with parameter "failoverConfigs" value "faultFailoverConfig" to API "aiApiId"
+    Then The response status code should be 200
+    When I deploy the API with id "aiApiId"
+    And the "apis" resource "aiApiId" should be live on the gateway, redeploying if propagation is lost
+    When I publish the "apis" resource with id "aiApiId"
+    Then The lifecycle status of API "aiApiId" should be "Published"
+    When I retrieve the "apis" resource with id "aiApiId"
+    And I extract response field "context" and store it as "aiContext"
+    When I have set up application with keys, subscribed to API "aiApiId" with plan "Unlimited", and obtained access token for "aiSubId"
+    Then The response status code should be 200
+    And I put JSON payload from file "artifacts/payloads/ai/mistral-payload.json" in context as "mistralPayload"
+    # With the policy attached, the failure fails over to the fallback.
+    When I invoke the API at gateway context "{{aiContext}}/1.0.0/v1/chat/completions" with method "POST" using access token "generatedAccessToken" and payload "mistralPayload" until response status code becomes 200 within 60 seconds
+    Then The response body should equal the JSON file "artifacts/payloads/ai/mistral-small-response.json" with model set to one of "mistral-large-latest"
+    # Remove the policy and redeploy: the same failure now returns the normal fault-sequence error.
+    When I retrieve the "apis" resource with id "aiApiId"
+    Then The response status code should be 200
+    And I put the response payload in context as "faultApiPayload"
+    When I update the "apis" resource "aiApiId" and "faultApiPayload" with configuration type "apiPolicies" and value:
+      """
+      {"request": [], "response": [], "fault": []}
+      """
+    Then The response status code should be 200
+    When I deploy the API with id "aiApiId"
+    And the "apis" resource "aiApiId" should be live on the gateway, redeploying if propagation is lost
+    When I invoke the API at gateway context "{{aiContext}}/1.0.0/v1/chat/completions" with method "POST" using access token "generatedAccessToken" and payload "mistralPayload" until response status code becomes 500 within 120 seconds
+    Then The response status code should be 500
+    # The code shows the 500 came from the gateway's own fault sequence for this failure, not another error.
+    And The response should contain "<errorCode>"
+
+    Examples:
+      | actor             | kind    | route                           | requestTimeout | errorCode |
+      | admin             | timeout | fault-failover-target-timeout   | 5              | 101504    |
+      | admin@tenant1.com | timeout | fault-failover-target-timeout   | 5              | 101504    |
+      | admin             | reset   | fault-failover-target-reset     | 30             | 101508    |
+      | admin@tenant1.com | reset   | fault-failover-target-reset     | 30             | 101508    |
+
+  # The target hangs and the fallback resets the connection: once all are tried, the error goes to the API's normal
+  # fault sequence (500).
+  @cap:gateway @feat:failover @rule:model-fault-failover @type:negative @dep:admin
+  Scenario Outline: A timeout returns 500 once every fallback has also failed as <actor>
+    Given The system is ready
+    And I have valid access tokens as "<actor>"
+    When I create an AI service provider "TestAIService" version "1.0.0" with config "artifacts/payloads/ai/ai-service-provider-config-no-auth.json" and definition "artifacts/payloads/ai/mistral-def.json" as "aiProviderId"
+    Then The response status code should be 201
+    When I import openapi definition from "artifacts/payloads/ai/mistral-def.json" with additional properties "artifacts/payloads/ai/mistral_no_auth_add_props.json" as "aiApiId"
+    Then The response status code should be 201
+    When I put the following JSON payload in context as "faultExhaustedEndpointPayload"
+    """
+    {"name": "Fault Exhausted Endpoint", "deploymentStage": "PRODUCTION", "endpointConfig": {"endpoint_type": "http", "production_endpoints": {"url": "http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/fault-failover-target-timeout"}}}
+    """
+    And I add an endpoint to API "aiApiId" with payload "faultExhaustedEndpointPayload" as "faultExhaustedEndpointId"
+    Then The response status code should be 201
+    When I set the primary production endpoint of API "aiApiId" to "faultExhaustedEndpointId"
+    Then The response status code should be 200
+    # The fallback is a SEPARATE endpoint that resets the connection, so its error (101508) differs from the target's
+    # timeout (101504): the final error then shows the fallback was actually tried.
+    When I put the following JSON payload in context as "faultExhaustedFallbackEndpointPayload"
+    """
+    {"name": "Fault Exhausted Fallback Endpoint", "deploymentStage": "PRODUCTION", "endpointConfig": {"endpoint_type": "http", "production_endpoints": {"url": "http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/fault-failover-target-reset"}}}
+    """
+    And I add an endpoint to API "aiApiId" with payload "faultExhaustedFallbackEndpointPayload" as "faultExhaustedFallbackEndpointId"
+    Then The response status code should be 201
+    When I put the following JSON payload in context as "faultExhaustedFailoverConfig"
+    """
+    {"production":{"targetModel":{"model":"mistral-small-latest","endpointId":"{{faultExhaustedEndpointId}}","endpointName":"Fault Exhausted Endpoint"},"fallbackModels":[{"model":"mistral-large-latest","endpointId":"{{faultExhaustedFallbackEndpointId}}","endpointName":"Fault Exhausted Fallback Endpoint"}]},"sandbox":{"targetModel":{},"fallbackModels":[]},"requestTimeout":"5","suspendDuration":"0"}
+    """
+    And I apply the AI mediation policy "modelFailover" with parameter "failoverConfigs" value "faultExhaustedFailoverConfig" to API "aiApiId"
+    Then The response status code should be 200
+    When I deploy the API with id "aiApiId"
+    And the "apis" resource "aiApiId" should be live on the gateway, redeploying if propagation is lost
+    When I publish the "apis" resource with id "aiApiId"
+    Then The lifecycle status of API "aiApiId" should be "Published"
+    When I retrieve the "apis" resource with id "aiApiId"
+    And I extract response field "context" and store it as "aiContext"
+    When I have set up application with keys, subscribed to API "aiApiId" with plan "Unlimited", and obtained access token for "aiSubId"
+    Then The response status code should be 200
+    And I put JSON payload from file "artifacts/payloads/ai/mistral-payload.json" in context as "mistralPayload"
+    When I invoke the API at gateway context "{{aiContext}}/1.0.0/v1/chat/completions" with method "POST" using access token "generatedAccessToken" and payload "mistralPayload" until response status code becomes 500 within 60 seconds
+    Then The response status code should be 500
+    # 101508 is the fallback's own error: the target (101504) failed over, and the fallback failed too.
+    And The response should contain "101508"
+
+    Examples:
+      | actor             |
+      | admin             |
+      | admin@tenant1.com |
+
   # Copy + failover: the same failover arc, but on a NEW VERSION created by copying the AI API (the combination
   # legacy exercised). What this adds over the fresh-API row above is that the copy is still a real AIAPI bound to
   # the provider, and that an endpoint added to the copy plus a modelFailover policy applied to the copy are honoured
