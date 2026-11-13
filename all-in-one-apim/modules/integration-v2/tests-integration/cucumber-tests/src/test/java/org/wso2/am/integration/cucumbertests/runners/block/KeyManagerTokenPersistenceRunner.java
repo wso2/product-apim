@@ -22,15 +22,18 @@ import io.cucumber.testng.CucumberOptions;
  * Re-runs existing TokenAPITestCase scenarios and successful JWTGrantTestCase scenarios with OAuth token persistence
  * enabled. The runner is registered in the serialized server-restart block so these scenarios share the persistence
  * overlay without duplicating their definitions. The tagged security-enforcement case retains the invalid-token and
- * most-popular rejection checks.
+ * most-popular rejection checks. It also runs refresh_token_revocation.feature, which only holds with token
+ * persistence enabled (revoking a refresh token revokes its access token only when tokens are persisted).
  */
 @CucumberOptions(
         features = {
                 "src/test/resources/features/key-manager/token_issuance.feature",
                 "src/test/resources/features/key-manager/jwt_grant.feature",
+                "src/test/resources/features/key-manager/refresh_token_revocation.feature",
                 "src/test/resources/features/gateway/security_enforcement.feature"
         },
-        tags = "@legacy:TokenAPITestCase or (@legacy:JWTGrantTestCase and (@type:smoke or @feat:scope-issuance))",
+        tags = "@legacy:TokenAPITestCase or (@legacy:JWTGrantTestCase and (@type:smoke or @feat:scope-issuance))"
+                + " or (@feat:token-revocation and @rule:refresh-token)",
         glue = {"org.wso2.am.integration.cucumbertests.stepdefinitions"},
         plugin = {"pretty", "html:target/cucumber-report/keymanager-token-persistence.html"}
 )
