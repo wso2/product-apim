@@ -11,7 +11,7 @@
 *Unless required by applicable law or agreed to in writing,
 *software distributed under the License is distributed on an
 *"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-*KIND, either express or implied.  See the License for the
+*KIND, either express or implied. See the License for the
 *specific language governing permissions and limitations
 *under the License.
 */
@@ -30,70 +30,94 @@ import java.util.concurrent.ConcurrentMap;
 
 @Service
 public class PeopleService {
-    private ConcurrentMap< String, Person> persons = new ConcurrentHashMap< String, Person >();
-    public void setInitPeople()
-    {
 
-        for(int count =1;count <=10; count ++)
-        {
-            Person newPerson= new Person();
-            newPerson.setEmail(String.format("test-%d@wso2.com",count));
-            newPerson.setFirstName(String.format("testUser%d",count));
-            newPerson.setLastName(String.format("testLasrName%d",count));
-            persons.putIfAbsent(String.format("test-%d@wso2.com",count),newPerson) ;
+    private ConcurrentMap<String, Person> persons = new ConcurrentHashMap<>();
+
+    public void setInitPeople() {
+        for (int count = 1; count <= 10; count++) {
+            Person newPerson = new Person();
+            newPerson.setEmail(String.format("test-%d@wso2.com", count));
+            newPerson.setFirstName(String.format("testUser%d", count));
+            newPerson.setLastName(String.format("testLasrName%d", count));
+            persons.putIfAbsent(String.format("test-%d@wso2.com", count), newPerson);
         }
     }
-    public Collection< Person > getPeople( int page, int pageSize ) {
-        Collection< Person > person = new ArrayList< Person >( pageSize );
 
-        for( int index = 0; index < pageSize; ++index ) {
-            person.add( new Person( String.format( "person+%d@at.com", ( pageSize * ( page - 1 ) + index + 1 ) ) ) );
+    public Collection<Person> getPeople(int page, int pageSize) {
+
+        Collection<Person> person = new ArrayList<>(pageSize);
+
+        for (int index = 0; index < pageSize; ++index) {
+            person.add(new Person(
+                    String.format("person+%d@at.com",
+                            (pageSize * (page - 1) + index + 1))));
         }
+
         setInitPeople();
         return person;
     }
 
-    public Person addPerson( String email ) {
+    public Person addPerson(String email) {
 
-        return new Person( email );
+        if (email == null || email.isEmpty()) {
+            throw new IllegalArgumentException("Email cannot be null or empty");
+        }
+
+        return new Person(email);
     }
 
-    public Person getByEmail( final String email ) {
-        final Person person = persons.get( email );
-        if( person == null ) {
-            throw new PersonNotFoundException( email );
+    public Person getByEmail(final String email) {
+
+        if (email == null || email.isEmpty()) {
+            throw new IllegalArgumentException("Email cannot be null or empty");
+        }
+
+        final Person person = persons.get(email);
+
+        if (person == null) {
+            throw new PersonNotFoundException(email);
         }
 
         return person;
     }
 
-    public boolean  checkPersonByEmail(final String email)
-    {
-        boolean personExists= true;
-        final Person person = persons.get( email );
-        if( person == null ) {
-            personExists=false;
+    public boolean checkPersonByEmail(final String email) {
+
+        if (email == null || email.isEmpty()) {
+            return false;
         }
-        return  personExists;
+
+        final Person person = persons.get(email);
+        return person != null;
     }
 
-    public Person addPerson( final String email, final String firstName, final String lastName ) {
-        final Person person = new Person( email );
-        person.setFirstName( firstName );
-        person.setLastName( lastName );
+    public Person addPerson(final String email,
+            final String firstName,
+            final String lastName) {
 
-        if( persons.putIfAbsent( email, person ) != null ) {
-            throw new PersonAlreadyExistsException( email );
+        if (email == null || email.isEmpty()) {
+            throw new IllegalArgumentException("Email cannot be null or empty");
+        }
+
+        final Person person = new Person(email);
+        person.setFirstName(firstName);
+        person.setLastName(lastName);
+
+        if (persons.putIfAbsent(email, person) != null) {
+            throw new PersonAlreadyExistsException(email);
         }
 
         return person;
     }
 
-    public void removePerson( final String email ) {
-        if( persons.remove( email ) == null ) {
-            throw new PersonNotFoundException( email );
+    public void removePerson(final String email) {
+
+        if (email == null || email.isEmpty()) {
+            throw new IllegalArgumentException("Email cannot be null or empty");
+        }
+
+        if (persons.remove(email) == null) {
+            throw new PersonNotFoundException(email);
         }
     }
-
-
 }
