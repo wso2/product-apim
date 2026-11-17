@@ -70,6 +70,8 @@ public class APIM18CreateAnAPIThroughThePublisherRestAPITestCase extends APIMInt
     private String apiProductionEndPointUrl;
     private String apiId;
     private String apiId2;
+    private String sandboxApiId;
+    private String swaggerImportedApiId;
 
     @Factory(dataProvider = "userModeDataProvider")
     public APIM18CreateAnAPIThroughThePublisherRestAPITestCase(TestUserMode userMode) {
@@ -204,6 +206,7 @@ public class APIM18CreateAnAPIThroughThePublisherRestAPITestCase extends APIMInt
             APIDTO apidto1Response = restAPIPublisher.
                     importOASDefinition(definition, apiProperties.toString());
             Assert.assertNotNull(apidto1Response);
+            swaggerImportedApiId = apidto1Response.getId();
 
             //Create another API with same context
             File definition2 = new File(swaggerPath2);
@@ -284,20 +287,20 @@ public class APIM18CreateAnAPIThroughThePublisherRestAPITestCase extends APIMInt
         apiCreationRequestBean.setOperationsDTOS(operationsDTOS);
 
         HttpResponse apiCreationResponse = restAPIPublisher.addAPI(apiCreationRequestBean);
-        apiId = apiCreationResponse.getData();
+        sandboxApiId = apiCreationResponse.getData();
 
         assertEquals(apiCreationResponse.getResponseCode(), Response.Status.CREATED.getStatusCode(),
                 "Response Code miss matched when creating the API");
 
         //Check the availability of an API in Publisher
-        HttpResponse response = restAPIPublisher.getAPI(apiId);
+        HttpResponse response = restAPIPublisher.getAPI(sandboxApiId);
         assertEquals(response.getResponseCode(), Response.Status.OK.getStatusCode(),
                 "Response Code miss matched when creating the API");
         assertTrue(response.getData().contains(apiNameNoProdEndpointTest), "Invalid API Name");
         assertTrue(response.getData().contains(apiVersion), "Invalid API Version");
         assertTrue(response.getData().contains(apiContextTest), "Invalid API Context");
 
-        ApiResponse<APIKeyDTO> apiKeyDTO = restAPIPublisher.generateInternalApiKey(apiId);
+        ApiResponse<APIKeyDTO> apiKeyDTO = restAPIPublisher.generateInternalApiKey(sandboxApiId);
         assertEquals(200, apiKeyDTO.getStatusCode(),
                 "Key generation is failed for APIs which don't have product endpoints");
         String apiKey = apiKeyDTO.getData().getApikey();
@@ -382,7 +385,14 @@ public class APIM18CreateAnAPIThroughThePublisherRestAPITestCase extends APIMInt
 
     @AfterClass(alwaysRun = true)
     public void destroyAPIs() throws Exception {
-        restAPIPublisher.deleteAPI(apiId2);
+        // Delete every API this class created by id. super.cleanUp() lists the publisher APIs through the
+        // registry search index, which lags API creation by a few seconds, so on a fast build host it can
+        // return an empty list and leave "APIM18PublisherTest" behind for the next test class.
+        for (String id : new String[]{sandboxApiId, swaggerImportedApiId, apiId2}) {
+            if (id != null) {
+                restAPIPublisher.deleteAPI(id);
+            }
+        }
         super.cleanUp();
     }
 
