@@ -4461,7 +4461,12 @@ public class PublisherBaseSteps {
     private void importAsyncApiDefinition(String filepath, String additionalData, String resourceId)
             throws IOException {
 
-        File asyncApiFile = Utils.classpathToTempFile(filepath, "fixture", ".yaml");
+        // {{...}} placeholders in the definition are resolved, so a fixture can carry scenario-unique scope names
+        // (scope keys are tenant-wide, §4). A definition without placeholders is uploaded unchanged.
+        File asyncApiFile = File.createTempFile("fixture", ".yaml");
+        asyncApiFile.deleteOnExit();
+        Files.write(asyncApiFile.toPath(), Utils.resolveContextPlaceholders(Utils.readClasspathResource(filepath))
+                .getBytes(StandardCharsets.UTF_8));
         // Accept a prepared payload as well as a classpath fixture. Keeping the resolved request in context
         // lets features assert generated names/contexts against the input, independently of the response.
         String additionalProperties;
