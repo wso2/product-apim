@@ -162,7 +162,7 @@ integration-v2 product tests
 │   │   ├── [allow-mode] Endpoint validation of a private-IP URL is blocked under allow mode  (publisher/network_access_control_url_allow.feature:18)
 │   │   ├── [precedence] A platform allow-mode policy overrides a tenant allow policy  (publisher/network_access_control_url_allow.feature:26)
 │   │   ├── [disabled] Endpoint validation of a loopback URL is not blocked when the feature is disabled  (publisher/network_access_control_url_disabled.feature:10)
-│   │   ├── [disabled] Endpoint validation of a link-local URL is not blocked when the feature is disabled  (publisher/network_access_control_url_disabled.feature:17)
+│   │   ├── [disabled] Endpoint validation of an external URL is not blocked when the feature is disabled  (publisher/network_access_control_url_disabled.feature:17)
 │   │   ├── [endpoint-validation] Endpoint validation of a loopback URL is blocked under the private-block policy  (publisher/network_access_control_url_privateblock.feature:12)
 │   │   ├── [key-manager] Key Manager creation with a link-local URL is rejected under the private-block policy  (publisher/network_access_control_url_privateblock.feature:19)
 │   │   ├── [wsdl-url] WSDL import from a loopback URL is rejected under the private-block policy  (publisher/network_access_control_url_privateblock.feature:27)
