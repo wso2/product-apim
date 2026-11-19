@@ -20,6 +20,8 @@ package org.wso2.am.integration.cucumbertests.stepdefinitions;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import org.testng.Assert;
+import org.wso2.am.integration.cucumbertests.utils.Identity;
+import org.wso2.am.integration.cucumbertests.utils.ResourceCleanup;
 import org.wso2.am.integration.cucumbertests.utils.TenantUserProvisioner;
 import org.wso2.am.integration.cucumbertests.utils.Utils;
 
@@ -40,6 +42,28 @@ import java.util.regex.Pattern;
  * to a {@code SECONDARY.COM/} user.
  */
 public class SecondaryUserStoreSteps {
+
+    /** Creates a scenario-owned SECONDARY.COM role; cleanup removes it after any members are swept. */
+    @When("I provision a secondary user-store role {string} in tenant {string} with visibility permissions {string}")
+    public void provisionSecondaryRole(String roleName, String tenantDomain, String withVisibilityPermissions)
+            throws Exception {
+        String role = Utils.resolveContextPlaceholders(roleName);
+        TenantUserProvisioner.addRole(tenantDomain, role, Boolean.parseBoolean(withVisibilityPermissions));
+        TenantUserProvisioner.awaitRoleExists(tenantDomain, role);
+        ResourceCleanup.registerFor(ResourceCleanup.CREATED_ROLE_NAMES, role,
+                Identity.tenantAdminActorRef(tenantDomain));
+    }
+
+    /** Creates a SECONDARY.COM user, registers it as a runtime actor, and schedules tenant-aware cleanup. */
+    @When("I provision secondary user-store user {string} with password {string} and roles {string} as an actor in tenant {string}")
+    public void provisionSecondaryStoreActor(String storeQualifiedName, String password, String roles,
+                                             String tenantDomain) throws Exception {
+        String username = Utils.resolveContextPlaceholders(storeQualifiedName);
+        TenantUserProvisioner.addStoreUserAsActor(tenantDomain, username, username, password,
+                Utils.resolveContextPlaceholders(roles));
+        ResourceCleanup.registerFor(ResourceCleanup.CREATED_USER_NAMES,
+                TenantUserProvisioner.physicalUserName(username), Identity.tenantAdminActorRef(tenantDomain));
+    }
 
     /**
      * Adds a user directly in a user store domain (e.g. {@code SECONDARY/testUser1}) with roles, in a tenant. Uses
@@ -140,6 +164,14 @@ public class SecondaryUserStoreSteps {
         Assert.assertFalse(stillAssigned,
                 "Role list of '" + userName + "' still contained '" + unexpected + "' in some casing; "
                         + "response: " + body);
+    }
+
+    /** Updates a store user's role membership; callers should read the roles back to assert the mutation. */
+    @When("I update the role list of store user {string} in tenant {string}, removing {string} and adding {string}")
+    public void updateStoreUserRoleList(String userName, String tenantDomain, String deletedRole, String addedRole)
+            throws Exception {
+        TenantUserProvisioner.updateRoleListOfUser(tenantDomain, Utils.resolveContextPlaceholders(userName),
+                Utils.resolveContextPlaceholders(deletedRole), Utils.resolveContextPlaceholders(addedRole));
     }
 
     /** The role values a {@code getRoleListOfUser} response assigns — one per {@code <ns:return>} element. */

@@ -29,6 +29,9 @@ Feature: Gateway GraphQL Subscription Invocation
     # Subscribe an application and obtain an access token
     When I have set up application with keys, subscribed to API "gqlSubApiId", and obtained access token for "gqlSubSubId"
     Then The response status code should be 200
+    When I get the subscription with id "gqlSubSubId"
+    Then The response status code should be 200
+    And The value of response field "status" should be "UNBLOCKED"
 
     # Publishing must also make the subscription API DISCOVERABLE on both planes — the create/publish statuses
     # above do not show that. Legacy publishGraphQLAPIWithSubscriptions published the API and asserted neither
@@ -36,14 +39,15 @@ Feature: Gateway GraphQL Subscription Invocation
     Then The "publisher" listing should report API "gqlSubApiId" exactly once
     And The "devportal" listing should report API "gqlSubApiId" exactly once
 
-    # Open a graphql-ws subscription through the gateway and assert the subscription data arrives
-    When I invoke the GraphQL subscription at gateway ws context "{{gqlSubContext}}/1.0.0" with query "subscription { liftStatusChange { name } }" using access token "generatedAccessToken" expecting data containing "Astra Express" within 120 seconds
+    # The shared step asserts the exact connection_ack and full data frame (type, id, payload and event data),
+    # matching the legacy wire-level response contract rather than accepting only a data substring.
+    When I invoke the GraphQL subscription at gateway ws context "{{gqlSubContext}}/1.0.0" with query "subscription { liftStatusChange { name } }" using access token "generatedAccessToken" expecting exact data frame from JSON file "artifacts/payloads/graphql_subscription_expected_frame.json" within 120 seconds
 
     # Same subscription, credential presented as ?access_token= on the WS URL with NO Authorization header — the
     # AUTH_IN.QUERY half of legacy testGraphQLAPIInvocationWithJWTToken (which invoked BOTH ways; only the header
     # way was ported). A distinct gateway code path: the WS inbound must take the credential off the handshake's
     # query string, before any header is consulted.
-    When I invoke the GraphQL subscription at gateway ws context "{{gqlSubContext}}/1.0.0" with query "subscription { liftStatusChange { name } }" using access token query param "generatedAccessToken" expecting data containing "Astra Express" within 120 seconds
+    When I invoke the GraphQL subscription at gateway ws context "{{gqlSubContext}}/1.0.0" with query "subscription { liftStatusChange { name } }" using access token query param "generatedAccessToken" expecting exact data frame from JSON file "artifacts/payloads/graphql_subscription_expected_frame.json" within 120 seconds
 
     Examples:
       | actor             |

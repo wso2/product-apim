@@ -1,0 +1,11 @@
+{
+  "name": "${UNIQUE:APIMTestApp}",
+  "throttlingPolicy": "Unlimited",
+  "description": "Test application for scenarios",
+  "groups": [
+    "org1"
+  ],
+  "attributes": {
+    "External Reference Id": "c1237890"
+  }
+}

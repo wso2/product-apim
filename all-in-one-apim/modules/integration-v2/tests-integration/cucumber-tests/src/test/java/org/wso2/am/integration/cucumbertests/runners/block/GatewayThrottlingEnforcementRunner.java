@@ -20,9 +20,9 @@ package org.wso2.am.integration.cucumbertests.runners.block;
 import io.cucumber.testng.CucumberOptions;
 
 /**
- * Runner for gateway runtime throttling enforcement: an application on a low request-count policy is refused
- * with 429 once it exceeds the limit. Runs in the IntegrationV2-Gateway block (which starts the backend); the
- * throttle counter is per-application, so it is unaffected by sibling classes sharing the container.
+ * Runner for gateway runtime throttling enforcement. Reused in standard and email-username blocks so the same
+ * logical scenarios exercise both identity modes. Throttle measurements run in sequential blocks because their
+ * counters and time windows are shared runtime state.
  */
 @CucumberOptions(
         features = {

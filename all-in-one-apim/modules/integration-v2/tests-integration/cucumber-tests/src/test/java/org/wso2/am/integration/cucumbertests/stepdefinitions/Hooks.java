@@ -18,6 +18,7 @@
 package org.wso2.am.integration.cucumbertests.stepdefinitions;
 
 import io.cucumber.java.After;
+import io.cucumber.java.Before;
 import org.wso2.am.integration.cucumbertests.utils.ResourceCleanup;
 
 /**
@@ -25,18 +26,23 @@ import org.wso2.am.integration.cucumbertests.utils.ResourceCleanup;
  */
 public class Hooks {
 
+    /** Records what is registered when a {@code @cleanup} scenario begins (see {@link #cleanUpCreatedResources}). */
+    @Before("@cleanup")
+    public void beginScenarioCleanupScope() {
+        ResourceCleanup.beginScenarioScope();
+    }
+
     /**
-     * Per-scenario teardown for scenarios tagged {@code @cleanup}. Deletes every API and application the
-     * scenario registered so the next scenario on the shared container starts clean and does not collide on
-     * duplicate resource names (HTTP 409). Tag-scoped, so suites that intentionally persist resources across
-     * scenarios are unaffected. For the {@code _setup_*} fixture pattern — where resources created by a setup
-     * feature must survive across the runner's later scenarios — leave the feature untagged and rely on the
-     * per-runner {@code @AfterClass} sweep on {@code BaseBlockRunner} instead (both delegate to
-     * {@link ResourceCleanup}).
+     * Per-scenario teardown for scenarios tagged {@code @cleanup}. Deletes every resource the scenario itself
+     * registered so the next scenario on the shared container starts clean and does not collide on duplicate
+     * resource names (HTTP 409). Resources registered before the scenario began — a {@code _setup_*} feature's
+     * fixtures, which later scenarios in the runner still use — stay registered for the per-runner
+     * {@code @AfterClass} sweep on {@code BaseBlockRunner} (both delegate to {@link ResourceCleanup}). Tag-scoped,
+     * so suites that intentionally persist resources across scenarios are unaffected.
      */
     @After("@cleanup")
     public void cleanUpCreatedResources() {
-        ResourceCleanup.deleteRegisteredResources();
+        ResourceCleanup.deleteScenarioRegisteredResources();
     }
 
     /** Restores scenario-mutated shared fixtures without deleting the runner-scoped fixture resources. */

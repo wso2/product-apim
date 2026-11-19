@@ -21,7 +21,7 @@ import io.cucumber.testng.CucumberOptions;
 
 /**
  * Runner for admin application search (by name and by owner) — the port of
- * ApplicationsSearchByNameOrOwnerTestCase. Runs in the standard IntegrationV2-Admin block.
+ * ApplicationsSearchByNameOrOwnerTestCase. Runs in the IntegrationV2-DevPortal block.
  */
 @CucumberOptions(
         features = {

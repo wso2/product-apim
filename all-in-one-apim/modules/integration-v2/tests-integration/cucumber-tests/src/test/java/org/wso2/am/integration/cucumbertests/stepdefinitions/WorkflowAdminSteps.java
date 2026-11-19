@@ -37,6 +37,7 @@ import org.wso2.carbon.automation.engine.context.beans.User;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -174,7 +175,7 @@ public class WorkflowAdminSteps {
     }
 
     /**
-     * The original {@code workflow-extensions.xml} content, captured before the Approval variant is written, so
+     * The original {@code workflow-extensions.xml} content, captured before an executor override is written, so
      * the runner's {@code @AfterClass} can restore it. Static because the setup feature and the runner teardown
      * are different instances on the same runner; a null value means the setup never ran (nothing to restore).
      */
@@ -189,6 +190,17 @@ public class WorkflowAdminSteps {
      */
     @When("I enable approval workflow executors from {string}")
     public void iEnableApprovalWorkflowExecutors(String resourcePath) throws IOException {
+        setWorkflowExtensions(resourcePath, false);
+    }
+
+    /** Installs an alternate workflow executor configuration while retaining the same failure-safe restore. */
+    @When("I enable custom HTTP-redirect subscription workflow executor from {string}")
+    public void iEnableCustomHttpRedirectSubscriptionWorkflowExecutor(String resourcePath) throws IOException {
+        setWorkflowExtensions(resourcePath, true);
+    }
+
+    private void setWorkflowExtensions(String resourcePath, boolean verifyReadback) throws IOException {
+
         String tenant = Identity.actingTenantDomain();
         Map<String, String> originalsByTenant = originalWorkflowExtensions.computeIfAbsent(
                 Utils.getBaseUrl(), ignored -> new ConcurrentHashMap<>());
@@ -201,20 +213,25 @@ public class WorkflowAdminSteps {
                 originalsByTenant.put(tenant, original);
             }
         }
-        String approvalXml = Utils.readClasspathResource(resourcePath);
-        boolean written = updateRegistryTextContent(WF_EXTENSIONS_REGISTRY_PATH, approvalXml);
+        String replacementXml = Utils.resolveXmlContextPlaceholders(Utils.readClasspathResource(resourcePath));
+        boolean written = updateRegistryTextContent(WF_EXTENSIONS_REGISTRY_PATH, replacementXml);
         Assert.assertTrue(written, "ResourceAdminService.updateTextContent did not return true for the "
-                + "workflow-extensions.xml write — the executor flip did not take effect.");
+                + "workflow-extensions.xml write — the executor change did not take effect.");
+        if (verifyReadback) {
+            String readBack = getRegistryTextContent(WF_EXTENSIONS_REGISTRY_PATH);
+            Assert.assertEquals(readBack, replacementXml,
+                    "Registry workflow-extensions.xml did not read back the requested executor configuration.");
+        }
     }
 
     /**
-     * Restores the workflow executors to the content captured before the flip, and VERIFIES the restore by reading
+     * Restores the workflow executors to the content captured before the override, and VERIFIES the restore by reading
      * the registry back. Called from the runner's {@code @AfterClass}; a no-op if the setup step never captured an
      * original.
      *
      * <p>Self-verifying because {@code workflow-extensions.xml} is SERVER-GLOBAL: a silently failed restore leaves
-     * the Approval executors active for every OTHER runner sharing this block's container, whose unrelated
-     * application/subscription scenarios then hang {@code ON_HOLD} with nothing pointing back here. Scope, measured
+     * a custom workflow executor active for every OTHER runner sharing this block's container, whose unrelated
+     * application/subscription scenarios may then observe unexpected workflow responses. Scope, measured
      * rather than assumed: under the {@code default} profile the databases are in-container H2, so the state dies
      * with the container and does NOT reach a later run; under {@code migration}, which points at an external
      * MySQL, it does persist across runs. A discarded SOAP result is not enough to detect either — the service
@@ -245,15 +262,14 @@ public class WorkflowAdminSteps {
                     logger.error("WorkflowAdminSteps: FAILED to restore workflow-extensions.xml for tenant " + tenant
                             + " — updateTextContent returned " + written + " and the registry content "
                             + (original.equals(readBack) ? "matches" : "DOES NOT match") + " the captured original. "
-                            + "This state is server-global, so the Approval executors may still be active for any "
-                            + "other runner sharing this container — its application/subscription scenarios will "
-                            + "hang ON_HOLD. On the default profile the DB is in-container H2 so it dies with the "
+                            + "This state is server-global, so the custom executor override may still be active for "
+                            + "any other runner sharing this container. On the default profile the DB is in-container H2 so it dies with the "
                             + "container; against an external DB (migration profile) it also poisons the next run.");
                 }
             } catch (IOException | RuntimeException | AssertionError e) {
                 logger.error("WorkflowAdminSteps: FAILED to restore workflow-extensions.xml for tenant " + tenant
-                        + " (" + e.getMessage() + "). This state is server-global — the Approval executors may still "
-                        + "be active for any other runner sharing this container.", e);
+                        + " (" + e.getMessage() + "). This state is server-global — the workflow executor override "
+                        + "may still be active for any other runner sharing this container.", e);
             }
         }
     }
@@ -324,8 +340,57 @@ public class WorkflowAdminSteps {
      */
     @When("I retrieve the process start request recorded by the BPMN process server")
     public void iRetrieveTheRecordedBpmnStartRequest() throws IOException {
-        Requests.get(Utils.getNodeBackendUrl(BPMN_PROCESS_SERVER_PORT)
+        HttpResponse response = Requests.get(Utils.getNodeBackendUrl(BPMN_PROCESS_SERVER_PORT)
                 + "/runtime/process-instances?debugInfo=startRequest", Map.of());
+        // Configured clients are already registered for cleanup as their creating actor; registerFor preserves
+        // that owner. Any unregistered emitted client comes from automatic workflow DCR under the global admin.
+        // Adopt it immediately so later assertion failures still remove both its OAuth and SP records.
+        if (response != null && response.getResponseCode() == 200
+                && response.getData() != null && !response.getData().isBlank()) {
+            JSONArray variables = new JSONObject(response.getData()).optJSONArray("variables");
+            if (variables != null) {
+                for (int i = 0; i < variables.length(); i++) {
+                    JSONObject variable = variables.getJSONObject(i);
+                    if ("clientId".equals(variable.optString("name"))) {
+                        String clientId = variable.optString("value", "");
+                        if (!clientId.isBlank()) {
+                            ResourceCleanup.registerFor(ResourceCleanup.CREATED_DCR_CLIENT_IDS, clientId,
+                                    Constants.ADMIN_USER_KEY);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Sends a callback with attributes and business key from the selected BPMN request and an explicit token.
+     * Callers may supply the original snapshot or a separate compatibility copy; any edits remain visible in
+     * the feature instead of being applied implicitly by this helper.
+     */
+    @When("I attempt to {string} the BPMN workflow recorded in {string} using access token {string}")
+    public void iAttemptBpmnCallbackWithToken(String decision, String requestKey, String tokenKey) throws IOException {
+        Object snapshot = TestContext.resolve(requestKey);
+        JSONObject recorded = snapshot instanceof Map<?, ?> map
+                ? new JSONObject(map) : new JSONObject(snapshot.toString());
+        JSONArray variables = recorded.getJSONArray("variables");
+        JSONObject attributes = new JSONObject();
+        Set<String> attributeNames = Set.of("apiCurrentState", "apiLCAction", "apiName",
+                "apiVersion", "apiProvider", "invoker");
+        for (int i = 0; i < variables.length(); i++) {
+            JSONObject variable = variables.getJSONObject(i);
+            String name = variable.getString("name");
+            if (attributeNames.contains(name)) {
+                attributes.put(name, variable.get("value"));
+            }
+        }
+        Assert.assertEquals(attributes.keySet(), attributeNames, "Recorded BPMN callback attributes are incomplete");
+        String body = new JSONObject().put("status", decision)
+                .put("description", "integration-v2 BPMN callback authorization check")
+                .put("attributes", attributes).toString();
+        Requests.post(Utils.getUpdateWorkflowStatusURL(Utils.getBaseUrl(), recorded.getString("businessKey")),
+                Identity.bearerHeaders(TestContext.resolve(tokenKey).toString()), body,
+                Constants.CONTENT_TYPES.APPLICATION_JSON);
     }
 
     /** Gets a single workflow task by its external reference and publishes the response for assertion. */
@@ -733,11 +798,6 @@ public class WorkflowAdminSteps {
         if (end < 0) {
             return null;
         }
-        return unescapeXml(soapBody.substring(start, end));
-    }
-
-    private static String unescapeXml(String value) {
-        return value.replace("&lt;", "<").replace("&gt;", ">").replace("&quot;", "\"")
-                .replace("&apos;", "'").replace("&amp;", "&");
+        return Utils.unescapeXml(soapBody.substring(start, end));
     }
 }

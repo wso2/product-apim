@@ -21,12 +21,12 @@ package org.wso2.am.integration.cucumbertests.runners.block;
 import io.cucumber.testng.CucumberOptions;
 
 /**
- * Runner for WS proxy profile — authenticated proxy with wrong credentials. Runs in the
- * IntegrationV2-WsProxyAuthWrongCreds block whose deployment.toml overlay (wsProxyAuthWrongCreds)
+ * Runner for WS proxy profile — authenticated proxy with wrong credentials. Runs in IntegrationV2-CrossTenantSubscription (all-in-one) and
+ * IntegrationV2-Distributed-Gateway-WsProxyAuthWrongCreds, whose overlay (wsProxyAuthWrongCreds)
  * points nodebackend at squid-proxy:3129 (the Basic-auth Squid instance) with incorrect
  * credentials. Squid returns 407, the CONNECT tunnel is never established, and the WS upgrade
- * fails. A CONNECT count of 1 confirms the rejection came from Squid credential validation
- * rather than a pre-proxy network failure.
+ * fails. A non-zero authenticated CONNECT count, together with Squid's 407 response, confirms the rejection came
+ * from credential validation rather than a pre-proxy network failure.
  */
 @CucumberOptions(
         features = {

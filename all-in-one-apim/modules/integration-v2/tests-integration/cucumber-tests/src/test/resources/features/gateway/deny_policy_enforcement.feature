@@ -18,10 +18,15 @@ Feature: Deny Policy Enforcement At The Gateway
 
   The pre-deny 200 matters: without it a later 403 could mean the API was never reachable at all.
 
+  This same flow runs in standard and email-user blocks. The block-aware actor alias is resolved before both
+  invocations, and the exact physical username assertion proves the deny is exercised by the intended principal.
+
   @cap:gateway @feat:throttling-enforcement @rule:deny-enforcement @type:regression @dep:admin @dep:publisher
   Scenario Outline: An API-context deny policy refuses invocation of that API as <actor>
     Given The system is ready
     And I have valid access tokens as "<actor>"
+    When I store the acting actor credentials as "denyActorUsername" and "denyActorPassword"
+    Then the actual value of "denyActorUsername" should match standard-mode value "<standardUsername>" and email-mode value "<emailUsername>"
     And I have created an api from "artifacts/payloads/create_apim_test_api.json" as "denyEnfApiId" and deployed it
     When I publish the "apis" resource with id "denyEnfApiId"
     Then The lifecycle status of API "denyEnfApiId" should be "Published"
@@ -61,10 +66,11 @@ Feature: Deny Policy Enforcement At The Gateway
     # different 4xx here would be a real change in how a blocked API is reported.
     When I invoke the API at gateway context "{{denyEnfCtx}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 403 within 60 seconds
     Then The response status code should be 403
+    And The error response should have code "900805" message "Message blocked" and description containing "You have been blocked from accessing the resource"
     # And the backend was never reached.
     And The response should not contain "\"name\":\"John\""
 
     Examples:
-      | actor             |
-      | admin             |
-      | admin@tenant1.com |
+      | actor             | standardUsername  | emailUsername                     |
+      | superTenantAdmin  | admin             | emailAdmin@email.com@carbon.super |
+      | admin@tenant1.com | admin@tenant1.com | admin@email.com@tenant1.com       |

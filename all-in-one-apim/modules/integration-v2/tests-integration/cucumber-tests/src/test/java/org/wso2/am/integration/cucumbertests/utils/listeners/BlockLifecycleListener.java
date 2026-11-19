@@ -24,24 +24,44 @@ import org.testng.ITestContext;
 import org.testng.ITestListener;
 import org.testng.xml.XmlTest;
 import org.wso2.am.integration.cucumbertests.utils.CoverageSupport;
+import org.wso2.am.integration.cucumbertests.utils.GracefulServerRestart;
+import org.wso2.am.integration.cucumbertests.utils.GatewayTenantLoadGate;
+import org.wso2.am.integration.cucumbertests.utils.Identity;
 import org.wso2.am.integration.cucumbertests.utils.IntegrationActors;
 import org.wso2.am.integration.cucumbertests.utils.ModulePathResolver;
+import org.wso2.am.integration.cucumbertests.utils.RegistryAdminService;
+import org.wso2.am.integration.cucumbertests.utils.RegistryBootstrapDiagnostics;
 import org.wso2.am.integration.cucumbertests.utils.ServerReadiness;
 import org.wso2.am.integration.cucumbertests.utils.SecondaryUserStoreProvisioner;
 import org.wso2.am.integration.cucumbertests.utils.TenantUserProvisioner;
+import org.wso2.am.integration.cucumbertests.utils.ListenerSslReloadReadiness;
+import org.wso2.am.integration.cucumbertests.utils.ThrottleDataReadiness;
 import org.wso2.am.integration.cucumbertests.utils.TestContext;
 import org.wso2.am.integration.cucumbertests.utils.Utils;
 import org.wso2.am.integration.test.utils.Constants;
+import org.testcontainers.containers.Network;
 import org.wso2.am.testcontainers.DynamicApimContainer;
-import org.wso2.am.testcontainers.IdentityServerContainer;
+import org.wso2.am.testcontainers.ApimRuntime;
+import org.wso2.am.testcontainers.DistributedDynamicApimContainer;
+import org.wso2.am.testcontainers.CpuLimit;
+import org.wso2.am.testcontainers.DynamicISContainer;
+import org.wso2.am.testcontainers.DynamicPlatformGatewayContainer;
 import org.wso2.am.testcontainers.JacocoCoverage;
 import org.wso2.am.testcontainers.DynamicSolaceBroker;
+import org.wso2.am.testcontainers.HostedDatabaseBlock;
+import org.wso2.am.testcontainers.HybridUserRoleKeyIncludesDomain;
+import org.wso2.am.testcontainers.RegistryLogTimestampPrecision;
 import org.wso2.am.testcontainers.NodeAppServer;
 import org.wso2.am.testcontainers.SquidProxyServer;
 
+import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Map;
+import java.util.Optional;
+import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Semaphore;
 
 /**
@@ -64,9 +84,16 @@ public class BlockLifecycleListener implements ITestListener {
     /** Must match {@code BaseBlockRunner.BOOT_ERROR_ATTRIBUTE}. */
     static final String BOOT_ERROR_ATTRIBUTE = "bootError";
 
-    static final String CONTAINER_KEY = "blockApimContainer";
+    public static final String CONTAINER_KEY = "blockApimContainer";
+    static final String GATEWAY_TENANTS_KEY = "blockGatewayTenants";
+    private static final String THROTTLE_DATA_READINESS_SECONDS_KEY = "blockThrottleDataReadinessSeconds";
+    static final String BLOCK_LABEL_KEY = "blockLabel";
+    private static final String HOSTED_DATABASE_KEY = "blockHostedDatabase";
     static final String BASE_URL_KEY = "baseUrl";
     static final String BASE_GATEWAY_URL_KEY = "baseGatewayUrl";
+    static final String BASE_GATEWAY_HTTP_URL_KEY = "baseGatewayHttpUrl";
+    static final String BASE_GATEWAY_MANAGEMENT_URL_KEY = "baseGatewayManagementUrl";
+    static final String BASE_TRAFFIC_MANAGER_MANAGEMENT_URL_KEY = "baseTrafficManagerManagementUrl";
     static final String BASE_GATEWAY_WS_URL_KEY = "baseGatewayWsUrl";
     static final String BASE_GATEWAY_WSS_URL_KEY = "baseGatewayWssUrl";
     static final String BASE_WEBSUB_EVENT_RECEIVER_URL_KEY = "baseWebSubEventReceiverUrl";
@@ -74,6 +101,17 @@ public class BlockLifecycleListener implements ITestListener {
 
     /** Optional {@code <parameter>} names read from the block's {@code <test>}. */
     static final String PARAM_BLOCK_LABEL = "blockLabel";
+    /** Optional named lifecycle lock held from block boot through block teardown. */
+    static final String PARAM_LIFECYCLE_LOCK = "lifecycleLock";
+    private static final String LIFECYCLE_LOCK_KEY = "lifecycleLockPermit";
+    private static final Map<String, Semaphore> LIFECYCLE_LOCKS = new ConcurrentHashMap<>();
+    /**
+     * Optional hard CPU cap for the block's APIM container, in CPUs (Docker {@code --cpus}; fractions allowed,
+     * e.g. {@code 1.5}). Absent or blank leaves the container uncapped. Only the APIM container is capped — the
+     * block's IS has its own {@link #PARAM_IS_CPU_LIMIT}; Solace, proxy and the shared backend are not capped. A
+     * malformed or non-positive value fails the block's boot.
+     */
+    static final String PARAM_APIM_CPU_LIMIT = "apimCpuLimit";
     static final String PARAM_TOML_OVERLAY = "tomlOverlayPath";
     /**
      * Optional path to a small feature-specific TOML overlay merged on top of the default {@code basic}
@@ -82,8 +120,15 @@ public class BlockLifecycleListener implements ITestListener {
      * application sharing) so it still inherits the distribution + basic defaults.
      */
     static final String PARAM_TOML_EXTRA_OVERLAY = "tomlExtraOverlayPath";
+    private static final String EMAIL_USER_OVERLAY =
+            "src/test/resources/artifacts/configFiles/emailUserName/deployment.toml";
     /** When {@code true}, onStart provisions tenants/users into the block's own container after readiness. */
     static final String PARAM_INIT_TENANT_USERS = "initTenantUsers";
+    /** Opt-in millisecond precision for the block's MySQL registry activity timestamps. */
+    static final String PARAM_REGISTRY_LOG_MILLISECOND_PRECISION = "registryLogMillisecondPrecision";
+    static final String PARAM_HYBRID_USER_ROLE_KEY_INCLUDES_DOMAIN = "hybridUserRoleKeyIncludesDomain";
+    /** When {@code true}, provisions a second non-super tenant for cross-tenant subscription coverage. */
+    static final String PARAM_INIT_CROSS_TENANT_PEER = "initCrossTenantPeer";
     /**
      * FRAMEWORK VERIFICATION ONLY. When {@code true}, provisioning deliberately fails: it targets a tenant
      * domain that was never created on this container, so the user-admin SOAP call is refused and the
@@ -107,9 +152,10 @@ public class BlockLifecycleListener implements ITestListener {
     /**
      * When {@code true}, every user provisioned by {@link #PARAM_INIT_TENANT_USERS} (except the super-tenant
      * {@code admin}) gets an EMAIL-FORM physical username — {@code <base>@email.com} instead of {@code <base>} —
-     * making "email as username" a first-class block mode. Pair it with the
-     * {@code artifacts/configFiles/emailUserName} extra overlay, which turns on {@code [tenant_mgt]
-     * enable_email_domain}; the two must be set together (see that file for why).
+     * making "email as username" a first-class, topology-independent block mode. The listener automatically
+     * applies the framework's email-user TOML overlay to the relevant runtime component(s); callers do not need
+     * to know whether the block uses one all-in-one container or the distributed CP/TM/Gateway composition. Any
+     * explicit {@code tomlExtraOverlayPath} remains a later override.
      *
      * <p>This is the mechanism that closes the legacy {@code SUPER_TENANT_EMAIL_USER} /
      * {@code TENANT_EMAIL_USER} {@code TestUserMode} rows: legacy fanned every class over those modes at the
@@ -147,10 +193,33 @@ public class BlockLifecycleListener implements ITestListener {
      */
     static final String PARAM_EMAIL_USER_MODE = "emailUserMode";
     /**
-     * When {@code true}, onStart ensures the shared NodeAppServer backend (network alias {@code nodebackend})
-     * is running before APIM boots, so gateway-invocation tests have a reachable backend for deployed APIs.
+     * When {@code true}, onStart ensures the shared NodeAppServer backend singleton is running and MULTI-HOMES it
+     * onto this block's private network under the {@code nodebackend} alias before APIM boots, so
+     * gateway-invocation tests have a reachable upstream for deployed APIs. One backend instance serves every
+     * opting-in block; it is detached from this block's network at teardown (before the network is closed), which
+     * is what keeps the network removable — see {@link #BACKEND_ATTACHED_KEY}.
+     *
+     * <p>The backend is the ONLY container shared this way. It is a stateless upstream that resolves no peer
+     * names, so being attached to several block networks at once is unambiguous; anything that must resolve a
+     * name pointing at APIM (IS, Solace) is per-block instead.
      */
     static final String PARAM_INIT_BACKEND = "initBackend";
+    /** When set, fail block bootstrap unless the TM-to-Gateway throttle-data pipeline is healthy. */
+    static final String PARAM_THROTTLE_DATA_READINESS_SECONDS = "throttleDataReadinessSeconds";
+    /** When true, initialize throttle-data prerequisites using the topology's bootstrap phase. */
+    static final String PARAM_BOOTSTRAP_THROTTLE_DATA = "bootstrapThrottleData";
+    /**
+     * When set, wait up to this many seconds for the Gateway's HTTPS listener to start and restart the Gateway once if
+     * its SSL-profile reload is disabled (see {@link ListenerSslReloadReadiness}). For blocks whose scenarios upload
+     * mutual-SSL client certificates and expect the handshake to trust them. The restart is a ServerAdmin graceful
+     * restart, so the block's overlay must set {@code [server] enable_restart_from_api = true}.
+     */
+    static final String PARAM_LISTENER_SSL_RELOAD_READINESS_SECONDS = "listenerSslReloadReadinessSeconds";
+    /**
+     * How long the throttle-data bootstrap watches the current start before deciding a recovery restart is needed. A
+     * healthy start returns as soon as it has been stable; only a start that never becomes ready uses the full window.
+     */
+    private static final int THROTTLE_DATA_OBSERVE_SECONDS = 180;
     /**
      * When {@code true}, onStart boots {@link DynamicSolaceBroker} — a faked Solace connector control plane
      * (network alias {@code solaceshim}) plus a REAL PubSub+ broker (alias {@code solacebroker}) — BEFORE APIM,
@@ -159,24 +228,22 @@ public class BlockLifecycleListener implements ITestListener {
      * {@link #PARAM_BOOT_EXTERNAL_IS} (after APIM): nothing in the Solace arc needs APIM's certificate, and an
      * environment pointing at an absent host is a needless race.
      *
-     * <p>The broker and shim are a shared singleton, so SEVERAL blocks may set this — but they SERIALIZE on
-     * {@link #SOLACE_JWKS_ALIAS_PERMIT}, because each such block's APIM must bind the {@code apimforsolace} alias
-     * and the shared broker resolves a single {@code endpointJwks} through it. Holder blocks queue for that permit
-     * before booting and release it after their container stops, exactly as the {@code wso2am} holders do
-     * ({@link #PARAM_RECEIVE_EXTERNAL_IS_NOTIFICATIONS}); every other block stays concurrent. So a second Solace
-     * block is supported but costs wall-clock, and each one boots a full event broker — worth weighing before
-     * adding one.
+     * <p>The broker and shim are PER-BLOCK, booted on this block's private network and stopped at its teardown.
+     * They cannot be a shared singleton multi-homed across block networks the way the node backend is: the shim
+     * RESOLVES {@code apimforsolace} to fetch APIM's JWKS, and a container attached to two block networks would
+     * resolve that name on both, leaving which APIM answers arbitrary. Per-block networks scope the alias, so any
+     * number of blocks may set this and run concurrently. Each boots a full event broker (~1-2 min), so the cost
+     * is per opting-in block.
      *
      * <p>Infrastructure ONLY (CLAUDE.md 14). Registering the Solace environment is toml; importing, deploying,
-     * subscribing and key generation are feature steps run as an {@code Identity} actor. Do not add product
-     * calls here — that is what got {@code KeyManagerRegistration} removed.
+     * subscribing and key generation are feature steps run as an {@code Identity} actor. Product calls do not
+     * belong here.
      */
     static final String PARAM_INIT_SOLACE_BROKER = "initSolaceBroker";
     /**
-     * When {@code true}, onStart ensures the shared {@link SquidProxyServer} (network alias {@code squid-proxy})
-     * is running before APIM boots and publishes it into the block's shared scope under {@value #SQUID_PROXY_KEY}.
-     * Use for proxy-profile tests that need a real HTTP CONNECT proxy reachable from the gateway container.
-     * The TOML overlay for such blocks sets {@code proxy_host = "squid-proxy"}.
+     * When {@code true}, boot a per-block Squid proxy on this block's private network. The proxy access logs are
+     * assertion state (CONNECT counts and clearing), so they must be container-scoped and cannot be shared across
+     * concurrently running blocks.
      */
     static final String PARAM_INIT_PROXY = "initProxy";
     static final String SQUID_PROXY_KEY = "blockSquidProxy";
@@ -201,8 +268,8 @@ public class BlockLifecycleListener implements ITestListener {
      * When {@code true}, provisions the external-Identity-Server INFRASTRUCTURE for this block: APIM's
      * client-truststore is augmented with the IS TLS cert BEFORE APIM boots (via
      * {@link DynamicApimContainer#withExternalKmTrust}), so APIM trusts {@code https://wso2is:9443}; and after
-     * APIM is ready and tenants/users are provisioned, the {@code IdentityServerContainer} is started, its OIDC
-     * discovery is awaited, and the host-mapped IS base URL is published to the block's shared scope under
+     * APIM is ready and tenants/users are provisioned, this block's own {@link DynamicISContainer} is started on
+     * the block's private network, its OIDC discovery is awaited, and its host-mapped base URL is published under
      * {@link #IS_BASE_URL_KEY}. This is deliberately infrastructure ONLY — registering IS as a key manager is
      * ADMIN PRODUCT BEHAVIOUR and is done by the features themselves ({@code I create a key manager from
      * payload …}, typically in a {@code _setup_*} fixture or inline where registration is the subject). The IS
@@ -215,70 +282,84 @@ public class BlockLifecycleListener implements ITestListener {
      * {@code https://wso2am:9443/internal/data/v1/notify}). The alias is fixed — baked into the IS toml and the
      * wso2am.p12 cert — so at most one LIVE container may hold it (duplicate holders make Docker DNS route
      * notifications to an arbitrary APIM). The listener enforces this with a JVM-wide permit
-     * ({@link #IS_NOTIFY_ALIAS_PERMIT}): holder blocks queue for the permit before booting and release it after
-     * their container stops, serializing ONLY among themselves — alias-free external-KM blocks (which make
-     * APIM→IS calls only) keep running fully concurrently under {@code parallel="tests"}. Set this on every
-     * block whose tests assert on a delivered notification (e.g. the self-validate revoke→401 walk); leave it
-     * off everywhere else. See {@link DynamicApimContainer#withExternalIsNotificationAlias}.
+     * on the block's OWN private network, so the alias is network-scoped: any number of receiver blocks may hold
+     * it concurrently with no collision and no cross-block serialization. Set this on every block whose tests
+     * assert on a delivered notification (e.g. the self-validate revoke→401 walk); leave it off everywhere else.
+     * See {@link DynamicApimContainer#withExternalIsNotificationAlias}.
      */
     static final String PARAM_RECEIVE_EXTERNAL_IS_NOTIFICATIONS = "receiveExternalIsNotifications";
     /**
-     * JVM-wide permit backing {@link #PARAM_RECEIVE_EXTERNAL_IS_NOTIFICATIONS}: at most one live container may
-     * hold the {@code wso2am} alias, so holder blocks serialize on this while all other blocks run free. A
-     * {@link Semaphore} (not a lock) because acquire happens on the block's onStart thread and release on its
-     * onFinish thread. Release is guarded by {@link #ALIAS_PERMIT_HELD_ATTRIBUTE} so the boot-failure path and
-     * onFinish can't double-release.
-     */
-    private static final Semaphore IS_NOTIFY_ALIAS_PERMIT = new Semaphore(1);
-    /** Test-context attribute marking that this block holds {@link #IS_NOTIFY_ALIAS_PERMIT} (single-release guard). */
-    private static final String ALIAS_PERMIT_HELD_ATTRIBUTE = "isNotifyAliasPermitHeld";
-
-    /**
-     * JVM-wide permit for the {@code apimforsolace} alias, the Solace counterpart of
-     * {@link #IS_NOTIFY_ALIAS_PERMIT} — same reason for existing, different reason for mattering.
-     *
-     * <p>{@link DynamicSolaceBroker} is a shared singleton (like {@code NodeAppServer}), so several blocks MAY opt
-     * in via {@code initSolaceBroker}. But the alias it depends on is not on the shared container: unlike
-     * {@code nodebackend}, which the one node container owns, {@code apimforsolace} is bound by EACH block's own
-     * APIM ({@link DynamicApimContainer#withSolaceJwksAlias}), so N such blocks would put N containers behind one
-     * name and Docker would round-robin between them.
-     *
-     * <p>What makes that unsafe is on the broker side: its OAuth profile carries a SINGLE {@code endpointJwks},
-     * configured once per JVM, so exactly one APIM can be its key provider. Two holders happen to work today only
-     * because every APIM container is a clone of one image and serves an identical JWKS (verified: wso2carbon.jks
-     * is baked at image build, not generated per boot) — an image-level fact that nothing here enforces. A
-     * per-tenant signing keystore or a second APIM image would make it fail as intermittent 403s whose reason
-     * lives only in the broker's event.log. This permit makes "one live APIM answers the broker's endpointJwks"
-     * true by construction instead.
-     *
-     * <p>Queues rather than failing, so the several-blocks contract the singleton inherits is preserved: a second
-     * Solace block runs, just not concurrently. Serializing two full event brokers is desirable regardless.
-     */
-    private static final Semaphore SOLACE_JWKS_ALIAS_PERMIT = new Semaphore(1);
-    /** Test-context attribute marking that this block holds {@link #SOLACE_JWKS_ALIAS_PERMIT}. */
-    private static final String SOLACE_ALIAS_PERMIT_HELD_ATTRIBUTE = "solaceJwksAliasPermitHeld";
-    /**
-     * JVM-wide permit serializing blocks that use {@link SquidProxyServer}. All proxy blocks share one
-     * Squid container and its two access-log files. Concurrent blocks can truncate logs mid-assertion or
-     * count another block's CONNECT requests, producing spurious failures. Serializing with this permit
-     * ensures at most one proxy block runs at a time; non-proxy blocks run fully concurrently.
-     * Acquire/release mirrors {@link #IS_NOTIFY_ALIAS_PERMIT} exactly — held marker prevents double-release
-     * from both the boot-failure catch and {@code onFinish}.
-     */
-    private static final Semaphore PROXY_PERMIT = new Semaphore(1);
-    /** Test-context attribute marking that this block holds {@link #PROXY_PERMIT} (single-release guard). */
-    private static final String PROXY_PERMIT_HELD_ATTRIBUTE = "proxyPermitHeld";
-    /**
      * Optional block param: module-relative path of an IS deployment.toml EXTRA overlay, appended AFTER the
      * built-in external-key-manager overlay (additive, mirroring the APIM {@code tomlExtraOverlayPath}
-     * semantics) so a block can boot IS with block-specific config (e.g. the tenant-sync listener). Distinct
-     * extra overlays map to distinct IS containers ({@link IdentityServerContainer#getInstance(String, String)});
-     * note distinct overlays cannot run in parallel within one JVM (see that method) - they belong in separate
-     * suites.
+     * semantics) so a block can boot IS with block-specific config (e.g. the tenant-sync listener). Each block
+     * gets its OWN {@link DynamicISContainer} on its own private network, so distinct overlays now coexist
+     * across concurrent blocks — the old shared-singleton fail-fast is gone.
      */
     static final String PARAM_IS_TOML_EXTRA_OVERLAY = "isTomlExtraOverlayPath";
+    /**
+     * Optional hard CPU cap for the block's external IS container, in CPUs (Docker {@code --cpus}; fractions
+     * allowed). Absent or blank leaves IS uncapped. Valid only with {@link #PARAM_BOOT_EXTERNAL_IS}; a malformed,
+     * non-positive or IS-less value fails the block's boot.
+     */
+    static final String PARAM_IS_CPU_LIMIT = "isCpuLimit";
+    /**
+     * Optional hostname the block's external IS advertises (its {@code [server] hostname}): the host of every URL
+     * and cookie a browser receives from IS. Absent leaves the {@code wso2is} network alias, so a browser keeps IS
+     * cookies apart from APIM's {@code localhost}; {@code localhost} (with {@link #PARAM_IS_PORT_OFFSET}) makes
+     * both servers share one cookie host, as a single-machine deployment does. IS stays reachable
+     * server-to-server as {@code wso2is}. Valid only with {@link #PARAM_BOOT_EXTERNAL_IS}.
+     */
+    static final String PARAM_IS_HOSTNAME = "isHostname";
+    /**
+     * Optional {@code [server] offset} for the block's external IS, so it listens on {@code 9443 + offset}. Needed
+     * whenever {@link #PARAM_IS_HOSTNAME} names APIM's own host, where the two servers can only differ by port.
+     * Valid only with {@link #PARAM_BOOT_EXTERNAL_IS}.
+     */
+    static final String PARAM_IS_PORT_OFFSET = "isPortOffset";
     /** Shared-scope key holding the host-mapped external IS base URL (for scenarios requesting a token from IS). */
     static final String IS_BASE_URL_KEY = "isBaseUrl";
+
+    /**
+     * Shared-scope key holding this block's private docker {@link Network}.
+     *
+     * <p>This is what makes every fixed network alias in the lane safe. {@code wso2am} (IS's reverse notification
+     * channel), {@code wso2is}, {@code apimforsolace} and {@code solaceshim} are all FIXED names — baked into
+     * tomls, certs and container env — so on one shared network at most one live container could own each, and
+     * the listener had to serialize the holder blocks on JVM-wide permits. Giving each block its own network makes
+     * the names network-scoped, so N blocks can each have their own {@code wso2am}/{@code wso2is}/broker
+     * concurrently and the permits are gone.
+     *
+     * <p>Closed at block teardown ({@link #teardownBlockInfra}); the entry is cleared once closed so the
+     * boot-failure path and {@link #onFinish} cannot double-close it.
+     */
+    static final String BLOCK_NETWORK_KEY = "blockNetwork";
+    /** Shared-scope key holding this block's {@link DynamicISContainer} (stopped at block teardown), when booted. */
+    static final String IS_CONTAINER_KEY = "blockIsContainer";
+    /** Shared-scope key holding this block's {@link DynamicSolaceBroker} (stopped at block teardown), when booted. */
+    static final String SOLACE_KEY = "blockSolaceBroker";
+    /**
+     * Shared-scope flag: the shared backend singleton was multi-homed onto this block's network and must be
+     * detached at teardown BEFORE the network is closed — Docker refuses to remove a network that still has a
+     * container connected, so skipping the detach leaks the network.
+     */
+    static final String BACKEND_ATTACHED_KEY = "backendAttachedToBlockNetwork";
+
+    /**
+     * Boots this block's {@link DynamicPlatformGatewayContainer} (the two-service gateway compose) STANDALONE
+     * after APIM is ready, with its host-mapped data-plane URL and the gateway→control-plane host published to
+     * shared scope. Infrastructure ONLY — registering the gateway ({@code POST /api/am/admin/v4/gateways}) and
+     * connecting it are ADMIN PRODUCT BEHAVIOUR done by the feature journey (§14), which resolves the container
+     * from {@link #PLATFORM_GATEWAY_KEY} and calls {@link DynamicPlatformGatewayContainer#connect} with the token.
+     */
+    static final String PARAM_BOOT_PLATFORM_GATEWAY = "bootPlatformGateway";
+    /** Shared-scope key holding this block's {@link DynamicPlatformGatewayContainer} (stopped at teardown). */
+    static final String PLATFORM_GATEWAY_KEY = "blockPlatformGateway";
+    /** Shared-scope key: host-mapped platform-gateway data-plane HTTPS base URL (APIs are invoked here). */
+    static final String PLATFORM_GATEWAY_DATA_PLANE_URL_KEY = "platformGatewayDataPlaneUrl";
+    /** Shared-scope key: the {@code host:port} the gateway dials for this block's APIM control plane. */
+    static final String PLATFORM_GATEWAY_CONTROLPLANE_HOST_KEY = "platformGatewayControlPlaneHost";
+    /** Shared-scope key: token URL reachable by a Gateway-hosted backend endpoint-security flow. */
+    static final String BACKEND_OAUTH_TOKEN_URL_KEY = "backendOAuthTokenUrl";
 
     @Override
     public void onStart(ITestContext context) {
@@ -294,58 +375,70 @@ public class BlockLifecycleListener implements ITestListener {
         String sharedScopeId = TestContext.sharedScopeId(context);
         TestContext.setScope(sharedScopeId, sharedScopeId);
 
-        // Held outside the try so the catch can stop a container that started but then failed before it was
+        // Held outside the try so the catch can release infrastructure that started but then failed before it was
         // handed off to TestContext (below). Without this a boot failure on the start()/URL/readiness path
         // leaks a live Docker container for the JVM lifetime (only reaped later by Ryuk).
-        DynamicApimContainer container = null;
+        ApimRuntime container = null;
         try {
-            // Start the shared backend first (idempotent singleton on the shared network) when the block opts
-            // in, so APIs deployed by gateway-invocation tests have a reachable "nodebackend" upstream.
+            ClockStabilityListener.assertHealthy(context.getSuite());
+            acquireLifecycleLock(context, label);
+            // Every block runs on its OWN private docker network, which is what makes the lane's fixed aliases
+            // (wso2am / wso2is / apimforsolace / solaceshim / nodebackend) network-scoped instead of JVM-unique.
+            // Created first and published immediately so BOTH the boot-failure catch and onFinish can tear it
+            // down (detaching the shared backend before closing it).
+            Network blockNetwork = Network.newNetwork();
+            TestContext.setShared(BLOCK_NETWORK_KEY, blockNetwork);
+
+            // Multi-home the shared (stateless) backend onto THIS block's network when the block opts in, so its
+            // APIM resolves "nodebackend". The flag is set only AFTER a successful attach, so teardown never
+            // tries to detach something that was never attached.
             if (Boolean.parseBoolean(param(context, PARAM_INIT_BACKEND))) {
-                NodeAppServer.getInstance();
-                logger.info("Block '" + label + "' ensured NodeAppServer backend is running");
-            }
-            if (Boolean.parseBoolean(param(context, PARAM_INIT_PROXY))) {
-                try {
-                    PROXY_PERMIT.acquire();
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                    throw new RuntimeException("Interrupted waiting for proxy permit in block '" + label + "'", e);
-                }
-                context.setAttribute(PROXY_PERMIT_HELD_ATTRIBUTE, Boolean.TRUE);
-                SquidProxyServer proxy = SquidProxyServer.getInstance();
-                TestContext.setShared(SQUID_PROXY_KEY, proxy);
-                logger.info("Block '" + label + "' acquired proxy permit and ensured SquidProxyServer is running");
+                nodeAppServer().attachToNetwork(blockNetwork);
+                TestContext.setShared(BACKEND_ATTACHED_KEY, Boolean.TRUE);
+                logger.info("Block '" + label + "' attached the shared NodeAppServer backend to its network");
             }
 
-            // Solace: faked connector + real broker, up BEFORE APIM so the toml-declared solaceEnv
-            // (service_url = http://solaceshim:8081, by network alias) resolves the moment APIM needs it.
+            if (Boolean.parseBoolean(param(context, PARAM_INIT_PROXY))) {
+                // Publish before start() so a partial startup is still visible to failure-safe teardown.
+                SquidProxyServer proxy = createSquidProxyServer(label, blockNetwork);
+                TestContext.setShared(SQUID_PROXY_KEY, proxy);
+                proxy.start();
+                logger.info("Block '" + label + "' booted its per-block Squid proxy");
+            }
+
+            // Solace: faked connector + real broker on THIS block's network, up BEFORE APIM so the toml-declared
+            // solaceEnv (service_url = http://solaceshim:8081, by network alias) resolves the moment APIM needs
+            // it. Published before start() so a start failure is still torn down by the catch below.
             if (Boolean.parseBoolean(param(context, PARAM_INIT_SOLACE_BROKER))) {
-                DynamicSolaceBroker solace = DynamicSolaceBroker.getInstance();
-                logger.info("Block '" + label + "' ensured Solace is running; connector="
+                DynamicSolaceBroker solace = new DynamicSolaceBroker(label, blockNetwork);
+                TestContext.setShared(SOLACE_KEY, solace);
+                solace.start();
+                logger.info("Block '" + label + "' booted its Solace pair; connector="
                         + solace.getConnectorBaseUrl() + " SEMP=" + solace.getSempUrl());
             }
 
             // IS infrastructure only. Registering IS as a key manager is admin product behaviour and lives in
             // the features (see PARAM_BOOT_EXTERNAL_IS javadoc).
             boolean bootExternalIs = Boolean.parseBoolean(param(context, PARAM_BOOT_EXTERNAL_IS));
+            Optional<CpuLimit> apimCpuLimit = cpuLimit(context, label, PARAM_APIM_CPU_LIMIT);
+            Optional<CpuLimit> isCpuLimit = cpuLimit(context, label, PARAM_IS_CPU_LIMIT);
+            if (isCpuLimit.isPresent() && !bootExternalIs) {
+                throw new IllegalArgumentException("Block '" + label + "' sets " + PARAM_IS_CPU_LIMIT
+                        + " but does not set " + PARAM_BOOT_EXTERNAL_IS + "=true");
+            }
+            String isHostname = param(context, PARAM_IS_HOSTNAME);
+            String isPortOffset = param(context, PARAM_IS_PORT_OFFSET);
+            if (!bootExternalIs && (isHostname != null || isPortOffset != null)) {
+                throw new IllegalArgumentException("Block '" + label + "' sets " + PARAM_IS_HOSTNAME + "/"
+                        + PARAM_IS_PORT_OFFSET + " but does not set " + PARAM_BOOT_EXTERNAL_IS + "=true");
+            }
 
-            container = new DynamicApimContainer(label, resolveTomlContent(context));
-            container.withLabel("block", label);
-            // Boot-time server files (see PARAM_SERVER_FILES_TO_COPY): copied before start so boot-only
-            // deployers (e.g. the user-store config deployer) pick them up.
-            String filesToCopy = param(context, PARAM_SERVER_FILES_TO_COPY);
-            if (filesToCopy != null && !filesToCopy.isBlank()) {
-                for (String pair : filesToCopy.split(",")) {
-                    String[] parts = pair.trim().split("::", 2);
-                    if (parts.length != 2 || parts[0].isBlank() || parts[1].isBlank()) {
-                        throw new IllegalArgumentException("Malformed " + PARAM_SERVER_FILES_TO_COPY
-                                + " entry '" + pair + "' — expected <hostPath>::<serverRelativePath>");
-                    }
-                    container.withServerFile(parts[0].trim(), parts[1].trim());
-                    logger.info("Block '" + label + "' will copy server file " + parts[0].trim()
-                            + " -> <server-home>/" + parts[1].trim());
-                }
+            provisionHostedDatabaseIfSelected(label, context);
+            container = createApimContainer(label, context, blockNetwork);
+            configureServerFiles(context, container);
+            if (apimCpuLimit.isPresent()) {
+                container.withCpuLimit(apimCpuLimit.get());
+                logger.info("Block '" + label + "' caps its APIM container at " + apimCpuLimit.get());
             }
             // Opt-in integration coverage: attach the JaCoCo agent before boot (see CoverageSupport).
             if (CoverageSupport.enabled()) {
@@ -357,40 +450,39 @@ public class BlockLifecycleListener implements ITestListener {
             if (bootExternalIs) {
                 container.withExternalKmTrust();
             }
-            // Reverse-channel receiver (opt-in): queue for the JVM-wide alias permit, then bind the fixed
-            // wso2am alias so IS's notification POSTs reach THIS container. Holder blocks serialize among
-            // themselves here; alias-free external-KM blocks never touch the permit and stay concurrent.
+            // Reverse-channel receiver (opt-in): bind the wso2am alias so IS's notification POSTs reach THIS
+            // container. Scoped to the block's private network, so any number of receiver blocks run
+            // concurrently — no JVM-wide permit, no serialization.
             if (Boolean.parseBoolean(param(context, PARAM_RECEIVE_EXTERNAL_IS_NOTIFICATIONS))) {
-                logger.info("Block '" + label + "' waiting for the wso2am notification-alias permit"
-                        + (IS_NOTIFY_ALIAS_PERMIT.availablePermits() == 0 ? " (held by another block)" : ""));
-                IS_NOTIFY_ALIAS_PERMIT.acquireUninterruptibly();
-                context.setAttribute(ALIAS_PERMIT_HELD_ATTRIBUTE, Boolean.TRUE);
                 container.withExternalIsNotificationAlias();
             }
             // Solace: the BROKER validates APIM-issued tokens by fetching APIM's JWKS itself, so APIM needs an
             // alias the broker can resolve. APIM has none by default; without this every publish is rejected
-            // 403 with the reason only inside the broker's event.log. Queue for the permit first: the broker's
-            // profile has ONE endpointJwks, so only one live APIM may answer that name (see
-            // SOLACE_JWKS_ALIAS_PERMIT).
+            // 403 with the reason only inside the broker's event.log. Also network-scoped now: this block's
+            // broker is on this block's network, so exactly one APIM answers that name by construction.
             if (Boolean.parseBoolean(param(context, PARAM_INIT_SOLACE_BROKER))) {
-                logger.info("Block '" + label + "' waiting for the apimforsolace JWKS-alias permit"
-                        + (SOLACE_JWKS_ALIAS_PERMIT.availablePermits() == 0 ? " (held by another block)" : ""));
-                SOLACE_JWKS_ALIAS_PERMIT.acquireUninterruptibly();
-                context.setAttribute(SOLACE_ALIAS_PERMIT_HELD_ATTRIBUTE, Boolean.TRUE);
                 container.withSolaceJwksAlias();
             }
             container.start();
 
             String baseUrl = container.getServletHttpsUrl();
             String gatewayUrl = container.getGatewayHttpsUrl();
-            if (!ServerReadiness.awaitReady(baseUrl)) {
+            String gatewayHttpUrl = container.getGatewayHttpUrl();
+            String gatewayManagementUrl = container.getGatewayManagementHttpsUrl();
+            if (!awaitApimReady(container)) {
                 throw new IllegalStateException("APIM block '" + label + "' did not become ready within "
                         + (Constants.SERVER_STARTUP_WAIT_TIME / 1000) + "s");
             }
 
             TestContext.setShared(CONTAINER_KEY, container);
+            TestContext.setShared(CoverageSupport.BLOCK_LABEL_KEY, label);
             TestContext.setShared(BASE_URL_KEY, baseUrl);
+            TestContext.setShared(BACKEND_OAUTH_TOKEN_URL_KEY, container.getBackendOAuthTokenUrl());
             TestContext.setShared(BASE_GATEWAY_URL_KEY, gatewayUrl);
+            TestContext.setShared(BASE_GATEWAY_HTTP_URL_KEY, gatewayHttpUrl);
+            TestContext.setShared(BASE_GATEWAY_MANAGEMENT_URL_KEY, gatewayManagementUrl);
+            TestContext.setShared(BASE_TRAFFIC_MANAGER_MANAGEMENT_URL_KEY,
+                    container.getTrafficManagerManagementHttpsUrl());
             TestContext.setShared(BASE_GATEWAY_WS_URL_KEY, container.getGatewayWsUrl());
             TestContext.setShared(BASE_GATEWAY_WSS_URL_KEY, container.getGatewayWssUrl());
             TestContext.setShared(BASE_WEBSUB_EVENT_RECEIVER_URL_KEY, container.getWebSubEventReceiverUrl());
@@ -398,10 +490,28 @@ public class BlockLifecycleListener implements ITestListener {
             logger.info("Block '" + label + "' booted and ready: baseUrl=" + baseUrl
                     + " baseGatewayUrl=" + gatewayUrl);
 
+            // Adds the built-in super-tenant admin to the actor registry.
+            TenantUserProvisioner.addSuperTenant();
+
             if (Boolean.parseBoolean(param(context, PARAM_INIT_TENANT_USERS))) {
                 provisionTenantUsers(label,
                         Boolean.parseBoolean(param(context, PARAM_INJECT_PROVISIONING_FAILURE)),
                         Boolean.parseBoolean(param(context, PARAM_EMAIL_USER_MODE)));
+            }
+            if (Boolean.parseBoolean(param(context, PARAM_INIT_CROSS_TENANT_PEER))) {
+                provisionCrossTenantPeer();
+            }
+            List<String> gatewayTenants = new java.util.ArrayList<>();
+            if (Boolean.parseBoolean(param(context, PARAM_INIT_TENANT_USERS))) {
+                gatewayTenants.add("tenant1.com");
+            }
+            if (Boolean.parseBoolean(param(context, PARAM_INIT_CROSS_TENANT_PEER))) {
+                gatewayTenants.add("crossconsumer.com");
+            }
+            if (!gatewayTenants.isEmpty()) {
+                TestContext.setShared(GATEWAY_TENANTS_KEY, List.copyOf(gatewayTenants));
+                TestContext.setShared(BLOCK_LABEL_KEY, label);
+                GatewayTenantLoadGate.await(container, label, gatewayTenants);
             }
             // Runtime secondary user store (replaces the seeded .mv.db fixture). After tenant provisioning so the
             // tenant admin SOAP credentials exist. Registered + seeded for BOTH tenants — one shared H2 DB,
@@ -410,11 +520,43 @@ public class BlockLifecycleListener implements ITestListener {
                 SecondaryUserStoreProvisioner.provision(container, Constants.SUPER_TENANT_DOMAIN, "tenant1.com");
             }
 
-            // External IS: start IS on the shared network and publish its host-mapped base URL. Done AFTER
-            // provisioning so a super-admin token exists for any subsequent admin REST call. APIM's truststore
-            // was already augmented above (before boot), so federated OIDC / JWKS / introspection calls trust IS.
+            String throttleReadinessSeconds = param(context, PARAM_THROTTLE_DATA_READINESS_SECONDS);
+            if (Boolean.parseBoolean(param(context, PARAM_BOOTSTRAP_THROTTLE_DATA))) {
+                bootstrapThrottleDataInfrastructure(container, label,
+                        Boolean.parseBoolean(param(context, PARAM_INIT_TENANT_USERS)));
+            }
+            if (throttleReadinessSeconds != null && !throttleReadinessSeconds.isBlank()) {
+                int timeoutSeconds = Integer.parseInt(throttleReadinessSeconds);
+                ThrottleDataReadiness.Result readiness = ThrottleDataReadiness.await(container, timeoutSeconds);
+                if (!readiness.ready()) {
+                    throw new IllegalStateException("Throttle-data infrastructure for block '" + label
+                            + "' did not become ready within " + timeoutSeconds + "s: " + readiness.diagnostics());
+                }
+                TestContext.setShared(THROTTLE_DATA_READINESS_SECONDS_KEY, timeoutSeconds);
+            }
+
+            String listenerSslReloadSeconds = param(context, PARAM_LISTENER_SSL_RELOAD_READINESS_SECONDS);
+            if (listenerSslReloadSeconds != null && !listenerSslReloadSeconds.isBlank()) {
+                ensureListenerSslReload(container, label, Integer.parseInt(listenerSslReloadSeconds));
+            }
+
+            // External IS: start THIS block's own IS on the block's private network and publish its host-mapped
+            // base URL. Done AFTER provisioning so a super-admin token exists for any subsequent admin REST call.
+            // APIM's truststore was already augmented above (before boot), so federated OIDC / JWKS /
+            // introspection calls trust IS.
             if (bootExternalIs) {
-                bootExternalIdentityServer(label, param(context, PARAM_IS_TOML_EXTRA_OVERLAY));
+                bootExternalIdentityServer(label, param(context, PARAM_IS_TOML_EXTRA_OVERLAY), isCpuLimit,
+                        isHostname == null || isHostname.isBlank() ? DynamicISContainer.NETWORK_ALIAS
+                                : isHostname.trim(),
+                        isPortOffset == null || isPortOffset.isBlank() ? 0 : Integer.parseInt(isPortOffset.trim()),
+                        (Network) TestContext.get(BLOCK_NETWORK_KEY));
+            }
+
+            // API Platform Gateway: started AFTER APIM is ready, because the control-plane host it must dial is
+            // derived from APIM's host-mapped management port. Its compose gets its own testcontainers-namespaced
+            // network, so it needs no place on this block's network.
+            if (Boolean.parseBoolean(param(context, PARAM_BOOT_PLATFORM_GATEWAY))) {
+                bootPlatformGateway(label, baseUrl);
             }
         } catch (Throwable t) {
             context.setAttribute(BOOT_ERROR_ATTRIBUTE, t);
@@ -431,10 +573,12 @@ public class BlockLifecycleListener implements ITestListener {
                     logger.warn("Block '" + label + "' failed-container stop() also failed", stopErr);
                 }
             }
-            // A boot failure after the alias permit was acquired must free it here — onFinish also releases,
-            // but only-if-held, so the two paths can't double-release (see releaseAliasPermitIfHeld).
-            releaseAliasPermitIfHeld(context);
-            releaseProxyPermitIfHeld(context);
+            // A boot failure must leave no live IS/Solace container and no dangling private network. Shared with
+            // onFinish, and idempotent: teardownBlockInfra clears each scope entry as it releases it, so whichever
+            // path runs second finds nothing left to do rather than double-closing (a double close would log a
+            // spurious docker "network not found" and mask a genuine leak).
+            teardownBlockInfra(label);
+            releaseLifecycleLock(label);
         } finally {
             // Defensive hygiene: never leave this block's scope bound to the (pooled) thread that ran
             // onStart. Per-invocation scoping in BlockScopeListener already resets scope before any body
@@ -442,6 +586,72 @@ public class BlockLifecycleListener implements ITestListener {
             // clearing the ThreadLocal here is safe and mirrors onFinish.
             TestContext.clearScope();
         }
+    }
+
+    /**
+     * All-in-one bootstrap: its registry SOAP service is available only after the server has started.
+     * DistributedLifecycleListener overrides this hook and establishes the shared broker hierarchy between
+     * CP and TM startup. The all-in-one recovery (a graceful restart) runs only when the
+     * current start's throttle-data pipeline is not ready, which is what a rejected startup binding produces: its
+     * {@code REG_PATH}/subscription failure is newer than any consumer marker. A repaired registry alone does not
+     * trigger it, because the hierarchy is created on every fresh database while the binding normally succeeds.
+     * Existing tests still assert the same enforcement responses; this only prepares the infrastructure they
+     * consume.
+     */
+    protected void bootstrapThrottleDataInfrastructure(ApimRuntime runtime, String label, boolean tenantUsersEnabled)
+            throws Exception {
+
+        boolean repaired = RegistryAdminService.ensureThrottleDataHierarchy(Utils.getBaseUrl(),
+                Identity.resolveActor("admin"),
+                RegistryBootstrapDiagnostics.forRuntime(runtime, label, "carbon.super"));
+        if (tenantUsersEnabled) {
+            repaired |= RegistryAdminService.ensureThrottleDataHierarchy(Utils.getBaseUrl(),
+                    Identity.resolveActor("admin@tenant1.com"),
+                    RegistryBootstrapDiagnostics.forRuntime(runtime, label, "tenant1.com"));
+        }
+
+        ThrottleDataReadiness.Result observed = ThrottleDataReadiness.await(runtime, THROTTLE_DATA_OBSERVE_SECONDS);
+        if (observed.ready()) {
+            logger.info("Throttle-data bootstrap for block '" + label + "': pipeline ready on the current start, no "
+                    + "component recovery needed (registry repaired=" + repaired + ")");
+            return;
+        }
+
+        logger.warn("Throttle-data bootstrap for block '" + label + "' requires component recovery: repaired="
+                + repaired + ", observed=" + observed.diagnostics());
+        GracefulServerRestart.gateway();
+
+        ThrottleDataReadiness.Result recovered = ThrottleDataReadiness.await(runtime, 180);
+        if (!recovered.ready()) {
+            throw new IllegalStateException("Throttle-data infrastructure for block '" + label
+                    + "' did not recover after registry bootstrap: " + recovered.diagnostics());
+        }
+    }
+
+    /**
+     * Fails or repairs a start whose HTTPS listener can no longer reload its SSL profile. The defect is decided once the
+     * listener has started and lasts until the server restarts, so a single graceful restart is the repair; a second
+     * broken start fails the block rather than letting its mutual-SSL scenarios time out one by one.
+     */
+    private void ensureListenerSslReload(ApimRuntime runtime, String label, int timeoutSeconds) throws Exception {
+
+        ListenerSslReloadReadiness.Result observed = ListenerSslReloadReadiness.await(runtime, timeoutSeconds);
+        if (observed.state() == ListenerSslReloadReadiness.State.READY) {
+            return;
+        }
+        if (observed.state() == ListenerSslReloadReadiness.State.PENDING) {
+            throw new IllegalStateException("Gateway HTTPS listener for block '" + label + "' did not start within "
+                    + timeoutSeconds + "s: " + observed.diagnostics());
+        }
+        logger.warn("Block '" + label + "': Gateway HTTPS listener SSL-profile reload is disabled on this start; "
+                + "restarting the Gateway once. " + observed.diagnostics());
+        GracefulServerRestart.gateway();
+        ListenerSslReloadReadiness.Result recovered = ListenerSslReloadReadiness.await(runtime, timeoutSeconds);
+        if (recovered.state() != ListenerSslReloadReadiness.State.READY) {
+            throw new IllegalStateException("Gateway HTTPS listener SSL-profile reload for block '" + label
+                    + "' is still not usable after a restart: " + recovered.diagnostics());
+        }
+        logger.info("Block '" + label + "': Gateway HTTPS listener SSL-profile reload usable after restart");
     }
 
     @Override
@@ -457,7 +667,7 @@ public class BlockLifecycleListener implements ITestListener {
         TestContext.setScope(sharedScopeId, sharedScopeId);
         try {
             Object stored = TestContext.get(CONTAINER_KEY);
-            if (stored instanceof DynamicApimContainer container) {
+            if (stored instanceof ApimRuntime container) {
                 // Dump JaCoCo counters over the mapped tcpserver port BEFORE stopping (all-in-one lane).
                 // Best-effort: a dump failure must never break teardown or fail the block.
                 if (CoverageSupport.enabled()) {
@@ -474,39 +684,189 @@ public class BlockLifecycleListener implements ITestListener {
                         + "' container stopped; dynamic host ports released by Docker");
             }
         } finally {
-            // AFTER the container is stopped (its wso2am alias is gone from the network only then), hand the
-            // notification-alias permit to the next queued holder block. No-op if this block never held it or
-            // the boot-failure path already released it.
-            releaseAliasPermitIfHeld(context);
-            releaseProxyPermitIfHeld(context);
+            // AFTER the APIM container is stopped — a container still connected keeps the network un-removable,
+            // so the order (APIM stop -> IS/Solace stop -> backend detach -> network close) is load-bearing.
+            teardownBlockInfra(label);
+            releaseLifecycleLock(label);
             TestContext.clear();
             TestContext.clearScope();
         }
     }
 
     /**
-     * Releases every alias permit this block holds, exactly once each: the held-marker attribute is flipped before
-     * releasing, so whichever of the two callers (boot-failure catch, onFinish) runs second finds it cleared and
-     * no-ops — a double release would let two holders of the same alias run live simultaneously.
+     * Acquires an optional named permit before a block creates Docker resources. The permit remains held until
+     * {@link #onFinish(ITestContext)} has completed teardown, so protected blocks cannot overlap container or
+     * network shutdown. Blocks without the parameter retain the normal parallel lane.
      */
-    private static void releaseAliasPermitIfHeld(ITestContext context) {
-        releaseIfHeld(context, ALIAS_PERMIT_HELD_ATTRIBUTE, IS_NOTIFY_ALIAS_PERMIT);
-        releaseIfHeld(context, SOLACE_ALIAS_PERMIT_HELD_ATTRIBUTE, SOLACE_JWKS_ALIAS_PERMIT);
+    private void acquireLifecycleLock(ITestContext context, String label) {
+        String lockName = param(context, PARAM_LIFECYCLE_LOCK);
+        if (lockName == null || lockName.isBlank()) {
+            return;
+        }
+        Semaphore lock = LIFECYCLE_LOCKS.computeIfAbsent(lockName, ignored -> new Semaphore(1, true));
+        try {
+            lock.acquire();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IllegalStateException("Interrupted while waiting for lifecycle lock '" + lockName
+                    + "' for block '" + label + "'", e);
+        }
+        TestContext.setShared(LIFECYCLE_LOCK_KEY, lock);
+        logger.info("Block '" + label + "' acquired lifecycle lock '" + lockName + "'");
     }
 
-    /** One permit's flip-then-release, so a block holding both cannot leak either on the boot-failure path. */
-    private static void releaseIfHeld(ITestContext context, String heldAttribute, Semaphore permit) {
-        if (Boolean.TRUE.equals(context.getAttribute(heldAttribute))) {
-            context.setAttribute(heldAttribute, Boolean.FALSE);
-            permit.release();
+    /** Releases a permit only after all resources owned by the block have been torn down. */
+    private void releaseLifecycleLock(String label) {
+        Object permit = TestContext.get(LIFECYCLE_LOCK_KEY);
+        if (permit instanceof Semaphore lock) {
+            TestContext.removeShared(LIFECYCLE_LOCK_KEY);
+            lock.release();
+            logger.info("Block '" + label + "' released its lifecycle lock");
         }
     }
 
-    private static void releaseProxyPermitIfHeld(ITestContext context) {
-        if (Boolean.TRUE.equals(context.getAttribute(PROXY_PERMIT_HELD_ATTRIBUTE))) {
-            context.setAttribute(PROXY_PERMIT_HELD_ATTRIBUTE, Boolean.FALSE);
-            PROXY_PERMIT.release();
+    /**
+     * Releases this block's private-network infrastructure: its IS and Solace containers, the shared backend's
+     * attachment to the network, and finally the network itself.
+     *
+     * <p>ORDER IS LOAD-BEARING. Docker refuses to remove a network that still has any container connected, so
+     * every member must be gone first: the APIM container is stopped by the caller, then IS and Solace here, then
+     * the multi-homed backend is detached (it is NOT stopped — it is shared with other blocks and lives for the
+     * JVM). Only then can the network be closed.
+     *
+     * <p>IDEMPOTENT. Each scope entry is removed as it is released, so the two callers (the onStart boot-failure
+     * catch and {@link #onFinish}) can both run without double-closing — a second close would log a misleading
+     * docker "network not found" and make a real leak harder to spot.
+     *
+     * <p>Each step is independently guarded so one failure never masks another or the block's real outcome, and a
+     * failure to close the network is logged at WARN with its id: that line is the leak signal to grep for.
+     */
+    @SuppressWarnings("checkstyle:IllegalCatch")
+    private void teardownBlockInfra(String label) {
+
+        // Platform gateway first: it lives on its own compose network, so it neither blocks this block's network
+        // close nor depends on anything below — releasing it early keeps its compose from outliving a failure.
+        Object platformGateway = TestContext.get(PLATFORM_GATEWAY_KEY);
+        if (platformGateway instanceof DynamicPlatformGatewayContainer gateway) {
+            TestContext.removeShared(PLATFORM_GATEWAY_KEY);
+            TestContext.removeShared(PLATFORM_GATEWAY_DATA_PLANE_URL_KEY);
+            TestContext.removeShared(PLATFORM_GATEWAY_CONTROLPLANE_HOST_KEY);
+            try {
+                gateway.stop();
+                logger.info("Block '" + label + "' platform gateway compose stopped");
+            } catch (Throwable e) {
+                logger.warn("Block '" + label + "' platform gateway stop() failed (continuing teardown): "
+                        + e.getMessage());
+            }
         }
+        Object is = TestContext.get(IS_CONTAINER_KEY);
+        if (is instanceof DynamicISContainer isContainer) {
+            TestContext.removeShared(IS_CONTAINER_KEY);
+            try {
+                isContainer.stop();
+                logger.info("Block '" + label + "' IS container stopped");
+            } catch (Throwable e) {
+                logger.warn("Block '" + label + "' IS stop() failed (continuing teardown): " + e.getMessage());
+            }
+        }
+        Object solace = TestContext.get(SOLACE_KEY);
+        if (solace instanceof DynamicSolaceBroker broker) {
+            TestContext.removeShared(SOLACE_KEY);
+            try {
+                broker.stop();
+                logger.info("Block '" + label + "' Solace broker + shim stopped");
+            } catch (Throwable e) {
+                logger.warn("Block '" + label + "' Solace stop() failed (continuing teardown): " + e.getMessage());
+            }
+        }
+        Object net = TestContext.get(BLOCK_NETWORK_KEY);
+        if (net instanceof Network network) {
+            Object proxy = TestContext.get(SQUID_PROXY_KEY);
+            if (proxy instanceof SquidProxyServer squid) {
+                TestContext.removeShared(SQUID_PROXY_KEY);
+                try {
+                    squid.stop();
+                    logger.info("Block '" + label + "' Squid proxy stopped");
+                } catch (Throwable e) {
+                    logger.warn("Block '" + label + "' Squid proxy stop failed (container may leak): "
+                            + e.getMessage());
+                }
+            }
+            TestContext.removeShared(BLOCK_NETWORK_KEY);
+            if (Boolean.TRUE.equals(TestContext.get(BACKEND_ATTACHED_KEY))) {
+                TestContext.removeShared(BACKEND_ATTACHED_KEY);
+                try {
+                    nodeAppServer().detachFromNetwork(network);
+                } catch (Throwable e) {
+                    logger.warn("Block '" + label + "' NodeAppServer detach failed (network may leak): "
+                            + e.getMessage());
+                }
+            }
+            try {
+                network.close();
+                logger.info("Block '" + label + "' private network closed");
+            } catch (Throwable e) {
+                logger.warn("Block '" + label + "' network close() FAILED — this network has LEAKED: "
+                        + e.getMessage());
+            }
+        }
+        Object hostedDatabase = TestContext.get(HOSTED_DATABASE_KEY);
+        if (hostedDatabase instanceof HostedDatabaseBlock database) {
+            TestContext.removeShared(HOSTED_DATABASE_KEY);
+            try {
+                database.close();
+                logger.info("Block '" + label + "' dropped its hosted APIM and Shared databases");
+            } catch (Exception e) {
+                logger.error("Block '" + label + "' could not drop its hosted databases; manual cleanup may be "
+                        + "required. Database names: APIM='" + database.apimDatabaseName() + "', Shared='"
+                        + database.sharedDatabaseName() + "'", e);
+            }
+        }
+    }
+
+    /**
+     * Starts this block's API Platform Gateway (the two-service gateway compose) STANDALONE — not yet connected
+     * to the control plane — and publishes its host-mapped data-plane URL plus the control-plane host the gateway
+     * should dial. Registration + connection are ADMIN PRODUCT BEHAVIOUR done by a feature step (§14), which
+     * resolves the container from {@link #PLATFORM_GATEWAY_KEY} and calls
+     * {@link DynamicPlatformGatewayContainer#connect} with the token minted by {@code POST /gateways}.
+     *
+     * <p>APIM runs on the block's private network, but the gateway's own compose network cannot resolve the
+     * {@code wso2am} alias, so it reaches APIM's control plane over a host-routable address instead
+     * ({@link #controlPlaneHostFor(String)}); {@code insecure_skip_verify=true} in the gateway config means no
+     * cert exchange is needed.
+     *
+     * <p>Published to shared scope BEFORE {@code start()} so a start failure is still reaped by
+     * {@link #teardownBlockInfra(String)} instead of leaking a live compose project.
+     *
+     * @param apimBaseUrl this block's APIM management HTTPS URL (host-mapped 9443)
+     */
+    private void bootPlatformGateway(String label, String apimBaseUrl) {
+        DynamicPlatformGatewayContainer gateway = new DynamicPlatformGatewayContainer(label);
+        TestContext.setShared(PLATFORM_GATEWAY_KEY, gateway);
+        gateway.start();
+        String controlPlaneHost = controlPlaneHostFor(apimBaseUrl);
+        TestContext.setShared(PLATFORM_GATEWAY_DATA_PLANE_URL_KEY, gateway.getDataPlaneHttpsUrl());
+        TestContext.setShared(PLATFORM_GATEWAY_CONTROLPLANE_HOST_KEY, controlPlaneHost);
+        logger.info("Block '" + label + "' booted platform gateway (standalone); dataPlane="
+                + gateway.getDataPlaneHttpsUrl() + " controlPlaneHost=" + controlPlaneHost);
+    }
+
+    /**
+     * The {@code host:port} the gateway's own compose network must dial to reach this block's APIM control plane.
+     *
+     * <p>Prefers the host APIM is published on (the base URL's host), which a container can reach whenever the
+     * docker host is addressed by IP rather than by a loopback name. Falls back to {@code host.docker.internal},
+     * granted to the gateway services by the compose's {@code extra_hosts}, when the base URL's host IS a loopback
+     * name — a container cannot reach a published port through one.
+     *
+     * <p>{@code host.docker.internal} is not correct unconditionally: on a VM-backed docker it resolves to the
+     * VM's host, which does not hold the ports published inside the VM.
+     */
+    private static String controlPlaneHostFor(String apimBaseUrl) {
+        URI uri = URI.create(Utils.containerReachable(apimBaseUrl));
+        String host = uri.getHost();
+        return host + ":" + uri.getPort();
     }
 
     /**
@@ -522,7 +882,7 @@ public class BlockLifecycleListener implements ITestListener {
      *                                  super-tenant admin) with an email-form physical username
      */
     private void provisionTenantUsers(String label, boolean injectProvisioningFailure, boolean emailUserMode)
-            throws java.io.IOException, JaxenException {
+            throws java.io.IOException, JaxenException, InterruptedException {
 
         // Published BEFORE the first addUser so the provisioner's physicalUserName transform is in force for the
         // boot-time set, and stays in shared scope so a scenario's own `I provision user …` gets the same form.
@@ -548,12 +908,16 @@ public class BlockLifecycleListener implements ITestListener {
             String allRoles = "Internal/creator, Internal/publisher, Internal/subscriber";
             String publisherRoles = "Internal/creator, Internal/publisher";
             String subscriberRoles = "Internal/subscriber";
-            TenantUserProvisioner.addSuperTenant();
             // Base names only — TenantUserProvisioner applies the email form when the mode is on (published
             // above). Only the USERNAME takes that form; the password stays the plain base name, so an
             // emailUserMode block differs from a default one in exactly one dimension.
             TenantUserProvisioner.addTenant("tenant1.com", "admin", "admin",
                     "First", "Tenant", "admin@tenant1.com");
+            // Tenant Management can acknowledge addTenant before APIM's standard internal roles are visible
+            // through the user store, especially on a fresh distributed MySQL database. Do not let the first
+            // addUser race that bootstrap and fail with "Internal role does not exist".
+            TenantUserProvisioner.awaitRequiredApimRoles(Constants.SUPER_TENANT_DOMAIN);
+            TenantUserProvisioner.awaitRequiredApimRoles("tenant1.com");
             // The configured super-tenant admin must remain the plain `admin` because SOAP provisioning depends
             // on it. Give both organizations a separate admin-role actor in email mode so the email-login admin
             // arc is still a genuine Tenant ×2 outline rather than a tenant-only special case.
@@ -585,24 +949,88 @@ public class BlockLifecycleListener implements ITestListener {
     }
 
     /**
-     * Starts (or reuses) the external WSO2 IS container for this block's IS toml overlay, waits for its OIDC
-     * discovery to serve 200, and publishes its host-mapped base URL under {@link #IS_BASE_URL_KEY}. Does NOT
-     * register a key manager. The IS singleton(s) are reaped by Ryuk at JVM exit (not per block), like
-     * {@code NodeAppServer} - stopping one per block would break sibling blocks sharing it.
+     * Adds a second non-super tenant and a subscriber actor for the focused cross-tenant subscription row.
+     * Kept behind a block parameter so unrelated runners retain the standard two-tenant fixture.
+     */
+    private void provisionCrossTenantPeer() throws java.io.IOException, JaxenException, InterruptedException {
+
+        String tenantDomain = "crossconsumer.com";
+        TenantUserProvisioner.addTenant(tenantDomain, "admin", "admin", "Cross", "Consumer",
+                "admin@" + tenantDomain);
+        TenantUserProvisioner.awaitRequiredApimRoles(tenantDomain);
+        TenantUserProvisioner.addUser(tenantDomain, "subscriberUser", "subscriberUser", "subscriberUser",
+                "Internal/subscriber");
+        logger.info("Provisioned cross-tenant peer tenant '" + tenantDomain + "' and subscriber actor");
+    }
+
+    /** Re-establishes tenant readiness after a Gateway JVM restart when this block provisions tenants. */
+    public static void awaitGatewayTenantsAfterRestart() {
+
+        Object runtime = TestContext.get(CONTAINER_KEY);
+        Object tenants = TestContext.get(GATEWAY_TENANTS_KEY);
+        if (runtime instanceof ApimRuntime apimRuntime && tenants instanceof List<?> tenantList
+                && !tenantList.isEmpty()) {
+            List<String> domains = tenantList.stream().map(String::valueOf).toList();
+            Object label = TestContext.get(BLOCK_LABEL_KEY);
+            GatewayTenantLoadGate.await(apimRuntime, label == null ? "unknown" : label.toString(), domains);
+        }
+    }
+
+    /** Re-establishes the block's configured distributed throttle-data readiness after a component restart. */
+    public static void awaitThrottleDataAfterRestart() throws InterruptedException {
+        Object runtime = TestContext.get(CONTAINER_KEY);
+        Object timeout = TestContext.get(THROTTLE_DATA_READINESS_SECONDS_KEY);
+        if (runtime instanceof DistributedDynamicApimContainer distributed && timeout instanceof Integer seconds) {
+            ThrottleDataReadiness.Result readiness = ThrottleDataReadiness.await(distributed, seconds);
+            if (readiness == null || !readiness.ready()) {
+                throw new IllegalStateException("Distributed throttle-data restart gate failed for block '"
+                        + TestContext.get(BLOCK_LABEL_KEY) + "' within " + seconds + "s: "
+                        + (readiness == null ? "no readiness sample" : readiness.diagnostics()));
+            }
+            logger.info("Distributed throttle-data restart gate passed for block '"
+                    + TestContext.get(BLOCK_LABEL_KEY) + "': " + readiness.diagnostics());
+        }
+    }
+
+    /**
+     * Starts THIS block's own external WSO2 IS container on the block's private network (alias {@code wso2is}),
+     * waits for its OIDC discovery to serve 200, and publishes its host-mapped base URL under
+     * {@link #IS_BASE_URL_KEY}. Does NOT register a key manager.
+     *
+     * <p>One IS per IS-booting block, stopped at that block's teardown ({@link #teardownBlockInfra}). The
+     * {@code wso2is} alias is network-scoped, so blocks with distinct overlays coexist and each owns its IS's
+     * lifetime. IS is per-block rather than multi-homed (as the node backend is) because it must RESOLVE
+     * {@code wso2am} for its reverse notification channel.
+     *
+     * <p>Published to scope by the CALLER before this returns is not possible (the container is created here), so
+     * the caller stores the returned instance immediately — a start failure is otherwise invisible to teardown.
      *
      * @param isTomlExtraOverlayPath module-relative path of an IS EXTRA overlay toml appended after the built-in
      *                               overlay, or {@code null}/blank for none
+     * @param cpuLimit               CPU cap for the IS container, or empty to leave it uncapped
+     * @param hostname               the hostname IS advertises (see {@link #PARAM_IS_HOSTNAME})
+     * @param portOffset             IS's port offset (see {@link #PARAM_IS_PORT_OFFSET})
+     * @param blockNetwork           the block's private network the IS joins under the {@code wso2is} alias
+     * @return the started IS container, for the caller to publish and later stop
      */
-    private void bootExternalIdentityServer(String label, String isTomlExtraOverlayPath) throws java.io.IOException {
+    private DynamicISContainer bootExternalIdentityServer(String label, String isTomlExtraOverlayPath,
+            Optional<CpuLimit> cpuLimit, String hostname, int portOffset, Network blockNetwork)
+            throws java.io.IOException {
 
-        IdentityServerContainer is;
+        String extraContent = null;
         if (isTomlExtraOverlayPath != null && !isTomlExtraOverlayPath.isBlank()) {
             String moduleDir = ModulePathResolver.getModuleDir(BlockLifecycleListener.class);
-            String extraContent = Files.readString(Paths.get(moduleDir, isTomlExtraOverlayPath).normalize());
-            is = IdentityServerContainer.getInstance(isTomlExtraOverlayPath, extraContent);
-        } else {
-            is = IdentityServerContainer.getInstance();
+            extraContent = Files.readString(Paths.get(moduleDir, isTomlExtraOverlayPath).normalize());
         }
+        DynamicISContainer is = createExternalIdentityServer(label, extraContent, hostname, portOffset);
+        is.withNetwork(blockNetwork).withNetworkAliases(DynamicISContainer.NETWORK_ALIAS);
+        if (cpuLimit.isPresent()) {
+            is.withCpuLimit(cpuLimit.get());
+            logger.info("Block '" + label + "' caps its external Identity Server container at " + cpuLimit.get());
+        }
+        // Published BEFORE start so a start/readiness failure is still reachable by the boot-failure teardown.
+        TestContext.setShared(IS_CONTAINER_KEY, is);
+        is.start();
         String isBaseUrl = is.getBaseHttpsUrl();
         if (!ServerReadiness.awaitIdentityServerReady(isBaseUrl)) {
             throw new IllegalStateException("External Identity Server for block '" + label
@@ -614,12 +1042,108 @@ public class BlockLifecycleListener implements ITestListener {
         // hand-building credentials, and ISResourceCleanup can sweep their resources as this principal.
         IntegrationActors.register(new IntegrationActors.IntegrationActor(IntegrationActors.IS,
                 Constants.SUPER_TENANT_ADMIN_USERNAME, Constants.SUPER_TENANT_ADMIN_PASSWORD, isBaseUrl));
-        logger.info("Block '" + label + "' booted external Identity Server (extra overlay='"
+        logger.info("Block '" + label + "' booted its external Identity Server (extra overlay='"
                 + (isTomlExtraOverlayPath == null || isTomlExtraOverlayPath.isBlank() ? "none"
-                        : isTomlExtraOverlayPath) + "'); isBaseUrl=" + isBaseUrl);
+                        : isTomlExtraOverlayPath) + "'); isBaseUrl=" + isBaseUrl + " advertised="
+                + is.getAdvertisedBaseUrl() + " internal=" + is.getInternalBaseUrl());
+        return is;
     }
 
-    private String resolveTomlContent(ITestContext context) throws java.io.IOException {
+    /**
+     * Factory hook for topology-specific external IS settings; all-in-one retains the container defaults. The
+     * hostname and port offset are the block's (see {@link #PARAM_IS_HOSTNAME}, {@link #PARAM_IS_PORT_OFFSET}).
+     */
+    protected DynamicISContainer createExternalIdentityServer(String label, String extraOverlayContent,
+            String hostname, int portOffset) {
+        return new DynamicISContainer(label, extraOverlayContent, hostname, portOffset);
+    }
+
+    /** Shared backend factory; all-in-one leaves its memory unlimited. */
+    protected NodeAppServer nodeAppServer() {
+        return NodeAppServer.getInstance();
+    }
+
+    /** Per-block proxy factory; all-in-one leaves its memory unlimited. */
+    protected SquidProxyServer createSquidProxyServer(String label, Network blockNetwork) {
+        return new SquidProxyServer(label, blockNetwork);
+    }
+
+    /** Factory hook used by the distributed listener; all remaining block lifecycle is shared. */
+    protected ApimRuntime createApimContainer(String label, ITestContext context, Network blockNetwork)
+            throws java.io.IOException {
+        Object hostedDatabase = TestContext.get(HOSTED_DATABASE_KEY);
+        DynamicApimContainer container = new DynamicApimContainer(label, resolveTomlContent(context),
+                hostedDatabase instanceof HostedDatabaseBlock database ? database.connectionSettings() : null);
+        java.util.List<String> templates = Utils.applyDefaultTemplates(container,
+                ModulePathResolver.getModuleDir(BlockLifecycleListener.class));
+        logger.info("Block '" + label + "' applies template overlays to " + templates);
+        container.withLabel("block", label);
+        container.withNetwork(blockNetwork);
+        return container;
+    }
+
+    /** Only this all-in-one listener consumes the opt-in profile; distributed runs explicitly decline it. */
+    protected boolean supportsHostedDatabaseProfile() {
+        return true;
+    }
+
+    private void provisionHostedDatabaseIfSelected(String label, ITestContext context) throws Exception {
+        if (!supportsHostedDatabaseProfile()) {
+            return;
+        }
+        String profile = System.getProperty(HostedDatabaseBlock.PROFILE_SYSTEM_PROPERTY);
+        boolean registryLogMillisecondPrecision =
+                Boolean.parseBoolean(param(context, PARAM_REGISTRY_LOG_MILLISECOND_PRECISION));
+        boolean hybridUserRoleKeyIncludesDomain =
+                Boolean.parseBoolean(param(context, PARAM_HYBRID_USER_ROLE_KEY_INCLUDES_DOMAIN));
+        if (profile == null || profile.isBlank()) {
+            RegistryLogTimestampPrecision.configure(registryLogMillisecondPrecision, "h2", label,
+                    "default shared database", null);
+            HybridUserRoleKeyIncludesDomain.configure(hybridUserRoleKeyIncludesDomain, "h2", label,
+                    "default shared database", null);
+            return;
+        }
+        String normalizedProfile = HostedDatabaseBlock.normalizeProfile(profile);
+        String moduleDir = ModulePathResolver.getModuleDir(BlockLifecycleListener.class);
+        String envFileArgument = System.getProperty(HostedDatabaseBlock.ENV_FILE_SYSTEM_PROPERTY);
+        Path envFile = envFileArgument == null || envFileArgument.isBlank()
+                ? Paths.get(moduleDir, "src/test/resources/artifacts/configFiles/basic/database.env")
+                : Paths.get(envFileArgument).toAbsolutePath().normalize();
+        String productZipArgument = System.getProperty("apim.product.zip.path");
+        if (productZipArgument == null || productZipArgument.isBlank()) {
+            throw new IllegalStateException("Hosted database profile requires -Dapim.product.zip.path pointing to the "
+                    + "APIM distribution ZIP used by this test run");
+        }
+        HostedDatabaseBlock database = HostedDatabaseBlock.provision(label, envFile, Path.of(productZipArgument),
+                registryLogMillisecondPrecision, hybridUserRoleKeyIncludesDomain);
+        TestContext.setShared(HOSTED_DATABASE_KEY, database);
+        logger.info("Block '" + label + "' provisioned hosted " + normalizedProfile + " databases APIM='"
+                + database.apimDatabaseName() + "' Shared='" + database.sharedDatabaseName() + "'");
+    }
+
+    protected boolean awaitApimReady(ApimRuntime container) {
+        return ServerReadiness.awaitReady(container.getServletHttpsUrl());
+    }
+
+    /** Hook for topology-specific boot-time file parameter parsing. */
+    protected void configureServerFiles(ITestContext context, ApimRuntime container) {
+        String filesToCopy = param(context, PARAM_SERVER_FILES_TO_COPY);
+        if (filesToCopy == null || filesToCopy.isBlank()) {
+            return;
+        }
+        for (String pair : filesToCopy.split(",")) {
+            String[] parts = pair.trim().split("::", 2);
+            if (parts.length != 2 || parts[0].isBlank() || parts[1].isBlank()) {
+                throw new IllegalArgumentException("Malformed " + PARAM_SERVER_FILES_TO_COPY
+                        + " entry '" + pair + "' — expected <hostPath>::<serverRelativePath>");
+            }
+            container.withServerFile(parts[0].trim(), parts[1].trim());
+            logger.info("Block '" + param(context, PARAM_BLOCK_LABEL) + "' will copy server file " + parts[0].trim()
+                    + " -> <server-home>/" + parts[1].trim());
+        }
+    }
+
+    protected String resolveTomlContent(ITestContext context) throws java.io.IOException {
         String overlayPath = param(context, PARAM_TOML_OVERLAY);
         if (overlayPath != null && !overlayPath.isBlank()) {
             // Explicit full-file replacement: the block supplies a complete deployment.toml verbatim.
@@ -633,16 +1157,35 @@ public class BlockLifecycleListener implements ITestListener {
 
         // A block may layer a small feature-specific overlay on top of basic (e.g. custom auth header /
         // application sharing) without restating the whole distribution config.
+        java.util.List<String> overlays = new java.util.ArrayList<>();
+        overlays.add(overlay.toString());
+        if (Boolean.parseBoolean(param(context, PARAM_EMAIL_USER_MODE))) {
+            overlays.add(Paths.get(moduleDir, EMAIL_USER_OVERLAY).normalize().toString());
+        }
         String extraOverlayPath = param(context, PARAM_TOML_EXTRA_OVERLAY);
         if (extraOverlayPath != null && !extraOverlayPath.isBlank()) {
-            Path extraOverlay = Paths.get(moduleDir, extraOverlayPath).normalize();
-            return Utils.mergeTomls(basePath.toString(),
-                    java.util.List.of(overlay.toString(), extraOverlay.toString()));
+            overlays.add(Paths.get(moduleDir, extraOverlayPath).normalize().toString());
         }
-        return Utils.mergeToml(basePath.toString(), overlay.toString());
+        return Utils.mergeTomls(basePath.toString(), overlays);
     }
 
-    private String param(ITestContext context, String name) {
+    /** Returns the built-in email-user overlay for topology-specific runtimes. */
+    protected String emailUserOverlayContent() throws java.io.IOException {
+        String moduleDir = ModulePathResolver.getModuleDir(BlockLifecycleListener.class);
+        return Files.readString(Paths.get(moduleDir, EMAIL_USER_OVERLAY).normalize());
+    }
+
+    /** The block's CPU-limit parameter {@code name}, or empty when the block leaves that container uncapped. */
+    Optional<CpuLimit> cpuLimit(ITestContext context, String label, String name) {
+        try {
+            return CpuLimit.parse(param(context, name));
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Block '" + label + "' has an invalid " + name + ": "
+                    + e.getMessage(), e);
+        }
+    }
+
+    protected String param(ITestContext context, String name) {
         XmlTest xmlTest = context.getCurrentXmlTest();
         return xmlTest != null ? xmlTest.getLocalParameters().get(name) : null;
     }

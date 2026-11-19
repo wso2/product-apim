@@ -59,9 +59,11 @@ Feature: Approval workflow - application update
     When I retrieve the application with id "createdAppId"
     Then The response status code should be 200
     And The response should contain "APPROVED"
-    And The response should contain "alice@example.com"
     And The value of response field "name" should be "{{createdAppName}}Updated"
     And The value of response field "description" should be "Updated for approval"
+    And The value of response field "attributes['Department Name']" should be "Finance"
+    And The value of response field "attributes['External Reference ID']" should be "20"
+    And The value of response field "attributes['Technical Contact']" should be "alice@example.com"
 
     # A further update, then REJECT it — the app is UPDATE_REJECTED and keeps every approved value.
     When I put the following JSON payload in context as "wfAppReject"
@@ -78,10 +80,12 @@ Feature: Approval workflow - application update
     When I retrieve the application with id "createdAppId"
     Then The response status code should be 200
     And The response should contain "UPDATE_REJECTED"
-    And The response should contain "alice@example.com"
     And The response should not contain "charlie@example.com"
     And The value of response field "name" should be "{{createdAppName}}Updated"
     And The value of response field "description" should be "Updated for approval"
+    And The value of response field "attributes['Department Name']" should be "Finance"
+    And The value of response field "attributes['External Reference ID']" should be "20"
+    And The value of response field "attributes['Technical Contact']" should be "alice@example.com"
 
     Examples:
       | requester      |

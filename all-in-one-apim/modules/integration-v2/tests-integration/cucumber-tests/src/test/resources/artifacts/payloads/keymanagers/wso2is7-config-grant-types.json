@@ -8,6 +8,8 @@
   "introspectionEndpoint": "https://is7.example.com:9444/oauth2/introspect",
   "revokeEndpoint": "https://is7.example.com:9444/oauth2/revoke",
   "clientRegistrationEndpoint": "https://is7.example.com:9444/api/identity/oauth2/dcr/v1.1/register",
+  "scopeManagementEndpoint": "https://is7.example.com:9444/api/identity/oauth2/v1.0/scopes",
+  "userInfoEndpoint": "https://is7.example.com:9444/scim2/Me",
   "consumerKeyClaim": "azp",
   "scopesClaim": "scope",
   "enabled": true,

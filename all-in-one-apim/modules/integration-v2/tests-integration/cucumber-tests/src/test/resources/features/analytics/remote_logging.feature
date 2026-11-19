@@ -13,8 +13,8 @@ Feature: Remote Server Logging
   for log types that have no remote URL must be left exactly as they are — including by the startup-time
   syncRemoteServerConfigs reconciliation.
 
-  Remote logging is a super-tenant, server-wide setting, so these run once as the super-tenant admin in a
-  dedicated thread-count=1 block (they mutate the shared server's log configuration). The teardown hook resets
+  Remote logging is a super-tenant, server-wide setting, so these run once as the super-tenant admin, last in a
+  sequential (thread-count=1) block (they mutate the shared server's log configuration). The teardown hook resets
   every log type the scenario enabled and writes the pristine log4j2.properties back, so a stripped fixture
   never leaks into the next scenario.
 

@@ -1,0 +1,35 @@
+{
+  "name": "${UNIQUE:InvocationStatsFaultAPI}",
+  "context": "${UNIQUE:invocationStatsFaultContext}",
+  "version": "1.0.0",
+  "endpointConfig": {
+    "endpoint_type": "http",
+    "production_endpoints": {
+      "url": "http://localhost:8888/myresource"
+    },
+    "sandbox_endpoints": {
+      "url": "http://localhost:8888/myresource"
+    }
+  },
+  "description": "API used to verify analytics fault events for authenticated and anonymous failures.",
+  "policies": ["Gold", "Bronze", "Unlimited"],
+  "operations": [
+    {
+      "verb": "GET",
+      "target": "/secured/{id}",
+      "authType": "Application & Application User",
+      "throttlingPolicy": "Unlimited",
+      "scopes": []
+    },
+    {
+      "verb": "GET",
+      "target": "/anonymous/{id}",
+      "authType": "None",
+      "throttlingPolicy": "Unlimited",
+      "scopes": []
+    }
+  ],
+  "isDefaultVersion": true,
+  "additionalProperties": [],
+  "additionalPropertiesMap": {}
+}

@@ -27,6 +27,8 @@ import org.eclipse.jetty.websocket.api.annotations.WebSocket;
 import org.wso2.am.integration.test.utils.APIManagerIntegrationTestException;
 
 import java.io.IOException;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CountDownLatch;
 
 @WebSocket
@@ -34,13 +36,16 @@ public class SubscriptionWSClientImpl {
 
     private Session session;
     private final Log log = LogFactory.getLog(SubscriptionWSClientImpl.class);
-    private String responseMessage;
+    private volatile String responseMessage;
+    // Every received frame, in arrival order, so a poller cannot miss one that a later frame overwrites.
+    private final Queue<String> frames = new ConcurrentLinkedQueue<>();
 
     private final CountDownLatch latch = new CountDownLatch(1);
 
     @OnWebSocketMessage
     public void onText(Session session, String message) {
         this.setResponseMessage(message);
+        frames.add(message);
         log.info("Client received message:" + message);
     }
 
@@ -73,5 +78,21 @@ public class SubscriptionWSClientImpl {
 
     public void setResponseMessage(String responseMessage) {
         this.responseMessage = responseMessage;
+    }
+
+    /**
+     * Removes and returns the oldest received frame that has not been polled yet.
+     *
+     * @return the frame, or null if none is pending
+     */
+    public String pollFrame() {
+        return frames.poll();
+    }
+
+    /**
+     * Discards all received frames that have not been polled yet.
+     */
+    public void clearFrames() {
+        frames.clear();
     }
 }

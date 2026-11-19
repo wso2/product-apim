@@ -1,0 +1,31 @@
+{
+  "name": "${UNIQUE:APIMChangeEndpoint}",
+  "context": "{version}/${UNIQUE:changeEndpointCtx}",
+  "version": "1.0.0",
+  "endpointConfig": {
+    "endpoint_type": "http",
+    "production_endpoints": {
+      "url": "http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/"
+    },
+    "sandbox_endpoints": {
+      "url": "http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/"
+    }
+  },
+  "description": "Version-first API with a root resource whose endpoint URL is swapped after deployment",
+  "tags": ["changeendpoint"],
+  "policies": ["Gold", "Bronze", "Unlimited"],
+  "operations": [
+    {
+      "verb": "GET",
+      "target": "/",
+      "scopes": []
+    },
+    {
+      "verb": "GET",
+      "target": "/customers/{id}",
+      "scopes": []
+    }
+  ],
+  "additionalProperties": [],
+  "additionalPropertiesMap": {}
+}

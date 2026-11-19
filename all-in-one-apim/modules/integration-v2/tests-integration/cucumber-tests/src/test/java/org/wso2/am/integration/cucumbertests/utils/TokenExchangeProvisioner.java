@@ -149,7 +149,7 @@ public final class TokenExchangeProvisioner {
 
     /** IS's advertised token issuer (the subject token's {@code iss}) on the shared network. */
     public static String isTokenIssuer() {
-        return "https://" + org.wso2.am.testcontainers.IdentityServerContainer.NETWORK_ALIAS + ":9443/oauth2/token";
+        return "https://" + org.wso2.am.testcontainers.DynamicISContainer.NETWORK_ALIAS + ":9443/oauth2/token";
     }
 
     /**
@@ -226,7 +226,7 @@ public final class TokenExchangeProvisioner {
             throws IOException {
         String body = idpProperty(IDP_ISSUER_NAME, isTokenIssuer())
                 + idpProperty(JWKS_URI, "https://"
-                        + org.wso2.am.testcontainers.IdentityServerContainer.NETWORK_ALIAS + ":9443/oauth2/jwks");
+                        + org.wso2.am.testcontainers.DynamicISContainer.NETWORK_ALIAS + ":9443/oauth2/jwks");
         addOrReplaceIdp(scope, idpName, isAppClientId, body);
     }
 
@@ -361,6 +361,8 @@ public final class TokenExchangeProvisioner {
     private static void addOrReplaceIdp(IdpScope scope, String idpName, String alias, String extraBody)
             throws IOException {
         deleteIdpIfExists(scope, idpName);
+        Assert.assertFalse(idpExists(scope, idpName),
+                "Trusted IdP '" + idpName + "' still exists after deletion");
         String body = SOAP_ENV_OPEN
                 + "<soapenv:Body><ns:addIdP xmlns:ns=\"http://mgt.idp.carbon.wso2.org\" "
                 + "xmlns:m=\"http://model.common.application.identity.carbon.wso2.org/xsd\">"
@@ -389,15 +391,19 @@ public final class TokenExchangeProvisioner {
                 + "<soapenv:Body><ns:getIdPByName xmlns:ns=\"http://mgt.idp.carbon.wso2.org\">"
                 + "<ns:idPName>" + Utils.escapeXml(idpName) + "</ns:idPName></ns:getIdPByName></soapenv:Body>" + SOAP_ENV_CLOSE;
         HttpResponse r = soap(scope, "urn:getIdPByName", body);
-        // A transport-level failure must FAIL the existence check, never read as "absent": the caller's
-        // negative assertion (malformed-cert registration refused -> IdP should not exist) would false-pass
-        // on a broken SOAP channel. A real body lacking the name (incl. an empty getIdPByNameResponse for a
-        // missing IdP) genuinely means absent.
-        if (r == null || r.getData() == null || r.getData().isBlank()) {
+        // Only a successful, non-fault SOAP response can establish that an IdP is absent. Treating a transport
+        // failure or SOAP fault as absence would allow registration to continue against an unknown APIM state.
+        if (r == null || r.getResponseCode() < 200 || r.getResponseCode() >= 300
+                || r.getData() == null || r.getData().isBlank() || isSoapFault(r.getData())) {
             throw new IllegalStateException("IdP existence check failed for '" + idpName + "': got "
-                    + (r == null ? "no response" : r.getResponseCode() + " / blank body"));
+                    + (r == null ? "no response" : "HTTP " + r.getResponseCode()
+                    + (isSoapFault(r.getData()) ? " / SOAP fault" : " / invalid response body")));
         }
         return r.getData().contains("identityProviderName>" + idpName);
+    }
+
+    private static boolean isSoapFault(String body) {
+        return body != null && body.matches("(?s).*<[^>]*:?Fault(?:\\s[^>]*)?>.*");
     }
 
     /** Deletes the named IdP (used by teardown). */

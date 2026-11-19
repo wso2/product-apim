@@ -21,6 +21,7 @@ const controller = require('../controllers/processInstanceController');
 
 router.post('/', controller.startInstance);
 router.get('/', controller.getRequestInfo);
+router.head('/:id', controller.deleteTaskInstance);
 router.delete('/:id', controller.deleteTaskInstance);
 
 module.exports = router;

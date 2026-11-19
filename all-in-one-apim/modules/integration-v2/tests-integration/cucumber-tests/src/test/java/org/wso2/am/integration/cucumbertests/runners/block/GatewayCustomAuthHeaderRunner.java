@@ -20,7 +20,7 @@ package org.wso2.am.integration.cucumbertests.runners.block;
 import io.cucumber.testng.CucumberOptions;
 
 /**
- * Runner for gateway/custom-auth-header. Belongs to the IntegrationV2-CustomAuthHeaderAndAppSharing block,
+ * Runner for gateway/custom-auth-header. Belongs to the IntegrationV2-GatewayAuthAndApplicationConfig block,
  * whose container sets {@code [apim.oauth_config] auth_header = "Test-Custom-Header"} via a feature-specific
  * TOML overlay so the gateway reads the token from that header. Requires the block's backend
  * ({@code initBackend}) for runtime invocation. Each scenario creates and registers its own resources;

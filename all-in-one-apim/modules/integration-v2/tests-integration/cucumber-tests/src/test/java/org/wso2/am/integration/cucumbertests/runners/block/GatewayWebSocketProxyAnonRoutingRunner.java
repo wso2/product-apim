@@ -21,8 +21,8 @@ package org.wso2.am.integration.cucumbertests.runners.block;
 import io.cucumber.testng.CucumberOptions;
 
 /**
- * Runner for WS proxy profile — end-to-end anonymous proxy routing. Runs in the
- * IntegrationV2-WsProxyAnonRouting block whose deployment.toml overlay (wsProxyAnonRouting) loads
+ * Runner for WS proxy profile — end-to-end anonymous proxy routing. Runs in IntegrationV2-LoggingAndElkAnalytics (all-in-one) and
+ * IntegrationV2-Distributed-Gateway-WsProxyAnonRouting, whose overlays (wsProxyAnonRouting) load
  * a single [[transport.ws.proxy_profile]] that matches "nodebackend" with no bypass_hosts, pointing
  * at squid-proxy:3128 (the anonymous Squid instance). The gateway sends CONNECT nodebackend:3001
  * to Squid, which relays the tunnel on the Docker network. A passing echo plus an exact CONNECT

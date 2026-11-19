@@ -18,6 +18,7 @@ Feature: Gateway WebSocket API — Specific Proxy Profile Precedence over Catch-
     And I have valid access tokens as "admin"
     And the proxy access logs are cleared
     And I have created an api from "artifacts/payloads/create_apim_ws_echo_api.json" as "wsApiId" and deployed it
+    And the "apis" resource "wsApiId" should be live on the gateway, redeploying if propagation is lost
     When I publish the "apis" resource with id "wsApiId"
     Then The lifecycle status of API "wsApiId" should be "Published"
     When I retrieve the "apis" resource with id "wsApiId"

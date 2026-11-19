@@ -22,6 +22,8 @@ import io.cucumber.java.en.When;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.testng.Assert;
+import org.wso2.am.integration.cucumbertests.utils.GatewaySynapseLog;
+import org.wso2.am.integration.cucumbertests.utils.HealGate;
 import org.wso2.am.integration.cucumbertests.utils.Identity;
 import org.wso2.am.integration.cucumbertests.utils.Requests;
 import org.wso2.am.integration.cucumbertests.utils.ResourceCleanup;
@@ -213,6 +215,50 @@ public class MCPServerSteps {
 
         HttpResponse response = Requests.put(Utils.getMCPServerByIdURL(Utils.getBaseUrl(), id), headers, dto.toString(),
                 Constants.CONTENT_TYPES.APPLICATION_JSON);
+    }
+
+    /** Verifies the named tool's scope assignment and its server-level role binding survived the Publisher PUT. */
+    @Then("the MCP server {string} tool {string} should persist scope {string} bound to role {string}")
+    public void mcpServerShouldPersistToolScope(String idKey, String tool, String scopeName, String role)
+            throws IOException {
+
+        String id = TestContext.resolve(idKey).toString();
+        JSONObject dto = fetchMcpServerDto(id, publisherHeaders(), "to verify persisted scope configuration");
+        JSONArray operations = dto.getJSONArray("operations");
+        JSONObject operation = null;
+        for (int i = 0; i < operations.length(); i++) {
+            JSONObject candidate = operations.getJSONObject(i);
+            if (tool.equals(candidate.optString("target"))) {
+                operation = candidate;
+                break;
+            }
+        }
+        Assert.assertNotNull(operation, "MCP server " + id + " has no operation for tool '" + tool + "': "
+                + operations);
+        JSONArray assignedScopes = operation.optJSONArray("scopes");
+        Assert.assertNotNull(assignedScopes, "MCP tool '" + tool + "' has no persisted scopes: " + operation);
+        Assert.assertEquals(assignedScopes.length(), 1, "MCP tool must have exactly the requested scope: " + operation);
+        Assert.assertEquals(assignedScopes.optString(0), scopeName,
+                "MCP tool scope differs from the submitted scope: " + operation);
+
+        JSONArray definitions = dto.optJSONArray("scopes");
+        Assert.assertNotNull(definitions, "MCP server has no persisted scope definitions: " + dto);
+        JSONObject matchingDefinition = null;
+        for (int i = 0; i < definitions.length(); i++) {
+            JSONObject definition = definitions.optJSONObject(i);
+            JSONObject scope = definition == null ? null : definition.optJSONObject("scope");
+            if (scope != null && scopeName.equals(scope.optString("name"))) {
+                matchingDefinition = scope;
+                break;
+            }
+        }
+        Assert.assertNotNull(matchingDefinition,
+                "MCP server did not persist a definition for scope '" + scopeName + "': " + definitions);
+        JSONArray bindings = matchingDefinition.optJSONArray("bindings");
+        Assert.assertNotNull(bindings, "Persisted scope has no role bindings: " + matchingDefinition);
+        Assert.assertEquals(bindings.length(), 1, "Persisted scope must bind exactly the requested role: " + bindings);
+        Assert.assertEquals(bindings.optString(0), role,
+                "Persisted scope role binding differs from the requested role: " + bindings);
     }
 
     /**
@@ -875,9 +921,10 @@ public class MCPServerSteps {
     }
 
     /**
-     * Rewrites, in place, the reference API id the archive records — standing in for an archive exported from
-     * another environment, where that id belongs to no API here. Fails if it rewrote nothing, so an archive whose
-     * shape changed cannot leave the scenario importing an id that resolves trivially and still passing.
+     * Rewrites the reference API id the archive records — standing in for an archive exported from another
+     * environment, where that id belongs to no API here — and points {@code archivePathKey} at the rewritten copy.
+     * Fails if it rewrote nothing, so an archive whose shape changed cannot leave the scenario importing an id that
+     * resolves trivially and still passing.
      *
      * @param archivePathKey context key holding the archive's path
      * @param apiId          the id to record instead
@@ -886,7 +933,8 @@ public class MCPServerSteps {
     public void iRewriteReferenceApiIdInArchive(String archivePathKey, String apiId) throws IOException {
         String replacement = Utils.resolveContextPlaceholders(apiId);
         int[] rewritten = {0};
-        Utils.rewriteZipEntry(new File(TestContext.resolve(archivePathKey).toString()), MCP_SERVER_DEFINITION,
+        File rewrittenArchive = Utils.rewriteZipEntry(new File(TestContext.resolve(archivePathKey).toString()),
+                MCP_SERVER_DEFINITION,
                 definition -> {
                     JSONObject root = new JSONObject(definition);
                     JSONArray operations = root.getJSONObject("data").getJSONArray("operations");
@@ -899,6 +947,7 @@ public class MCPServerSteps {
                     }
                     return root.toString();
                 });
+        TestContext.set(archivePathKey, rewrittenArchive.getAbsolutePath());
         Assert.assertTrue(rewritten[0] > 0, "No reference API id was rewritten — the archive records none, so the "
                 + "import that follows would resolve the id it was exported with and prove nothing");
     }
@@ -954,5 +1003,18 @@ public class MCPServerSteps {
                     "The reference should be resolved onto the id the API carries in this environment rather than "
                             + "the one the archive was exported with");
         }
+    }
+
+    /** Records the gateway log ahead of deploying the MCP server {@code mcpServerId}. */
+    static void markGatewayLogForMcpServerDeploy(String mcpServerId) {
+        GatewaySynapseLog.mark(mcpServerId);
+    }
+
+    /**
+     * Whether synapse has added the MCP server's artifact since its deploy was marked. Synapse deploys a MCP server
+     * as an API artifact named {@code prod--<name>:v<version>}, the same form as an API's.
+     */
+    static HealGate.Verdict mcpServerSwappedInSinceDeploy(String mcpServerId, String name, String version) {
+        return GatewaySynapseLog.artifactAddedSinceMark(mcpServerId, "prod--" + name + ":v" + version);
     }
 }

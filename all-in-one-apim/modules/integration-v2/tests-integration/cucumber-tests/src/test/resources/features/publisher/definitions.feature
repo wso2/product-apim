@@ -6,10 +6,12 @@ Feature: Publisher API Definition Import
   imported API at the gateway is covered by gateway/rest-invocation. Each row is self-contained and torn
   down by the per-scenario cleanup hook.
 
-  @cap:publisher @feat:definitions @type:regression @legacy:OASTestCase
+  @cap:publisher @feat:definitions @type:regression @legacy:OASTestCase @legacy:APIMANAGER4877CreateAPIWithScopesAndUpdateTemplateTestCase
   Scenario Outline: Import the OpenAPI definition <apiDefinition> and publish it as <actor>
     Given The system is ready and I have valid publisher access tokens as "<actor>"
-    When I import open api definition from "<apiDefinition>" , additional properties from "<additionalProperty>" and create api as "importedApiId"
+    And I put JSON payload from file "<expectedPublisherOperations>" in context as "expectedPublisherOps"
+    And I put JSON payload from file "<apiDefinition>" in context as "importedOriginalDef"
+    And I import open api definition from "<apiDefinition>" , additional properties from "<additionalProperty>" and create api as "importedApiId"
     Then The response status code should be 201
 
     When I retrieve the "apis" resource with id "importedApiId"
@@ -45,29 +47,55 @@ Feature: Publisher API Definition Import
     When I retrieve the swagger of "apis" resource "importedApiId"
     Then The response status code should be 200
     And I put the response payload in context as "importedPublisherDef"
+    And The definition stored as "importedPublisherDef" should declare OpenAPI version "<expectedOpenApiVersion>"
     And The definition stored as "importedPublisherDef" should declare exactly the operations of API "importedApiId"
     And The definition stored as "importedPublisherDef" should carry the publisher extensions of API "importedApiId"
+    And The OpenAPI operations in "expectedPublisherOps" and "importedPublisherDef" should be identical
 
-    When I retrieve the devportal swagger of API "importedApiId"
+    When I retrieve the devportal swagger of API "importedApiId" in environment "Default"
     Then The response status code should be 200
     And I put the response payload in context as "importedDevportalDef"
+    And The definition stored as "importedDevportalDef" should declare OpenAPI version "<expectedOpenApiVersion>"
     And The definition stored as "importedDevportalDef" should not expose the publisher-only extensions carried by "importedPublisherDef"
+    And The definition stored as "importedDevportalDef" should not contain x-mediation-script on any operation
     And The definitions stored as "importedPublisherDef" and "importedDevportalDef" should declare the same operations
+    And The definition stored as "importedDevportalDef" should be reported valid by the definition validator
 
-    When I put JSON payload from file "<apiDefinition>" in context as "importedOriginalDef"
-    Then The definitions stored as "importedOriginalDef" and "importedPublisherDef" should declare the same operations
+    Then The OpenAPI operations in "importedOriginalDef" and "importedDevportalDef" should be identical
     And The definition stored as "importedPublisherDef" should be reported valid by the definition validator
 
     Examples:
-      | actor                     | apiDefinition                                   | additionalProperty                                     |
-      | publisherUser             | artifacts/payloads/OAS/OAS2ApiDefinition.json   | artifacts/payloads/OAS/OAS2AdditionalProperties.json   |
-      | publisherUser             | artifacts/payloads/OAS/OAS3ApiDefinition.json   | artifacts/payloads/OAS/OAS3AdditionalProperties.json   |
-      | publisherUser             | artifacts/payloads/OAS/OAS3.1ApiDefinition.json | artifacts/payloads/OAS/OAS3.1AdditionalProperties.json |
-      | publisherUser@tenant1.com | artifacts/payloads/OAS/OAS2ApiDefinition.json   | artifacts/payloads/OAS/OAS2AdditionalProperties.json   |
-      | publisherUser@tenant1.com | artifacts/payloads/OAS/OAS3ApiDefinition.json   | artifacts/payloads/OAS/OAS3AdditionalProperties.json   |
-      | publisherUser@tenant1.com | artifacts/payloads/OAS/OAS3.1ApiDefinition.json | artifacts/payloads/OAS/OAS3.1AdditionalProperties.json |
+      | actor                     | apiDefinition                                         | additionalProperty                                                  | expectedPublisherOperations                                             | expectedOpenApiVersion |
+      | publisherUser             | artifacts/payloads/OAS/oas_legacy_import_v2.json     | artifacts/payloads/OAS/oas_legacy_import_additional_properties.json | artifacts/payloads/OAS/oas_legacy_import_v2_publisher_paths.json     | 2.0                    |
+      | publisherUser             | artifacts/payloads/OAS/oas_legacy_import_v3.json     | artifacts/payloads/OAS/oas_legacy_import_additional_properties.json | artifacts/payloads/OAS/oas_legacy_import_v3_publisher_paths.json     | 3.0.1                  |
+      | publisherUser@tenant1.com | artifacts/payloads/OAS/oas_legacy_import_v2.json     | artifacts/payloads/OAS/oas_legacy_import_additional_properties.json | artifacts/payloads/OAS/oas_legacy_import_v2_publisher_paths.json     | 2.0                    |
+      | publisherUser@tenant1.com | artifacts/payloads/OAS/oas_legacy_import_v3.json     | artifacts/payloads/OAS/oas_legacy_import_additional_properties.json | artifacts/payloads/OAS/oas_legacy_import_v3_publisher_paths.json     | 3.0.1                  |
+  @cap:publisher @feat:definitions @type:regression
+  Scenario Outline: Import an OpenAPI 3.1 definition as <actor>
+    Given The system is ready and I have valid publisher access tokens as "<actor>"
+    When I import open api definition from "artifacts/payloads/OAS/OAS3.1ApiDefinition.json" , additional properties from "artifacts/payloads/OAS/OAS3.1AdditionalProperties.json" and create api as "oas31ApiId"
+    Then The response status code should be 201
+    When I retrieve the swagger of "apis" resource "oas31ApiId"
+    Then The response status code should be 200
+    And I put the response payload in context as "oas31PublisherDef"
+    And The definition stored as "oas31PublisherDef" should declare OpenAPI version "3.1.0"
+    And The definition stored as "oas31PublisherDef" should declare exactly the operations of API "oas31ApiId"
+    And The definition stored as "oas31PublisherDef" should carry the publisher extensions of API "oas31ApiId"
+    When I publish the "apis" resource with id "oas31ApiId"
+    Then The lifecycle status of API "oas31ApiId" should be "Published"
+    When I retrieve the devportal swagger of API "oas31ApiId"
+    Then The response status code should be 200
+    And I put the response payload in context as "oas31DevportalDef"
+    And The definition stored as "oas31DevportalDef" should not expose the publisher-only extensions carried by "oas31PublisherDef"
+    And The definition stored as "oas31DevportalDef" should not contain x-mediation-script on any operation
+    And The definitions stored as "oas31PublisherDef" and "oas31DevportalDef" should declare the same operations
 
-  @cap:publisher @feat:definitions @type:negative @legacy:OASTestCase
+    Examples:
+      | actor                     |
+      | publisherUser             |
+      | publisherUser@tenant1.com |
+
+  @cap:publisher @feat:definitions @type:negative
   Scenario Outline: A subscriber-role user cannot create an API to import a definition into as <actor>
     Given The system is ready and I have valid publisher access tokens as "<actor>"
     When I put JSON payload from file "artifacts/payloads/create_apim_test_api.json" in context as "subscriberApiPayload"
@@ -86,51 +114,83 @@ Feature: Publisher API Definition Import
   @cap:publisher @feat:definitions @type:regression @legacy:OASTestCase
   Scenario Outline: Update an API's OpenAPI definition as <actor> with <oasVersion>
     Given The system is ready and I have valid publisher access tokens as "<actor>"
-    And I put JSON payload from file "artifacts/payloads/create_apim_test_api.json" in context as "defUpdateApiPayload"
-    And I create an "apis" resource with payload "defUpdateApiPayload" as "defUpdateApiId"
+    And I put JSON payload from file "<apiPayload>" in context as "defUpdateApiPayload"
+    And I create an API with payload "defUpdateApiPayload" as "defUpdateApiId" using OpenAPI version "<oasVersion>"
+    Then The response status code should be 201
+    And I put the response payload in context as "defUpdateApiDto"
+    # Match the legacy dependency order: testNewAPI publishes the created API before the dependent DTO update.
+    When I publish the "apis" resource with id "defUpdateApiId"
+    Then The lifecycle status of API "defUpdateApiId" should be "Published"
+    When I replace the operations of the API payload "defUpdateApiDto" with the operations from file "<dtoUpdateOperations>"
+    # Legacy apiUpdateData.json omits authorizationHeader, clearing the create-time X-Authorization value.
+    And I remove the field "authorizationHeader" from the payload "defUpdateApiDto"
+    And I update "apis" resource of id "defUpdateApiId" with payload "defUpdateApiDto"
+    Then The response status code should be 200
     And I put JSON payload from file "<definition>" in context as "defUpdateSubmittedDef"
+    # Match legacy testAPIUpdate: after the DTO update, both Publisher and Store definitions are checked against
+    # the updated API DTO before the later Swagger PUT replaces the definition.
+    When I retrieve the swagger of "apis" resource "defUpdateApiId"
+    Then The response status code should be 200
+    And I put the response payload in context as "defUpdateDtoPublisherDef"
+    And The definition stored as "defUpdateDtoPublisherDef" should declare exactly the operations of API "defUpdateApiId"
+    And The definition stored as "defUpdateDtoPublisherDef" should be reported valid by the definition validator
+    When I retrieve the devportal swagger of API "defUpdateApiId" in environment "Default"
+    Then The response status code should be 200
+    And I put the response payload in context as "defUpdateDtoStoreDef"
+    And The definition stored as "defUpdateDtoStoreDef" should declare exactly the operations of API "defUpdateApiId"
+    And The definition stored as "defUpdateDtoStoreDef" should be reported valid by the definition validator
+
     # The PUT answers with the updated definition — assert that body, not merely its status.
     When I update the swagger of "apis" resource "defUpdateApiId" from file "<definition>"
     Then The response status code should be 200
     And I put the response payload in context as "defUpdatePutBody"
+    And The definition stored as "defUpdatePutBody" should declare OpenAPI version "<expectedOpenApiVersion>"
+    And The OpenAPI operations in "defUpdateSubmittedDef" and "defUpdatePutBody" should be identical
     And The definitions stored as "defUpdateSubmittedDef" and "defUpdatePutBody" should declare the same operations
+    And The definition stored as "defUpdatePutBody" should be reported valid by the definition validator
 
     When I retrieve the swagger of "apis" resource "defUpdateApiId"
     Then The response status code should be 200
     And I put the response payload in context as "defUpdatePublisherDef"
+    And The definition stored as "defUpdatePublisherDef" should declare OpenAPI version "<expectedOpenApiVersion>"
+    And The OpenAPI operations in "defUpdateSubmittedDef" and "defUpdatePublisherDef" should be identical
     And The definitions stored as "defUpdateSubmittedDef" and "defUpdatePublisherDef" should declare the same operations
     And The definition stored as "defUpdatePublisherDef" should declare exactly the operations of API "defUpdateApiId"
     And The definition stored as "defUpdatePublisherDef" should carry the publisher extensions of API "defUpdateApiId"
     And The definition stored as "defUpdatePublisherDef" should be reported valid by the definition validator
 
-    # The devportal serves its own copy of the definition; legacy asserted that plane too. Publishing is enough to
-    # expose it — the devportal falls back to an existing gateway environment when the API has no deployment.
-    When I publish the "apis" resource with id "defUpdateApiId"
-    Then The lifecycle status of API "defUpdateApiId" should be "Published"
-    When I retrieve the devportal swagger of API "defUpdateApiId"
+    # The devportal serves its own copy after the Swagger PUT; its operations must match the submitted OAS now,
+    # not the earlier DTO update's tier values asserted above.
+    When I retrieve the devportal swagger of API "defUpdateApiId" in environment "Default"
     Then The response status code should be 200
     And I put the response payload in context as "defUpdateDevportalDef"
+    And The definition stored as "defUpdateDevportalDef" should declare OpenAPI version "<expectedOpenApiVersion>"
+    # The DevPortal environment view omits x-wso2-application-security from every operation; everything else in
+    # each operation must equal the submitted OAS, and the omission itself is pinned below.
+    And The OpenAPI operations in "defUpdateSubmittedDef" and "defUpdateDevportalDef" should be identical except the extension x-wso2-application-security
     And The definitions stored as "defUpdateSubmittedDef" and "defUpdateDevportalDef" should declare the same operations
     And The definition stored as "defUpdateDevportalDef" should not expose the publisher-only extensions carried by "defUpdatePublisherDef"
+    And The definition stored as "defUpdateDevportalDef" should not contain x-mediation-script on any operation
+    And The definition stored as "defUpdateDevportalDef" should not contain x-wso2-application-security on any operation
+    And The definition stored as "defUpdateDevportalDef" should be reported valid by the definition validator
 
     Examples:
-      | actor                     | oasVersion | definition                                             |
-      | publisherUser             | OAS 3      | artifacts/payloads/OAS/oas_v3_update_definition.json   |
-      | publisherUser             | OAS 2      | artifacts/payloads/OAS/oas_v2_update_definition.json   |
-      | publisherUser@tenant1.com | OAS 3      | artifacts/payloads/OAS/oas_v3_update_definition.json   |
-      | publisherUser@tenant1.com | OAS 2      | artifacts/payloads/OAS/oas_v2_update_definition.json   |
-
+      | actor                     | oasVersion | expectedOpenApiVersion | apiPayload                                                 | dtoUpdateOperations                                                           | definition                                               |
+      | publisherUser             | v3         | 3.0.1                  | artifacts/payloads/OAS/create_swagger_petstore_v3_api.json | artifacts/payloads/OAS/swagger_petstore_v3_api_update_operations.json       | artifacts/payloads/OAS/oas_v3_update_definition.json     |
+      | publisherUser             | v2         | 2.0                    | artifacts/payloads/OAS/create_swagger_petstore_v2_api.json | artifacts/payloads/OAS/swagger_petstore_v2_api_update_operations.json       | artifacts/payloads/OAS/oas_v2_update_definition.json     |
+      | publisherUser@tenant1.com | v3         | 3.0.1                  | artifacts/payloads/OAS/create_swagger_petstore_v3_api.json | artifacts/payloads/OAS/swagger_petstore_v3_api_update_operations.json       | artifacts/payloads/OAS/oas_v3_update_definition.json     |
+      | publisherUser@tenant1.com | v2         | 2.0                    | artifacts/payloads/OAS/create_swagger_petstore_v2_api.json | artifacts/payloads/OAS/swagger_petstore_v2_api_update_operations.json       | artifacts/payloads/OAS/oas_v2_update_definition.json     |
   # Two legacy methods in one arc, in legacy's own order (create+publish, then DTO update):
   #   - testNewAPI: the definition the product GENERATES for a payload-created API is itself valid and matches the
   #     API DTO's operations in BOTH planes;
   #   - testAPIUpdate: changing the resource set through PUT /apis/{id} (a DTO update, NOT a swagger PUT) must
   #     REGENERATE the definition to match, again in both planes.
   # The v2 port had neither the DTO direction nor any operation-level fidelity or validity round trip.
-  @cap:publisher @feat:definitions @type:regression @legacy:OASTestCase
-  Scenario Outline: Updating an API's operations through its DTO regenerates its OpenAPI definition as <actor>
+  @cap:publisher @feat:definitions @rule:dto-oas-version-roundtrip @type:regression @legacy:OASTestCase
+  Scenario Outline: Updating an API's operations through its DTO regenerates its OpenAPI definition as <actor> with <oasVersion>
     Given The system is ready and I have valid publisher access tokens as "<actor>"
-    And I put JSON payload from file "artifacts/payloads/create_apim_test_api.json" in context as "dtoUpdApiPayload"
-    And I create an "apis" resource with payload "dtoUpdApiPayload" as "dtoUpdApiId"
+    And I put JSON payload from file "<apiPayload>" in context as "dtoUpdApiPayload"
+    And I create an API with payload "dtoUpdApiPayload" as "dtoUpdApiId" using OpenAPI version "<oasVersion>"
     Then The response status code should be 201
     And I put the response payload in context as "dtoUpdApiDto"
 
@@ -138,44 +198,54 @@ Feature: Publisher API Definition Import
     When I retrieve the swagger of "apis" resource "dtoUpdApiId"
     Then The response status code should be 200
     And I put the response payload in context as "dtoUpdGeneratedDef"
+    And The definition stored as "dtoUpdGeneratedDef" should declare OpenAPI version "<expectedOpenApiVersion>"
     And The definition stored as "dtoUpdGeneratedDef" should declare exactly the operations of API "dtoUpdApiId"
     And The definition stored as "dtoUpdGeneratedDef" should carry the publisher extensions of API "dtoUpdApiId"
     And The definition stored as "dtoUpdGeneratedDef" should be reported valid by the definition validator
 
     When I publish the "apis" resource with id "dtoUpdApiId"
     Then The lifecycle status of API "dtoUpdApiId" should be "Published"
-    When I retrieve the devportal swagger of API "dtoUpdApiId"
+    When I retrieve the devportal swagger of API "dtoUpdApiId" in environment "Default"
     Then The response status code should be 200
     And I put the response payload in context as "dtoUpdGeneratedStoreDef"
+    And The definition stored as "dtoUpdGeneratedStoreDef" should declare OpenAPI version "<expectedOpenApiVersion>"
     And The definitions stored as "dtoUpdGeneratedDef" and "dtoUpdGeneratedStoreDef" should declare the same operations
     And The definition stored as "dtoUpdGeneratedStoreDef" should not expose the publisher-only extensions carried by "dtoUpdGeneratedDef"
+    And The definition stored as "dtoUpdGeneratedStoreDef" should not contain x-mediation-script on any operation
+    And The definition stored as "dtoUpdGeneratedStoreDef" should be reported valid by the definition validator
 
-    # Replace the created API's /customers/{id} GET+DELETE with three /orders operations, through the DTO.
-    When I replace the operations of the API payload "dtoUpdApiDto" with the operations from file "artifacts/payloads/OAS/dto_update_operations.json"
+    # Replace the API's original /pets GET+POST and /pets/{petId} GET with GET /pets, PUT /newpets, and GET /pets/{petId}, through the DTO.
+    When I replace the operations of the API payload "dtoUpdApiDto" with the operations from file "<dtoUpdateOperations>"
+    # Legacy apiUpdateData.json omits authorizationHeader, clearing the create-time X-Authorization value.
+    And I remove the field "authorizationHeader" from the payload "dtoUpdApiDto"
     And I update "apis" resource of id "dtoUpdApiId" with payload "dtoUpdApiDto"
     Then The response status code should be 200
 
     When I retrieve the swagger of "apis" resource "dtoUpdApiId"
     Then The response status code should be 200
-    And The response should contain "/orders"
-    And The response should not contain "/customers/{id}"
+    And The response should contain "/newpets"
     And I put the response payload in context as "dtoUpdPublisherDef"
+    And The definition stored as "dtoUpdPublisherDef" should declare OpenAPI version "<expectedOpenApiVersion>"
     And The definition stored as "dtoUpdPublisherDef" should declare exactly the operations of API "dtoUpdApiId"
     And The definition stored as "dtoUpdPublisherDef" should carry the publisher extensions of API "dtoUpdApiId"
     And The definition stored as "dtoUpdPublisherDef" should be reported valid by the definition validator
 
     # Still Published from above — the devportal must now serve the REGENERATED definition.
-    When I retrieve the devportal swagger of API "dtoUpdApiId"
+    When I retrieve the devportal swagger of API "dtoUpdApiId" in environment "Default"
     Then The response status code should be 200
     And I put the response payload in context as "dtoUpdDevportalDef"
+    And The definition stored as "dtoUpdDevportalDef" should declare OpenAPI version "<expectedOpenApiVersion>"
     And The definitions stored as "dtoUpdPublisherDef" and "dtoUpdDevportalDef" should declare the same operations
     And The definition stored as "dtoUpdDevportalDef" should not expose the publisher-only extensions carried by "dtoUpdPublisherDef"
+    And The definition stored as "dtoUpdDevportalDef" should not contain x-mediation-script on any operation
+    And The definition stored as "dtoUpdDevportalDef" should be reported valid by the definition validator
 
     Examples:
-      | actor                     |
-      | publisherUser             |
-      | publisherUser@tenant1.com |
-
+      | actor                     | oasVersion | expectedOpenApiVersion | apiPayload                                                 | dtoUpdateOperations                                                           |
+      | publisherUser             | v2         | 2.0                    | artifacts/payloads/OAS/create_swagger_petstore_v2_api.json | artifacts/payloads/OAS/swagger_petstore_v2_api_update_operations.json       |
+      | publisherUser             | v3         | 3.0.1                  | artifacts/payloads/OAS/create_swagger_petstore_v3_api.json | artifacts/payloads/OAS/swagger_petstore_v3_api_update_operations.json       |
+      | publisherUser@tenant1.com | v2         | 2.0                    | artifacts/payloads/OAS/create_swagger_petstore_v2_api.json | artifacts/payloads/OAS/swagger_petstore_v2_api_update_operations.json       |
+      | publisherUser@tenant1.com | v3         | 3.0.1                  | artifacts/payloads/OAS/create_swagger_petstore_v3_api.json | artifacts/payloads/OAS/swagger_petstore_v3_api_update_operations.json       |
   # Resource modification via a swagger update REPLACES the API's resource set: the base test API (resources on
   # /customers/{id}) is updated with a definition whose resources are /pets, /pets/{petId} and /oldpets, and the
   # retrieved swagger reflects the NEW resources while the old /customers resource is gone. Ports
@@ -193,6 +263,7 @@ Feature: Publisher API Definition Import
     # Modify the resources via a swagger update.
     When I update the swagger of "apis" resource "resModApiId" from file "artifacts/payloads/OAS/oas_v3_update_definition.json"
     Then The response status code should be 200
+    And The response body should not be null
     When I retrieve the swagger of "apis" resource "resModApiId"
     Then The response status code should be 200
     # The new resources are present and the original /customers resource has been replaced.
@@ -200,12 +271,70 @@ Feature: Publisher API Definition Import
     And The response should contain "/oldpets"
     And The response should not contain "/customers/{id}"
 
-    Examples:
+    Examples: Primary and secondary-store actors in both tenants
       | actor                     |
       | publisherUser             |
       | publisherUser@tenant1.com |
+      | SECONDARY.COM/publisherUser1           |
+      | SECONDARY.COM/publisherUser1@tenant1.com |
 
-  # Advance endpoint configs survive a definition update (the OAS carries x-wso2 advance endpoint config). The
+  # The legacy path updates Swagger after publishing a restricted API. Keep that state transition explicit: a
+  # generic CREATED API proves resource replacement, but does not prove a published restricted API remains intact.
+  @cap:publisher @feat:definitions @rule:resource-modification @type:regression @legacy:APIResourceModificationTestCase
+  Scenario Outline: Swagger <definitionFormat> resource replacement preserves a published restricted API as <actor>
+    Given The system is ready and I have valid publisher access tokens as "<actor>"
+    When I have created an api from "artifacts/payloads/create_apim_test_api.json" with restricted visibility for roles "admin" as "resModPublishedApiId" and deployed it
+    And I publish the "apis" resource with id "resModPublishedApiId"
+    Then The lifecycle status of API "resModPublishedApiId" should be "Published"
+
+    # Pin Publisher visibility and the API's identity/configuration before replacing its definition.
+    When I retrieve the "apis" resource with id "resModPublishedApiId"
+    Then The response status code should be 200
+    And The value of response field "id" should be "{{resModPublishedApiId}}"
+    And The value of response field "visibility" should be "RESTRICTED"
+    And The response field "visibleRoles" should be exactly the list "admin"
+    And I extract response field "provider" and store it as "resModPublishedProvider"
+    And I extract response field "name" and store it as "resModPublishedName"
+    And I extract response field "version" and store it as "resModPublishedVersion"
+
+    When I retrieve the swagger of "apis" resource "resModPublishedApiId"
+    Then The response status code should be 200
+    And The response should contain "/customers/{id}"
+    When I update the swagger of "apis" resource "resModPublishedApiId" from file "<definition>"
+    Then The response status code should be 200
+    And The response body should not be null
+
+    # Read the saved definition back, then prove the Swagger update preserved API identity and restricted state.
+    When I retrieve the swagger of "apis" resource "resModPublishedApiId"
+    Then The response status code should be 200
+    And The response should contain "<replacementPath>"
+    And The response should not contain "/customers/{id}"
+    And I put the response payload in context as "resModPublishedUpdatedDefinition"
+    And The definition stored as "resModPublishedUpdatedDefinition" should match the published replacement profile "<definitionFormat>"
+
+    When I retrieve the "apis" resource with id "resModPublishedApiId"
+    Then The response status code should be 200
+    And The value of response field "id" should be "{{resModPublishedApiId}}"
+    And The value of response field "provider" should be "{{resModPublishedProvider}}"
+    And The value of response field "name" should be "{{resModPublishedName}}"
+    And The value of response field "version" should be "{{resModPublishedVersion}}"
+    And The value of response field "visibility" should be "RESTRICTED"
+    And The response field "visibleRoles" should be exactly the list "admin"
+    Then The lifecycle status of API "resModPublishedApiId" should be "Published"
+
+    Examples: Primary and secondary-store actors in both tenants and definition formats
+      | actor                     | definitionFormat | definition                                               | replacementPath |
+      | publisherUser             | OAS 3.0.1        | artifacts/payloads/OAS/oas_v3_update_definition.json     | /pets           |
+      | publisherUser             | Swagger 2.0      | artifacts/payloads/OAS/oas_v2_resource_replacement.json  | /*              |
+      | publisherUser@tenant1.com | OAS 3.0.1        | artifacts/payloads/OAS/oas_v3_update_definition.json     | /pets           |
+      | publisherUser@tenant1.com | Swagger 2.0      | artifacts/payloads/OAS/oas_v2_resource_replacement.json  | /*              |
+
+      | SECONDARY.COM/publisherUser1             | OAS 3.0.1        | artifacts/payloads/OAS/oas_v3_update_definition.json     | /pets           |
+      | SECONDARY.COM/publisherUser1             | Swagger 2.0      | artifacts/payloads/OAS/oas_v2_resource_replacement.json  | /*              |
+      | SECONDARY.COM/publisherUser1@tenant1.com | OAS 3.0.1        | artifacts/payloads/OAS/oas_v3_update_definition.json     | /pets           |
+      | SECONDARY.COM/publisherUser1@tenant1.com | Swagger 2.0      | artifacts/payloads/OAS/oas_v2_resource_replacement.json  | /*              |
+
+    # Advance endpoint configs survive a definition update (the OAS carries x-wso2 advance endpoint config). The
   # circuit-breaker VALUES and their per-environment split are what legacy
   # OASTestCase#testAddAdvanceConfigsToAPIDefinition pinned (sandbox 4/2048/100/25/2048, production
   # 3/1024/75/35/1024, taken from the two x-wso2-*-endpoints extensions of the submitted definition); a bare
@@ -213,28 +342,36 @@ Feature: Publisher API Definition Import
   @cap:publisher @feat:definitions @type:regression @legacy:OASTestCase
   Scenario Outline: Advance endpoint configs are applied via a definition update as <actor> with <oasVersion>
     Given The system is ready and I have valid publisher access tokens as "<actor>"
-    And I put JSON payload from file "artifacts/payloads/create_apim_test_api.json" in context as "advCfgApiPayload"
-    And I create an "apis" resource with payload "advCfgApiPayload" as "advCfgApiId"
+    And I put JSON payload from file "<apiPayload>" in context as "advCfgApiPayload"
+    And I create an API with payload "advCfgApiPayload" as "advCfgApiId" using OpenAPI version "<oasVersion>"
+    Then The response status code should be 201
+    When I update the swagger of "apis" resource "advCfgApiId" from file "<baseDefinition>"
+    Then The response status code should be 200
     When I update the swagger of "apis" resource "advCfgApiId" from file "<definition>"
     Then The response status code should be 200
     When I retrieve the "apis" resource with id "advCfgApiId"
     Then The response status code should be 200
-    And The value of response field "endpointConfig.production_endpoints.advanceEndpointConfig.circuitBreakers.maxRetries" should be "3"
+    And The response object field "endpointConfig.production_endpoints.advanceEndpointConfig.circuitBreakers" should equal
+      """
+      {"maxRetries":3,"maxConnectionPools":1024,"maxRequests":75,"maxPendingRequests":35,"maxConnections":1024}
+      """
     And The value of response field "endpointConfig.production_endpoints.advanceEndpointConfig.circuitBreakers.maxRequests" should be "75"
     And The value of response field "endpointConfig.production_endpoints.advanceEndpointConfig.circuitBreakers.maxPendingRequests" should be "35"
     And Each of the response fields "endpointConfig.production_endpoints.advanceEndpointConfig.circuitBreakers.maxConnectionPools,endpointConfig.production_endpoints.advanceEndpointConfig.circuitBreakers.maxConnections" should be "1024"
-    And The value of response field "endpointConfig.sandbox_endpoints.advanceEndpointConfig.circuitBreakers.maxRetries" should be "4"
+    And The response object field "endpointConfig.sandbox_endpoints.advanceEndpointConfig.circuitBreakers" should equal
+      """
+      {"maxRetries":4,"maxConnectionPools":2048,"maxRequests":100,"maxPendingRequests":25,"maxConnections":2048}
+      """
     And The value of response field "endpointConfig.sandbox_endpoints.advanceEndpointConfig.circuitBreakers.maxRequests" should be "100"
     And The value of response field "endpointConfig.sandbox_endpoints.advanceEndpointConfig.circuitBreakers.maxPendingRequests" should be "25"
     And Each of the response fields "endpointConfig.sandbox_endpoints.advanceEndpointConfig.circuitBreakers.maxConnectionPools,endpointConfig.sandbox_endpoints.advanceEndpointConfig.circuitBreakers.maxConnections" should be "2048"
 
     Examples:
-      | actor                     | oasVersion | definition                                            |
-      | publisherUser             | OAS 3      | artifacts/payloads/OAS/oas_v3_advance_configs.json    |
-      | publisherUser             | OAS 2      | artifacts/payloads/OAS/oas_v2_advance_configs.json    |
-      | publisherUser@tenant1.com | OAS 3      | artifacts/payloads/OAS/oas_v3_advance_configs.json    |
-      | publisherUser@tenant1.com | OAS 2      | artifacts/payloads/OAS/oas_v2_advance_configs.json    |
-
+      | actor                     | oasVersion | apiPayload                                                 | baseDefinition                                         | definition                                         |
+      | publisherUser             | v3         | artifacts/payloads/OAS/create_swagger_petstore_v3_api.json | artifacts/payloads/OAS/oas_v3_update_definition.json | artifacts/payloads/OAS/oas_v3_advance_configs.json |
+      | publisherUser             | v2         | artifacts/payloads/OAS/create_swagger_petstore_v2_api.json | artifacts/payloads/OAS/oas_v2_update_definition.json | artifacts/payloads/OAS/oas_v2_advance_configs.json |
+      | publisherUser@tenant1.com | v3         | artifacts/payloads/OAS/create_swagger_petstore_v3_api.json | artifacts/payloads/OAS/oas_v3_update_definition.json | artifacts/payloads/OAS/oas_v3_advance_configs.json |
+      | publisherUser@tenant1.com | v2         | artifacts/payloads/OAS/create_swagger_petstore_v2_api.json | artifacts/payloads/OAS/oas_v2_update_definition.json | artifacts/payloads/OAS/oas_v2_advance_configs.json |
   # Unsupported OpenAPI server blocks are stripped on import — legacy asserted BOTH planes (publisher AND store),
   # so the devportal copy is checked here too: it is the plane a consumer's try-out console reads, where a stray
   # unsupported server URL would actually be dialled.
@@ -253,7 +390,7 @@ Feature: Publisher API Definition Import
 
     When I publish the "apis" resource with id "unsupSrvApiId"
     Then The lifecycle status of API "unsupSrvApiId" should be "Published"
-    When I retrieve the devportal swagger of API "unsupSrvApiId"
+    When I retrieve the devportal swagger of API "unsupSrvApiId" in environment "Default"
     Then The response status code should be 200
     And The response should not contain "test-unsupported.com"
 
@@ -261,7 +398,6 @@ Feature: Publisher API Definition Import
       | actor                     |
       | publisherUser             |
       | publisherUser@tenant1.com |
-
   # An invalid OpenAPI definition (empty resource paths) is reported invalid by validation, rejected on import,
   # and rejected on update — ports the empty-resource-path validate / import / update trio.
   @cap:publisher @feat:definitions @type:negative @legacy:OASTestCase
@@ -277,7 +413,6 @@ Feature: Publisher API Definition Import
       | publisherUser             | OAS 2      | artifacts/payloads/OAS/oas_v2_invalid.json  |
       | publisherUser@tenant1.com | OAS 3      | artifacts/payloads/OAS/oas_v3_invalid.json  |
       | publisherUser@tenant1.com | OAS 2      | artifacts/payloads/OAS/oas_v2_invalid.json  |
-
   @cap:publisher @feat:definitions @type:negative @legacy:OASTestCase
   Scenario Outline: Importing an invalid OpenAPI definition is rejected as <actor> with <oasVersion>
     Given The system is ready and I have valid publisher access tokens as "<actor>"
@@ -290,18 +425,31 @@ Feature: Publisher API Definition Import
       | publisherUser             | OAS 2      | artifacts/payloads/OAS/oas_v2_invalid.json | artifacts/payloads/OAS/OAS2AdditionalProperties.json |
       | publisherUser@tenant1.com | OAS 3      | artifacts/payloads/OAS/oas_v3_invalid.json | artifacts/payloads/OAS/OAS3AdditionalProperties.json |
       | publisherUser@tenant1.com | OAS 2      | artifacts/payloads/OAS/oas_v2_invalid.json | artifacts/payloads/OAS/OAS2AdditionalProperties.json |
-
   # A rejected definition update must also be a NO-OP: legacy testAPIDefinitionUpdateWithEmptyResourcePath
   # re-read the definition after the 400 and asserted it still matched the last good one. Without that read-back a
   # product that rejected the update but corrupted the stored definition on the way out would still pass.
   @cap:publisher @feat:definitions @type:negative @legacy:OASTestCase
   Scenario Outline: Updating with an invalid OpenAPI definition is rejected and leaves the stored definition intact as <actor> with <oasVersion>
     Given The system is ready and I have valid publisher access tokens as "<actor>"
-    And I put JSON payload from file "artifacts/payloads/create_apim_test_api.json" in context as "invUpdApiPayload"
-    And I create an "apis" resource with payload "invUpdApiPayload" as "invUpdApiId"
+    And I put JSON payload from file "<apiPayload>" in context as "invUpdApiPayload"
+    And I create an API with payload "invUpdApiPayload" as "invUpdApiId" using OpenAPI version "<oasVersion>"
+    Then The response status code should be 201
+    And I put the response payload in context as "invUpdApiDto"
+    # Legacy testAPIDefinitionUpdateWithEmptyResourcePath depends on the full valid chain:
+    # create/publish → DTO update → valid Swagger update. The rejected update below must be a no-op
+    # against that already-updated state, not merely against a newly-created API.
+    When I publish the "apis" resource with id "invUpdApiId"
+    Then The lifecycle status of API "invUpdApiId" should be "Published"
+    When I replace the operations of the API payload "invUpdApiDto" with the operations from file "<dtoUpdateOperations>"
+    And I remove the field "authorizationHeader" from the payload "invUpdApiDto"
+    And I update "apis" resource of id "invUpdApiId" with payload "invUpdApiDto"
+    Then The response status code should be 200
+    When I update the swagger of "apis" resource "invUpdApiId" from file "<validDefinition>"
+    Then The response status code should be 200
     When I retrieve the swagger of "apis" resource "invUpdApiId"
     Then The response status code should be 200
     And I put the response payload in context as "invUpdDefBefore"
+    And The definition stored as "invUpdDefBefore" should declare OpenAPI version "<expectedOpenApiVersion>"
     When I update the swagger of "apis" resource "invUpdApiId" from file "<definition>"
     Then The response status code should be 400
     When I retrieve the swagger of "apis" resource "invUpdApiId"
@@ -315,16 +463,15 @@ Feature: Publisher API Definition Import
     And The definition stored as "invUpdDefAfter" should declare exactly the operations of API "invUpdApiId"
 
     Examples:
-      | actor                     | oasVersion | definition                                        |
-      | publisherUser             | OAS 3      | artifacts/payloads/OAS/oas_v3_invalid_update.json |
-      | publisherUser             | OAS 2      | artifacts/payloads/OAS/oas_v2_invalid_update.json |
-      | publisherUser@tenant1.com | OAS 3      | artifacts/payloads/OAS/oas_v3_invalid_update.json |
-      | publisherUser@tenant1.com | OAS 2      | artifacts/payloads/OAS/oas_v2_invalid_update.json |
-
+      | actor                     | oasVersion | expectedOpenApiVersion | apiPayload                                                 | dtoUpdateOperations                                                  | validDefinition                                     | definition                                         |
+      | publisherUser             | v3         | 3.0.1                  | artifacts/payloads/OAS/create_swagger_petstore_v3_api.json | artifacts/payloads/OAS/swagger_petstore_v3_api_update_operations.json | artifacts/payloads/OAS/oas_v3_update_definition.json | artifacts/payloads/OAS/oas_v3_invalid_update.json |
+      | publisherUser             | v2         | 2.0                    | artifacts/payloads/OAS/create_swagger_petstore_v2_api.json | artifacts/payloads/OAS/swagger_petstore_v2_api_update_operations.json | artifacts/payloads/OAS/oas_v2_update_definition.json | artifacts/payloads/OAS/oas_v2_invalid_update.json |
+      | publisherUser@tenant1.com | v3         | 3.0.1                  | artifacts/payloads/OAS/create_swagger_petstore_v3_api.json | artifacts/payloads/OAS/swagger_petstore_v3_api_update_operations.json | artifacts/payloads/OAS/oas_v3_update_definition.json | artifacts/payloads/OAS/oas_v3_invalid_update.json |
+      | publisherUser@tenant1.com | v2         | 2.0                    | artifacts/payloads/OAS/create_swagger_petstore_v2_api.json | artifacts/payloads/OAS/swagger_petstore_v2_api_update_operations.json | artifacts/payloads/OAS/oas_v2_update_definition.json | artifacts/payloads/OAS/oas_v2_invalid_update.json |
   # Deletion is confirmed by a READ: legacy APIM18 testRemoveAnAPIThroughThePublisherRest asserted the DELETE's 200
   # AND that a following GET of the same id returns 404. Several v2 scenarios delete an API, but none confirmed the
   # effect — a delete that answers 200 while leaving the API retrievable would have gone unnoticed.
-  @cap:publisher @feat:definitions @type:regression @legacy:APIM18CreateAnAPIThroughThePublisherRestAPITestCase
+  @cap:publisher @feat:definitions @type:regression @legacy:APIM18CreateAnAPIThroughThePublisherRestAPITestCase @legacy:APITestCase
   Scenario Outline: A deleted API can no longer be retrieved as <actor>
     Given The system is ready and I have valid publisher access tokens as "<actor>"
     And I put JSON payload from file "artifacts/payloads/create_apim_test_api.json" in context as "delApiPayload"
@@ -352,6 +499,28 @@ Feature: Publisher API Definition Import
     When I retrieve the swagger of "apis" resource "archiveApiId"
     Then The response status code should be 200
     And The response should contain "dataSetList"
+    And I put the response payload in context as "archiveImportedSwagger"
+    And The imported OpenAPI definition in "archiveImportedSwagger" should have resolved schema "dataSetList" with properties "total,apis"
+
+    Examples:
+      | actor                     |
+      | publisherUser             |
+      | publisherUser@tenant1.com |
+
+  # The name stays unique while the second import reuses the first API's resolved context. This exercises the
+  # import/export route's context-collision validation (distinct from the plain POST /apis collision in api_lifecycle).
+  # Ports APIM18CreateAnAPIThroughThePublisherRestAPITestCase#testImportSwaggerAndCreateAPIWithSameContext.
+  @cap:publisher @feat:definitions @rule:archive-import @type:negative @legacy:APIM18CreateAnAPIThroughThePublisherRestAPITestCase
+  Scenario Outline: Importing an OpenAPI archive with an already-used context is rejected as <actor>
+    Given The system is ready and I have valid publisher access tokens as "<actor>"
+    When I import api from archive "artifacts/swagger/swagger-archive.zip" with additional properties "artifacts/payloads/archive_additional_properties.json" as "archiveCollisionApiId"
+    Then The response status code should be 201
+    When I retrieve the "apis" resource with id "archiveCollisionApiId"
+    Then The response status code should be 200
+    And I extract response field "context" and store it as "archiveCollisionContext"
+    When I import api from archive "artifacts/swagger/swagger-archive.zip" with additional properties "artifacts/payloads/archive_collision_additional_properties.json" as "duplicateArchiveApiId"
+    Then The response status code should be 409
+    And The response should contain "The API context already exists"
 
     Examples:
       | actor                     |
@@ -627,12 +796,12 @@ Feature: Publisher API Definition Import
     # Non-secret fields round-trip on the import response, per key type.
     And The value of response field "endpointConfig.endpoint_security.production.type" should be "OAUTH"
     And The value of response field "endpointConfig.endpoint_security.production.grantType" should be "CLIENT_CREDENTIALS"
-    And The value of response field "endpointConfig.endpoint_security.production.tokenUrl" should be "https://localhost:9443/oauth2/token"
+    And The value of response field "endpointConfig.endpoint_security.production.tokenUrl" should be "{{backendOAuthTokenUrl}}"
     And The value of response field "endpointConfig.endpoint_security.production.clientId" should be "oasImportProdClientId0001"
     And The value of response field "endpointConfig.endpoint_security.production.enabled" should be "true"
     And The value of response field "endpointConfig.endpoint_security.sandbox.type" should be "OAUTH"
     And The value of response field "endpointConfig.endpoint_security.sandbox.grantType" should be "CLIENT_CREDENTIALS"
-    And The value of response field "endpointConfig.endpoint_security.sandbox.tokenUrl" should be "https://localhost:9443/oauth2/token"
+    And The value of response field "endpointConfig.endpoint_security.sandbox.tokenUrl" should be "{{backendOAuthTokenUrl}}"
     And The value of response field "endpointConfig.endpoint_security.sandbox.clientId" should be "oasImportSandClientId0002"
     And The value of response field "endpointConfig.endpoint_security.sandbox.enabled" should be "true"
     # The client secrets are blanked — legacy asserts clientSecret == "" exactly, which also proves the field is
@@ -646,13 +815,13 @@ Feature: Publisher API Definition Import
     Then The response status code should be 200
     And The value of response field "endpointConfig.endpoint_security.production.type" should be "OAUTH"
     And The value of response field "endpointConfig.endpoint_security.production.grantType" should be "CLIENT_CREDENTIALS"
-    And The value of response field "endpointConfig.endpoint_security.production.tokenUrl" should be "https://localhost:9443/oauth2/token"
+    And The value of response field "endpointConfig.endpoint_security.production.tokenUrl" should be "{{backendOAuthTokenUrl}}"
     And The value of response field "endpointConfig.endpoint_security.production.clientId" should be "oasImportProdClientId0001"
     And The value of response field "endpointConfig.endpoint_security.production.enabled" should be "true"
     And The value of response field "endpointConfig.endpoint_security.production.clientSecret" should be ""
     And The value of response field "endpointConfig.endpoint_security.sandbox.type" should be "OAUTH"
     And The value of response field "endpointConfig.endpoint_security.sandbox.grantType" should be "CLIENT_CREDENTIALS"
-    And The value of response field "endpointConfig.endpoint_security.sandbox.tokenUrl" should be "https://localhost:9443/oauth2/token"
+    And The value of response field "endpointConfig.endpoint_security.sandbox.tokenUrl" should be "{{backendOAuthTokenUrl}}"
     And The value of response field "endpointConfig.endpoint_security.sandbox.clientId" should be "oasImportSandClientId0002"
     And The value of response field "endpointConfig.endpoint_security.sandbox.enabled" should be "true"
     And The value of response field "endpointConfig.endpoint_security.sandbox.clientSecret" should be ""
@@ -662,14 +831,10 @@ Feature: Publisher API Definition Import
     When I publish the "apis" resource with id "epImportOauthApiId"
     Then The lifecycle status of API "epImportOauthApiId" should be "Published"
 
-    # Both the tenant ADMIN and the non-admin publisher rows run: this is an import ROUND-TRIP assertion, not an
-    # authz one, and the stored provider differs per actor, so admin is NOT implied by publisherUser passing.
-    # (The BASIC-endpoint-security import scenario above is deliberately publisherUser-only — it asserts only that
-    # a password is not echoed back, which is actor-independent.)
+    # The round-trip assertions are actor-independent; the super-tenant and tenant publisher rows cover both
+    # ownership contexts without repeating the same behavior as the more privileged admin actors.
     Examples:
       | actor                     |
-      | admin                     |
-      | admin@tenant1.com         |
       | publisherUser             |
       | publisherUser@tenant1.com |
 
@@ -679,7 +844,7 @@ Feature: Publisher API Definition Import
   # resource-owner PASSWORD. That last one is assertable HERE — and only here — because these import properties
   # carry distinct literal credentials that collide with nothing else in the payload, whereas the gateway
   # password-grant scenario uses the acting actor's own carbon password (see the OAUTH password-grant scenario in
-  # gateway/security_enforcement.feature). Together with that scenario this pins the PASSWORD-grant config on BOTH
+  # gateway/endpoint_security.feature). Together with that scenario this pins the PASSWORD-grant config on BOTH
   # the create path (here) and the update path (there).
   # Ports the PASSWORD-grant half of AddEndPointSecurityPerTypeTestCase#testAPIDefinitionImportWithEndpointSecurity.
   @cap:publisher @feat:definitions @rule:import-export @type:regression @legacy:AddEndPointSecurityPerTypeTestCase
@@ -690,13 +855,13 @@ Feature: Publisher API Definition Import
     # Non-secret fields round-trip on the import response, per key type — including the resource-owner username.
     And The value of response field "endpointConfig.endpoint_security.production.type" should be "OAUTH"
     And The value of response field "endpointConfig.endpoint_security.production.grantType" should be "PASSWORD"
-    And The value of response field "endpointConfig.endpoint_security.production.tokenUrl" should be "https://localhost:9443/oauth2/token"
+    And The value of response field "endpointConfig.endpoint_security.production.tokenUrl" should be "{{backendOAuthTokenUrl}}"
     And The value of response field "endpointConfig.endpoint_security.production.clientId" should be "oasImportProdClientId0001"
     And The value of response field "endpointConfig.endpoint_security.production.username" should be "oasImportProdRoUser0001"
     And The value of response field "endpointConfig.endpoint_security.production.enabled" should be "true"
     And The value of response field "endpointConfig.endpoint_security.sandbox.type" should be "OAUTH"
     And The value of response field "endpointConfig.endpoint_security.sandbox.grantType" should be "PASSWORD"
-    And The value of response field "endpointConfig.endpoint_security.sandbox.tokenUrl" should be "https://localhost:9443/oauth2/token"
+    And The value of response field "endpointConfig.endpoint_security.sandbox.tokenUrl" should be "{{backendOAuthTokenUrl}}"
     And The value of response field "endpointConfig.endpoint_security.sandbox.clientId" should be "oasImportSandClientId0002"
     And The value of response field "endpointConfig.endpoint_security.sandbox.username" should be "oasImportSandRoUser0002"
     And The value of response field "endpointConfig.endpoint_security.sandbox.enabled" should be "true"
@@ -715,7 +880,7 @@ Feature: Publisher API Definition Import
     Then The response status code should be 200
     And The value of response field "endpointConfig.endpoint_security.production.type" should be "OAUTH"
     And The value of response field "endpointConfig.endpoint_security.production.grantType" should be "PASSWORD"
-    And The value of response field "endpointConfig.endpoint_security.production.tokenUrl" should be "https://localhost:9443/oauth2/token"
+    And The value of response field "endpointConfig.endpoint_security.production.tokenUrl" should be "{{backendOAuthTokenUrl}}"
     And The value of response field "endpointConfig.endpoint_security.production.clientId" should be "oasImportProdClientId0001"
     And The value of response field "endpointConfig.endpoint_security.sandbox.grantType" should be "PASSWORD"
     And The value of response field "endpointConfig.endpoint_security.production.username" should be "oasImportProdRoUser0001"
@@ -723,7 +888,7 @@ Feature: Publisher API Definition Import
     And The value of response field "endpointConfig.endpoint_security.production.clientSecret" should be ""
     And The value of response field "endpointConfig.endpoint_security.production.password" should be ""
     And The value of response field "endpointConfig.endpoint_security.sandbox.type" should be "OAUTH"
-    And The value of response field "endpointConfig.endpoint_security.sandbox.tokenUrl" should be "https://localhost:9443/oauth2/token"
+    And The value of response field "endpointConfig.endpoint_security.sandbox.tokenUrl" should be "{{backendOAuthTokenUrl}}"
     And The value of response field "endpointConfig.endpoint_security.sandbox.clientId" should be "oasImportSandClientId0002"
     And The value of response field "endpointConfig.endpoint_security.sandbox.username" should be "oasImportSandRoUser0002"
     And The value of response field "endpointConfig.endpoint_security.sandbox.enabled" should be "true"
@@ -739,8 +904,6 @@ Feature: Publisher API Definition Import
 
     Examples:
       | actor                     |
-      | admin                     |
-      | admin@tenant1.com         |
       | publisherUser             |
       | publisherUser@tenant1.com |
 
@@ -1091,6 +1254,16 @@ Feature: Publisher API Definition Import
     And The value of response field "corsConfiguration.corsConfigurationEnabled" should be "true"
 
     # The retrieved definition now carries the x-wso2-cors extension with the config enabled.
+    When I retrieve the swagger of "apis" resource "corsSwApiId"
+    Then The response status code should be 200
+    And The value of response field "$['x-wso2-cors']['corsConfigurationEnabled']" should be "true"
+
+    # Round-trip the retrieved Swagger unchanged through the Publisher update endpoint. Check the mutation response
+    # itself as well as the subsequent readback so an empty/stale PUT response cannot pass just because state persisted.
+    When I put the response payload in context as "corsEnabledSwagger"
+    And I update the swagger of "apis" resource "corsSwApiId" from context "corsEnabledSwagger"
+    Then The response status code should be 200
+    And The value of response field "$['x-wso2-cors']['corsConfigurationEnabled']" should be "true"
     When I retrieve the swagger of "apis" resource "corsSwApiId"
     Then The response status code should be 200
     And The value of response field "$['x-wso2-cors']['corsConfigurationEnabled']" should be "true"

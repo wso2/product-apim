@@ -13,6 +13,7 @@ Feature: Gateway Sandbox-Only Environment
     Given The system is ready
     And I have valid access tokens as "<actor>"
     And I have created an api from "artifacts/payloads/create_apim_prodsandbox_api.json" as "sgApiId" and deployed it
+    And the "apis" resource "sgApiId" should be live on the gateway, redeploying if propagation is lost
     When I publish the "apis" resource with id "sgApiId"
     Then The lifecycle status of API "sgApiId" should be "Published"
     When I retrieve the "apis" resource with id "sgApiId"
@@ -43,6 +44,7 @@ Feature: Gateway Sandbox-Only Environment
     Then The response status code should be 200
     When I invoke the API at gateway context "{{sgContext}}/1.0.0/x" with method "GET" using access token "generatedAccessToken" and payload "" until response body contains "echo/sandbox" within 60 seconds
     Then The response status code should be 200
+    And The value of response field "received" should be "/jaxrs_basic/services/customers/customerservice/echo/sandbox/x"
 
     # A PRODUCTION token is REJECTED by the sandbox gateway -> 401 "Production Key Provided for Sandbox Gateway".
     When I put the following JSON payload in context as "sgProdKeys"
@@ -129,6 +131,7 @@ Feature: Gateway Sandbox-Only Environment
     # Secured baseline A: the SANDBOX token routes to the sandbox endpoint (echo/sandbox, 200).
     When I invoke the API at gateway context "{{sbuContext}}/1.0.0/x" with method "GET" using access token "sbuSandboxToken" and payload "" until response body contains "echo/sandbox" within 60 seconds
     Then The response status code should be 200
+    And The value of response field "received" should be "/jaxrs_basic/services/customers/customerservice/echo/sandbox/x"
     # Secured baseline B (discriminating): the PRODUCTION token is rejected 401 by the sandbox gateway. This 401 is
     # what makes the post-flip 200 attributable — it proves the resource was genuinely secured.
     When I invoke the API at gateway context "{{sbuContext}}/1.0.0/x" with method "GET" using access token "sbuProdToken" and payload "" until response status code becomes 401 within 60 seconds
@@ -144,6 +147,7 @@ Feature: Gateway Sandbox-Only Environment
       [{"target":"/x","verb":"GET","authType":"None","throttlingPolicy":"Unlimited"}]
       """
     Then The response status code should be 200
+    And The response body should not be null
     When I deploy the API with id "sbuApiId"
     And the "apis" resource "sbuApiId" should be live on the gateway, redeploying if propagation is lost
     And I wait until "apis" "sbuApiId" revision is deployed in the gateway
@@ -152,12 +156,14 @@ Feature: Gateway Sandbox-Only Environment
     # gate for the production-token read that follows.
     When I invoke the API at gateway context "{{sbuContext}}/1.0.0/x" with method "GET" using access token "sbuSandboxToken" and payload "" until response body contains "echo/sandbox" within 60 seconds
     Then The response status code should be 200
+    And The value of response field "received" should be "/jaxrs_basic/services/customers/customerservice/echo/sandbox/x"
     And The response should not contain "echo/prod"
     # Unsecured reading, PRODUCTION token (discriminating): the 401 is gone and — because this is a SANDBOX gateway —
     # the SANDBOX endpoint answers, NOT production. The not-contains pins that endpoint selection followed the
     # gateway environment type rather than falling through to the production endpoint.
     When I invoke the API at gateway context "{{sbuContext}}/1.0.0/x" with method "GET" using access token "sbuProdToken" and payload "" until response body contains "echo/sandbox" within 60 seconds
     Then The response status code should be 200
+    And The value of response field "received" should be "/jaxrs_basic/services/customers/customerservice/echo/sandbox/x"
     And The response should not contain "echo/prod"
 
     Examples:
@@ -227,6 +233,7 @@ Feature: Gateway Sandbox-Only Environment
     # Secured baseline A: the SANDBOX token routes to the sole (sandbox) endpoint (echo/sandbox, 200).
     When I invoke the API at gateway context "{{ssuContext}}/1.0.0/x" with method "GET" using access token "ssuSandboxToken" and payload "" until response body contains "echo/sandbox" within 60 seconds
     Then The response status code should be 200
+    And The value of response field "received" should be "/jaxrs_basic/services/customers/customerservice/echo/sandbox/x"
     # Secured baseline B (discriminating): the PRODUCTION token is rejected 401 by the sandbox gateway.
     When I invoke the API at gateway context "{{ssuContext}}/1.0.0/x" with method "GET" using access token "ssuProdToken" and payload "" until response status code becomes 401 within 60 seconds
     Then The response status code should be 401
@@ -240,6 +247,7 @@ Feature: Gateway Sandbox-Only Environment
       [{"target":"/x","verb":"GET","authType":"None","throttlingPolicy":"Unlimited"}]
       """
     Then The response status code should be 200
+    And The response body should not be null
     When I deploy the API with id "ssuApiId"
     And the "apis" resource "ssuApiId" should be live on the gateway, redeploying if propagation is lost
     And I wait until "apis" "ssuApiId" revision is deployed in the gateway
@@ -247,10 +255,12 @@ Feature: Gateway Sandbox-Only Environment
     # Unsecured reading, SANDBOX token: still the sandbox endpoint. Also the propagation gate for the read below.
     When I invoke the API at gateway context "{{ssuContext}}/1.0.0/x" with method "GET" using access token "ssuSandboxToken" and payload "" until response body contains "echo/sandbox" within 60 seconds
     Then The response status code should be 200
+    And The value of response field "received" should be "/jaxrs_basic/services/customers/customerservice/echo/sandbox/x"
     And The response should not contain "echo/prod"
     # Unsecured reading, PRODUCTION token (discriminating): the 401 is gone; the sole (sandbox) endpoint answers.
     When I invoke the API at gateway context "{{ssuContext}}/1.0.0/x" with method "GET" using access token "ssuProdToken" and payload "" until response body contains "echo/sandbox" within 60 seconds
     Then The response status code should be 200
+    And The value of response field "received" should be "/jaxrs_basic/services/customers/customerservice/echo/sandbox/x"
     And The response should not contain "echo/prod"
 
     Examples:

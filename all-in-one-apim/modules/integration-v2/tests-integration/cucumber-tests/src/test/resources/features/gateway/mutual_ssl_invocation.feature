@@ -21,14 +21,15 @@ Feature: Gateway Mutual-SSL (mTLS) API Invocation
     When I retrieve the "apis" resource with id "mtlsApiId"
     And I extract response field "context" and store it as "mtlsContext"
     When I deploy the API with id "mtlsApiId"
+    Then the "apis" resource "mtlsApiId" should be live on the gateway, redeploying if propagation is lost
     When I publish the "apis" resource with id "mtlsApiId"
     Then The lifecycle status of API "mtlsApiId" should be "Published"
     # Presenting the matching client certificate authenticates → 200 (the uploaded cert becomes active once the
     # gateway's SSL-profile read interval — shrunk to 10s by the overlay — picks it up)
     When I invoke the API at gateway context "{{mtlsContext}}/1.0.0/customers/123" presenting client certificate "artifacts/certs/mutualssl/cert_chain_root.p12" until response status code becomes 200 within 150 seconds
     Then The response status code should be 200
-    And The value of response field "id" should be "123"
-    And The value of response field "name" should be "John"
+    And The response should contain "<Customer><id>123</id><name>John</name></Customer>"
+    And The response header "Content-Type" should be exactly "text/xml; charset=utf-8"
     # No client certificate on a mutualssl_mandatory API → rejected with 401
     When I invoke the API at gateway context "{{mtlsContext}}/1.0.0/customers/123" with no client certificate until response status code becomes 401 within 60 seconds
     Then The response status code should be 401
@@ -81,11 +82,13 @@ Feature: Gateway Mutual-SSL (mTLS) API Invocation
     And I extract response field "context" and store it as "moContext"
     When I deploy the API with id "moApiId"
     Then The response status code should be 201
+    And the "apis" resource "moApiId" should be live on the gateway, redeploying if propagation is lost
     When I publish the "apis" resource with id "moApiId"
     Then The lifecycle status of API "moApiId" should be "Published"
 
     # The mutualssl + oauth2 API (mutual SSL OPTIONAL, application security MANDATORY) — the positive control's target.
     When I have created an api from "artifacts/payloads/create_apim_mutualssl_oauth_api.json" as "mxApiId" and deployed it
+    Then the "apis" resource "mxApiId" should be live on the gateway, redeploying if propagation is lost
     When I publish the "apis" resource with id "mxApiId"
     Then The lifecycle status of API "mxApiId" should be "Published"
     When I retrieve the "apis" resource with id "mxApiId"
@@ -129,6 +132,7 @@ Feature: Gateway Mutual-SSL (mTLS) API Invocation
     Then The response status code should be 201
     When I deploy the API with id "mmApiId"
     Then The response status code should be 201
+    And the "apis" resource "mmApiId" should be live on the gateway, redeploying if propagation is lost
     When I publish the "apis" resource with id "mmApiId"
     Then The lifecycle status of API "mmApiId" should be "Published"
     When I retrieve the "apis" resource with id "mmApiId"
@@ -184,6 +188,7 @@ Feature: Gateway Mutual-SSL (mTLS) API Invocation
     Then The response status code should be 201
     When I deploy the API with id "mfApiId2"
     Then The response status code should be 201
+    And the "apis" resource "mfApiId2" should be live on the gateway, redeploying if propagation is lost
     When I publish the "apis" resource with id "mfApiId2"
     Then The lifecycle status of API "mfApiId2" should be "Published"
     When I retrieve the "apis" resource with id "mfApiId2"

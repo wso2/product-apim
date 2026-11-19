@@ -27,6 +27,7 @@ import io.cucumber.testng.CucumberOptions;
  */
 @CucumberOptions(
         features = {
+                "src/test/resources/features/gateway/_setup_throttle_data_registry.feature",
                 "src/test/resources/features/gateway/conditional_throttling.feature"
         },
         glue = {

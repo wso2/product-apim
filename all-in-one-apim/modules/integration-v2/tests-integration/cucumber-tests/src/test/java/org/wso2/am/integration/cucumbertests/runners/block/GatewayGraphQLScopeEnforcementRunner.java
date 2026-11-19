@@ -20,8 +20,8 @@ package org.wso2.am.integration.cucumbertests.runners.block;
 import io.cucumber.testng.CucumberOptions;
 
 /**
- * Runner for gateway GraphQL operation-level scope enforcement (200 with the scope, 403 without). Runs in the
- * IntegrationV2-Gateway block (backend started); parallel-safe (own uniquely-created API/app/scope).
+ * Runner for gateway GraphQL operation-level scope enforcement (200 with the scope, 403 without). Runs in an
+ * IntegrationV2-Gateway-* block (backend started); parallel-safe (own uniquely-created API/app/scope).
  */
 @CucumberOptions(
         features = {"src/test/resources/features/gateway/graphql_scope_enforcement.feature"},

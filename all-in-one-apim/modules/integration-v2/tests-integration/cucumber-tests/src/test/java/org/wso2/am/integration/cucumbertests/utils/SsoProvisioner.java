@@ -1,0 +1,964 @@
+/*
+ *  Copyright (c) 2026, WSO2 LLC. (http://www.wso2.org) All Rights Reserved.
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *  http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *
+ */
+
+package org.wso2.am.integration.cucumbertests.utils;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
+import org.testng.Assert;
+import org.wso2.am.integration.cucumbertests.utils.clients.SimpleHTTPClient;
+import org.wso2.am.integration.test.utils.Constants;
+import org.wso2.carbon.automation.engine.context.beans.Tenant;
+import org.wso2.carbon.automation.engine.context.beans.User;
+import org.wso2.am.testcontainers.DynamicISContainer;
+import org.wso2.am.testcontainers.DistributedDynamicApimContainer;
+import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
+
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+/**
+ * Provisions the WSO2 IS 7.x side and the APIM side of the external-IdP console-SSO flow: an IS OIDC
+ * application the APIM consoles federate to, a federated (JIT-provisioned) user on IS, the APIM-side OIDC
+ * identity provider registered against that IS app, and the multi-option (local + federated) authentication
+ * step wired onto the publisher/admin/devportal console service providers.
+ *
+ * <p>This is the SOAP-admin-service exception of CLAUDE.md §14: APIM exposes no REST API for IdP registration
+ * or for editing a console service provider's authentication steps, so a helper util is acceptable — it runs
+ * super-tenant admin/admin and is called from a {@code _setup_*} step, never a listener hook.
+ *
+ * <p>Container-URL split this class encodes (the manual recipe used fixed {@code localhost:9443/9444}; the
+ * framework maps ports and uses a network alias):
+ * <ul>
+ *   <li>The IdP's <b>authorize</b> and <b>logout</b> endpoints go to the IS browser-facing (mapped-host) base
+ *       — APIM redirects the <i>browser</i> there.</li>
+ *   <li>The IdP's <b>token</b> and <b>userinfo</b> endpoints go to the IS server-facing ({@code wso2is:9443})
+ *       base — APIM calls these server-to-server, and the id_token {@code iss} matches that host.</li>
+ *   <li>IS REST/SCIM2 management calls go to the browser-facing base (the test reaches IS on the mapped port),
+ *       exactly like {@code TokenExchangeProvisioner}'s {@code isBase()}.</li>
+ * </ul>
+ */
+public final class SsoProvisioner {
+
+    /** IS "Standard-Based Application" template used for a plain OIDC app (same template the TX provisioner uses). */
+    private static final String IS_APP_TEMPLATE_ID = "b9c5e11e-fc78-484b-9bec-015d247561b8";
+
+    /** SOAP namespaces: IdP-mgt operations, common-model DTOs, and app-mgt operations. */
+    private static final String NS_IDP_OPS = "http://mgt.idp.carbon.wso2.org";
+    private static final String NS_MODEL = "http://model.common.application.identity.carbon.wso2.org/xsd";
+    private static final String NS_APP_OPS = "http://org.apache.axis2/xsd";
+
+    private static final String SCIM_CONTENT_TYPE = "application/scim+json";
+    /** IS 7.x SCIM2 custom user-schema extension (charon-config custom-user-schema-uri). */
+    private static final String SCIM2_CUSTOM_USER_SCHEMA = "urn:scim:schemas:extension:custom:User";
+
+    /**
+     * APIM's INTERNAL browser-facing base — the hostname APIM emits in its own redirects and {@code redirect_uri}
+     * (from {@code APIUtil.getServerURL()}). The Playwright client reaches this through its CONNECT proxy, so the
+     * federated callback and the console code-exchange {@code redirect_uri} stay consistent. IS server-to-server
+     * endpoints (token/userinfo) and the federated authorize/logout use the internal IS base {@link #isServerBase}
+     * ({@code wso2is:9443}) so the id_token issuer is consistent too.
+     */
+    private static final String APIM_LOCALHOST_INTERNAL = "https://localhost:9443/";
+
+    /** APIM hostname used by browser-visible redirects and callbacks in the current block topology. */
+    private static String apimInternal() {
+        return TestContext.get("blockApimContainer") instanceof DistributedDynamicApimContainer
+                ? "https://apim-cp:9443/" : APIM_LOCALHOST_INTERNAL;
+    }
+
+    private SsoProvisioner() {
+    }
+
+    // ---------------------------------------------------------------------------------------------------------
+    // URL split
+    // ---------------------------------------------------------------------------------------------------------
+
+    /** APIM browser-facing base (trailing slash), e.g. {@code https://localhost:32771/}. */
+    private static String apimBase() {
+        Object v = TestContext.get("baseUrl");
+        if (v == null) {
+            throw new IllegalStateException("baseUrl not in context; the block must be booted first");
+        }
+        return v.toString();
+    }
+
+    /** IS browser-facing base (mapped host, trailing slash) — IdP authorize/logout + IS REST/SCIM2 management. */
+    private static String isBrowserBase() {
+        return IntegrationActors.baseUrl(IntegrationActors.IS);
+    }
+
+    /** IS server-facing base ({@code https://wso2is:9443/}) — IdP token/userinfo (server-to-server, id_token iss). */
+    private static String isServerBase() {
+        return "https://" + DynamicISContainer.NETWORK_ALIAS + ":9443/";
+    }
+
+    /** The IS integration actor's auth headers (CLAUDE.md §14 — IS's own principal, not an APIM actor). */
+    private static Map<String, String> isAuthHeaders() {
+        return IntegrationActors.authHeaders(IntegrationActors.IS);
+    }
+
+    // ---------------------------------------------------------------------------------------------------------
+    // 1) IS OIDC application
+    // ---------------------------------------------------------------------------------------------------------
+
+    /**
+     * Creates the IS OIDC application the APIM consoles federate to (authorization_code, callback = APIM's
+     * {@code commonauth}, groups claim requested, JIT subject = username), skips login/logout consent, and
+     * returns {@code [clientId, clientSecret, appId]}.
+     */
+    public static String[] createIsSsoApp(String appName) throws IOException {
+        return createIsSsoApp(appName, false);
+    }
+
+    /** Creates an OIDC client which also releases the local user-profile claims required by backend-JWT tests. */
+    public static String[] createIsSsoApp(String appName, boolean requestProfileClaims) throws IOException {
+        String base = isBrowserBase();
+
+        // The IS app's callback and allowed origin are APIM's INTERNAL host: APIM (via its OIDC authenticator)
+        // sends redirect_uri=https://localhost:9443/commonauth to IS, and the Playwright browser reaches that
+        // through the CONNECT proxy. Using the internal host keeps redirect_uri consistent end to end.
+        JSONObject oidcInbound = new JSONObject()
+                .put("grantTypes", new JSONArray().put("authorization_code"))
+                .put("callbackURLs", new JSONArray().put(apimInternal() + "commonauth"))
+                .put("allowedOrigins", new JSONArray().put(apimInternal().replaceAll("/$", "")))
+                .put("publicClient", false);
+        JSONArray requestedClaims = new JSONArray().put(new JSONObject().put("claim", new JSONObject()
+                .put("uri", "http://wso2.org/claims/groups")).put("mandatory", true));
+        if (requestProfileClaims) {
+            // The legacy federated JWT uses the non-standard OIDC claim "mobile". Register it on the real IS IdP
+            // and attach it to profile so the authorization-code flow emits the same claim name.
+            registerIsOidcExternalClaim("mobile", "http://wso2.org/claims/mobile");
+            registerIsOidcExternalClaim("organization", "http://wso2.org/claims/organization");
+            // IS releases user attributes only when the requested OIDC scopes include them. The standard
+            // phone_number claim uses the phone scope; mobile and organization are released under profile.
+            ensureIsOidcScopeClaim("profile", "mobile");
+            ensureIsOidcScopeClaim("profile", "organization");
+            for (String claim : new String[] {"givenname", "lastname", "mobile", "organization", "emailaddress",
+                    "telephone"}) {
+                requestedClaims.put(new JSONObject().put("claim", new JSONObject()
+                        .put("uri", "http://wso2.org/claims/" + claim)).put("mandatory", false));
+            }
+        }
+        JSONObject claimConfig = new JSONObject()
+                .put("dialect", "LOCAL")
+                .put("requestedClaims", requestedClaims)
+                .put("subject", new JSONObject()
+                        .put("claim", new JSONObject().put("uri", "http://wso2.org/claims/username"))
+                        .put("includeTenantDomain", false));
+        String createPayload = new JSONObject()
+                .put("name", appName)
+                .put("templateId", IS_APP_TEMPLATE_ID)
+                .put("inboundProtocolConfiguration", new JSONObject().put("oidc", oidcInbound))
+                .put("claimConfiguration", claimConfig)
+                .toString();
+
+        // A freshly-booted, block-private IS can trip a transient thread-safety race on its FIRST admin
+        // authentications under load (java.util.ConcurrentModificationException in IdentityUserNameResolverListener
+        // during admin auth), failing the first authenticated call. Warm the auth path with an IDEMPOTENT probe
+        // (a GET, safe to retry) so the create runs exactly once against a settled auth path. Retrying the
+        // non-idempotent create POST itself would be unsafe: retryUntil also re-invokes on IOException / other
+        // non-201s, where the app may have been created server-side but the response lost — leaving a
+        // duplicate-name 409 retry-loop and an un-swept app (the §15 warning against re-POSTing a non-idempotent
+        // create; use an idempotent probe or adopt-the-survivor instead).
+        try {
+            Utils.retryUntil(0L,
+                    () -> SimpleHTTPClient.getInstance().doGet(base + "api/server/v1/applications?limit=1",
+                            isAuthHeaders()),
+                    r -> r != null && r.getResponseCode() == 200);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IOException("Interrupted warming the IS admin auth path", e);
+        }
+        // Auth path is warm — create the app exactly ONCE (this create is not idempotent).
+        HttpResponse create = SimpleHTTPClient.getInstance().doPost(base + "api/server/v1/applications",
+                isAuthHeaders(), createPayload, Constants.CONTENT_TYPES.APPLICATION_JSON);
+        Assert.assertTrue(create != null && create.getResponseCode() == 201,
+                "IS SSO app create failed: got=" + (create == null ? "null"
+                        : create.getResponseCode() + "/" + create.getData()));
+        String appId = locationId(create);
+        Assert.assertNotNull(appId, "Could not read created IS SSO app id from Location header");
+        // Register for the IS-side teardown sweep BEFORE the follow-up config calls, so an aborted config
+        // still leaves the app swept (as the IS integration actor — see ISResourceCleanup).
+        ISResourceCleanup.registerApplication(appId);
+
+        HttpResponse oidcResp = SimpleHTTPClient.getInstance().doGet(
+                base + "api/server/v1/applications/" + appId + "/inbound-protocols/oidc", isAuthHeaders());
+        Assert.assertTrue(oidcResp != null && oidcResp.getResponseCode() == 200 && oidcResp.getData() != null
+                        && !oidcResp.getData().isBlank(),
+                "IS OIDC inbound fetch failed: got=" + (oidcResp == null ? "null"
+                        : oidcResp.getResponseCode() + "/" + oidcResp.getData()));
+        JSONObject oidc = new JSONObject(oidcResp.getData());
+
+        String patchPayload = new JSONObject().put("advancedConfigurations", new JSONObject()
+                .put("skipLoginConsent", true).put("skipLogoutConsent", true)).toString();
+        HttpResponse patch = SimpleHTTPClient.getInstance().doPatch(
+                base + "api/server/v1/applications/" + appId, isAuthHeaders(), patchPayload,
+                Constants.CONTENT_TYPES.APPLICATION_JSON);
+        Assert.assertTrue(patch != null && patch.getResponseCode() >= 200 && patch.getResponseCode() < 300,
+                "IS SSO app skip-consent PATCH failed: got=" + (patch == null ? "null"
+                        : patch.getResponseCode() + "/" + patch.getData()));
+
+        return new String[]{oidc.getString("clientId"), oidc.getString("clientSecret"), appId};
+    }
+
+    /**
+     * Makes PKCE mandatory on the IS OIDC application {@code appId} (S256 only, plain refused), so IS rejects any
+     * authorization request without a {@code code_challenge} and any token request without the matching
+     * {@code code_verifier}. Reads the setting back, so a silently ignored update fails here rather than letting
+     * a federated-PKCE scenario pass against an IS that never enforced PKCE.
+     */
+    public static void mandateIsAppPkce(String appId) throws IOException {
+        String url = isBrowserBase() + "api/server/v1/applications/" + appId + "/inbound-protocols/oidc";
+        HttpResponse current = SimpleHTTPClient.getInstance().doGet(url, isAuthHeaders());
+        Assert.assertTrue(current != null && current.getResponseCode() == 200 && current.getData() != null
+                        && !current.getData().isBlank(),
+                "IS OIDC inbound fetch failed for app " + appId + ": got=" + (current == null ? "null"
+                        : current.getResponseCode() + "/" + current.getData()));
+        JSONObject oidc = new JSONObject(current.getData());
+        oidc.put("pkce", new JSONObject().put("mandatory", true).put("supportPlainTransformAlgorithm", false));
+        HttpResponse put = SimpleHTTPClient.getInstance().doPut(url, isAuthHeaders(), oidc.toString(),
+                Constants.CONTENT_TYPES.APPLICATION_JSON);
+        Assert.assertTrue(put != null && put.getResponseCode() >= 200 && put.getResponseCode() < 300,
+                "IS OIDC inbound PKCE update failed for app " + appId + ": got=" + (put == null ? "null"
+                        : put.getResponseCode() + "/" + put.getData()));
+
+        HttpResponse stored = SimpleHTTPClient.getInstance().doGet(url, isAuthHeaders());
+        Assert.assertTrue(stored != null && stored.getResponseCode() == 200 && stored.getData() != null
+                        && !stored.getData().isBlank(),
+                "IS OIDC inbound re-fetch failed for app " + appId + ": got=" + (stored == null ? "null"
+                        : stored.getResponseCode() + "/" + stored.getData()));
+        JSONObject pkce = new JSONObject(stored.getData()).optJSONObject("pkce");
+        Assert.assertTrue(pkce != null && pkce.optBoolean("mandatory", false),
+                "IS app " + appId + " did not retain pkce.mandatory=true: " + stored.getData());
+    }
+
+    /** Adds a custom OIDC claim mapping on the external IS that issues the federated token. */
+    private static void registerIsOidcExternalClaim(String oidcClaim, String localClaim) throws IOException {
+        registerIsExternalClaim("http://wso2.org/oidc/claim", false, oidcClaim, localClaim);
+    }
+
+    /**
+     * Maps an external claim of the given IS claim dialect to a local claim, updating an existing mapping in place.
+     * With {@code createDialect}, a dialect the IS does not have yet is created first (the SCIM2 custom user
+     * schema dialect exists only once its first attribute is added).
+     */
+    private static void registerIsExternalClaim(String dialectUri, boolean createDialect, String externalClaim,
+                                                String localClaim) throws IOException {
+        String base = isBrowserBase() + "api/server/v1/claim-dialects";
+        String dialectId = isClaimDialectId(base, dialectUri);
+        if (dialectId == null && createDialect) {
+            HttpResponse dialectCreate = SimpleHTTPClient.getInstance().doPost(base, isAuthHeaders(),
+                    new JSONObject().put("dialectURI", dialectUri).toString(),
+                    Constants.CONTENT_TYPES.APPLICATION_JSON);
+            Assert.assertTrue(dialectCreate != null && (dialectCreate.getResponseCode() == 201
+                            || dialectCreate.getResponseCode() == 409),
+                    "IS claim dialect " + dialectUri + " creation failed: " + (dialectCreate == null ? "null"
+                            : dialectCreate.getResponseCode() + "/" + dialectCreate.getData()));
+            dialectId = isClaimDialectId(base, dialectUri);
+        }
+        Assert.assertNotNull(dialectId, "IS has no " + dialectUri + " dialect");
+
+        String claimsUrl = base + "/" + dialectId + "/claims";
+        HttpResponse claimsResponse = SimpleHTTPClient.getInstance().doGet(claimsUrl, isAuthHeaders());
+        Assert.assertTrue(claimsResponse != null && claimsResponse.getResponseCode() == 200,
+                "IS " + dialectUri + " claim lookup failed: " + (claimsResponse == null ? "null"
+                        : claimsResponse.getResponseCode() + "/" + claimsResponse.getData()));
+        JSONArray claims = new JSONArray(claimsResponse.getData());
+        for (int i = 0; i < claims.length(); i++) {
+            JSONObject claim = claims.getJSONObject(i);
+            if (externalClaim.equals(claim.optString("claimURI"))) {
+                if (localClaim.equals(claim.optString("mappedLocalClaimURI"))) {
+                    return;
+                }
+                JSONObject payload = new JSONObject().put("claimURI", externalClaim)
+                        .put("mappedLocalClaimURI", localClaim);
+                HttpResponse updateResponse = SimpleHTTPClient.getInstance().doPut(
+                        claimsUrl + "/" + claim.getString("id"), isAuthHeaders(), payload.toString(),
+                        Constants.CONTENT_TYPES.APPLICATION_JSON);
+                Assert.assertTrue(updateResponse != null && updateResponse.getResponseCode() >= 200
+                                && updateResponse.getResponseCode() < 300,
+                        "IS external claim " + externalClaim + " update failed: "
+                                + (updateResponse == null ? "null"
+                                        : updateResponse.getResponseCode() + "/" + updateResponse.getData()));
+                return;
+            }
+        }
+
+        JSONObject payload = new JSONObject().put("claimURI", externalClaim).put("mappedLocalClaimURI", localClaim);
+        HttpResponse createResponse = SimpleHTTPClient.getInstance().doPost(claimsUrl, isAuthHeaders(),
+                payload.toString(), Constants.CONTENT_TYPES.APPLICATION_JSON);
+        Assert.assertTrue(createResponse != null && createResponse.getResponseCode() == 201,
+                "IS external claim " + externalClaim + " creation failed: "
+                        + (createResponse == null ? "null"
+                                : createResponse.getResponseCode() + "/" + createResponse.getData()));
+    }
+
+    /** Returns the IS claim-management id of the dialect with the given URI, or null if the IS has none. */
+    private static String isClaimDialectId(String dialectsUrl, String dialectUri) throws IOException {
+        HttpResponse dialectsResponse = SimpleHTTPClient.getInstance().doGet(dialectsUrl, isAuthHeaders());
+        Assert.assertTrue(dialectsResponse != null && dialectsResponse.getResponseCode() == 200,
+                "IS claim dialect lookup failed: " + (dialectsResponse == null ? "null"
+                        : dialectsResponse.getResponseCode() + "/" + dialectsResponse.getData()));
+        JSONArray dialects = new JSONArray(dialectsResponse.getData());
+        for (int i = 0; i < dialects.length(); i++) {
+            JSONObject dialect = dialects.getJSONObject(i);
+            if (dialectUri.equals(dialect.optString("dialectURI"))) {
+                return dialect.getString("id");
+            }
+        }
+        return null;
+    }
+
+    /** Ensures a claim is released by a standard IS OIDC scope, preserving its existing mappings. */
+    private static void ensureIsOidcScopeClaim(String scopeName, String claim) throws IOException {
+        String url = isBrowserBase() + "api/server/v1/oidc/scopes/" + scopeName;
+        HttpResponse scopeResponse = SimpleHTTPClient.getInstance().doGet(url, isAuthHeaders());
+        Assert.assertTrue(scopeResponse != null && scopeResponse.getResponseCode() == 200,
+                "IS OIDC scope lookup failed for " + scopeName + ": " + (scopeResponse == null ? "null"
+                        : scopeResponse.getResponseCode() + "/" + scopeResponse.getData()));
+        JSONObject scope = new JSONObject(scopeResponse.getData());
+        JSONArray claims = scope.getJSONArray("claims");
+        for (int i = 0; i < claims.length(); i++) {
+            if (claim.equals(claims.getString(i))) {
+                return;
+            }
+        }
+        claims.put(claim);
+        JSONObject payload = new JSONObject()
+                .put("displayName", scope.getString("displayName"))
+                .put("description", scope.optString("description", ""))
+                .put("claims", claims);
+        HttpResponse updateResponse = SimpleHTTPClient.getInstance().doPut(url, isAuthHeaders(), payload.toString(),
+                Constants.CONTENT_TYPES.APPLICATION_JSON);
+        Assert.assertTrue(updateResponse != null && updateResponse.getResponseCode() >= 200
+                        && updateResponse.getResponseCode() < 300,
+                "IS OIDC scope update failed for " + scopeName + ": " + (updateResponse == null ? "null"
+                        : updateResponse.getResponseCode() + "/" + updateResponse.getData()));
+    }
+
+    // ---------------------------------------------------------------------------------------------------------
+    // 2) IS federated user
+    // ---------------------------------------------------------------------------------------------------------
+
+    /**
+     * Creates a federated user on IS via SCIM2 and places them in the given groups (the IdP's remote roles).
+     * A group create that collides with an existing group (409) is downgraded to a SCIM PATCH add-member.
+     */
+    public static void createIsFederatedUser(String userName, String password, String email, List<String> groups)
+            throws IOException {
+        createIsFederatedUser(userName, password, email, groups, false);
+    }
+
+    /** Creates an external user with profile fields used to assert federation into a backend JWT. */
+    public static void createIsFederatedUser(String userName, String password, String email, List<String> groups,
+            boolean profileClaims) throws IOException {
+        String base = isBrowserBase();
+
+        JSONArray schemas = new JSONArray().put("urn:ietf:params:scim:schemas:core:2.0:User");
+        if (profileClaims) {
+            schemas.put("urn:ietf:params:scim:schemas:extension:enterprise:2.0:User");
+            // The OIDC phone_number claim reads the local telephone claim, which no shipped SCIM2 attribute maps to
+            // on IS 7.3 (phoneNumbers.work maps to the separate phoneNumbers.work claim). Map a custom user-schema
+            // attribute to it so the user carries the telephone the federated id_token releases.
+            registerIsExternalClaim(SCIM2_CUSTOM_USER_SCHEMA, true, SCIM2_CUSTOM_USER_SCHEMA + ":telephone",
+                    "http://wso2.org/claims/telephone");
+            schemas.put(SCIM2_CUSTOM_USER_SCHEMA);
+        }
+        JSONObject userPayload = new JSONObject()
+                .put("schemas", schemas)
+                .put("userName", userName)
+                .put("password", password)
+                .put("name", new JSONObject().put("givenName", userName).put("familyName", "SSO"))
+                .put("emails", new JSONArray().put(new JSONObject().put("primary", true).put("value", email)));
+        if (profileClaims) {
+            userPayload.put("phoneNumbers", new JSONArray()
+                    .put(new JSONObject().put("primary", false).put("type", "mobile")
+                            .put("value", "94123456987")));
+            userPayload.put("urn:ietf:params:scim:schemas:extension:enterprise:2.0:User",
+                    new JSONObject().put("organization", "FederatedOrg"));
+            userPayload.put(SCIM2_CUSTOM_USER_SCHEMA, new JSONObject().put("telephone", "424479772294778"));
+        }
+        HttpResponse userResp = SimpleHTTPClient.getInstance().doPost(base + "scim2/Users",
+                isAuthHeaders(), userPayload.toString(), SCIM_CONTENT_TYPE);
+        Assert.assertTrue(userResp != null && userResp.getResponseCode() == 201 && userResp.getData() != null
+                        && !userResp.getData().isBlank(),
+                "IS federated user create failed: got=" + (userResp == null ? "null"
+                        : userResp.getResponseCode() + "/" + userResp.getData()));
+        String userId = new JSONObject(userResp.getData()).getString("id");
+        ISResourceCleanup.registerUser(userId);
+
+        for (String group : groups) {
+            addUserToGroup(base, group, userId, userName);
+        }
+    }
+
+    /** Creates the group with the user as a member; on 409 (group exists) PATCH-adds the member instead. */
+    private static void addUserToGroup(String base, String group, String userId, String userName)
+            throws IOException {
+        String groupPayload = new JSONObject()
+                .put("schemas", new JSONArray().put("urn:ietf:params:scim:schemas:core:2.0:Group"))
+                .put("displayName", group)
+                .put("members", new JSONArray().put(new JSONObject()
+                        .put("value", userId).put("display", userName)))
+                .toString();
+        HttpResponse groupResp = SimpleHTTPClient.getInstance().doPost(base + "scim2/Groups",
+                isAuthHeaders(), groupPayload, SCIM_CONTENT_TYPE);
+        if (groupResp != null && groupResp.getResponseCode() == 201) {
+            return;
+        }
+        Assert.assertTrue(groupResp != null && groupResp.getResponseCode() == 409,
+                "IS group create for '" + group + "' failed: got=" + (groupResp == null ? "null"
+                        : groupResp.getResponseCode() + "/" + groupResp.getData()));
+
+        // Group already exists — resolve its id, then PATCH-add the member.
+        String filter = Utils.urlEncode("displayName eq " + group);
+        HttpResponse find = SimpleHTTPClient.getInstance().doGet(
+                base + "scim2/Groups?filter=" + filter, isAuthHeaders());
+        Assert.assertTrue(find != null && find.getResponseCode() == 200 && find.getData() != null
+                        && !find.getData().isBlank(),
+                "IS group lookup for '" + group + "' failed: got=" + (find == null ? "null"
+                        : find.getResponseCode() + "/" + find.getData()));
+        JSONObject found = new JSONObject(find.getData());
+        JSONArray resources = found.optJSONArray("Resources");
+        Assert.assertTrue(resources != null && resources.length() > 0,
+                "IS group '" + group + "' reported existing (409) but was not found by displayName filter: "
+                        + find.getData());
+        String groupId = resources.getJSONObject(0).getString("id");
+
+        String patchPayload = new JSONObject()
+                .put("schemas", new JSONArray().put("urn:ietf:params:scim:schemas:api:messages:2.0:PatchOp"))
+                .put("Operations", new JSONArray().put(new JSONObject()
+                        .put("op", "add").put("path", "members").put("value", new JSONArray().put(new JSONObject()
+                                .put("value", userId).put("display", userName)))))
+                .toString();
+        HttpResponse patch = SimpleHTTPClient.getInstance().doPatch(base + "scim2/Groups/" + groupId,
+                isAuthHeaders(), patchPayload, SCIM_CONTENT_TYPE);
+        Assert.assertTrue(patch != null && patch.getResponseCode() >= 200 && patch.getResponseCode() < 300,
+                "IS group '" + group + "' PATCH add-member failed: got=" + (patch == null ? "null"
+                        : patch.getResponseCode() + "/" + patch.getData()));
+    }
+
+    // ---------------------------------------------------------------------------------------------------------
+    // 3) APIM-side OIDC identity provider
+    // ---------------------------------------------------------------------------------------------------------
+
+    /**
+     * Registers (idempotently) the APIM-side OIDC identity provider against the IS app: authorize/logout on the
+     * IS browser base, token/userinfo on the IS server base, callback to APIM's {@code commonauth}, groups as the
+     * role claim, JIT provisioning on, and role mappings (admin/publisher/subscriber remote roles → local roles).
+     *
+     * <p>{@code addIdP} returns HTTP 500 even on success, so this does NOT assert on the SOAP status — it
+     * verifies via {@code getIdPByName} afterwards. Deletes any existing IdP of the same name first.
+     */
+    public static void registerOidcIdp(String idpName, String isClientId, String isClientSecret)
+            throws IOException {
+        registerOidcIdp(Constants.SUPER_TENANT_DOMAIN, idpName, isClientId, isClientSecret, false);
+    }
+
+    /** Registers the same external OIDC provider in the requested APIM tenant. */
+    public static void registerOidcIdp(String tenantDomain, String idpName, String isClientId, String isClientSecret)
+            throws IOException {
+        registerOidcIdp(tenantDomain, idpName, isClientId, isClientSecret, false);
+    }
+
+    /** Registers an external OIDC provider, optionally requesting profile claims for JWT assertions. */
+    public static void registerOidcIdp(String tenantDomain, String idpName, String isClientId,
+            String isClientSecret, boolean requestProfileClaims) throws IOException {
+        deleteIdp(tenantDomain, idpName);
+        Assert.assertFalse(getIdpExists(tenantDomain, idpName),
+                "OIDC identity provider '" + idpName + "' still exists after deletion");
+
+        String idpXml = oidcIdpXml(idpName, isClientId, isClientSecret, requestProfileClaims, false);
+        String envelope = idpOpsEnvelope();
+        String payload = envelope + "<soapenv:Body><ns:addIdP>" + idpXml
+                + "</ns:addIdP></soapenv:Body></soapenv:Envelope>";
+
+        // addIdP faults with HTTP 500 even on success — do NOT assert on status; verify with getIdPByName.
+        idpSoap("urn:addIdP", payload, tenantDomain);
+        Assert.assertTrue(getIdpExists(tenantDomain, idpName),
+                "OIDC identity provider '" + idpName + "' was not created on APIM (addIdP verify failed)");
+
+        // APIM's addIdP operation stores the provider but silently drops its claim mappings (and may return a SOAP
+        // fault saying there are no claim URIs). Reapply the same complete provider before any service provider
+        // references it; updateIdP persists the mappings correctly, as the established multi-tenant SSO fixture
+        // does. This is required for the external groups/profile claims to be available on the callback.
+        String update = envelope + "<soapenv:Body><ns:updateIdP><ns:oldIdPName>"
+                + Utils.escapeXml(idpName) + "</ns:oldIdPName>" + idpXml
+                + "</ns:updateIdP></soapenv:Body></soapenv:Envelope>";
+        idpSoap("urn:updateIdP", update, tenantDomain);
+        String verifyPayload = envelope + "<soapenv:Body><ns:getIdPByName><ns:idPName>"
+                + Utils.escapeXml(idpName) + "</ns:idPName></ns:getIdPByName></soapenv:Body></soapenv:Envelope>";
+        HttpResponse storedIdp = idpSoap("urn:getIdPByName", verifyPayload, tenantDomain);
+        Assert.assertTrue(storedIdp != null && storedIdp.getResponseCode() >= 200
+                        && storedIdp.getResponseCode() < 300 && storedIdp.getData() != null
+                        && storedIdp.getData().contains("claimMappings"),
+                "OIDC provider '" + idpName + "' did not retain claim mappings after updateIdP");
+    }
+
+    /**
+     * Ticks "Enable PKCE" on the super-tenant OIDC IdP {@code idpName} registered by {@link #registerOidcIdp}.
+     * Updated in place with {@code updateIdP} (the console service providers already reference the IdP, so it
+     * cannot be deleted and re-added), restating the full provider so nothing registration set is lost. The
+     * persisted value is read back, so a store that silently drops the property fails here, not as a confusing
+     * login failure later.
+     */
+    public static void enableOidcIdpPkce(String idpName, String isClientId, String isClientSecret)
+            throws IOException {
+        String envelope = idpOpsEnvelope();
+        String update = envelope + "<soapenv:Body><ns:updateIdP><ns:oldIdPName>"
+                + Utils.escapeXml(idpName) + "</ns:oldIdPName>"
+                + oidcIdpXml(idpName, isClientId, isClientSecret, false, true)
+                + "</ns:updateIdP></soapenv:Body></soapenv:Envelope>";
+        idpSoap("urn:updateIdP", update, Constants.SUPER_TENANT_DOMAIN);
+        String verifyPayload = envelope + "<soapenv:Body><ns:getIdPByName><ns:idPName>"
+                + Utils.escapeXml(idpName) + "</ns:idPName></ns:getIdPByName></soapenv:Body></soapenv:Envelope>";
+        HttpResponse stored = idpSoap("urn:getIdPByName", verifyPayload, Constants.SUPER_TENANT_DOMAIN);
+        Assert.assertTrue(stored != null && stored.getResponseCode() >= 200 && stored.getResponseCode() < 300
+                        && stored.getData() != null && !isSoapFault(stored.getData()),
+                "Could not read back OIDC provider '" + idpName + "' after enabling PKCE: got "
+                        + (stored == null ? "no response" : "HTTP " + stored.getResponseCode()));
+        // Within one <properties> element: name IsPKCEEnabled, then (after any sibling fields) value true.
+        Assert.assertTrue(stored.getData().matches(
+                        "(?s).*IsPKCEEnabled</[^>]*name>(?:(?!properties>).)*?value>true</.*"),
+                "OIDC provider '" + idpName + "' did not persist IsPKCEEnabled=true after updateIdP");
+    }
+
+    private static String idpOpsEnvelope() {
+        return "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" "
+                + "xmlns:ns=\"" + NS_IDP_OPS + "\" xmlns:m=\"" + NS_MODEL + "\">";
+    }
+
+    /**
+     * The complete {@code identityProvider} element for the APIM-side OIDC IdP federating to the external IS,
+     * shared by {@code addIdP} and every {@code updateIdP} so an update never drops a setting registration made.
+     */
+    private static String oidcIdpXml(String idpName, String isClientId, String isClientSecret,
+            boolean requestProfileClaims, boolean pkceEnabled) {
+        String isServer = isServerBase();
+
+        return "<ns:identityProvider>"
+                + "<m:claimConfig><m:localClaimDialect>false</m:localClaimDialect>"
+                // APIM only accepts mappings whose remote claim has first been declared as an IdP claim. The
+                // claimId links each mapping to that declaration; omitting it makes addIdP silently discard every
+                // mapping with "No Identity Provider claim URIs defined for tenant".
+                + idpClaim(0, "groups")
+                + (requestProfileClaims ? idpClaim(1, "given_name") : "")
+                + (requestProfileClaims ? idpClaim(2, "family_name") : "")
+                + (requestProfileClaims ? idpClaim(3, "email") : "")
+                + (requestProfileClaims ? idpClaim(4, "mobile") : "")
+                + (requestProfileClaims ? idpClaim(5, "organization") : "")
+                + (requestProfileClaims ? idpClaim(6, "phone_number") : "")
+                + oidcClaimMapping("http://wso2.org/claims/role", "groups", 0)
+                + (requestProfileClaims ? oidcClaimMapping("http://wso2.org/claims/givenname", "given_name", 1) : "")
+                + (requestProfileClaims ? oidcClaimMapping("http://wso2.org/claims/lastname", "family_name", 2) : "")
+                + (requestProfileClaims ? oidcClaimMapping("http://wso2.org/claims/emailaddress", "email", 3) : "")
+                + (requestProfileClaims ? oidcClaimMapping("http://wso2.org/claims/mobile", "mobile", 4) : "")
+                + (requestProfileClaims ? oidcClaimMapping("http://wso2.org/claims/organization", "organization", 5) : "")
+                + (requestProfileClaims ? oidcClaimMapping("http://wso2.org/claims/telephone", "phone_number", 6) : "")
+                + "<m:roleClaimURI>groups</m:roleClaimURI>"
+                + "</m:claimConfig>"
+                + "<m:defaultAuthenticatorConfig><m:name>OpenIDConnectAuthenticator</m:name></m:defaultAuthenticatorConfig>"
+                + "<m:displayName>WSO2 IS7 OIDC</m:displayName><m:enable>true</m:enable>"
+                + "<m:federatedAuthenticatorConfigs>"
+                + "<m:displayName>openidconnect</m:displayName><m:enabled>true</m:enabled>"
+                + "<m:name>OpenIDConnectAuthenticator</m:name>"
+                + idpAuthProperty("ClientId", isClientId)
+                + idpAuthProperty("ClientSecret", isClientSecret)
+                // All IS endpoints use the INTERNAL wso2is:9443 host (browser reaches authorize/logout via the
+                // CONNECT proxy; APIM reaches token/userinfo directly in-network) so the id_token issuer is
+                // consistent. The federated callback is APIM's internal host (localhost:9443/commonauth).
+                + idpAuthProperty("OAuth2AuthzEPUrl", isServer + "oauth2/authorize")
+                + idpAuthProperty("OAuth2TokenEPUrl", isServer + "oauth2/token")
+                + idpAuthProperty("UserInfoUrl", isServer + "oauth2/userinfo")
+                + idpAuthProperty("OIDCLogoutEPUrl", isServer + "oidc/logout")
+                + idpAuthProperty("callbackUrl", apimInternal() + "commonauth")
+                + idpAuthProperty("Scopes", requestProfileClaims ? "openid profile email phone groups" : "openid groups")
+                // Authenticate to the external IS token endpoint with the HTTP Basic header ONLY (not client
+                // creds in the body). IS 7.x runs EVERY registered client authenticator's canAuthenticate() and
+                // rejects with "invalid_request, The client MUST NOT use more than one authentication method" if
+                // more than one engages (OAuthClientAuthnService.failOnMultipleAuthenticators). client_secret_post
+                // puts client_id in the body, which engages a second authenticator alongside BasicAuth → the
+                // token exchange fails and the federated login bounces back to login.do. Basic-header-only keeps
+                // the body free of client_id so exactly one authenticator engages.
+                + idpAuthProperty("IsBasicAuthEnabled", "true")
+                // "Enable PKCE" on the federated OIDC authenticator (the property the carbon console's IdP
+                // checkbox persists): the authorize request then carries code_challenge (S256) and the token
+                // request the matching code_verifier. Omitted when off, so the default fixture stays the
+                // documented setup, which never mentions the property.
+                + (pkceEnabled ? idpAuthProperty("IsPKCEEnabled", "true") : "")
+                + "</m:federatedAuthenticatorConfigs>"
+                + "<m:federationHub>false</m:federationHub>"
+                + "<m:identityProviderName>" + Utils.escapeXml(idpName) + "</m:identityProviderName>"
+                // provisioningUserStore is REQUIRED: JIT federated-association (DefaultProvisioningHandler
+                // .associateUser) builds a User from (tenantDomain, userStoreDomain, username) and IS rejects it
+                // with "10005 - The provided user identifier is invalid" if userStoreDomain is empty. With no
+                // provisioning user store configured, ExternalIdPConfig.getProvisioningUserStoreId() returns null
+                // → the user is created in PRIMARY but the association User carries a null store domain → the
+                // whole federated login fails post-authentication. Pin it to PRIMARY so the store domain is set.
+                + "<m:justInTimeProvisioningConfig><m:provisioningEnabled>true</m:provisioningEnabled>"
+                + "<m:passwordProvisioningEnabled>true</m:passwordProvisioningEnabled>"
+                + "<m:provisioningUserStore>PRIMARY</m:provisioningUserStore></m:justInTimeProvisioningConfig>"
+                + "<m:permissionAndRoleConfig>"
+                + roleMapping("admin", "admin")
+                + roleMapping("Internal/publisher", "publisher")
+                + roleMapping("Internal/subscriber", "subscriber")
+                + "</m:permissionAndRoleConfig>"
+                + "</ns:identityProvider>";
+    }
+
+    /** Deletes the named IdP if present (idempotency helper and teardown). */
+    public static void deleteIdp(String idpName) throws IOException {
+        deleteIdp(Constants.SUPER_TENANT_DOMAIN, idpName);
+    }
+
+    /** Deletes the named tenant-local IdP if present. */
+    public static void deleteIdp(String tenantDomain, String idpName) throws IOException {
+        if (!getIdpExists(tenantDomain, idpName)) {
+            return;
+        }
+        String payload = "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" "
+                + "xmlns:ns=\"" + NS_IDP_OPS + "\"><soapenv:Body><ns:deleteIdP>"
+                + "<ns:idPName>" + Utils.escapeXml(idpName) + "</ns:idPName>"
+                + "</ns:deleteIdP></soapenv:Body></soapenv:Envelope>";
+        idpSoap("urn:deleteIdP", payload, tenantDomain);
+    }
+
+    /** Whether the named tenant-local IdP exists on APIM (verified via {@code getIdPByName}). */
+    private static boolean getIdpExists(String tenantDomain, String idpName) throws IOException {
+        String payload = "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" "
+                + "xmlns:ns=\"" + NS_IDP_OPS + "\"><soapenv:Body><ns:getIdPByName>"
+                + "<ns:idPName>" + Utils.escapeXml(idpName) + "</ns:idPName>"
+                + "</ns:getIdPByName></soapenv:Body></soapenv:Envelope>";
+        HttpResponse r = idpSoap("urn:getIdPByName", payload, tenantDomain);
+        // Only a successful, non-fault SOAP response can establish that an IdP is absent. Treating a transport
+        // failure or SOAP fault as absence would allow registration to continue against an unknown APIM state.
+        if (r == null || r.getResponseCode() < 200 || r.getResponseCode() >= 300
+                || r.getData() == null || r.getData().isBlank() || isSoapFault(r.getData())) {
+            throw new IllegalStateException("IdP existence check failed for '" + idpName + "': got "
+                    + (r == null ? "no response" : "HTTP " + r.getResponseCode()
+                    + (isSoapFault(r.getData()) ? " / SOAP fault" : " / invalid response body")));
+        }
+        return r.getData().contains("identityProviderName>" + idpName);
+    }
+
+    private static boolean isSoapFault(String body) {
+        return body != null && body.matches("(?s).*<[^>]*:?Fault(?:\\s[^>]*)?>.*");
+    }
+
+    private static String idpAuthProperty(String name, String value) {
+        return "<m:properties><m:name>" + Utils.escapeXml(name) + "</m:name>"
+                + "<m:value>" + Utils.escapeXml(value) + "</m:value></m:properties>";
+    }
+
+    private static String oidcClaimMapping(String localClaim, String remoteClaim) {
+        return "<m:claimMappings><m:localClaim><m:claimUri>" + Utils.escapeXml(localClaim)
+                + "</m:claimUri></m:localClaim><m:remoteClaim><m:claimUri>"
+                + Utils.escapeXml(remoteClaim) + "</m:claimUri></m:remoteClaim></m:claimMappings>";
+    }
+
+    private static String idpClaim(int id, String claimUri) {
+        return "<m:idpClaims><m:claimId>" + id + "</m:claimId><m:claimUri>"
+                + Utils.escapeXml(claimUri) + "</m:claimUri></m:idpClaims>";
+    }
+
+    private static String oidcClaimMapping(String localClaim, String remoteClaim, int remoteClaimId) {
+        return "<m:claimMappings><m:localClaim><m:claimUri>" + Utils.escapeXml(localClaim)
+                + "</m:claimUri></m:localClaim><m:remoteClaim><m:claimId>" + remoteClaimId
+                + "</m:claimId><m:claimUri>" + Utils.escapeXml(remoteClaim)
+                + "</m:claimUri></m:remoteClaim><m:requested>true</m:requested></m:claimMappings>";
+    }
+
+    private static String roleMapping(String localRole, String remoteRole) {
+        return "<m:roleMappings><m:localRole><m:localRoleName>" + Utils.escapeXml(localRole)
+                + "</m:localRoleName></m:localRole><m:remoteRole>" + Utils.escapeXml(remoteRole)
+                + "</m:remoteRole></m:roleMappings>";
+    }
+
+    private static HttpResponse idpSoap(String action, String payload, String tenantDomain) throws IOException {
+        Tenant tenant = Utils.getTenantFromContext(tenantDomain);
+        User admin = tenant.getTenantAdmin();
+        return SimpleHTTPClient.getInstance().sendSoapRequest(
+                apimBase() + "services/IdentityProviderMgtService", payload, action,
+                admin.getUserName(), admin.getPassword());
+    }
+
+    // ---------------------------------------------------------------------------------------------------------
+    // 4) Wire the multi-option (local + federated) auth step onto a console service provider
+    // ---------------------------------------------------------------------------------------------------------
+
+    /**
+     * Wires the {@code idpName} OIDC IdP as a second login option (alongside the local basic authenticator) onto
+     * the named console service provider. The SP is created lazily by APIM the first time the console's login
+     * endpoint is hit, so this triggers that, resolves the SP's application id and inbound OAuth key via
+     * {@code getApplication}, and pushes an xsi-free minimal {@code updateApplication} — round-tripping the full
+     * {@code getApplication} output back into {@code updateApplication} triggers an Axis2 StackOverflow, so the
+     * payload is hand-built, not echoed.
+     */
+    public static void wireConsoleMultiOption(String consoleContext, String spName, String idpName)
+            throws IOException {
+        String apim = apimBase();
+
+        // A console service provider is registered lazily (via DCR) the first time its login servlet is hit, and
+        // the console webapp may not be deployed yet when the block's Publisher-readiness gate opens (Publisher is
+        // ready before Admin/DevPortal). Poll within the propagation window: hit the login servlet to trigger
+        // registration, then getApplication, until the SP's applicationID appears.
+        String getPayload = "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" "
+                + "xmlns:ns1=\"" + NS_APP_OPS + "\"><soapenv:Body><ns1:getApplication>"
+                + "<ns1:applicationName>" + Utils.escapeXml(spName) + "</ns1:applicationName>"
+                + "</ns1:getApplication></soapenv:Body></soapenv:Envelope>";
+        HttpResponse getResp;
+        try {
+            getResp = Utils.retryUntil(0L,
+                    () -> {
+                        // The DCR-triggering login JSP (idp.jsp) is mapped differently per console: publisher/admin
+                        // at /services/auth/login, devportal (the store app) at /services/configs. Hit both so the
+                        // DCR that registers the console's OAuth service provider fires.
+                        for (String loginPath : new String[] {"/services/auth/login", "/services/configs"}) {
+                            try {
+                                SimpleHTTPClient.getInstance().doGet(
+                                        apim + consoleContext + loginPath, new HashMap<>());
+                            } catch (IOException ignored) {
+                                // best-effort trigger; the getApplication below is the readiness signal
+                            }
+                        }
+                        return appSoap("urn:getApplication", getPayload);
+                    },
+                    r -> r != null && r.getData() != null
+                            && firstMatch(r.getData(), "applicationID>([^<]+)<") != null);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IOException("Interrupted waiting for console SP '" + spName + "' registration", e);
+        }
+        Assert.assertNotNull(getResp, "getApplication for console SP '" + spName + "' never returned a response");
+        String body = getResp.getData();
+        String appId = firstMatch(body, "applicationID>([^<]+)<");
+        String inboundAuthKey = firstMatch(body, "inboundAuthKey>([^<]+)<");
+        Assert.assertNotNull(appId, "Could not resolve applicationID for console SP '" + spName
+                + "' from getApplication response: " + body);
+        Assert.assertNotNull(inboundAuthKey, "Could not resolve inboundAuthKey for console SP '" + spName
+                + "' from getApplication response: " + body);
+
+        String updatePayload = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+                + "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" "
+                + "xmlns:axis2=\"" + NS_APP_OPS + "\"><soapenv:Body><axis2:updateApplication>"
+                + "<axis2:serviceProvider xmlns:m=\"" + NS_MODEL + "\" "
+                + "xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">"
+                + "<m:applicationID>" + Utils.escapeXml(appId) + "</m:applicationID>"
+                + "<m:applicationName>" + Utils.escapeXml(spName) + "</m:applicationName>"
+                + "<m:inboundAuthenticationConfig><m:inboundAuthenticationRequestConfigs>"
+                + "<m:inboundAuthKey>" + Utils.escapeXml(inboundAuthKey) + "</m:inboundAuthKey>"
+                + "<m:inboundAuthType>oauth2</m:inboundAuthType>"
+                + "</m:inboundAuthenticationRequestConfigs></m:inboundAuthenticationConfig>"
+                + "<m:localAndOutBoundAuthenticationConfig>"
+                + "<m:authenticationSteps>"
+                + "<m:attributeStep>true</m:attributeStep>"
+                + "<m:federatedIdentityProviders>"
+                + "<m:defaultAuthenticatorConfig><m:name>OpenIDConnectAuthenticator</m:name>"
+                + "<m:enabled>true</m:enabled></m:defaultAuthenticatorConfig>"
+                + "<m:federatedAuthenticatorConfigs><m:name>OpenIDConnectAuthenticator</m:name>"
+                + "<m:enabled>true</m:enabled></m:federatedAuthenticatorConfigs>"
+                + "<m:identityProviderName>" + Utils.escapeXml(idpName) + "</m:identityProviderName>"
+                + "</m:federatedIdentityProviders>"
+                + "<m:localAuthenticatorConfigs>"
+                + "<m:displayName>basic</m:displayName><m:enabled>true</m:enabled><m:name>BasicAuthenticator</m:name>"
+                + "</m:localAuthenticatorConfigs>"
+                + "<m:stepOrder>1</m:stepOrder>"
+                + "<m:subjectStep>true</m:subjectStep>"
+                + "</m:authenticationSteps>"
+                + "<m:authenticationType>flow</m:authenticationType>"
+                // Skip the OAuth2 consent prompt for the console SP. Without this the federated login, after JIT
+                // provisioning, halts at authenticationendpoint/oauth2_consent.do (a 200 page the headless walk
+                // cannot approve) instead of redirecting to the console callback with a code. Consoles are
+                // first-party apps, so consent is not meaningful here.
+                + "<m:skipConsent>true</m:skipConsent>"
+                + "<m:skipLogoutConsent>true</m:skipLogoutConsent>"
+                + "</m:localAndOutBoundAuthenticationConfig>"
+                + "<m:saasApp>true</m:saasApp></axis2:serviceProvider></axis2:updateApplication>"
+                + "</soapenv:Body></soapenv:Envelope>";
+        HttpResponse updateResponse = appSoap("urn:updateApplication", updatePayload);
+        String updateDiagnostic = updateResponse == null ? "no response"
+                : "HTTP " + updateResponse.getResponseCode() + ", bodyPresent="
+                + (updateResponse.getData() != null);
+        Assert.assertTrue(updateResponse != null && updateResponse.getResponseCode() >= 200
+                        && updateResponse.getResponseCode() < 300 && !isSoapFault(updateResponse.getData()),
+                "updateApplication failed for console SP '" + spName + "': " + updateDiagnostic);
+
+        HttpResponse verifyResponse = appSoap("urn:getApplication", getPayload);
+        String verifyBody = verifyResponse == null ? null : verifyResponse.getData();
+        String verifyDiagnostic = verifyResponse == null ? "no response"
+                : "HTTP " + verifyResponse.getResponseCode() + ", bodyPresent=" + (verifyBody != null);
+        Assert.assertTrue(verifyResponse != null && verifyResponse.getResponseCode() >= 200
+                        && verifyResponse.getResponseCode() < 300 && verifyBody != null && !verifyBody.isBlank()
+                        && !isSoapFault(verifyBody)
+                        && verifyBody.contains("identityProviderName>" + idpName + "<")
+                        && verifyBody.contains("BasicAuthenticator"),
+                "getApplication did not confirm IdP '" + idpName + "' and BasicAuthenticator for console SP '"
+                        + spName + "': " + verifyDiagnostic);
+
+        // The console's OAuth client was DCR-registered at startup against APIM's INTERNAL host, but the
+        // containerised test drives the console on the mapped container port — so its redirect_uri never matches
+        // the registered callback (invalid_callback). Relax the callback to a boot-port-agnostic regex. The
+        // distributed CP emits its network alias (apim-cp) in redirects, while the all-in-one path emits
+        // localhost; accept both harness-facing names without changing the product configuration.
+        updateConsoleCallbackToRegex(inboundAuthKey);
+    }
+
+    /**
+     * Rewrites a console OAuth client's callback (identified by its consumer key) to a regex that matches the
+     * console callback path on ANY localhost port — the mapped container port varies per boot — via
+     * {@code OAuthAdminService}. The client's other fields are read first and preserved, since
+     * {@code updateConsumerApplication} replaces the whole DTO.
+     */
+    private static void updateConsoleCallbackToRegex(String consumerKey) throws IOException {
+        String getPayload = "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" "
+                + "xmlns:xsd=\"http://org.apache.axis2/xsd\"><soapenv:Body><xsd:getOAuthApplicationData>"
+                + "<xsd:consumerKey>" + Utils.escapeXml(consumerKey) + "</xsd:consumerKey>"
+                + "</xsd:getOAuthApplicationData></soapenv:Body></soapenv:Envelope>";
+        HttpResponse getResp = oauthSoap("urn:getOAuthApplicationData", getPayload);
+        String body = getResp == null ? "" : getResp.getData();
+        String appName = firstMatch(body, "applicationName>([^<]+)<");
+        String secret = firstMatch(body, "oauthConsumerSecret>([^<]+)<");
+        String version = firstMatch(body, "[Oo][Aa]uthVersion>([^<]+)<");
+        String grants = firstMatch(body, "grantTypes>([^<]*)<");
+        String getDiagnostic = getResp == null ? "no response"
+                : "HTTP " + getResp.getResponseCode() + ", bodyPresent=" + (getResp.getData() != null);
+        Assert.assertNotNull(appName, "Could not read OAuth app (applicationName) for consumerKey '" + consumerKey
+                + "' from getOAuthApplicationData: " + getDiagnostic);
+        Assert.assertNotNull(secret, "Could not read consumerSecret for '" + consumerKey + "': " + getDiagnostic);
+        // Match the console's original two-alternative shape (login|logout); both alternatives are
+        // boot-port-agnostic so the mapped container port validates against whichever the console redirects to.
+        String regexCallback = "regexp=https://(localhost|apim-cp|wso2am):\\d+/.*/services/auth/callback/(login|logout)";
+        // The DTO-carrying element MUST be named for the operation's real Java parameter — Axis2's RPC
+        // deserializer (BeanUtil.deserialize) matches each SOAP child to a method parameter by name; a name that
+        // is neither "arg*"/"item*" nor the actual parameter overruns the single-element param array and faults
+        // with "Index 1 out of bounds for length 1". updateConsumerApplication(OAuthConsumerAppDTO consumerAppDTO)
+        // so the element is <consumerAppDTO> (getOAuthApplicationData worked earlier because its element was
+        // <consumerKey>, that method's real parameter name).
+        String updatePayload = "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" "
+                + "xmlns:xsd=\"http://org.apache.axis2/xsd\" "
+                + "xmlns:xsd1=\"http://dto.oauth.identity.carbon.wso2.org/xsd\"><soapenv:Body>"
+                + "<xsd:updateConsumerApplication><xsd:consumerAppDTO>"
+                + "<xsd1:OAuthVersion>" + Utils.escapeXml(version == null ? "OAuth-2.0" : version)
+                + "</xsd1:OAuthVersion>"
+                + "<xsd1:applicationName>" + Utils.escapeXml(appName) + "</xsd1:applicationName>"
+                + "<xsd1:callbackUrl>" + Utils.escapeXml(regexCallback) + "</xsd1:callbackUrl>"
+                + (grants == null ? "" : "<xsd1:grantTypes>" + Utils.escapeXml(grants) + "</xsd1:grantTypes>")
+                + "<xsd1:oauthConsumerKey>" + Utils.escapeXml(consumerKey) + "</xsd1:oauthConsumerKey>"
+                + "<xsd1:oauthConsumerSecret>" + Utils.escapeXml(secret) + "</xsd1:oauthConsumerSecret>"
+                // Disable PKCE on the console OAuth client. The console login initiator (idp.jsp) uses PKCE when
+                // the client has PKCE_MANDATORY set (SystemApplicationDAO.isPKCEEnabled), storing the
+                // code_verifier in the server-side HTTP session; login_callback.jsp then reads it back to complete
+                // the code exchange. A headless client accumulates multiple JSESSIONIDs across the federated
+                // round-trip and cannot scope them per path like a browser, so the callback's session (and the
+                // code_verifier) is lost and the token exchange fails — no AM_ACC_TOKEN cookie. With PKCE off the
+                // exchange authenticates with the client secret alone (Basic), independent of the browser session.
+                + "<xsd1:pkceMandatory>false</xsd1:pkceMandatory>"
+                + "<xsd1:pkceSupportPlain>false</xsd1:pkceSupportPlain>"
+                + "</xsd:consumerAppDTO></xsd:updateConsumerApplication></soapenv:Body></soapenv:Envelope>";
+        HttpResponse updResp = oauthSoap("urn:updateConsumerApplication", updatePayload);
+        String updateDiagnostic = updResp == null ? "no response"
+                : "HTTP " + updResp.getResponseCode() + ", bodyPresent=" + (updResp.getData() != null);
+        Assert.assertTrue(updResp != null && updResp.getData() != null
+                        && !updResp.getData().toLowerCase().contains("faultstring")
+                        && !updResp.getData().toLowerCase().contains("exception"),
+                "updateConsumerApplication failed for consumerKey '" + consumerKey + "': " + updateDiagnostic);
+    }
+
+    private static HttpResponse oauthSoap(String action, String payload) throws IOException {
+        return SimpleHTTPClient.getInstance().sendSoapRequest(
+                apimBase() + "services/OAuthAdminService", payload, action, "admin", "admin");
+    }
+
+    private static HttpResponse appSoap(String action, String payload) throws IOException {
+        return SimpleHTTPClient.getInstance().sendSoapRequest(
+                apimBase() + "services/IdentityApplicationManagementService", payload, action, "admin", "admin");
+    }
+
+    /**
+     * Configures an OAuth application's service provider to authenticate resource owners through the external
+     * OIDC IdP. This is the same federated-only SP flow used by FederatedUserJWTTestCase; it is deliberately
+     * separate from the console's multi-option (local + federated) wiring above.
+     */
+    public static void configureOAuthApplicationForFederation(String tenantDomain, String consumerKey, String idpName)
+            throws IOException {
+        String spName = TenantUserProvisioner.getSpNameByConsumerKey(tenantDomain, consumerKey);
+        String getResponse = TenantUserProvisioner.getServiceProvider(tenantDomain, spName);
+        String appId = firstMatch(getResponse, "applicationID>([^<]+)<");
+        String inboundAuthKey = firstMatch(getResponse, "inboundAuthKey>([^<]+)<");
+        Assert.assertNotNull(appId, "Could not read applicationID for federated OAuth service provider " + spName);
+        Assert.assertNotNull(inboundAuthKey,
+                "Could not read inboundAuthKey for federated OAuth service provider " + spName);
+
+        String updatePayload = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+                + "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" "
+                + "xmlns:axis2=\"" + NS_APP_OPS + "\"><soapenv:Body><axis2:updateApplication>"
+                + "<axis2:serviceProvider xmlns:m=\"" + NS_MODEL + "\" "
+                + "xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">"
+                + "<m:applicationID>" + Utils.escapeXml(appId) + "</m:applicationID>"
+                + "<m:applicationName>" + Utils.escapeXml(spName) + "</m:applicationName>"
+                + "<m:inboundAuthenticationConfig><m:inboundAuthenticationRequestConfigs>"
+                + "<m:inboundAuthKey>" + Utils.escapeXml(inboundAuthKey) + "</m:inboundAuthKey>"
+                + "<m:inboundAuthType>oauth2</m:inboundAuthType>"
+                + "</m:inboundAuthenticationRequestConfigs></m:inboundAuthenticationConfig>"
+                + "<m:localAndOutBoundAuthenticationConfig><m:authenticationSteps>"
+                + "<m:federatedIdentityProviders><m:defaultAuthenticatorConfig>"
+                + "<m:name>OpenIDConnectAuthenticator</m:name><m:enabled>true</m:enabled>"
+                + "</m:defaultAuthenticatorConfig><m:federatedAuthenticatorConfigs>"
+                + "<m:name>OpenIDConnectAuthenticator</m:name><m:enabled>true</m:enabled>"
+                + "</m:federatedAuthenticatorConfigs><m:identityProviderName>"
+                + Utils.escapeXml(idpName) + "</m:identityProviderName></m:federatedIdentityProviders>"
+                + "<m:stepOrder>1</m:stepOrder></m:authenticationSteps>"
+                + "<m:authenticationType>federated</m:authenticationType>"
+                + "<m:skipConsent>true</m:skipConsent><m:skipLogoutConsent>true</m:skipLogoutConsent>"
+                + "</m:localAndOutBoundAuthenticationConfig><m:saasApp>true</m:saasApp>"
+                + "</axis2:serviceProvider></axis2:updateApplication></soapenv:Body></soapenv:Envelope>";
+        Tenant tenant = Utils.getTenantFromContext(tenantDomain);
+        User admin = tenant.getTenantAdmin();
+        HttpResponse update = SimpleHTTPClient.getInstance().sendSoapRequest(
+                apimBase() + "services/IdentityApplicationManagementService", updatePayload,
+                "urn:updateApplication", admin.getUserName(), admin.getPassword());
+        Assert.assertTrue(update != null && update.getData() != null && !isSoapFault(update.getData()),
+                "Could not configure OAuth service provider " + spName + " for federated authentication");
+    }
+
+    /** First regex-group-1 match in the text, or null. */
+    private static String firstMatch(String text, String regex) {
+        if (text == null) {
+            return null;
+        }
+        java.util.regex.Matcher m = java.util.regex.Pattern.compile(regex).matcher(text);
+        return m.find() ? m.group(1) : null;
+    }
+
+    private static String locationId(HttpResponse resp) {
+        if (resp == null || resp.getHeaders() == null) {
+            return null;
+        }
+        String location = resp.getHeaders().get("Location");
+        if (location == null) {
+            location = resp.getHeaders().get("location");
+        }
+        if (location == null) {
+            return null;
+        }
+        int slash = location.lastIndexOf('/');
+        return slash >= 0 ? location.substring(slash + 1) : location;
+    }
+}

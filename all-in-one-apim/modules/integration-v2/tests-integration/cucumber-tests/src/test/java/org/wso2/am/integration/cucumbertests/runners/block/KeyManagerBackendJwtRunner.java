@@ -20,8 +20,8 @@ package org.wso2.am.integration.cucumbertests.runners.block;
 import io.cucumber.testng.CucumberOptions;
 
 /**
- * Runner for backend-JWT claim generation (the port of JWTTestCase). Runs in the IntegrationV2-ApplicationAttributes
- * block, which already enables backend JWT ([apim.jwt] enable) via its overlay and starts the node backend
+ * Runner for backend-JWT claim generation (the port of JWTTestCase). Runs in the
+ * IntegrationV2-GatewayAuthAndApplicationConfig block, which already enables backend JWT ([apim.jwt] enable) via its overlay and starts the node backend
  * (the /reflect-headers route echoes the gateway-injected X-JWT-Assertion). The per-scenario cleanup hook tears
  * down the API/app.
  */

@@ -22,7 +22,15 @@ target
 .DS_Store
 node_modules/
 
+# Generated TestNG reports from the Integration V2 Cucumber suite
+all-in-one-apim/modules/integration-v2/tests-integration/cucumber-tests/test-output/
+
 *.war
 *.mar
 *.jar
 
+# Prebuilt fixture jars the Integration V2 suite copies into the APIM server
+!all-in-one-apim/modules/integration-v2/tests-integration/cucumber-tests/src/test/resources/artifacts/**/*.jar
+
+# Local hosted-database profile files hold credentials; the tracked *.env.example files are the templates
+all-in-one-apim/modules/integration-v2/tests-integration/cucumber-tests/src/test/resources/artifacts/configFiles/basic/database*.env

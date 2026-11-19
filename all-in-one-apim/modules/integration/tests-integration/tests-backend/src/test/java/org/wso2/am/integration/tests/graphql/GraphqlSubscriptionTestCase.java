@@ -109,6 +109,8 @@ public class GraphqlSubscriptionTestCase extends APIMIntegrationBaseTest {
     private static final String GRAPHQL_API_NAME = "SnowtoothGraphQLSubAPI";
     private static final String GRAPHQL_API_CONTEXT = "snowtooth";
     private static final String GRAPHQL_API_VERSION = "1.0.0";
+    private static final long THROTTLE_POLL_INTERVAL_MS = 500;
+    private static final long THROTTLE_WAIT_TIMEOUT_MS = 30000;
     private int webSocketServerPort;
     private String webSocketServerHost;
     private String graphqlApiId;
@@ -1008,9 +1010,7 @@ public class GraphqlSubscriptionTestCase extends APIMIntegrationBaseTest {
     private void testThrottling(String accessToken) throws Exception {
 
         waitUntilClockMinute();
-        int startingDistinctUnitTime = LocalDateTime.now().getMinute();
         log.info("Starting throttling test at: " + LocalDateTime.now());
-        int limit = 4;
         WebSocketClient client = new WebSocketClient();
         SubscriptionWSClientImpl socket = new SubscriptionWSClientImpl();
         client.start();
@@ -1032,55 +1032,80 @@ public class GraphqlSubscriptionTestCase extends APIMIntegrationBaseTest {
             assertEquals(socket.getResponseMessage(), "{\"type\":\"connection_ack\"}",
                     "Received response in not a Connection Ack response");
             socket.setResponseMessage(null);
-            for (int count = 1; count <= limit; count++) {
-                if (count == limit) {
-                    Thread.sleep(3000);
-                }
-                if (count == 1) {
-                    //Send initial graphQL subscription request message
-                    textMessage = "{\"id\":\"2\",\"type\":\"start\",\"payload\":{\"variables\":{},\"extensions\":{},"
-                            + "\"operationName\":null,\"query\": \"subscription {\\n  "
-                            + "liftStatusChange {\\n name\\n }\\n}\\n\"}}";
-                    socket.sendMessage(textMessage);
-                }
-                waitForReply(socket);
-                String responseMessage = socket.getResponseMessage();
-                log.info("Count :" + count + " Message :" + responseMessage + " At: " + LocalDateTime.now());
-                // At the 3rd message check frame is throttled out.
-                if (count == limit) {
-                    log.info("Current minute: " + LocalDateTime.now().getMinute() + " Started minute: " + startingDistinctUnitTime);
-                    //If throttling testing time duration is dispersed into two separate unit times, repeat the test
-                    if (LocalDateTime.now().getMinute() != startingDistinctUnitTime) {
-                        //repeat the test
-                        log.info("Repeating the test as throttling testing time duration is dispersed into two " +
-                                "separate units of time");
-                        testThrottling(accessToken);
-                    }
-                    assertNotNull(responseMessage);
-                    JSONParser jsonParser = new JSONParser();
-                    org.json.simple.JSONObject errorJson =
-                            (org.json.simple.JSONObject) jsonParser.parse(responseMessage);
-                    assertTrue(errorJson.containsKey("type"));
-                    assertEquals(errorJson.get("type"), "error");
-                    assertTrue(errorJson.containsKey("id"));
-                    assertEquals(errorJson.get("id"), "2");
-                    assertTrue(errorJson.containsKey("payload"));
-                    org.json.simple.JSONObject payload =
-                            (org.json.simple.JSONObject) ((org.json.simple.JSONArray) errorJson.get("payload")).get(0);
-                    assertTrue(payload.containsKey("message"));
-                    assertTrue(payload.containsKey("code"));
-                    assertTrue(((String) payload.get("message")).contains("Websocket frame throttled out"),
-                            "Received response is not matching");
-                    assertEquals(payload.get("code"), 4003L, "Received response code is a invalid response code");
-                }
-                socket.setResponseMessage(null);
-            }
+            socket.clearFrames();
+            //Send initial graphQL subscription request message
+            textMessage = "{\"id\":\"2\",\"type\":\"start\",\"payload\":{\"variables\":{},\"extensions\":{},"
+                    + "\"operationName\":null,\"query\": \"subscription {\\n  "
+                    + "liftStatusChange {\\n name\\n }\\n}\\n\"}}";
+            socket.sendMessage(textMessage);
+
+            // The gateway learns it is throttled asynchronously: counts go to the Traffic Manager, the
+            // decision returns over JMS. Frames already in flight still arrive untouched, so wait for one.
+            String responseMessage = awaitThrottledFrame(socket);
+
+            assertNotNull(responseMessage);
+            JSONParser jsonParser = new JSONParser();
+            org.json.simple.JSONObject errorJson =
+                    (org.json.simple.JSONObject) jsonParser.parse(responseMessage);
+            assertTrue(errorJson.containsKey("type"));
+            assertEquals(errorJson.get("type"), "error");
+            assertTrue(errorJson.containsKey("id"));
+            assertEquals(errorJson.get("id"), "2");
+            assertTrue(errorJson.containsKey("payload"));
+            org.json.simple.JSONObject payload =
+                    (org.json.simple.JSONObject) ((org.json.simple.JSONArray) errorJson.get("payload")).get(0);
+            assertTrue(payload.containsKey("message"));
+            assertTrue(payload.containsKey("code"));
+            assertTrue(((String) payload.get("message")).contains("Websocket frame throttled out"),
+                    "Received response is not matching");
+            assertEquals(payload.get("code"), 4003L, "Received response code is a invalid response code");
         } catch (Exception ex) {
             log.error("Error occurred while calling API.", ex);
             Assert.fail("Client cannot connect to server");
         } finally {
             client.stop();
         }
+    }
+
+    /**
+     * Waits for a websocket frame that the gateway has throttled out.
+     *
+     * <p>A {@code data} frame already held when this is called may have arrived before the gateway
+     * received the throttle decision, so it is discarded rather than asserted on. An {@code error}
+     * frame can only exist because throttling engaged, so it is accepted immediately.
+     *
+     * @param socket connected subscription client
+     * @return the throttled frame
+     * @throws InterruptedException if interrupted while polling
+     */
+    private String awaitThrottledFrame(SubscriptionWSClientImpl socket) throws InterruptedException {
+
+        long deadline = System.currentTimeMillis() + THROTTLE_WAIT_TIMEOUT_MS;
+        String lastFrame = null;
+        int framesSeen = 0;
+        while (true) {
+            String message;
+            while ((message = socket.pollFrame()) != null) {
+                framesSeen++;
+                lastFrame = message;
+                log.info("Frame " + framesSeen + " while awaiting throttling: " + message);
+                if (message.contains("\"type\":\"error\"")) {
+                    return message;
+                }
+            }
+            if (System.currentTimeMillis() >= deadline) {
+                break;
+            }
+            Thread.sleep(THROTTLE_POLL_INTERVAL_MS);
+        }
+        if (framesSeen == 0) {
+            Assert.fail("No websocket frame arrived within " + (THROTTLE_WAIT_TIMEOUT_MS / 1000)
+                    + "s of exceeding the throttle limit. The subscription stopped emitting events, so "
+                    + "throttling could not be observed.");
+        }
+        Assert.fail("Saw " + framesSeen + " frame(s) within " + (THROTTLE_WAIT_TIMEOUT_MS / 1000)
+                + "s of exceeding the throttle limit, none of them throttled. Last frame: " + lastFrame);
+        return null;
     }
 
     @AfterClass(alwaysRun = true)

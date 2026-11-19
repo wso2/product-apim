@@ -24,11 +24,12 @@ import io.cucumber.testng.CucumberOptions;
  * issuer path of the certificate it presents rather than by the certificate itself. Ports
  * APISecurityMutualSSLCertificateChainValidationTestCase.
  *
- * <p>It has its own block because the mode is selected by a single gateway-wide boolean
+ * <p>The mode is selected by a single gateway-wide boolean
  * ({@code [apimgt.mutual_ssl] enable_certificate_chain_validation}) that switches the authenticator onto a
- * different code path. Enabling it in the mtlsWsCors block would convert every default-mode mutual-SSL
- * assertion there into a statement about this mode instead, so the two cannot share a container. Needs the
- * node backend.
+ * different code path, so it runs in blocks whose overlay sets it and that host no default-mode mutual-SSL runner
+ * (IntegrationV2-BackendJwtUrlSafeAndMtlsChain, IntegrationV2-Distributed-SolaceAndMtlsChain). Enabling it in the
+ * mtlsWsCors block would convert every default-mode mutual-SSL assertion there into a statement about this mode
+ * instead. Needs the node backend.
  */
 @CucumberOptions(
         features = {

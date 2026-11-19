@@ -102,10 +102,9 @@ Feature: Approval workflow - API state change
       | admin             |
       | admin@tenant1.com |
 
-  # Ports the unknown-reference half of APIStateChangeWorkflowTestCase#testWorkflowCallbackRestAPI. The
-  # wrong-scope half of that method is already covered against this same endpoint by
-  # workflow_application_creation.feature's "A non-admin token cannot read or decide a pending workflow by its
-  # external reference" scenario (measured 401), so only the unknown-reference case is added here.
+  # Ports the unknown-reference half of APIStateChangeWorkflowTestCase#testWorkflowCallbackRestAPI on the
+  # current Admin callback. The emitted client's wrong-scope negative lives in workflow_ws_api_state_change;
+  # workflow_application_creation separately covers subscriber authorization on pending workflows.
   # The reference is a freshly minted UUID rather than a literal: it is guaranteed absent by construction and
   # cannot collide with a real task another scenario in this serialized block has parked.
   @cap:admin @feat:workflows @legacy:APIStateChangeWorkflowTestCase @type:negative

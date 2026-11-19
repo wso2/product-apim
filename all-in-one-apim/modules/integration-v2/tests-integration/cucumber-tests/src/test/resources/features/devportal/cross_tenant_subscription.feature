@@ -11,10 +11,11 @@ Feature: Cross-tenant subscription and discovery
   subscribe/update POSTs. The application-policy listing is the ONE exception — it accepts the header and
   ignores it; see that scenario.
 
-  Each scenario runs in BOTH directions where direction is observable, via an Examples row per (provider,
-  consumer) pair — carbon.super-provider/tenant1.com-consumer and the mirror — because a tenant-isolation rule
-  can hold one way and leak the other (the super tenant is not symmetric with a sub-tenant in the product's
-  tenant-flow handling).
+  The core subscribe scenario also includes a non-super pair (tenant1.com provider/crossconsumer.com consumer),
+  so cross-tenant subscription is exercised without carbon.super on either side. The other directional probes
+  run in both observable directions — carbon.super-provider/tenant1.com-consumer and the mirror — because a
+  tenant-isolation rule can hold one way and leak the other (the super tenant is not symmetric with a sub-tenant
+  in the product's tenant-flow handling).
 
   The ISOLATION half of each listing is asserted as a precise NEGATIVE (the OTHER tenant's uniquely-named
   resource must be ABSENT), paired with the positive on the same call. That pair is what the legacy count==1
@@ -59,6 +60,7 @@ Feature: Cross-tenant subscription and discovery
       | providerTenant | providerAdmin     | consumer                   |
       | carbon.super   | admin             | subscriberUser@tenant1.com |
       | tenant1.com    | admin@tenant1.com | subscriberUser             |
+      | tenant1.com    | admin@tenant1.com | subscriberUser@crossconsumer.com |
 
   # The isolation half of cross-tenant discovery, which the containment assertion above cannot express: the
   # listing addressed at the provider tenant must carry the provider's API and NOT the consumer's own — even

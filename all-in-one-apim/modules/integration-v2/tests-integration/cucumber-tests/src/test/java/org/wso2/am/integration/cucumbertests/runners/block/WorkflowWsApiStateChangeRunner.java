@@ -22,7 +22,7 @@ import org.testng.annotations.AfterClass;
 import org.wso2.am.integration.cucumbertests.stepdefinitions.WorkflowAdminSteps;
 
 /**
- * Runner for the EXTERNAL BPMN {@code APIStateChange} executor — ports the start-request assertions of
+ * Runner for the EXTERNAL BPMN {@code APIStateChange} executor — ports start-request, approval and rejection checks of
  * {@code APIStateChangeWorkflowTestCase}. Its feature routes {@code APIStateChange} at
  * {@code APIStateChangeWSWorkflowExecutor} (pointed at the BPMNProcessServerApp double on
  * {@code nodebackend:3004}) by writing an alternate {@code workflow-extensions.xml} into the governance registry.
@@ -36,7 +36,8 @@ import org.wso2.am.integration.cucumbertests.stepdefinitions.WorkflowAdminSteps;
  * bracketed by this runner's own {@link #restoreWorkflowExecutors()}, so no ordering assumption is left to hold.
  *
  * <p>It still shares the {@code IntegrationV2-ApprovalWorkflow} block (and therefore one container) with
- * {@link WorkflowApprovalRunner}, which is safe ONLY because that block is {@code thread-count=1}: classes are
+ * {@link WorkflowApprovalRunner} and {@link SubscriptionWorkflowRedirectRunner}, which is safe ONLY because that
+ * block is {@code thread-count=1}: classes are
  * serialised, so each runner's {@code @AfterClass} restore completes before the next class starts, in either order.
  * That constraint is not new — the block already requires it for the approval flip. Raising the block's
  * thread-count would interleave the two flips and must not be done without splitting this into its own block.

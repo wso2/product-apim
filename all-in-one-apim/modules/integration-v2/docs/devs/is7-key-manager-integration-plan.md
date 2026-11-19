@@ -7,11 +7,15 @@ UserInfo, API-Resource-Management endpoint, `scim2/v2/Roles`, roles creation, Ba
 auth, tenant sharing, token-revocation event listener, `system_primary_<role>` naming) and the entire
 external-KM data plane (DCR, token issuance, gateway validation, revocation, token exchange) were untested.
 
+The current suite and configuration references below were checked against this worktree. Product-behavior
+findings labeled empirical were recorded during earlier focused runs; this documentation audit did not rerun
+those scenarios against the current `carbon.apimgt.version` (`9.34.8` in `all-in-one-apim/pom.xml`).
+
 ## Architecture
 
 ### Infrastructure vs product behaviour
 - **`bootExternalIdentityServer`** (block param, `BlockLifecycleListener`) provisions IS *infrastructure*
-  only: starts the `IdentityServerContainer` (`wso2/wso2is:7.3.0`, shared docker network, fixed alias
+  only: starts this block's `DynamicISContainer` (`wso2/wso2is:7.3.0`, block-private Docker network, alias
   `wso2is`), augments APIM's client-truststore BEFORE boot (the JVM reads it once), swaps APIM's TLS
   keystore to `wso2am.p12`, awaits IS OIDC discovery, and publishes the host-mapped IS base URL to the
   block's shared scope as `isBaseUrl`.
@@ -23,33 +27,38 @@ external-KM data plane (DCR, token issuance, gateway validation, revocation, tok
   payloads reference the created KM via `{{…Name}}` context refs (the create step stores id + name).
 
 ### Concurrency model
-- All IS7 blocks share ONE `IdentityServerContainer` (lazy singleton keyed by IS toml overlay; distinct
-  overlays cannot coexist in a JVM — both would claim the `wso2is` alias) and run concurrently under the
-  suite's `parallel="tests"`.
+- Each block that sets `bootExternalIdentityServer=true` starts its own `DynamicISContainer` on that block's
+  private Docker network. The `wso2is` alias is network-scoped, so distinct IS overlays and IS containers can
+  coexist across concurrent blocks.
 - The IS→APIM reverse channel (token-revocation notify to `https://wso2am:9443/internal/data/v1/notify`)
-  needs APIM to hold the fixed `wso2am` alias. Only blocks whose tests assert on a delivered notification
-  set **`receiveExternalIsNotifications=true`**; holders serialize on a JVM-wide permit in
-  `BlockLifecycleListener` (at most one live alias holder) while alias-free blocks run freely.
-- Blocks registering **same-issuer KMs** (the issuer is IS-global) must be `thread-count=1`: the gateway
-  resolves a token's KM by issuer, so two live same-issuer KMs make validation-mode resolution
-  nondeterministic.
+  needs APIM to hold the `wso2am` alias on the same block network. Blocks that assert delivered notifications
+  set **`receiveExternalIsNotifications=true`**. The per-block network scopes the alias; blocks do not serialize
+  through a JVM-wide permit.
+- Within a block, runners registering **same-issuer KMs** (the issuer is global to that block's IS) must be
+  sequential (`thread-count=1`): the gateway resolves a token's KM by issuer, so two live same-issuer KMs make
+  validation-mode resolution nondeterministic. Separate blocks have separate IS containers.
 
 ### Suite layout (`testng-v2.xml`)
-- **`IntegrationV2-Is7KeyManager`** (product section, after Admin; overlay = `wso2am.p12` keystore only —
-  pure KM plumbing): end-to-end token-flow outline (BasicAuth AND Mutual-TLS client-auth rows), well-known
-  discovery, KM coexistence/permissions/grant-handling extras, IS-side role creation, grant types + keygen
-  negatives + token validation, tenant-org revocation, role-based enforcement. Holds the notification
-  alias. `thread-count=1` (the runners mutate the tenant-global KM registry — see pinned behaviours).
-- **Config-overlay section**: `Is7KeyManagerValidationModes` (introspection + PEM merged; the overlay keys
-  are test-convergence pins verified mutually inert; tc=1 per same-issuer rule), `Is7TokenExchange`
-  (`enforce_type_header_validation=true` is behaviour under test), `Is7DefaultKeyManager` and
-  `Is7TenantSharingOff` (IS-free direct-notify blocks), and the token-exchange-disabled negative co-hosted
-  in `SandboxAndTokenExchangeDisabled` (it has no gateway/API surface).
+- **`IntegrationV2-Is7KeyManager`** (product section, after Publisher; overlay = `is7kmValidationModes`: the
+  `wso2am.p12` keystore plus the introspection runner's convergence pins, gateway token cache off and a 15s
+  introspection-cache TTL): end-to-end token-flow outline (BasicAuth AND Mutual-TLS client-auth rows),
+  well-known discovery, KM coexistence/permissions/grant-handling extras, IS-side role creation, grant types +
+  keygen negatives + token validation, tenant-org revocation, role-based enforcement, introspection and PEM
+  validation, external-IdP backend JWT, token exchange, and federated backend JWT. Its eleven runners run
+  sequentially (`thread-count=1`) and the block holds the notification alias; the self-validate revoke->401 still depends on it
+  with the token cache off (the gateway's revoked-JWT map is checked regardless — mutation-verified).
+  The current TestNG definition also sets `initTenantUsers`, `initBackend`, `bootExternalIdentityServer`,
+  `isCpuLimit=1`, and `receiveExternalIsNotifications=true`.
+- **Other TestNG blocks:** `IntegrationV2-Is7DefaultKeyManager` and `IntegrationV2-Is7TenantSharingOff` are
+  IS-free tenant-sharing checks. The token-exchange-disabled negative is in
+  `IntegrationV2-SandboxAndTokenExchangeDisabled`; the enabled token-exchange runner is in
+  `IntegrationV2-Is7KeyManager`. `IntegrationV2-MultiTenantSso` is a separate browser SSO block with its own
+  IS tenant-sync overlay and the `browser-sso` lifecycle lock.
 
 ### Tagging
 Product tags `@cap:admin @feat:external-key-manager` (feat id in `capability-map.yml`), per-area `@rule`s,
-`@type`/`@dep:gateway` per scenario; features live in `features/admin/`. 38 scenarios render in the
-coverage tree under Admin → external-key-manager.
+`@type`/`@dep:gateway` per scenario; features live in `features/admin/`. The current generated coverage tree
+lists 54 scenarios under Admin → external-key-manager.
 
 ## KM registration payload (the `WSO2-IS-7` connector, exact)
 - `type: "WSO2-IS-7"`; endpoints on the network alias (issuer/token/introspect/revoke/authorize/scope, DCR
@@ -148,12 +157,15 @@ the tenant regardless; the failure surfaces only at key generation.
   `oauth2/userinfo`; the working endpoint is `scim2/Me` — pinned by the discovery feature as a regression
   canary.
 
-## Parked / follow-ups
-- **Multi-tenant SSO lane** (`testng-is7sso.xml`, `MultiTenantSsoRunner`/`Steps`/`Provisioner`, `is7sso/`
-  overlays): kept out of this PR, locally staged for a follow-up. It boots a second IS with a distinct toml
-  overlay (tenant-sync listener), which would collide with the default IS singleton on the `wso2is` alias —
-  parallel distinct overlays need per-overlay aliases/networks + payload templating. Its login scenario
-  currently pins the token-exchange double-client-auth regression rather than a successful login.
+## Current state and follow-ups
+- **Multi-tenant SSO is implemented in the product suite.** `IntegrationV2-MultiTenantSso` in
+  `testng-v2.xml` runs `MultiTenantSsoRunner` with the tenant-sync IS overlay, holds the `browser-sso`
+  lifecycle lock, and is sequential (`thread-count=1`). The runner executes the setup and journey features
+  under `features/admin/`; it is no longer a parked `testng-is7sso.xml` follow-up. The distributed suite
+  also includes `MultiTenantSsoRunner` in `IntegrationV2-Distributed-MultiTenantSso`.
+- Each external-IS block now owns a separate `DynamicISContainer` on its block network, so distinct IS TOML
+  overlays and the fixed `wso2is`/`wso2am` aliases coexist without cross-block alias collisions or a JVM-wide
+  lifecycle permit.
 - Product-bug reports: the keygen mapping-row leak (`901409` mask), the scope fan-out create abort
   (`900967`), and the IS 7.3.0 management-API client-cert auth change (config workaround shipped).
 - `903015` publish-gate scenario for the mandatory-properties feature.

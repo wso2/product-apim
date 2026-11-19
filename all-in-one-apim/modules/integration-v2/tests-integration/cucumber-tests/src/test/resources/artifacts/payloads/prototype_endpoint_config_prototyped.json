@@ -1,0 +1,12 @@
+{
+  "implementation_status": "prototyped",
+  "endpoint_type": "http",
+  "production_endpoints": {
+    "config": null,
+    "url": "http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/"
+  },
+  "sandbox_endpoints": {
+    "config": null,
+    "url": "http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/"
+  }
+}

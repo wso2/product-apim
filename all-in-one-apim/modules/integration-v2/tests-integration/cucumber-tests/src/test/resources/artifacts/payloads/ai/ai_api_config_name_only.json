@@ -1,0 +1,18 @@
+{
+  "name": "{{aiCfgApiName}}",
+  "version": "1.0.0",
+  "context": "{{aiCfgApiName}}",
+  "policies": ["Unlimited"],
+  "endpointConfig": {
+    "endpoint_type": "http",
+    "production_endpoints": {
+      "url": "http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/no-auth"
+    }
+  },
+  "subtypeConfiguration": {
+    "subtype": "AIAPI",
+    "configuration": {
+      "llmProviderName": "{{aiCfgProviderName}}"
+    }
+  }
+}

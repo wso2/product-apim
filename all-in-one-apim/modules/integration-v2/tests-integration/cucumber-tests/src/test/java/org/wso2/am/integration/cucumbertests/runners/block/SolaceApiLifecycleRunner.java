@@ -21,10 +21,9 @@ import io.cucumber.testng.CucumberOptions;
 
 /**
  * Runner for the Solace event-API lifecycle. Belongs to a block that sets {@code initSolaceBroker=true}
- * and a {@code tomlExtraOverlayPath} of {@code artifacts/configFiles/solaceMtlsChain/deployment.toml} — the
- * overlay declares the {@code provider = "solace"} gateway environment whose {@code service_url} is the
- * shim's network alias, and the block boots {@code DynamicSolaceBroker} before APIM so that alias
- * resolves.
+ * and an overlay carrying {@code [apim.solace_config]} ({@code artifacts/configFiles/solace/deployment.toml},
+ * or {@code solaceMtlsChain/deployment.toml} in the distributed suite) — its {@code apim_api_endpoint} is the
+ * shim's network alias, and the block boots {@code DynamicSolaceBroker} before APIM so that alias resolves.
  */
 @CucumberOptions(
         features = {"src/test/resources/features/publisher/solace_event_api.feature"},

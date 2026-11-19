@@ -31,6 +31,8 @@ import org.wso2.am.integration.test.utils.Constants;
 import java.io.File;
 import java.io.IOException;
 import java.time.Duration;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * APIM container variant for the parallel-on-shared lane. Unlike {@link APIMContainer}, this
@@ -39,22 +41,39 @@ import java.time.Duration;
  * {@code get*Url()} accessors. Because every container has its own network namespace, no offset
  * counter or per-container DB renaming is needed.
  */
-public class DynamicApimContainer extends GenericContainer<DynamicApimContainer> {
+public class DynamicApimContainer extends GenericContainer<DynamicApimContainer> implements ApimRuntime {
 
     private static final Logger logger = LoggerFactory.getLogger(DynamicApimContainer.class);
-    private static final String DEFAULT_APIM_IMAGE = "wso2am:4.7.0-SNAPSHOT-jdk21";
+    private static final String APIM_IMAGE_PROPERTY = "apim.docker.image.name";
     /** Fixed shared-network alias for the IS→APIM reverse channel; see {@link #withExternalIsNotificationAlias}. */
     private static final String APIM_NETWORK_ALIAS = "wso2am";
+    /**
+     * Server JVM heap. {@code api-manager.sh} uses {@code JVM_MEM_OPTS} in place of its own
+     * {@code -Xms256m -Xmx1024m} default; 1.5 GB keeps four concurrent APIM blocks plus their peers inside a
+     * 16 GB host, since each container carries roughly 1.2-1.5 GB of non-heap memory on top of the heap.
+     */
+    static final String SERVER_HEAP_OPTS = "-Xms1g -Xmx1536m";
+    private static final String JVM_MEM_OPTS = "JVM_MEM_OPTS";
+    private static final String MYSQL_CONNECTOR_SERVER_PATH = "repository/components/lib/mysql-connector-j.jar";
+    private static final String POSTGRESQL_CONNECTOR_SERVER_PATH = "repository/components/lib/postgresql-jdbc.jar";
+    private static final String MSSQL_CONNECTOR_SERVER_PATH = "repository/components/lib/mssql-jdbc.jar";
+    private static final String ORACLE_CONNECTOR_SERVER_PATH = "repository/components/lib/ojdbc11.jar";
+    private static final String DB2_CONNECTOR_SERVER_PATH = "repository/components/lib/db2jcc4.jar";
 
     public DynamicApimContainer(String containerLabel, String deploymentTomlContent) {
+        this(containerLabel, deploymentTomlContent, null);
+    }
 
-        super(System.getProperty("apim.docker.image.name", DEFAULT_APIM_IMAGE));
+    /** Creates an APIM block with an explicit hosted database pair; null retains Maven's existing DB environment. */
+    public DynamicApimContainer(String containerLabel, String deploymentTomlContent,
+                                HostedDatabaseBlock.ConnectionSettings hostedDatabase) {
 
-        String apimDbUrl = System.getenv(Constants.API_MANAGER_DATABASE_URL).replace("&", "&amp;");
-        String sharedDbUrl = System.getenv(Constants.SHARED_DATABASE_URL).replace("&", "&amp;");
+        super(requiredImage(APIM_IMAGE_PROPERTY));
 
-        logger.info("APIM DB URL: {}", apimDbUrl);
-        logger.info("SHARED DB URL: {}", sharedDbUrl);
+        String apimDbUrl = (hostedDatabase == null ? System.getenv(Constants.API_MANAGER_DATABASE_URL)
+                : hostedDatabase.apimUrl()).replace("&", "&amp;");
+        String sharedDbUrl = (hostedDatabase == null ? System.getenv(Constants.SHARED_DATABASE_URL)
+                : hostedDatabase.sharedUrl()).replace("&", "&amp;");
 
         // Expose canonical ports; Docker assigns ephemeral host ports resolved via getMappedPort.
         // GATEWAY_WS_PORT (9099) is the gateway WebSocket inbound; GATEWAY_WSS_PORT (8099) is the SECURE WebSocket
@@ -68,27 +87,56 @@ public class DynamicApimContainer extends GenericContainer<DynamicApimContainer>
                 Constants.GATEWAY_WSS_PORT, Constants.WEBSUB_EVENT_RECEIVER_PORT);
 
         // Env vars for APIMGT_DB
-        withEnv(Constants.API_MANAGER_DATABASE_TYPE, System.getenv(Constants.API_MANAGER_DATABASE_TYPE));
-        withEnv(Constants.API_MANAGER_DATABASE_DRIVER, System.getenv(Constants.API_MANAGER_DATABASE_DRIVER));
+        withEnv(Constants.API_MANAGER_DATABASE_TYPE, hostedDatabase == null
+                ? System.getenv(Constants.API_MANAGER_DATABASE_TYPE) : hostedDatabase.type());
+        withEnv(Constants.API_MANAGER_DATABASE_DRIVER, hostedDatabase == null
+                ? System.getenv(Constants.API_MANAGER_DATABASE_DRIVER) : hostedDatabase.driver());
         withEnv(Constants.API_MANAGER_DATABASE_URL, apimDbUrl);
-        withEnv(Constants.API_MANAGER_DATABASE_USERNAME, System.getenv(Constants.API_MANAGER_DATABASE_USERNAME));
-        withEnv(Constants.API_MANAGER_DATABASE_PASSWORD, System.getenv(Constants.API_MANAGER_DATABASE_PASSWORD));
-        withEnv(Constants.API_MANAGER_DATABASE_VALIDATION_QUERY, System.getenv(Constants.
-                API_MANAGER_DATABASE_VALIDATION_QUERY));
+        withEnv(Constants.API_MANAGER_DATABASE_USERNAME, hostedDatabase == null
+                ? System.getenv(Constants.API_MANAGER_DATABASE_USERNAME) : hostedDatabase.apimUsername());
+        withEnv(Constants.API_MANAGER_DATABASE_PASSWORD, hostedDatabase == null
+                ? System.getenv(Constants.API_MANAGER_DATABASE_PASSWORD) : hostedDatabase.password());
+        withEnv(Constants.API_MANAGER_DATABASE_VALIDATION_QUERY, hostedDatabase == null
+                ? System.getenv(Constants.API_MANAGER_DATABASE_VALIDATION_QUERY) : hostedDatabase.validationQuery());
 
         // Env vars for SHARED_DB
-        withEnv(Constants.SHARED_DATABASE_TYPE, System.getenv(Constants.SHARED_DATABASE_TYPE));
-        withEnv(Constants.SHARED_DATABASE_DRIVER, System.getenv(Constants.SHARED_DATABASE_DRIVER));
+        withEnv(Constants.SHARED_DATABASE_TYPE, hostedDatabase == null
+                ? System.getenv(Constants.SHARED_DATABASE_TYPE) : hostedDatabase.type());
+        withEnv(Constants.SHARED_DATABASE_DRIVER, hostedDatabase == null
+                ? System.getenv(Constants.SHARED_DATABASE_DRIVER) : hostedDatabase.driver());
         withEnv(Constants.SHARED_DATABASE_URL, sharedDbUrl);
-        withEnv(Constants.SHARED_DATABASE_USERNAME, System.getenv(Constants.SHARED_DATABASE_USERNAME));
-        withEnv(Constants.SHARED_DATABASE_PASSWORD, System.getenv(Constants.SHARED_DATABASE_PASSWORD));
-        withEnv(Constants.SHARED_DATABASE_VALIDATION_QUERY, System.getenv(Constants.
-                SHARED_DATABASE_VALIDATION_QUERY));
+        withEnv(Constants.SHARED_DATABASE_USERNAME, hostedDatabase == null
+                ? System.getenv(Constants.SHARED_DATABASE_USERNAME) : hostedDatabase.sharedUsername());
+        withEnv(Constants.SHARED_DATABASE_PASSWORD, hostedDatabase == null
+                ? System.getenv(Constants.SHARED_DATABASE_PASSWORD) : hostedDatabase.password());
+        withEnv(Constants.SHARED_DATABASE_VALIDATION_QUERY, hostedDatabase == null
+                ? System.getenv(Constants.SHARED_DATABASE_VALIDATION_QUERY) : hostedDatabase.validationQuery());
 
-        // Add host.docker.internal mapping for Linux compatibility (needed for accessing host services)
-        withExtraHost("host.docker.internal", "host-gateway");
+        if (hostedDatabase != null) {
+            if ("mysql".equalsIgnoreCase(hostedDatabase.type())) {
+                withServerFile(mysqlConnectorPath(), MYSQL_CONNECTOR_SERVER_PATH);
+            } else if ("postgre".equalsIgnoreCase(hostedDatabase.type())) {
+                withServerFile(postgresqlConnectorPath(), POSTGRESQL_CONNECTOR_SERVER_PATH);
+            } else if ("mssql".equalsIgnoreCase(hostedDatabase.type())) {
+                withServerFile(mssqlConnectorPath(), MSSQL_CONNECTOR_SERVER_PATH);
+            } else if ("oracle".equalsIgnoreCase(hostedDatabase.type())) {
+                withServerFile(oracleConnectorPath(), ORACLE_CONNECTOR_SERVER_PATH);
+            } else if ("db2".equalsIgnoreCase(hostedDatabase.type())) {
+                withServerFile(db2ConnectorPath(), DB2_CONNECTOR_SERVER_PATH);
+            } else {
+                throw new IllegalArgumentException("Unsupported hosted database type: " + hostedDatabase.type());
+            }
+        }
 
-        withNetwork(ContainerNetwork.SHARED_NETWORK);
+        withEnv(JVM_MEM_OPTS, SERVER_HEAP_OPTS);
+
+        // host.docker.internal reaches services on the test machine (target from -Ddocker.extra.hosts)
+        withExtraHost(HostDockerInternal.ALIAS, HostDockerInternal.target());
+
+        // The docker network is assigned by the CALLER: BlockLifecycleListener creates one private network per
+        // block and joins APIM plus that block's IS/Solace to it, so the wso2am / wso2is / apimforsolace aliases
+        // are network-scoped and cannot collide across concurrent blocks. Direct constructions (the
+        // framework-verification boot probes) run standalone on the default bridge — they have no peers to resolve.
         // Copy the modified deployment.toml to the container
         withCopyToContainer(Transferable.of(deploymentTomlContent), getContainerTomlPath());
 
@@ -122,6 +170,61 @@ public class DynamicApimContainer extends GenericContainer<DynamicApimContainer>
         waitingFor(Wait.forListeningPort().withStartupTimeout(Duration.ofMinutes(20)));
     }
 
+    private static String mysqlConnectorPath() {
+        try {
+            return new File(com.mysql.cj.jdbc.Driver.class.getProtectionDomain().getCodeSource().getLocation()
+                    .toURI()).getAbsolutePath();
+        } catch (Exception e) {
+            throw new IllegalStateException("Unable to locate the MySQL JDBC connector for hosted DB profile", e);
+        }
+    }
+
+    private static String postgresqlConnectorPath() {
+        try {
+            return new File(org.postgresql.Driver.class.getProtectionDomain().getCodeSource().getLocation()
+                    .toURI()).getAbsolutePath();
+        } catch (Exception e) {
+            throw new IllegalStateException("Unable to locate the PostgreSQL JDBC connector for hosted DB profile", e);
+        }
+    }
+
+    private static String mssqlConnectorPath() {
+        try {
+            return new File(com.microsoft.sqlserver.jdbc.SQLServerDriver.class.getProtectionDomain().getCodeSource()
+                    .getLocation().toURI()).getAbsolutePath();
+        } catch (Exception e) {
+            throw new IllegalStateException("Unable to locate the Microsoft SQL Server JDBC connector for hosted DB "
+                    + "profile", e);
+        }
+    }
+
+    private static String oracleConnectorPath() {
+        try {
+            return new File(oracle.jdbc.driver.OracleDriver.class.getProtectionDomain().getCodeSource()
+                    .getLocation().toURI()).getAbsolutePath();
+        } catch (Exception e) {
+            throw new IllegalStateException("Unable to locate the Oracle JDBC connector for hosted DB profile", e);
+        }
+    }
+
+    private static String db2ConnectorPath() {
+        try {
+            return new File(com.ibm.db2.jcc.DB2Driver.class.getProtectionDomain().getCodeSource().getLocation()
+                    .toURI()).getAbsolutePath();
+        } catch (Exception e) {
+            throw new IllegalStateException("Unable to locate the IBM Db2 JDBC connector for hosted DB profile", e);
+        }
+    }
+
+    private static String requiredImage(String property) {
+        String image = System.getProperty(property);
+        if (image == null || image.isBlank()) {
+            throw new IllegalStateException(property
+                    + " is not set; resolve the image from the all-in-one product POM");
+        }
+        return image;
+    }
+
     /**
      * Enables JaCoCo integration coverage (opt-in; the caller decides when to attach it). Copies the JaCoCo
      * runtime agent into the container and attaches it to the SERVER JVM ONLY, via the {@code JVM_MEM_OPTS}
@@ -149,15 +252,24 @@ public class DynamicApimContainer extends GenericContainer<DynamicApimContainer>
         } catch (IOException e) {
             throw new RuntimeException("Failed to stage JaCoCo agent jar", e);
         }
-        // Attach the agent to the SERVER JVM ONLY via JVM_MEM_OPTS. Preserve api-manager.sh's own default heap
-        // (-Xms256m -Xmx1024m) and append the agent, so behaviour is unchanged except for the added agent. The
-        // background diagnostics-tool JVM overwrites JVM_MEM_OPTS with its own value, so it never sees the agent
-        // → no tcpserver port-6300 race (the cause of the intermittent block-boot failures).
-        withEnv("JVM_MEM_OPTS", "-Xms256m -Xmx1024m " + JacocoCoverage.containerAgentVmArg());
+        // Attach the agent to the SERVER JVM ONLY via JVM_MEM_OPTS, appended to the server heap so behaviour is
+        // unchanged except for the added agent. The background diagnostics-tool JVM overwrites JVM_MEM_OPTS with
+        // its own value, so it never sees the agent → no tcpserver port-6300 race.
+        withEnv(JVM_MEM_OPTS, SERVER_HEAP_OPTS + " " + JacocoCoverage.containerAgentVmArg());
         // addExposedPort (not withExposedPorts) so the canonical APIM ports set in the constructor are kept.
         addExposedPort(JacocoCoverage.TCP_PORT);
         logger.info("JaCoCo coverage enabled (server-JVM-only via JVM_MEM_OPTS): agent at {}, tcpserver port {}",
                 JacocoCoverage.CONTAINER_AGENT_PATH, JacocoCoverage.TCP_PORT);
+        return this;
+    }
+
+    /**
+     * Caps the container at {@code limit} CPUs (Docker {@code --cpus}, applied as {@code HostConfig.NanoCpus} on
+     * container creation). Without this call the container is uncapped. Must be called before {@link #start()}.
+     */
+    @Override
+    public DynamicApimContainer withCpuLimit(CpuLimit limit) {
+        withCreateContainerCmdModifier(limit::applyTo);
         return this;
     }
 
@@ -208,12 +320,12 @@ public class DynamicApimContainer extends GenericContainer<DynamicApimContainer>
      * tenant-sync events in the SSO overlay). Without a live alias holder the IS EventSender fails with
      * {@code UnknownHostException: wso2am} (harmless unless a test asserts on the delivered notification).
      *
-     * <p>Deliberately separate from {@link #withExternalKmTrust()}: the alias is fixed (it is baked into the IS
-     * toml and the wso2am.p12 cert), so AT MOST ONE live container may hold it — duplicate holders make Docker
-     * DNS resolve {@code wso2am} arbitrarily and notifications land on the wrong APIM. Most external-KM blocks
-     * only make APIM→IS calls and never consume the reverse channel; they skip this and can therefore run
-     * concurrently. Only the block whose tests assert on IS→APIM notifications binds it (via the
-     * {@code receiveExternalIsNotifications} block param).
+     * <p>Deliberately separate from {@link #withExternalKmTrust()}: the alias name is fixed (baked into the IS
+     * toml and the wso2am.p12 cert), so at most one container may hold it PER NETWORK. Since every block runs on
+     * its own private network, that is satisfied by construction and any number of blocks may bind it
+     * concurrently — which is why the JVM-wide permit this used to require is gone. Most external-KM blocks only
+     * make APIM→IS calls and never consume the reverse channel, so they skip it; only the block whose tests
+     * assert on IS→APIM notifications binds it (via the {@code receiveExternalIsNotifications} block param).
      */
     public DynamicApimContainer withExternalIsNotificationAlias() {
         withNetworkAliases(APIM_NETWORK_ALIAS);
@@ -230,15 +342,13 @@ public class DynamicApimContainer extends GenericContainer<DynamicApimContainer>
      *
      * <p>APIM has NO network alias by default (nothing normally calls IN to it), and this deliberately does not
      * reuse the {@code wso2am} notification alias: that one is baked into the IS toml and the wso2am.p12 cert,
-     * so it is SINGLE-HOLDER and permit-guarded ({@link #withExternalIsNotificationAlias}) — binding it here
-     * would make a Solace block contend with, and be able to steal notifications from, an external-IS block.
-     * A separate name avoids that contention, but it is NOT unguarded: this alias is bound by EACH block that
-     * opts into Solace, so it is single-holder too, and for a reason on the broker side rather than the cert's.
-     * {@code DynamicSolaceBroker} is a shared singleton whose OAuth profile carries a SINGLE {@code endpointJwks},
-     * configured once per JVM — so exactly one live APIM may answer this name, or Docker round-robins the broker's
-     * key fetch between containers. The listener enforces that with its own permit
-     * ({@code SOLACE_JWKS_ALIAS_PERMIT}), queueing Solace blocks among themselves exactly as the {@code wso2am}
-     * holders queue. Do not bind this without taking that permit.
+     * so binding it here would let a Solace block receive — and steal — an external-IS block's notifications if
+     * the two ever shared a network. A separate name keeps the two channels independent regardless.
+     *
+     * <p>No permit is needed. This alias, the block's Solace broker and the block's APIM all live on the SAME
+     * private per-block network, so the broker's single {@code endpointJwks} resolves to exactly one APIM by
+     * construction. (On the old shared network each opting-in block bound this same name on one network, so the
+     * listener had to serialize those blocks on a JVM-wide permit; per-block networks removed that.)
      */
     public DynamicApimContainer withSolaceJwksAlias() {
         withNetworkAliases(DynamicSolaceBroker.APIM_JWKS_ALIAS);
@@ -265,8 +375,25 @@ public class DynamicApimContainer extends GenericContainer<DynamicApimContainer>
         return String.format("http://%s:%d/", getHost(), getMappedPort(Constants.HTTP_PORT));
     }
 
+    @Override
+    public String getBackendOAuthTokenUrl() {
+        // This URL is consumed from inside the APIM container. Do not use the host-mapped servlet URL here:
+        // the mapped port is reachable from the test JVM, not from the container's network namespace.
+        return "https://localhost:9443/oauth2/token";
+    }
+
     public String getGatewayHttpsUrl() {
         return String.format("https://%s:%d/", getHost(), getMappedPort(Constants.GATEWAY_HTTPS_PORT));
+    }
+
+    @Override
+    public String getGatewayManagementHttpsUrl() {
+        return getServletHttpsUrl();
+    }
+
+    @Override
+    public String getTrafficManagerManagementHttpsUrl() {
+        return getServletHttpsUrl();
     }
 
     public String getGatewayHttpUrl() {
@@ -308,9 +435,31 @@ public class DynamicApimContainer extends GenericContainer<DynamicApimContainer>
         throw new IllegalStateException("Could not determine the container network gateway IP");
     }
 
+    @Override
+    public Set<String> getGatewayBrokerClientAddresses() {
+        // Gateway and broker share this container. Their connection can use loopback or a container interface.
+        Set<String> addresses = new HashSet<>(Set.of("127.0.0.1", "::1", "0:0:0:0:0:0:0:1"));
+        for (com.github.dockerjava.api.model.ContainerNetwork value
+                : getContainerInfo().getNetworkSettings().getNetworks().values()) {
+            if (value.getIpAddress() != null && !value.getIpAddress().isBlank()) {
+                addresses.add(value.getIpAddress());
+            }
+            if (value.getGlobalIPv6Address() != null && !value.getGlobalIPv6Address().isBlank()) {
+                addresses.add(value.getGlobalIPv6Address());
+            }
+        }
+        return Set.copyOf(addresses);
+    }
+
     public String getContainerTomlPath() {
         return Constants.APIM_CONTAINER_USER_HOME + "/" + requireServerName() +
                 Constants.DEPLOYMENT_TOML_PATH;
+    }
+
+    /** Explicit contract bridge; Testcontainers supplies this method through {@code ContainerState}. */
+    @Override
+    public Container.ExecResult execInContainer(String... command) throws IOException, InterruptedException {
+        return super.execInContainer(command);
     }
 
     /**
@@ -329,6 +478,20 @@ public class DynamicApimContainer extends GenericContainer<DynamicApimContainer>
         // data file the server must WRITE (e.g. an embedded H2 .mv.db) silently degrades - H2 opens a
         // non-writable file read-only, so store reads work while writes no-op with no server-side error.
         withCopyToContainer(MountableFile.forHostPath(hostPath, 0666), target);
+        return this;
+    }
+
+    /**
+     * Replaces a product configuration template BEFORE the container starts, at
+     * {@code <server-home>/repository/resources/conf/templates/<templateRelativePath>}. The server renders its
+     * templates with {@code deployment.toml} on every boot, so the replacement applies to the first boot and to
+     * every restart. Used for template overlays (see {@link J2TemplateOverlay}). Must be called before
+     * {@link #start()}.
+     */
+    public DynamicApimContainer withTemplate(String templateRelativePath, String content) {
+        String target = Constants.APIM_CONTAINER_USER_HOME + "/" + requireServerName()
+                + Constants.CONTAINER_TEMPLATES_PATH + "/" + templateRelativePath;
+        withCopyToContainer(Transferable.of(content), target);
         return this;
     }
 
@@ -394,6 +557,37 @@ public class DynamicApimContainer extends GenericContainer<DynamicApimContainer>
      */
     public String getContainerLogFilePath(String fileName) {
         return Constants.APIM_CONTAINER_USER_HOME + "/" + requireServerName() + "/repository/logs/" + fileName;
+    }
+
+    @Override
+    public String readGatewayLogFile(String fileName) {
+        return readContainerFile(getContainerLogFilePath(fileName));
+    }
+
+    @Override
+    public String readControlPlaneLogFile(String fileName) {
+        return readContainerFile(getContainerLogFilePath(fileName));
+    }
+
+    @Override
+    public String readTrafficManagerLogFile(String fileName) {
+        // The all-in-one distribution publishes and consumes throttle events in the same Carbon JVM.
+        return readContainerFile(getContainerLogFilePath(fileName));
+    }
+
+    @Override
+    public ContainerLogHistory.Snapshot readGatewayLogHistory(String fileName) {
+        return ContainerLogHistory.read(this, Constants.APIM_CONTAINER_USER_HOME + "/" + requireServerName(), fileName);
+    }
+
+    @Override
+    public ContainerLogHistory.Snapshot readControlPlaneLogHistory(String fileName) {
+        return readGatewayLogHistory(fileName);
+    }
+
+    @Override
+    public ContainerLogHistory.Snapshot readTrafficManagerLogHistory(String fileName) {
+        return readGatewayLogHistory(fileName);
     }
 
     /**

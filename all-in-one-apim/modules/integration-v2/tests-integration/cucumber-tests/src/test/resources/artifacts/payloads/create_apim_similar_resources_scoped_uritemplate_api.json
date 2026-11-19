@@ -1,0 +1,59 @@
+{
+  "name": "${UNIQUE:SimilarResScopedUriTemplateAPI}",
+  "context": "${UNIQUE:similarResScopedUriTemplateCtx}",
+  "version": "1.0.0",
+  "endpointConfig": {
+    "endpoint_type": "http",
+    "production_endpoints": {
+      "template_not_supported": false,
+      "config": null,
+      "url": "http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/verb-echo"
+    },
+    "sandbox_endpoints": {
+      "url": "http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/verb-echo",
+      "config": null,
+      "template_not_supported": false
+    }
+  },
+  "description": "Overlapping URI-template operations with distinct method scopes.",
+  "policies": ["Gold", "Bronze", "Unlimited"],
+  "scopes": [
+    {
+      "scope": {
+        "name": "sve_get_scope",
+        "displayName": "sve_get_scope",
+        "description": "Only authorizes the overlapping GET operation",
+        "bindings": ["admin"]
+      },
+      "shared": false
+    },
+    {
+      "scope": {
+        "name": "sve_post_scope",
+        "displayName": "sve_post_scope",
+        "description": "Only authorizes the overlapping POST operation",
+        "bindings": ["admin"]
+      },
+      "shared": false
+    }
+  ],
+  "operations": [
+    {
+      "verb": "GET",
+      "target": "/comp/cartes*",
+      "authType": "Application & Application User",
+      "throttlingPolicy": "Unlimited",
+      "scopes": ["sve_get_scope"]
+    },
+    {
+      "verb": "POST",
+      "target": "/comp/cartes/op*",
+      "authType": "Application & Application User",
+      "throttlingPolicy": "Unlimited",
+      "scopes": ["sve_post_scope"]
+    }
+  ],
+  "isDefaultVersion": true,
+  "additionalProperties": [],
+  "additionalPropertiesMap": {}
+}

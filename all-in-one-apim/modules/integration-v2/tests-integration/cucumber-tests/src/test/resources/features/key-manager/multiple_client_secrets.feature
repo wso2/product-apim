@@ -36,6 +36,7 @@ Feature: Key Manager Multiple Client Secrets
     When I generate a consumer secret with description "primary extra secret" for application "createdAppId" with key mapping "keyMappingId" as "secretA"
     Then The response status code should be 201
     And The response should contain "secretValue"
+    And The response field "secretValue" should be non-blank
 
     When I retrieve the consumer secrets for application "createdAppId" with key mapping "keyMappingId"
     Then The response status code should be 200
@@ -72,6 +73,7 @@ Feature: Key Manager Multiple Client Secrets
     When I generate a consumer secret with description "" for application "createdAppId" with key mapping "keyMappingId" as "minSecret"
     Then The response status code should be 201
     And The response should contain "secretValue"
+    And The response field "secretValue" should be non-blank
 
     Examples:
       | actor             |
@@ -153,6 +155,88 @@ Feature: Key Manager Multiple Client Secrets
     When I extract JWT claim "sub" from access token "tsToken1" and store it as "tsSub1"
     And I extract JWT claim "sub" from access token "tsToken2" and store it as "tsSub2"
     Then The stored value "tsSub1" should equal "tsSub2"
+
+    Examples:
+      | actor             |
+      | admin             |
+      | admin@tenant1.com |
+
+  # The JWT scenario above proves the secrets share an application identity by comparing `sub`. Keep an OAUTH
+  # application path too: its access tokens are opaque, so the meaningful contract here is that each additional
+  # secret authenticates, revoking one rejects only that credential, and the other still reaches the gateway.
+  @cap:key-manager @feat:multiple-client-secrets @rule:opaque-token @type:regression @dep:devportal @dep:gateway @legacy:MultipleClientSecretsTokenTestCase
+  Scenario Outline: Additional secrets work independently for an OAUTH application as <actor>
+    Given The system is ready
+    And I have valid access tokens as "<actor>"
+    And I have created an api from "artifacts/payloads/create_apim_test_api.json" as "opaqueMcsApiId" and deployed it
+    When I publish the "apis" resource with id "opaqueMcsApiId"
+    Then The lifecycle status of API "opaqueMcsApiId" should be "Published"
+    When I retrieve the "apis" resource with id "opaqueMcsApiId"
+    And I extract response field "context" and store it as "opaqueMcsApiContext"
+
+    When I put JSON payload from file "artifacts/payloads/create_apim_test_app_oauth.json" in context as "opaqueMcsAppPayload"
+    And I create an application with payload "opaqueMcsAppPayload"
+    Then The response status code should be 201
+    # The DevPortal application DTO reports its own tokenType as JWT. Opaque issuance is configured on the
+    # generated OAuth client through OAuthAdminService below, and is asserted on that client and its real token.
+    And The value of response field "tokenType" should be "JWT"
+    When I put the following JSON payload in context as "opaqueMcsKeysPayload"
+    """
+    {"keyType": "PRODUCTION", "grantTypesToBeSupported": ["client_credentials"]}
+    """
+    And I generate client credentials for application id "createdAppId" with payload "opaqueMcsKeysPayload"
+    Then The response status code should be 200
+    And I extract response field "consumerKey" and store it as "opaqueMcsConsumerKey"
+    And I extract response field "consumerSecret" and store it as "opaqueMcsInitialConsumerSecret"
+    When I switch the OAuth client with consumer key "opaqueMcsConsumerKey" to opaque token issuance
+    And I request a client-credentials token using consumer key "opaqueMcsConsumerKey" and secret "opaqueMcsInitialConsumerSecret"
+    Then The response status code should be 200
+    And The response field "access_token" should be non-blank
+    And I extract response field "access_token" and store it as "opaqueMcsInitialToken"
+    And The stored access token "opaqueMcsInitialToken" should be opaque, not a JWT
+
+    When I put the following JSON payload in context as "opaqueMcsSubscriptionPayload"
+    """
+    {"applicationId": "{{applicationId}}", "apiId": "{{apiId}}", "throttlingPolicy": "Unlimited"}
+    """
+    And I subscribe to API "opaqueMcsApiId" using application "createdAppId" with payload "opaqueMcsSubscriptionPayload" as "opaqueMcsSubscriptionId"
+    Then The response status code should be 201
+
+    When I generate a consumer secret with description "opaque secret A" for application "createdAppId" with key mapping "keyMappingId" as "opaqueMcsSecretAId"
+    Then The response status code should be 201
+    And I extract response field "secretValue" and store it as "opaqueMcsSecretAValue"
+    When I generate a consumer secret with description "opaque secret B" for application "createdAppId" with key mapping "keyMappingId" as "opaqueMcsSecretBId"
+    Then The response status code should be 201
+    And I extract response field "secretValue" and store it as "opaqueMcsSecretBValue"
+
+    # Both additional secrets issue opaque access tokens and those tokens invoke the same API.
+    When I request a client-credentials token using consumer key "opaqueMcsConsumerKey" and secret "opaqueMcsSecretAValue"
+    Then The response status code should be 200
+    And The response field "access_token" should be non-blank
+    And I extract response field "access_token" and store it as "opaqueMcsTokenA"
+    And The stored access token "opaqueMcsTokenA" should be opaque, not a JWT
+    When I invoke the API at gateway context "{{opaqueMcsApiContext}}/1.0.0/customers/123/" with method "GET" using access token "opaqueMcsTokenA" and payload "" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    When I request a client-credentials token using consumer key "opaqueMcsConsumerKey" and secret "opaqueMcsSecretBValue"
+    Then The response status code should be 200
+    And The response field "access_token" should be non-blank
+    And I extract response field "access_token" and store it as "opaqueMcsTokenB"
+    And The stored access token "opaqueMcsTokenB" should be opaque, not a JWT
+    When I invoke the API at gateway context "{{opaqueMcsApiContext}}/1.0.0/customers/123/" with method "GET" using access token "opaqueMcsTokenB" and payload "" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+
+    # Revoking A rejects that credential, while B continues to authenticate and invoke successfully.
+    When I revoke the consumer secret "opaqueMcsSecretAId" for application "createdAppId" with key mapping "keyMappingId"
+    Then The response status code should be 204
+    When I request a client-credentials token using consumer key "opaqueMcsConsumerKey" and secret "opaqueMcsSecretAValue"
+    Then The response status code should be 401
+    When I request a client-credentials token using consumer key "opaqueMcsConsumerKey" and secret "opaqueMcsSecretBValue"
+    Then The response status code should be 200
+    And The response field "access_token" should be non-blank
+    And I extract response field "access_token" and store it as "opaqueMcsTokenBAfterRevoke"
+    And The stored access token "opaqueMcsTokenBAfterRevoke" should be opaque, not a JWT
+    When I invoke the API at gateway context "{{opaqueMcsApiContext}}/1.0.0/customers/123/" with method "GET" using access token "opaqueMcsTokenBAfterRevoke" and payload "" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
 
     Examples:
       | actor             |
@@ -282,4 +366,3 @@ Feature: Key Manager Multiple Client Secrets
       | actor             |
       | admin             |
       | admin@tenant1.com |
-

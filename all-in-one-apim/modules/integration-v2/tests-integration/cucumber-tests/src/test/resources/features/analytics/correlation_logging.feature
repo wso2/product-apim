@@ -47,6 +47,7 @@ Feature: Correlation Logging Configuration
     Given The system is ready
     And I have valid access tokens as "admin"
     And I have created an api from "artifacts/payloads/create_apim_test_api.json" as "correlationApiId" and deployed it
+    And the "apis" resource "correlationApiId" should be live on the gateway, redeploying if propagation is lost
     When I publish the "apis" resource with id "correlationApiId"
     Then The lifecycle status of API "correlationApiId" should be "Published"
     When I retrieve the "apis" resource with id "correlationApiId"
@@ -60,9 +61,9 @@ Feature: Correlation Logging Configuration
     When I enable only the correlation logging components "http,ldap,synapse,method-calls"
     Then The response status code should be 200
     And The correlation configuration should have exactly the components "http,ldap,synapse,method-calls" enabled
-    # The PUT is acknowledged from the DB write; the gateway is switched asynchronously by an event-hub
-    # CorrelationConfigEvent. Traffic sent before that lands is not instrumented.
-    When I wait 15 seconds for the "correlation" configuration to reach the gateway
+    # The config GET only reads the persisted document; successful gateway traffic producing the marker proves
+    # the asynchronous configuration event has reached the active emitter.
+    When I wait until the gateway log file "correlation.log" records marker "|HTTP State Transition|" for API context "{{correlationApiContext}}/1.0.0/customers/123/" using access token "generatedAccessToken" within 60 seconds
 
     When I mark the current end of the server log file "correlation.log"
     And I invoke the API at gateway context "{{correlationApiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" with request header "activityid" set to "9e3ec6ed-2a37-4b20-8dd4-d5fbc754a7d9" until response status code becomes 200 within 60 seconds
@@ -81,9 +82,9 @@ Feature: Correlation Logging Configuration
     Then The response status code should be 200
 
     And The correlation configuration should have exactly the components "" enabled
-    # Same asynchrony in the other direction — verified: without this wait the next invocation still produced
-    # the full set of synapse and method-calls lines despite a 200 from the disable.
-    When I wait 15 seconds for the "correlation" configuration to reach the gateway
+    # Require a full quiet interval of successful requests after the disable event; keep the measured negative
+    # invocation and its existing observation window below as a separate assertion.
+    When I verify the gateway log file "correlation.log" has no marker "|HTTP State Transition|" for API context "{{correlationApiContext}}/1.0.0/customers/123/" using access token "generatedAccessToken" for 15 seconds within 60 seconds
 
     When I mark the current end of the server log file "correlation.log"
     And I invoke the API at gateway context "{{correlationApiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" with request header "activityid" set to "6b1d0f42-77c8-4a9e-9d3b-1f5a8c2e4b70" until response status code becomes 200 within 60 seconds
@@ -97,6 +98,7 @@ Feature: Correlation Logging Configuration
     Given The system is ready
     And I have valid access tokens as "admin"
     And I have created an api from "artifacts/payloads/create_apim_test_api.json" as "singleComponentApiId" and deployed it
+    And the "apis" resource "singleComponentApiId" should be live on the gateway, redeploying if propagation is lost
     When I publish the "apis" resource with id "singleComponentApiId"
     Then The lifecycle status of API "singleComponentApiId" should be "Published"
     When I retrieve the "apis" resource with id "singleComponentApiId"
@@ -115,14 +117,16 @@ Feature: Correlation Logging Configuration
     # — it is simply the wrong traffic. Driven at the management plane, it works.
     When I enable only the correlation logging components "http"
     Then The response status code should be 200
-    When I wait 15 seconds for the "correlation" configuration to reach the gateway
-    And I mark the current end of the server log file "correlation.log"
+    When I wait until the control-plane log file "correlation.log" records marker "|HTTP-In-Request|" through Publisher API reads within 60 seconds
+    And I mark the current end of the control-plane server log file "correlation.log"
     And I retrieve all APIs created through the Publisher REST API
     Then The response status code should be 200
-    And The server log file "correlation.log" should gain a line containing "|HTTP-In-Request|" within 60 seconds
+    And The control-plane server log file "correlation.log" should gain a line containing "|HTTP-In-Request|" within 60 seconds
 
     # ...and the gateway stays silent under the same setting: no synapse transitions, no method calls.
     When I mark the current end of the server log file "correlation.log"
+    And I verify the gateway log file "correlation.log" has no marker "|HTTP State Transition|" for API context "{{singleComponentApiContext}}/1.0.0/customers/123/" using access token "generatedAccessToken" for 15 seconds within 60 seconds
+    And I mark the current end of the server log file "correlation.log"
     And I invoke the API at gateway context "{{singleComponentApiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
     And The server log file "correlation.log" should gain no line containing "|HTTP State Transition|" within 20 seconds
@@ -131,7 +135,7 @@ Feature: Correlation Logging Configuration
     # method-calls alone, driven by gateway traffic.
     When I enable only the correlation logging components "method-calls"
     Then The response status code should be 200
-    When I wait 15 seconds for the "correlation" configuration to reach the gateway
+    When I wait until the gateway log file "correlation.log" records marker "|METHOD|" for API context "{{singleComponentApiContext}}/1.0.0/customers/123/" using access token "generatedAccessToken" within 60 seconds
     And I mark the current end of the server log file "correlation.log"
     And I invoke the API at gateway context "{{singleComponentApiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
@@ -140,28 +144,32 @@ Feature: Correlation Logging Configuration
     And The server log file "correlation.log" should gain no line containing "|HTTP State Transition|" within 1 seconds
 
     # ...and the Tomcat valve is off again, so the http marker must not reappear on a management-plane call.
-    When I mark the current end of the server log file "correlation.log"
+    When I verify the control-plane log file "correlation.log" has no marker "|HTTP-In-Request|" through Publisher API reads for 15 seconds within 60 seconds
+    And I mark the current end of the control-plane server log file "correlation.log"
     And I retrieve all APIs created through the Publisher REST API
     Then The response status code should be 200
-    And The server log file "correlation.log" should gain no line containing "|HTTP-In-Request|" within 20 seconds
+    And The control-plane server log file "correlation.log" should gain no line containing "|HTTP-In-Request|" within 20 seconds
 
     # Everything off: neither marker, from either kind of traffic.
     When I enable only the correlation logging components ""
     Then The response status code should be 200
-    When I wait 15 seconds for the "correlation" configuration to reach the gateway
+    When I verify the gateway log file "correlation.log" has no marker "|METHOD|" for API context "{{singleComponentApiContext}}/1.0.0/customers/123/" using access token "generatedAccessToken" for 15 seconds within 60 seconds
     And I mark the current end of the server log file "correlation.log"
     And I invoke the API at gateway context "{{singleComponentApiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
+    When I verify the control-plane log file "correlation.log" has no marker "|HTTP-In-Request|" through Publisher API reads for 15 seconds within 60 seconds
+    And I mark the current end of the control-plane server log file "correlation.log"
     When I retrieve all APIs created through the Publisher REST API
     Then The response status code should be 200
     And The server log file "correlation.log" should gain no line containing "|METHOD|" within 20 seconds
-    And The server log file "correlation.log" should gain no line containing "|HTTP-In-Request|" within 1 seconds
+    And The control-plane server log file "correlation.log" should gain no line containing "|HTTP-In-Request|" within 1 seconds
 
   @cap:analytics @feat:correlation-logging @rule:persistence @type:regression @dep:gateway @legacy:CorrelationLoggingTest
   Scenario: Correlation configuration survives a graceful restart
     Given The system is ready
     And I have valid access tokens as "admin"
     And I have created an api from "artifacts/payloads/create_apim_test_api.json" as "persistedApiId" and deployed it
+    And the "apis" resource "persistedApiId" should be live on the gateway, redeploying if propagation is lost
     When I publish the "apis" resource with id "persistedApiId"
     Then The lifecycle status of API "persistedApiId" should be "Published"
     When I retrieve the "apis" resource with id "persistedApiId"
@@ -186,10 +194,11 @@ Feature: Correlation Logging Configuration
     # Legacy instead asserted the restart by looking for "Started log handler" in correlation.log — but the
     # LogsHandler constructor emits that line unconditionally at every boot, whatever the component settings,
     # so it only ever proved the server came back, never that anything persisted.
-    When I mark the current end of the server log file "correlation.log"
+    When I mark the current end of the control-plane server log file "correlation.log"
+    When I gracefully restart the Control Plane
     And I retrieve all APIs created through the Publisher REST API
     Then The response status code should be 200
-    And The server log file "correlation.log" should gain a line containing "|HTTP-In-Request|" within 60 seconds
+    And The control-plane server log file "correlation.log" should gain a line containing "|HTTP-In-Request|" within 60 seconds
 
     When I mark the current end of the server log file "correlation.log"
     And I invoke the API at gateway context "{{persistedApiContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds

@@ -21,8 +21,8 @@ package org.wso2.am.integration.cucumbertests.runners.block;
 import io.cucumber.testng.CucumberOptions;
 
 /**
- * Runner for WS proxy profile — end-to-end authenticated proxy routing. Runs in the
- * IntegrationV2-WsProxyAuthRouting block whose deployment.toml overlay (wsProxyAuthRouting) loads
+ * Runner for WS proxy profile — end-to-end authenticated proxy routing. Runs in IntegrationV2-ApprovalWorkflow (all-in-one) and
+ * IntegrationV2-Distributed-Gateway-WsProxyAuthRouting, whose overlays (wsProxyAuthRouting) load
  * a single [[transport.ws.proxy_profile]] that matches "nodebackend" with no bypass_hosts, pointing
  * at squid-proxy:3129 (the Basic-auth Squid instance) with testproxyuser credentials. The gateway
  * attaches a Proxy-Authorization header on the CONNECT request. Squid validates the credentials and

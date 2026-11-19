@@ -9,7 +9,9 @@ Feature: Gateway API Product Invocation
   analogue of gateway/lifecycle_stage_invocation. Also covers what a product does with CHANGES to a member API:
   an endpoint switch and an operation-policy change must both surface through an already-deployed product once it
   is re-saved and redeployed. Products aggregate TWO APIs (with disjoint resource sets) where the legacy did.
-  Runs in the concurrent IntegrationV2-Gateway block (backend started). Teardown via @cleanup.
+  The gateway serves a product from its DEPLOYED revision — that revision's resource set and per-resource rate
+  limit, scopes and security, across rollback, roll forward and undeploy — and on the context fixed at create.
+  Runs in a concurrent IntegrationV2-Gateway-* block (backend started). Teardown via @cleanup.
 
   @cap:gateway @feat:rest-invocation @type:smoke @dep:publisher @legacy:APIProductCreationTestCase
   Scenario Outline: Invoke a published API product over two APIs with all four credential types as <actor>
@@ -19,10 +21,11 @@ Feature: Gateway API Product Invocation
     # Deploy-readiness gate (self-healing). The deploy event is at-most-once, so a dropped one can never be
     # recovered by the invoke's own polling — it would 404 to the deadline. This re-emits it.
     And the "apis" resource "prodApiId" should be live on the gateway, redeploying if propagation is lost
-    And I have created an api from "artifacts/payloads/create_apim_test_api_two.json" as "prodApiTwoId" and deployed it
+    And I have created an api from "artifacts/payloads/create_apim_product_leasing_api.json" as "prodApiTwoId" and deployed it
     And the "apis" resource "prodApiTwoId" should be live on the gateway, redeploying if propagation is lost
     When I create an API product "${UNIQUE:InvokeProduct}" with context "${UNIQUE:invokeProductCtx}" from APIs "prodApiId,prodApiTwoId" as "productId"
     Then The response status code should be 201
+    And The create response of API product "productId" should echo its name, context, version and the provider of actor "<actor>"
     # Deploy a product revision, publish, and capture the product's gateway context.
     When I put the following JSON payload in context as "prodRev"
     """
@@ -40,12 +43,19 @@ Feature: Gateway API Product Invocation
     # 60s window because the deploy event was lost, and polling alone can never recover an at-most-once
     # event. Works for api-products: the DTO carries name+version and the heal path is resourceType-aware.
     And the "api-products" resource "productId" should be live on the gateway, redeploying if propagation is lost
+    Then The publisher product list should report API product "productId" exactly once with the same info fields
+    And The API product "productId" read from the publisher should match its create response
     When I publish the "api-products" resource with id "productId"
     Then The response status code should be 200
+    And The value of response field "workflowStatus" should be "APPROVED"
+    # The published two-API product reaches the devportal with every resource of BOTH members.
+    Then The devportal should report API product "productId" exactly once with the same fields
+    And The devportal should advertise gateway endpoint URLs for API product "productId"
     When I retrieve the "api-products" resource with id "productId"
     And I extract response field "context" and store it as "productContext"
-    # Subscribe ONE application and take all four credentials legacy invoked a product with.
-    When I have set up application with production and sandbox keys, subscribed to API "productId" with plan "Unlimited", and obtained the four credentials as "prodSubId"
+    # Subscribe ONE application and take all four credentials legacy invoked a product with, plus the password-grant
+    # tokens of a least-privileged subscriber (legacy's standard_user) minted with the same application keys.
+    When I have set up application with production and sandbox keys, subscribed to API "productId" with plan "Unlimited", and obtained the four credentials as "prodSubId" plus user tokens for "<subscriber>"
     # The production application token invokes the first member API's resource. Each invocation pins the SOURCE
     # API's own backend signature and the OTHER member's absent: member API one points at node-customer-service
     # ({"id":123,"name":"John"}) and member API two at the wildcard backend ("Hello World"), so the pair of
@@ -77,11 +87,37 @@ Feature: Gateway API Product Invocation
     Then The response status code should be 200
     And The response should contain "Hello World"
     And The response should not contain "\"name\":\"John\""
+    # The least-privileged subscriber's user tokens (production and sandbox key mappings) reach the first member.
+    When I invoke the API at gateway context "{{productContext}}/1.0.0/customers/123/" with method "GET" using access token "productionSubscriberToken" and payload "" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
+    When I invoke the API at gateway context "{{productContext}}/1.0.0/customers/123/" with method "GET" using access token "sandboxSubscriberToken" and payload "" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
+    # Every aggregated resource of the second member (GET/POST /assets, GET/PUT/DELETE /assets/{assetId}) answers
+    # through the product for each of legacy's four credentials — application tokens and the subscriber's user
+    # tokens, production and sandbox. The wildcard member answers any verb with "Hello World"; the customer
+    # service answers none of these paths, so the body pins the routing.
+    When I invoke every operation of the product leasing member at "{{productContext}}/1.0.0" with access tokens "productionAppToken,sandboxAppToken,productionSubscriberToken,sandboxSubscriberToken" expecting status 200 and body "Hello World"
+    # DELETE /customers/{id} through the product, for an application token and a subscriber token. The customer
+    # service removes the customer, so each call targets its own seeded id (never 123, which other scenarios read).
+    When I invoke the API at gateway context "{{productContext}}/1.0.0/customers/<appDeleteId>/" with method "DELETE" using access token "productionAppToken" and payload "" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    When I invoke the API at gateway context "{{productContext}}/1.0.0/customers/<userDeleteId>/" with method "DELETE" using access token "sandboxSubscriberToken" and payload "" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    # The remaining two credentials reach the same operation too; the customer service answers 304 for an id it
+    # does not hold, which only a call the gateway let through can produce.
+    When I invoke the API at gateway context "{{productContext}}/1.0.0/customers/999/" with method "DELETE" using access token "sandboxAppToken" and payload "" until response status code becomes 304 within 60 seconds
+    Then The response status code should be 304
+    When I invoke the API at gateway context "{{productContext}}/1.0.0/customers/999/" with method "DELETE" using access token "productionSubscriberToken" and payload "" until response status code becomes 304 within 60 seconds
+    Then The response status code should be 304
 
     Examples:
-      | actor             |
-      | admin             |
-      | admin@tenant1.com |
+      | actor             | subscriber                 | appDeleteId | userDeleteId |
+      | admin             | subscriberUser             | 124         | 125          |
+      | admin@tenant1.com | subscriberUser@tenant1.com | 127         | 128          |
 
   # An endpoint change on a MEMBER API must surface through an already-deployed product once the product is
   # re-saved and redeployed.
@@ -135,6 +171,11 @@ Feature: Gateway API Product Invocation
       epV2Endpoint
       """
     Then The response status code should be 200
+    # Until the product is re-saved and redeployed, its deployed revision keeps the OLD member snapshot: the
+    # product must go on serving the customer service's body throughout a settle window (legacy step 9).
+    When I invoke the API at gateway context "{{epProductContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and the response should remain status 200 containing "\"name\":\"John\"" for 15 seconds
+    Then The response should contain "\"name\":\"John\""
+    And The response should not contain "Hello World"
     # Re-save the product (legacy PUT the fetched product DTO back) and redeploy it so the change reaches the
     # gateway through the product.
     When I retrieve the "api-products" resource with id "epProductId"
@@ -154,6 +195,10 @@ Feature: Gateway API Product Invocation
     When I invoke the API at gateway context "{{epProductContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response body contains "Hello World" within 120 seconds
     Then The response status code should be 200
     And The response should contain "Hello World"
+    And The response should not contain "\"name\":\"John\""
+    # Legacy observed the switch on the versionless (default-version) route.
+    When I invoke the API at gateway context "{{epProductContext}}/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response body contains "Hello World" within 120 seconds
+    Then The response status code should be 200
     And The response should not contain "\"name\":\"John\""
 
     Examples:
@@ -194,19 +239,30 @@ Feature: Gateway API Product Invocation
     Then The response status code should be 200
     And The response should contain "\"name\":\"John\""
     And The response should not contain "Hello World"
+    # A product is created as its default version, so the same call also answers on the VERSIONLESS route —
+    # the route legacy invoked the product on.
+    When I invoke the API at gateway context "{{ikProductContext}}/customers/123/" with method "GET" using internal key "ikInternalKey" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    And The response should contain "\"name\":\"John\""
+    And The response should not contain "Hello World"
 
     Examples:
       | actor                     |
       | publisherUser             |
       | publisherUser@tenant1.com |
 
+  # The product aggregates TWO APIs (legacy customer-info + leasing), and every lifecycle stage is observed on
+  # both members, on the versioned AND the versionless (default-version) route legacy invoked, and on the
+  # devportal plane.
   @cap:gateway @feat:rest-invocation @type:regression @dep:publisher @legacy:APIProductLifecycleTest
   Scenario Outline: The gateway response to an API product invocation tracks its lifecycle state as <actor>
     Given The system is ready
     And I have valid access tokens as "<actor>"
-    And I have created an api from "artifacts/payloads/create_apim_test_api.json" as "lcApiId" and deployed it
+    And I have created an api from "artifacts/payloads/create_apim_product_lifecycle_api.json" as "lcApiId" and deployed it
     And the "apis" resource "lcApiId" should be live on the gateway, redeploying if propagation is lost
-    When I create an API product "${UNIQUE:LcProduct}" with context "${UNIQUE:lcProductCtx}" from API "lcApiId" as "lcProductId"
+    And I have created an api from "artifacts/payloads/create_apim_product_leasing_api.json" as "lcApiTwoId" and deployed it
+    And the "apis" resource "lcApiTwoId" should be live on the gateway, redeploying if propagation is lost
+    When I create an API product "${UNIQUE:LcProduct}" with context "${UNIQUE:lcProductCtx}" from APIs "lcApiId,lcApiTwoId" as "lcProductId"
     Then The response status code should be 201
     When I put the following JSON payload in context as "lcRev"
     """
@@ -220,6 +276,13 @@ Feature: Gateway API Product Invocation
     And I make a request to deploy revision "revisionId" of "api-products" resource "lcProductId" with payload "lcDeploy"
     Then The response status code should be 201
     And the "api-products" resource "lcProductId" should be live on the gateway, redeploying if propagation is lost
+    # The legacy CREATED-state contract invokes the product's root customer collection using its publisher internal key.
+    When I retrieve the "api-products" resource with id "lcProductId"
+    And I extract response field "context" and store it as "lcCreatedProductContext"
+    When I generate an internal API key for API "lcProductId" and store it as "lcInternalKey"
+    Then The response status code should be 200
+    When I invoke the API at gateway context "{{lcCreatedProductContext}}/customers" with method "GET" using internal key "lcInternalKey" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
     When I publish the "api-products" resource with id "lcProductId"
     Then The response status code should be 200
     When I retrieve the "api-products" resource with id "lcProductId"
@@ -228,17 +291,37 @@ Feature: Gateway API Product Invocation
     Then The response status code should be 200
 
     # PUBLISHED → invocable.
+    When I invoke the API at gateway context "{{lcProductContext}}/customers" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    When I invoke the API at gateway context "{{lcProductContext}}/customers" with method "POST" using access token "generatedAccessToken" and payload "" with content type "text/plain" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    When I invoke the API at gateway context "{{lcProductContext}}/customers/123" with method "PUT" using access token "generatedAccessToken" and payload "" with content type "text/plain" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
     When I invoke the API at gateway context "{{lcProductContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
     And The value of response field "id" should be "123"
     And The value of response field "name" should be "John"
+    When I invoke the API at gateway context "{{lcProductContext}}/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    And The value of response field "name" should be "John"
+    When I invoke every operation of the product leasing member at "{{lcProductContext}}/1.0.0" with access tokens "generatedAccessToken" expecting status 200 and body "Hello World"
 
     # BLOCKED → gateway refuses (503). The transition itself is auto-approved.
     When I change the lifecycle of "api-products" resource "lcProductId" with action "Block"
     Then The response status code should be 200
     And The value of response field "workflowStatus" should be "APPROVED"
     And The value of response field "lifecycleState.state" should be "Blocked"
+    And The response field "lifecycleState.availableTransitions[*].event" should be exactly the list "<blockedTransitions>"
     When I invoke the API at gateway context "{{lcProductContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 503 within 60 seconds
+    Then The response status code should be 503
+    When I invoke the API at gateway context "{{lcProductContext}}/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 503 within 60 seconds
+    Then The response status code should be 503
+    When I invoke the API at gateway context "{{lcProductContext}}/customers" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 503 within 60 seconds
+    Then The response status code should be 503
+    When I invoke the API at gateway context "{{lcProductContext}}/customers" with method "GET" without authentication until response status code becomes 503 within 60 seconds
+    Then The response status code should be 503
+    # Legacy's blocked-state call carried no Authorization header at all: a blocked product refuses before auth.
+    When I invoke the API at gateway context "{{lcProductContext}}/customers/123/" with method "GET" without authentication until response status code becomes 503 within 60 seconds
     Then The response status code should be 503
 
     # Re-Publish from BLOCKED → PUBLISHED and the SAME credential is served again (the recovery transition).
@@ -246,24 +329,48 @@ Feature: Gateway API Product Invocation
     Then The response status code should be 200
     And The value of response field "workflowStatus" should be "APPROVED"
     And The value of response field "lifecycleState.state" should be "Published"
+    When I invoke the API at gateway context "{{lcProductContext}}/customers" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    When I invoke the API at gateway context "{{lcProductContext}}/customers" with method "POST" using access token "generatedAccessToken" and payload "" with content type "text/plain" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    When I invoke the API at gateway context "{{lcProductContext}}/customers/123" with method "PUT" using access token "generatedAccessToken" and payload "" with content type "text/plain" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    When I invoke the API at gateway context "{{lcProductContext}}/customers/123" with method "DELETE" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
     When I invoke the API at gateway context "{{lcProductContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
+    And The value of response field "name" should be "John"
+    When I invoke every operation of the product leasing member at "{{lcProductContext}}/1.0.0" with access tokens "generatedAccessToken" expecting status 200 and body "Hello World"
+    # The re-published product is back on the devportal with the same representation.
+    Then The devportal should report API product "lcProductId" exactly once with the same fields
+    And The devportal should advertise gateway endpoint URLs for API product "lcProductId"
 
-    # DEPRECATED → still invocable (200).
+    # DEPRECATED → still invocable (200), and still readable on the devportal as DEPRECATED.
     When I change the lifecycle of "api-products" resource "lcProductId" with action "Deprecate"
+    Then The response status code should be 200
+    And The value of response field "workflowStatus" should be "APPROVED"
+    When I invoke the API at gateway context "{{lcProductContext}}/customers" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    When I invoke the API at gateway context "{{lcProductContext}}/customers" with method "POST" using access token "generatedAccessToken" and payload "" with content type "text/plain" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    When I invoke the API at gateway context "{{lcProductContext}}/customers/123" with method "PUT" using access token "generatedAccessToken" and payload "" with content type "text/plain" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    When I invoke the API at gateway context "{{lcProductContext}}/customers/123" with method "DELETE" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
     When I invoke the API at gateway context "{{lcProductContext}}/1.0.0/customers/123/" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
     Then The response status code should be 200
     And The value of response field "id" should be "123"
     And The value of response field "name" should be "John"
+    When I invoke every operation of the product leasing member at "{{lcProductContext}}/1.0.0" with access tokens "generatedAccessToken" expecting status 200 and body "Hello World"
+    Then The devportal should report API product "lcProductId" with lifecycle status "DEPRECATED"
     # (RETIRED is a publisher/delete concern for products — see publisher/api_products "lifecycle … deleted when
     #  retired". Unlike a retired API (404), a retired product's key validation fails with 900900/500, which the
     #  legacy never asserted, so it is deliberately not asserted at the gateway here.)
 
     Examples:
-      | actor             |
-      | admin             |
-      | admin@tenant1.com |
+      | actor             | blockedTransitions   |
+      | admin             | Deprecate,Re-Publish |
+      | admin@tenant1.com | Deprecate,Re-Publish |
 
   # D2: a scope gated on the source API's operation is enforced when the operation is invoked through a product
   # — a token WITH the scope succeeds (200), one WITHOUT it is refused (403). Ports
@@ -309,6 +416,7 @@ Feature: Gateway API Product Invocation
     And the "api-products" resource "scopeProductId" should be live on the gateway, redeploying if propagation is lost
     When I publish the "api-products" resource with id "scopeProductId"
     Then The response status code should be 200
+    And The value of response field "workflowStatus" should be "APPROVED"
     When I retrieve the "api-products" resource with id "scopeProductId"
     And I extract response field "context" and store it as "scopeProductContext"
     # Subscribe an application and key it.
@@ -347,22 +455,109 @@ Feature: Gateway API Product Invocation
       | admin             |
       | admin@tenant1.com |
 
+  # An API-LOCAL scope bound to a CUSTOM role, reached through a product that also aggregates an unscoped API.
+  # Application tokens (production and sandbox) carry no scope, so the scope-gated operation refuses them (403)
+  # while the unscoped member still serves them (200). A user holding the custom role gets a token granted exactly
+  # the scope (production and sandbox key mappings), which then serves every operation. Ports
+  # APIProductCreationTestCase#testCreateAndInvokeApiProductWithScopes (restricted_scope on restricted_role).
+  @cap:gateway @feat:security-enforcement @rule:product @type:regression @dep:publisher @legacy:APIProductCreationTestCase
+  Scenario Outline: An API-local scope bound to a custom role is enforced through an API product as <actor>
+    Given The system is ready
+    And I have valid access tokens as "<actor>"
+    And I generate a unique value and store it as "localScopeRole"
+    And I generate a unique value and store it as "localScopeName"
+    And I provision role "{{localScopeRole}}" in tenant "<tenant>"
+    And I provision user "prodLocalScopeUser" with roles "Internal/subscriber,{{localScopeRole}}" in tenant "<tenant>"
+    And I have created an api from "artifacts/payloads/create_apim_test_api.json" as "localScopedApiId" and deployed it
+    And the "apis" resource "localScopedApiId" should be live on the gateway, redeploying if propagation is lost
+    And I have created an api from "artifacts/payloads/create_apim_product_leasing_api.json" as "localLeasingApiId" and deployed it
+    And the "apis" resource "localLeasingApiId" should be live on the gateway, redeploying if propagation is lost
+    When I retrieve the "apis" resource with id "localScopedApiId"
+    And I put the response payload in context as "localScopedApiPayload"
+    When I update the "apis" resource "localScopedApiId" and "localScopedApiPayload" with configuration type "scopes" and value:
+      """
+      [{"shared":false,"scope":{"name":"{{localScopeName}}","displayName":"{{localScopeName}}","description":"product local scope","bindings":["{{localScopeRole}}"]}}]
+      """
+    Then The response status code should be 200
+    When I retrieve the "apis" resource with id "localScopedApiId"
+    And I put the response payload in context as "localScopedApiPayload"
+    When I update the "apis" resource "localScopedApiId" and "localScopedApiPayload" with configuration type "operations" and value:
+      """
+      [{"target":"/customers/{id}","verb":"GET","authType":"Application & Application User","throttlingPolicy":"Unlimited","scopes":["{{localScopeName}}"],"operationPolicies":{"request":[],"response":[],"fault":[]}},{"target":"/customers/{id}","verb":"DELETE","authType":"Application & Application User","throttlingPolicy":"Unlimited","scopes":["{{localScopeName}}"],"operationPolicies":{"request":[],"response":[],"fault":[]}}]
+      """
+    Then The response status code should be 200
+    When I create an API product "${UNIQUE:LocalScopeProduct}" with context "${UNIQUE:localScopeProductCtx}" from APIs "localScopedApiId,localLeasingApiId" as "localScopeProductId"
+    Then The response status code should be 201
+    Then The publisher product list should report API product "localScopeProductId" exactly once with the same info fields
+    And The API product "localScopeProductId" read from the publisher should match its create response
+    When I put the following JSON payload in context as "localScopeRev"
+    """
+    {"description":"local-scope product revision"}
+    """
+    And I make a request to create a revision for "api-products" resource "localScopeProductId" with payload "localScopeRev"
+    When I deploy revision "revisionId" of "api-products" resource "localScopeProductId"
+    Then The response status code should be 201
+    And the "api-products" resource "localScopeProductId" should be live on the gateway, redeploying if propagation is lost
+    When I publish the "api-products" resource with id "localScopeProductId"
+    Then The response status code should be 200
+    # The product inherits the member's local scope, and the devportal shows it with its role binding.
+    Then The devportal should report API product "localScopeProductId" exactly once with the same fields
+    When I retrieve the "api-products" resource with id "localScopeProductId"
+    And I extract response field "context" and store it as "localScopeProductContext"
+    When I have set up application with production and sandbox keys, subscribed to API "localScopeProductId" with plan "Unlimited", and obtained the four credentials as "localScopeSubId" plus user tokens for "prodLocalScopeUser<suffix>" with scope "{{localScopeName}}"
+    # Scope-less application tokens: the gated operation refuses them, the unscoped member serves them.
+    When I invoke the API at gateway context "{{localScopeProductContext}}/1.0.0/customers/123/" with method "GET" using access token "productionAppToken" and payload "" until response status code becomes 403 within 60 seconds
+    Then The response status code should be 403
+    When I invoke the API at gateway context "{{localScopeProductContext}}/1.0.0/customers/123/" with method "GET" using access token "sandboxAppToken" and payload "" until response status code becomes 403 within 60 seconds
+    Then The response status code should be 403
+    When I invoke every operation of the product leasing member at "{{localScopeProductContext}}/1.0.0" with access tokens "productionAppToken,sandboxAppToken" expecting status 200 and body "Hello World"
+    When I invoke the API at gateway context "{{localScopeProductContext}}/1.0.0/customers/999/" with method "DELETE" using access token "productionAppToken" and payload "" until response status code becomes 403 within 60 seconds
+    Then The response status code should be 403
+    When I invoke the API at gateway context "{{localScopeProductContext}}/1.0.0/customers/999/" with method "DELETE" using access token "sandboxAppToken" and payload "" until response status code becomes 403 within 60 seconds
+    Then The response status code should be 403
+    # The custom-role user's scoped tokens serve the gated operation and the unscoped member alike.
+    When I invoke the API at gateway context "{{localScopeProductContext}}/1.0.0/customers/123/" with method "GET" using access token "productionSubscriberToken" and payload "" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
+    When I invoke the API at gateway context "{{localScopeProductContext}}/1.0.0/customers/123/" with method "GET" using access token "sandboxSubscriberToken" and payload "" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
+    When I invoke every operation of the product leasing member at "{{localScopeProductContext}}/1.0.0" with access tokens "productionSubscriberToken,sandboxSubscriberToken" expecting status 200 and body "Hello World"
+    # The scoped DELETE lets the custom-role tokens through to the backend (304: no such customer) instead of 403.
+    When I invoke the API at gateway context "{{localScopeProductContext}}/1.0.0/customers/999/" with method "DELETE" using access token "productionSubscriberToken" and payload "" until response status code becomes 304 within 60 seconds
+    Then The response status code should be 304
+    When I invoke the API at gateway context "{{localScopeProductContext}}/1.0.0/customers/999/" with method "DELETE" using access token "sandboxSubscriberToken" and payload "" until response status code becomes 304 within 60 seconds
+    Then The response status code should be 304
+
+    Examples:
+      | actor             | tenant       | suffix       |
+      | admin             | carbon.super |              |
+      | admin@tenant1.com | tenant1.com  | @tenant1.com |
+
   # D1: a product that aggregates an API whose devportal visibility is RESTRICTED (visibleRoles) is still
   # invocable through the product (the source API's visibility restriction does not block product invocation),
   # with every credential type. Ports
   # APIProductCreationTestCase#testCreateAndInvokeApiProductWithVisibilityRestrictedApi (whose
   # invocationStatusCodes is empty — i.e. all operations expected to return 200, no 403), which aggregated the
   # restricted API together with a second, unrestricted one.
+  # The member is restricted to a CUSTOM role that neither the application owner nor the subscriber holds (legacy
+  # restricted_role), and the subscriber's user tokens — minted outside that role — must still be served.
   @cap:gateway @feat:rest-invocation @rule:product @type:regression @dep:publisher @legacy:APIProductCreationTestCase
   Scenario Outline: A product aggregating a visibility-restricted API is invocable as <actor>
     Given The system is ready
     And I have valid access tokens as "<actor>"
-    And I have created an api from "artifacts/payloads/create_apim_restricted_visibility_api.json" as "restrictedApiId" and deployed it
+    And I generate a unique value and store it as "pvisRole"
+    And I provision store-visibility role "{{pvisRole}}" in tenant "<tenant>"
+    And I have created an api from "artifacts/payloads/create_apim_restricted_visibility_api.json" with restricted visibility for roles "{{pvisRole}}" as "restrictedApiId" and deployed it
     And the "apis" resource "restrictedApiId" should be live on the gateway, redeploying if propagation is lost
-    And I have created an api from "artifacts/payloads/create_apim_test_api_two.json" as "restrictedApiTwoId" and deployed it
+    And I have created an api from "artifacts/payloads/create_apim_product_leasing_api.json" as "restrictedApiTwoId" and deployed it
     And the "apis" resource "restrictedApiTwoId" should be live on the gateway, redeploying if propagation is lost
     When I create an API product "${UNIQUE:RestrictedProduct}" with context "${UNIQUE:restrictedProductCtx}" from APIs "restrictedApiId,restrictedApiTwoId" as "restrictedProductId"
     Then The response status code should be 201
+    Then The publisher product list should report API product "restrictedProductId" exactly once with the same info fields
+    And The API product "restrictedProductId" read from the publisher should match its create response
     When I put the following JSON payload in context as "restrictedRev"
     """
     {"description":"restricted-visibility product revision"}
@@ -377,9 +572,11 @@ Feature: Gateway API Product Invocation
     And the "api-products" resource "restrictedProductId" should be live on the gateway, redeploying if propagation is lost
     When I publish the "api-products" resource with id "restrictedProductId"
     Then The response status code should be 200
+    And The value of response field "workflowStatus" should be "APPROVED"
+    Then The devportal should report API product "restrictedProductId" exactly once with the same fields
     When I retrieve the "api-products" resource with id "restrictedProductId"
     And I extract response field "context" and store it as "restrictedProductContext"
-    When I have set up application with production and sandbox keys, subscribed to API "restrictedProductId" with plan "Unlimited", and obtained the four credentials as "restrictedSubId"
+    When I have set up application with production and sandbox keys, subscribed to API "restrictedProductId" with plan "Unlimited", and obtained the four credentials as "restrictedSubId" plus user tokens for "<subscriber>"
     # The RESTRICTED member API is the one under test, so each credential must be shown to reach ITS backend
     # (node-customer-service). The product's other member sits on the wildcard backend ("Hello World"), which a
     # bare 200 could not rule out — that is precisely the "restriction silently diverted the call" failure.
@@ -402,11 +599,25 @@ Feature: Gateway API Product Invocation
     And The value of response field "id" should be "123"
     And The value of response field "name" should be "John"
     And The response should not contain "Hello World"
+    # A subscriber OUTSIDE the visibility role is served through the product too, on both key mappings.
+    When I invoke the API at gateway context "{{restrictedProductContext}}/1.0.0/customers/123/" with method "GET" using access token "productionSubscriberToken" and payload "" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    And The value of response field "name" should be "John"
+    And The response should not contain "Hello World"
+    When I invoke the API at gateway context "{{restrictedProductContext}}/1.0.0/customers/123/" with method "GET" using access token "sandboxSubscriberToken" and payload "" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    And The value of response field "name" should be "John"
+    And The response should not contain "Hello World"
+    # And the unrestricted member serves every credential as well.
+    When I invoke the API at gateway context "{{restrictedProductContext}}/1.0.0/assets" with method "GET" using access token "productionSubscriberToken" and payload "" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    And The response should contain "Hello World"
+    When I invoke every operation of the product leasing member at "{{restrictedProductContext}}/1.0.0" with access tokens "productionAppToken,sandboxAppToken,productionSubscriberToken,sandboxSubscriberToken" expecting status 200 and body "Hello World"
 
     Examples:
-      | actor             |
-      | admin             |
-      | admin@tenant1.com |
+      | actor             | tenant       | subscriber                 |
+      | admin             | carbon.super | subscriberUser             |
+      | admin@tenant1.com | tenant1.com  | subscriberUser@tenant1.com |
 
   # D4: a product that aggregates an advertise-only API is invocable through the product — the product provides
   # the gateway routing (to the advertised API's external endpoint, here the node backend), even though an
@@ -423,6 +634,8 @@ Feature: Gateway API Product Invocation
     Then The response status code should be 201
     When I create an API product "${UNIQUE:AdvertiseProduct}" with context "${UNIQUE:advertiseProductCtx}" from API "advertiseApiId" as "advertiseProductId"
     Then The response status code should be 201
+    Then The publisher product list should report API product "advertiseProductId" exactly once with the same info fields
+    And The API product "advertiseProductId" read from the publisher should match its create response
     When I put the following JSON payload in context as "advertiseRev"
     """
     {"description":"advertise product revision"}
@@ -437,9 +650,11 @@ Feature: Gateway API Product Invocation
     And the "api-products" resource "advertiseProductId" should be live on the gateway, redeploying if propagation is lost
     When I publish the "api-products" resource with id "advertiseProductId"
     Then The response status code should be 200
+    And The value of response field "workflowStatus" should be "APPROVED"
+    Then The devportal should report API product "advertiseProductId" exactly once with the same fields
     When I retrieve the "api-products" resource with id "advertiseProductId"
     And I extract response field "context" and store it as "advertiseProductContext"
-    When I have set up application with production and sandbox keys, subscribed to API "advertiseProductId" with plan "Unlimited", and obtained the four credentials as "advertiseSubId"
+    When I have set up application with production and sandbox keys, subscribed to API "advertiseProductId" with plan "Unlimited", and obtained the four credentials as "advertiseSubId" plus user tokens for "<subscriber>"
     # The claim is that the product routes to the ADVERTISED API's EXTERNAL endpoint even though that API is not
     # itself gateway-deployed. Only the backend payload shows the call actually got there, so each credential
     # asserts it.
@@ -458,11 +673,20 @@ Feature: Gateway API Product Invocation
     Then The response status code should be 200
     And The value of response field "id" should be "123"
     And The value of response field "name" should be "John"
+    # Legacy's user tokens belonged to a least-privileged subscriber, not the application owner.
+    When I invoke the API at gateway context "{{advertiseProductContext}}/1.0.0/customers/123/" with method "GET" using access token "productionSubscriberToken" and payload "" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
+    When I invoke the API at gateway context "{{advertiseProductContext}}/1.0.0/customers/123/" with method "GET" using access token "sandboxSubscriberToken" and payload "" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    And The value of response field "id" should be "123"
+    And The value of response field "name" should be "John"
 
     Examples:
-      | actor             |
-      | admin             |
-      | admin@tenant1.com |
+      | actor             | subscriber                 |
+      | admin             | subscriberUser             |
+      | admin@tenant1.com | subscriberUser@tenant1.com |
 
   # D3: a request-flow operation policy (jsonToXML) on the source API's operation is applied when the operation
   # is invoked through a product — a JSON request body is transformed to XML before reaching the backend (which
@@ -490,6 +714,7 @@ Feature: Gateway API Product Invocation
     And the "api-products" resource "opPolicyProductId" should be live on the gateway, redeploying if propagation is lost
     When I publish the "api-products" resource with id "opPolicyProductId"
     Then The response status code should be 200
+    And The value of response field "workflowStatus" should be "APPROVED"
     When I retrieve the "api-products" resource with id "opPolicyProductId"
     And I extract response field "context" and store it as "opPolicyProductContext"
     When I have set up application with keys, subscribed to API "opPolicyProductId", and obtained access token for "opPolicySubId"
@@ -501,11 +726,47 @@ Feature: Gateway API Product Invocation
     """
     And I invoke the API at gateway context "{{opPolicyProductContext}}/1.0.0/reflect-body" with method "POST" using access token "generatedAccessToken" and payload "opPolicyBody" until response body contains "<jsonObject>" within 60 seconds
     Then The response should contain "<foo>bar</foo>"
+    # Every credential legacy used — application and least-privileged-subscriber tokens on both key mappings —
+    # gets EXACTLY the transformed body on both body-carrying operations (POST, PUT).
+    When I have set up application with production and sandbox keys, subscribed to API "opPolicyProductId" with plan "Unlimited", and obtained the four credentials as "opPolicyFourSubId" plus user tokens for "<subscriber>"
+    And I invoke "{{opPolicyProductContext}}/1.0.0/reflect-body" with method "POST", payload "opPolicyBody" and content type "application/json" using each of the access tokens "productionAppToken,sandboxAppToken,productionSubscriberToken,sandboxSubscriberToken" and expect status 200 with body exactly "<jsonObject><foo>bar</foo></jsonObject>"
+    And I invoke "{{opPolicyProductContext}}/1.0.0/reflect-body" with method "PUT", payload "opPolicyBody" and content type "application/json" using each of the access tokens "productionAppToken,sandboxAppToken,productionSubscriberToken,sandboxSubscriberToken" and expect status 200 with body exactly "<jsonObject><foo>bar</foo></jsonObject>"
+    # CHANGE the member's request policy to xmlToJson. The deployed product keeps the old jsonToXML snapshot until
+    # it is re-saved and redeployed, so the same JSON request is still transformed to XML.
+    When I retrieve the "apis" resource with id "opPolicyApiId"
+    And I put the response payload in context as "opPolicyApiPayload"
+    When I update the "apis" resource "opPolicyApiId" and "opPolicyApiPayload" with configuration type "operations" and value:
+      """
+      [{"target":"/reflect-body","verb":"POST","authType":"Application & Application User","throttlingPolicy":"Unlimited","scopes":[],"operationPolicies":{"request":[{"policyName":"xmlToJson","policyVersion":"v1","parameters":{}}],"response":[],"fault":[{"policyName":"jsonFault","policyVersion":"v1","parameters":{}}]}},{"target":"/reflect-body","verb":"PUT","authType":"Application & Application User","throttlingPolicy":"Unlimited","scopes":[],"operationPolicies":{"request":[{"policyName":"xmlToJson","policyVersion":"v1","parameters":{}}],"response":[],"fault":[{"policyName":"jsonFault","policyVersion":"v1","parameters":{}}]}}]
+      """
+    Then The response status code should be 200
+    And I invoke "{{opPolicyProductContext}}/1.0.0/reflect-body" with method "POST", payload "opPolicyBody" and content type "application/json" using each of the access tokens "productionAppToken,sandboxAppToken,productionSubscriberToken,sandboxSubscriberToken" and expect status 200 with body exactly "<jsonObject><foo>bar</foo></jsonObject>"
+    And I invoke "{{opPolicyProductContext}}/1.0.0/reflect-body" with method "PUT", payload "opPolicyBody" and content type "application/json" using each of the access tokens "productionAppToken,sandboxAppToken,productionSubscriberToken,sandboxSubscriberToken" and expect status 200 with body exactly "<jsonObject><foo>bar</foo></jsonObject>"
+    # Re-save + redeploy the product: an XML request is now converted to JSON before the backend echoes it.
+    When I retrieve the "api-products" resource with id "opPolicyProductId"
+    And I put the response payload in context as "opPolicyProductPayload"
+    When I update "api-products" resource of id "opPolicyProductId" with payload "opPolicyProductPayload"
+    Then The response status code should be 200
+    When I put the following JSON payload in context as "opPolicyRev2"
+    """
+    {"description":"operation-policy product revision after the member policy swap"}
+    """
+    And I make a request to create a revision for "api-products" resource "opPolicyProductId" with payload "opPolicyRev2"
+    Then The response status code should be 201
+    When I deploy revision "revisionId" of "api-products" resource "opPolicyProductId"
+    Then The response status code should be 201
+    When I put the following JSON payload in context as "opPolicyXmlBody"
+    """
+    <jsonObject><foo>bar</foo></jsonObject>
+    """
+    And I invoke the API at gateway context "{{opPolicyProductContext}}/1.0.0/reflect-body" with method "POST" using access token "productionAppToken" and payload "opPolicyXmlBody" with content type "text/xml" until response body contains "{\"foo\":\"bar\"}" within 120 seconds, re-deploying the "api-products" resource "opPolicyProductId" if propagation is lost
+    And I invoke "{{opPolicyProductContext}}/1.0.0/reflect-body" with method "POST", payload "opPolicyXmlBody" and content type "text/xml" using each of the access tokens "productionAppToken,sandboxAppToken,productionSubscriberToken,sandboxSubscriberToken" and expect status 200 with body exactly "{\"foo\":\"bar\"}"
+    And I invoke "{{opPolicyProductContext}}/1.0.0/reflect-body" with method "PUT", payload "opPolicyXmlBody" and content type "text/xml" using each of the access tokens "productionAppToken,sandboxAppToken,productionSubscriberToken,sandboxSubscriberToken" and expect status 200 with body exactly "{\"foo\":\"bar\"}"
 
     Examples:
-      | actor             |
-      | admin             |
-      | admin@tenant1.com |
+      | actor             | subscriber                 |
+      | admin             | subscriberUser             |
+      | admin@tenant1.com | subscriberUser@tenant1.com |
 
   # The RESPONSE-flow counterpart of D3, plus a base-API policy CHANGE surfacing through an existing product.
   # The member API carries an xmlToJson RESPONSE policy and a jsonFault fault policy; the backend echoes the body
@@ -532,6 +793,7 @@ Feature: Gateway API Product Invocation
     And the "api-products" resource "respPolicyProductId" should be live on the gateway, redeploying if propagation is lost
     When I publish the "api-products" resource with id "respPolicyProductId"
     Then The response status code should be 200
+    And The value of response field "workflowStatus" should be "APPROVED"
     When I retrieve the "api-products" resource with id "respPolicyProductId"
     And I extract response field "context" and store it as "respPolicyProductContext"
     When I have set up application with keys, subscribed to API "respPolicyProductId", and obtained access token for "respPolicySubId"
@@ -543,21 +805,33 @@ Feature: Gateway API Product Invocation
     """
     And I invoke the API at gateway context "{{respPolicyProductContext}}/1.0.0/reflect-body-typed" with method "POST" using access token "generatedAccessToken" and payload "respPolicyXmlBody" with content type "application/xml" until response status code becomes 200 within 60 seconds
     Then The response should contain "{\"foo\":\"bar\"}"
+    When I have set up application with production and sandbox keys, subscribed to API "respPolicyProductId" with plan "Unlimited", and obtained the four credentials as "respPolicyFourSubId" plus user tokens for "<subscriber>"
+    And I invoke "{{respPolicyProductContext}}/1.0.0/reflect-body-typed" with method "POST", payload "respPolicyXmlBody" and content type "application/xml" using each of the access tokens "productionAppToken,sandboxAppToken,productionSubscriberToken,sandboxSubscriberToken" and expect status 200 with body exactly "{\"foo\":\"bar\"}"
+    And I invoke "{{respPolicyProductContext}}/1.0.0/reflect-body-typed" with method "PUT", payload "respPolicyXmlBody" and content type "application/xml" using each of the access tokens "productionAppToken,sandboxAppToken,productionSubscriberToken,sandboxSubscriberToken" and expect status 200 with body exactly "{\"foo\":\"bar\"}"
+    # A TEXT echo (legacy's backend) makes the response policy's output literal: the xmlToJson policy wraps the
+    # text payload as {"text": ...}.
+    And I invoke "{{respPolicyProductContext}}/1.0.0/reflect-body-text" with method "POST", payload "respPolicyXmlBody" and content type "application/xml" using each of the access tokens "productionAppToken,sandboxAppToken,productionSubscriberToken,sandboxSubscriberToken" and expect status 200 with body exactly "{\"text\":\"<foo>bar</foo>\"}"
     # CHANGE the MEMBER API's operation policies — add a jsonToXML REQUEST policy (as the legacy did) and clear
     # the response policy — then re-save + redeploy the product so the change reaches the gateway through it.
-    # The response policy is cleared in the same update deliberately: with BOTH policies in place the
+    # On the TYPED operations the response policy is cleared in the same update deliberately: with BOTH policies the
     # JSON→XML→JSON round trip is invisible at the client (Synapse's XML/JSON conversion uses `jsonObject` as the
     # anonymous-object root element, so xmlToJson strips the very wrapper jsonToXML added and the body reads
     # {"foo":"bar"} either way) — the assertion could then not tell "the change reached the gateway" from "it did
     # not". With the response policy gone, the jsonObject wrapper the request policy produced is visible verbatim,
-    # which no pre-change state can produce.
+    # which no pre-change state can produce. The text-echo operation keeps its response policy, so there the
+    # combined chain is visible inside the {"text": ...} wrapper.
     When I retrieve the "apis" resource with id "respPolicyApiId"
     And I put the response payload in context as "respPolicyApiPayload"
     When I update the "apis" resource "respPolicyApiId" and "respPolicyApiPayload" with configuration type "operations" and value:
       """
-      [{"target":"/reflect-body-typed","verb":"POST","authType":"Application & Application User","throttlingPolicy":"Unlimited","scopes":[],"operationPolicies":{"request":[{"policyName":"jsonToXML","policyVersion":"v1","parameters":{}}],"response":[],"fault":[{"policyName":"jsonFault","policyVersion":"v1","parameters":{}}]}}]
+      [{"target":"/reflect-body-typed","verb":"POST","authType":"Application & Application User","throttlingPolicy":"Unlimited","scopes":[],"operationPolicies":{"request":[{"policyName":"jsonToXML","policyVersion":"v1","parameters":{}}],"response":[],"fault":[{"policyName":"jsonFault","policyVersion":"v1","parameters":{}}]}},{"target":"/reflect-body-typed","verb":"PUT","authType":"Application & Application User","throttlingPolicy":"Unlimited","scopes":[],"operationPolicies":{"request":[{"policyName":"jsonToXML","policyVersion":"v1","parameters":{}}],"response":[],"fault":[{"policyName":"jsonFault","policyVersion":"v1","parameters":{}}]}},{"target":"/reflect-body-text","verb":"POST","authType":"Application & Application User","throttlingPolicy":"Unlimited","scopes":[],"operationPolicies":{"request":[{"policyName":"jsonToXML","policyVersion":"v1","parameters":{}}],"response":[{"policyName":"xmlToJson","policyVersion":"v1","parameters":{}}],"fault":[{"policyName":"jsonFault","policyVersion":"v1","parameters":{}}]}}]
       """
     Then The response status code should be 200
+    # Until the product is re-saved and redeployed it keeps the OLD member snapshot: the XML request is still
+    # answered through the xmlToJson response policy, for every credential.
+    And I invoke "{{respPolicyProductContext}}/1.0.0/reflect-body-typed" with method "POST", payload "respPolicyXmlBody" and content type "application/xml" using each of the access tokens "productionAppToken,sandboxAppToken,productionSubscriberToken,sandboxSubscriberToken" and expect status 200 with body exactly "{\"foo\":\"bar\"}"
+    And I invoke "{{respPolicyProductContext}}/1.0.0/reflect-body-typed" with method "PUT", payload "respPolicyXmlBody" and content type "application/xml" using each of the access tokens "productionAppToken,sandboxAppToken,productionSubscriberToken,sandboxSubscriberToken" and expect status 200 with body exactly "{\"foo\":\"bar\"}"
+    And I invoke "{{respPolicyProductContext}}/1.0.0/reflect-body-text" with method "POST", payload "respPolicyXmlBody" and content type "application/xml" using each of the access tokens "productionAppToken,sandboxAppToken,productionSubscriberToken,sandboxSubscriberToken" and expect status 200 with body exactly "{\"text\":\"<foo>bar</foo>\"}"
     When I retrieve the "api-products" resource with id "respPolicyProductId"
     And I put the response payload in context as "respPolicyProductPayload"
     When I update "api-products" resource of id "respPolicyProductId" with payload "respPolicyProductPayload"
@@ -570,7 +844,6 @@ Feature: Gateway API Product Invocation
     Then The response status code should be 201
     When I deploy revision "revisionId" of "api-products" resource "respPolicyProductId"
     Then The response status code should be 201
-    And the "api-products" resource "respPolicyProductId" should be live on the gateway, redeploying if propagation is lost
     # A JSON request body is now converted to XML inbound by the newly-added request policy, and the backend's
     # echo of that XML reaches the client untouched — proof the member API's policy change took effect through
     # the already-deployed product.
@@ -578,10 +851,610 @@ Feature: Gateway API Product Invocation
     """
     {"foo":"bar"}
     """
-    And I invoke the API at gateway context "{{respPolicyProductContext}}/1.0.0/reflect-body-typed" with method "POST" using access token "generatedAccessToken" and payload "respPolicyJsonBody" with content type "application/json" until response body contains "<jsonObject>" within 120 seconds
+    And I invoke the API at gateway context "{{respPolicyProductContext}}/1.0.0/reflect-body-typed" with method "POST" using access token "generatedAccessToken" and payload "respPolicyJsonBody" with content type "application/json" until response body contains "<jsonObject>" within 120 seconds, re-deploying the "api-products" resource "respPolicyProductId" if propagation is lost
     Then The response should contain "<jsonObject><foo>bar</foo></jsonObject>"
+    And I invoke "{{respPolicyProductContext}}/1.0.0/reflect-body-typed" with method "POST", payload "respPolicyJsonBody" and content type "application/json" using each of the access tokens "productionAppToken,sandboxAppToken,productionSubscriberToken,sandboxSubscriberToken" and expect status 200 with body exactly "<jsonObject><foo>bar</foo></jsonObject>"
+    And I invoke "{{respPolicyProductContext}}/1.0.0/reflect-body-typed" with method "PUT", payload "respPolicyJsonBody" and content type "application/json" using each of the access tokens "productionAppToken,sandboxAppToken,productionSubscriberToken,sandboxSubscriberToken" and expect status 200 with body exactly "<jsonObject><foo>bar</foo></jsonObject>"
+    # Where the member KEPT its response policy and gained the request policy, BOTH now apply: the JSON body is
+    # converted to XML inbound, echoed as text, and wrapped by the response policy (legacy's combined assertion).
+    And I invoke "{{respPolicyProductContext}}/1.0.0/reflect-body-text" with method "POST", payload "respPolicyJsonBody" and content type "application/json" using each of the access tokens "productionAppToken,sandboxAppToken,productionSubscriberToken,sandboxSubscriberToken" and expect status 200 with body exactly "{\"text\":\"<jsonObject><foo>bar</foo></jsonObject>\"}"
+
+    Examples:
+      | actor             | subscriber                 |
+      | admin             | subscriberUser             |
+      | admin@tenant1.com | subscriberUser@tenant1.com |
+
+  # ---------------------------------------------------------------------------------------------------------------
+  # The gateway serves an API product from its DEPLOYED revision and on the context fixed at create. Member APIs
+  # here are on the wildcard backend (any path answers 200 "Hello World"), so a resource exists purely because the
+  # revision defines it. Which settings the gateway holds for each resource is read from
+  # its own API info (urlMappings: auth scheme, rate limit, scopes) and then confirmed by invoking the resource.
+  # A rollback deploy is NOT followed by the self-healing live-gate: its heal redeploys a fresh revision cut from the
+  # working copy, which would replace the older revision under test; the API-info poll waits for it instead.
+  # ---------------------------------------------------------------------------------------------------------------
+
+  # The gateway enforces the rate limit, scopes and security of the deployed revision of a product built from two
+  # APIs — not those of the working copy or of another revision — across a rollback, a roll forward and a new
+  # revision cut from a restored working copy. The product also accepts Basic auth, so a wrong password shows
+  # each resource's security for a second credential type. The rate limit is asserted from the gateway's resource
+  # data here; a deployed revision's limit being enforced with 429 is in gateway/throttling_enforcement (this
+  # block has no throttle-data bootstrap).
+  #   Resource  API          revision A                 revision B
+  #   /tier     scoped API   Unlimited                  rate limited
+  #   /scoped   scoped API   scope A                    scope B
+  #   /open     scoped API   secured                    no security
+  #   /keep     scoped API   scope A                    scope A
+  #   /secure   secured API  no security                secured
+  #   /control  secured API  secured, Unlimited         secured, Unlimited
+  @cap:gateway @feat:security-enforcement @rule:product @type:regression @type:negative @dep:publisher @dep:admin
+  Scenario Outline: The gateway enforces the resource settings of the deployed API product revision as <actor>
+    Given The system is ready
+    And I have valid access tokens as "<actor>"
+    When I create an advanced throttling policy "${UNIQUE:prodRevTier5PerMin}" allowing 5 requests per minute
+    Then The response status code should be 201
+    And I generate a unique value and store it as "revScopeA"
+    And I generate a unique value and store it as "revScopeB"
+    And I have created an api from "artifacts/payloads/create_apim_product_member_wildcard_api.json" as "revScopedApiId" and deployed it
+    When I retrieve the "apis" resource with id "revScopedApiId"
+    And I put the response payload in context as "revScopedApiPayload"
+    When I update the "apis" resource "revScopedApiId" and "revScopedApiPayload" with configuration type "scopes" and value:
+      """
+      [{"shared":false,"scope":{"name":"{{revScopeA}}","displayName":"{{revScopeA}}","description":"product revision scope A","bindings":["admin"]}},{"shared":false,"scope":{"name":"{{revScopeB}}","displayName":"{{revScopeB}}","description":"product revision scope B","bindings":["admin"]}}]
+      """
+    Then The response status code should be 200
+    When I retrieve the "apis" resource with id "revScopedApiId"
+    And I put the response payload in context as "revScopedApiPayload"
+    When I update the "apis" resource "revScopedApiId" and "revScopedApiPayload" with configuration type "operations" and value:
+      """
+      [{"target":"/tier","verb":"GET","authType":"Application & Application User","throttlingPolicy":"Unlimited","scopes":[],"operationPolicies":{"request":[],"response":[],"fault":[]}},
+       {"target":"/scoped","verb":"GET","authType":"Application & Application User","throttlingPolicy":"Unlimited","scopes":["{{revScopeA}}"],"operationPolicies":{"request":[],"response":[],"fault":[]}},
+       {"target":"/open","verb":"GET","authType":"Application & Application User","throttlingPolicy":"Unlimited","scopes":[],"operationPolicies":{"request":[],"response":[],"fault":[]}},
+       {"target":"/keep","verb":"GET","authType":"Application & Application User","throttlingPolicy":"Unlimited","scopes":["{{revScopeA}}"],"operationPolicies":{"request":[],"response":[],"fault":[]}}]
+      """
+    Then The response status code should be 200
+    And I have created an api from "artifacts/payloads/create_apim_product_member_wildcard_api.json" as "revSecuredApiId" and deployed it
+    When I retrieve the "apis" resource with id "revSecuredApiId"
+    And I put the response payload in context as "revSecuredApiPayload"
+    When I update the "apis" resource "revSecuredApiId" and "revSecuredApiPayload" with configuration type "operations" and value:
+      """
+      [{"target":"/secure","verb":"GET","authType":"None","throttlingPolicy":"Unlimited","scopes":[],"operationPolicies":{"request":[],"response":[],"fault":[]}},
+       {"target":"/control","verb":"GET","authType":"Application & Application User","throttlingPolicy":"Unlimited","scopes":[],"operationPolicies":{"request":[],"response":[],"fault":[]}}]
+      """
+    Then The response status code should be 200
+    When I put an API product payload "${UNIQUE:RevisionProduct}" with context "${UNIQUE:revisionProductCtx}" from APIs "revScopedApiId,revSecuredApiId" in context as "revProductPayload"
+    And I set the field "securityScheme" to the JSON value '["oauth2","basic_auth","oauth_basic_auth_api_key_mandatory"]' in the payload "revProductPayload"
+    And I create an "api-products" resource with payload "revProductPayload" as "revProductId"
+    Then The response status code should be 201
+    And I extract response field "context" and store it as "revProductContext"
+    # Revision A, deployed and published.
+    When I put the following JSON payload in context as "revStateARev"
+    """
+    {"description":"revision A"}
+    """
+    And I make a request to create a revision for "api-products" resource "revProductId" with payload "revStateARev"
+    Then The response status code should be 201
+    And I extract response field "id" and store it as "revStateARevId"
+    When I deploy revision "revStateARevId" of "api-products" resource "revProductId"
+    Then The response status code should be 201
+    And the "api-products" resource "revProductId" should be live on the gateway, redeploying if propagation is lost and updating revision key "revStateARevId"
+    When I publish the "api-products" resource with id "revProductId"
+    Then The response status code should be 200
+    # An application keyed for the password grant, so tokens can be asked for with scope A, scope B or neither.
+    When I put JSON payload from file "artifacts/payloads/create_apim_test_app.json" in context as "createAppPayload"
+    And I create an application with payload "createAppPayload"
+    Then The response status code should be 201
+    When I put the following JSON payload in context as "generateApplicationKeysPayload"
+    """
+    {"keyType": "PRODUCTION", "grantTypesToBeSupported": ["client_credentials", "password"]}
+    """
+    And I generate client credentials for application id "createdAppId" with payload "generateApplicationKeysPayload"
+    Then The response status code should be 200
+    When I put the following JSON payload in context as "apiSubscriptionPayload"
+    """
+    {"applicationId": "{{applicationId}}", "apiId": "{{apiId}}", "throttlingPolicy": "Unlimited"}
+    """
+    And I subscribe to API "revProductId" using application "createdAppId" with payload "apiSubscriptionPayload" as "revSubId"
+    Then The response status code should be 201
+    # Revision B: change the member APIs, re-save the product so it takes their settings, and deploy.
+    When I retrieve the "apis" resource with id "revScopedApiId"
+    And I put the response payload in context as "revScopedApiPayload"
+    When I update the "apis" resource "revScopedApiId" and "revScopedApiPayload" with configuration type "operations" and value:
+      """
+      [{"target":"/tier","verb":"GET","authType":"Application & Application User","throttlingPolicy":"{{advThrottlePolicyName}}","scopes":[],"operationPolicies":{"request":[],"response":[],"fault":[]}},
+       {"target":"/scoped","verb":"GET","authType":"Application & Application User","throttlingPolicy":"Unlimited","scopes":["{{revScopeB}}"],"operationPolicies":{"request":[],"response":[],"fault":[]}},
+       {"target":"/open","verb":"GET","authType":"None","throttlingPolicy":"Unlimited","scopes":[],"operationPolicies":{"request":[],"response":[],"fault":[]}},
+       {"target":"/keep","verb":"GET","authType":"Application & Application User","throttlingPolicy":"Unlimited","scopes":["{{revScopeA}}"],"operationPolicies":{"request":[],"response":[],"fault":[]}}]
+      """
+    Then The response status code should be 200
+    When I retrieve the "apis" resource with id "revSecuredApiId"
+    And I put the response payload in context as "revSecuredApiPayload"
+    When I update the "apis" resource "revSecuredApiId" and "revSecuredApiPayload" with configuration type "operations" and value:
+      """
+      [{"target":"/secure","verb":"GET","authType":"Application & Application User","throttlingPolicy":"Unlimited","scopes":[],"operationPolicies":{"request":[],"response":[],"fault":[]}},
+       {"target":"/control","verb":"GET","authType":"Application & Application User","throttlingPolicy":"Unlimited","scopes":[],"operationPolicies":{"request":[],"response":[],"fault":[]}}]
+      """
+    Then The response status code should be 200
+    When I retrieve the "api-products" resource with id "revProductId"
+    And I put the response payload in context as "revProductResave"
+    When I update "api-products" resource of id "revProductId" with payload "revProductResave"
+    Then The response status code should be 200
+    When I put the following JSON payload in context as "revStateBRev"
+    """
+    {"description":"revision B"}
+    """
+    And I make a request to create a revision for "api-products" resource "revProductId" with payload "revStateBRev"
+    Then The response status code should be 201
+    And I extract response field "id" and store it as "revStateBRevId"
+    When I deploy revision "revStateBRevId" of "api-products" resource "revProductId"
+    Then The response status code should be 201
+    And the "api-products" resource "revProductId" should be live on the gateway, redeploying if propagation is lost and updating revision key "revStateBRevId"
+
+    # Revision B is deployed: the gateway holds B's settings for every resource of both member APIs …
+    When I retrieve the gateway API info of "revProductId" until the response field "urlMappings[?(@.urlPattern=='/tier')].throttlingPolicy" is exactly the list "{{advThrottlePolicyName}}" within 120 seconds
+    Then The response array field "urlMappings" should have exactly 6 entries
+    And The response field "urlMappings[*].urlPattern" should be exactly the list "/tier,/scoped,/open,/keep,/secure,/control"
+    And The response field "urlMappings[?(@.authScheme=='None')].urlPattern" should be exactly the list "/open"
+    And The response field "urlMappings[?(@.urlPattern=='/scoped')].scopes[*]" should be exactly the list "{{revScopeB}}"
+    And The response field "urlMappings[?(@.urlPattern=='/control')].throttlingPolicy" should be exactly the list "Unlimited"
+    # … and enforces them: /scoped needs scope B, /open is open, /secure is secured for a bearer token and Basic.
+    When I request an OAuth access token for the current user using password grant with scope "{{revScopeA}}"
+    Then The response status code should be 200
+    When I invoke the API at gateway context "{{revProductContext}}/1.0.0/scoped" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 403 within 60 seconds
+    Then The response status code should be 403
+    And The error response should have code "900910" and message "The access token does not allow you to access the requested resource"
+    When I request an OAuth access token for the current user using password grant with scope "{{revScopeB}}"
+    Then The response status code should be 200
+    When I invoke the API at gateway context "{{revProductContext}}/1.0.0/scoped" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    And The response should contain "Hello World"
+    When I request an OAuth access token for the current user using password grant with scope "openid"
+    Then The response status code should be 200
+    When I invoke the API at gateway context "{{revProductContext}}/1.0.0/scoped" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 403 within 60 seconds
+    Then The response status code should be 403
+    And The error response should have code "900910" and message "The access token does not allow you to access the requested resource"
+    When I invoke the API at gateway context "{{revProductContext}}/1.0.0/control" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    When I invoke the API at gateway context "{{revProductContext}}/1.0.0/open" with method "GET" without authentication until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    When I invoke the API at gateway context "{{revProductContext}}/1.0.0/secure" with method "GET" without authentication until response status code becomes 401 within 60 seconds
+    Then The response status code should be 401
+    And The error response should have code "900902" message "Missing Credentials" and description containing "Make sure your API invocation call has a header"
+    When I invoke the API at gateway context "{{revProductContext}}/1.0.0/open" with method "GET" using basic auth for actor "<actor>" with password "wrong-password" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    When I invoke the API at gateway context "{{revProductContext}}/1.0.0/secure" with method "GET" using basic auth for actor "<actor>" with password "wrong-password" until response status code becomes 401 within 60 seconds
+    Then The response status code should be 401
+    And The error response should have code "900901" message "Invalid Credentials" and description containing "Make sure you have provided the correct security credentials"
+
+    # Roll back to revision A: the gateway holds and enforces A's settings again.
+    When I deploy revision "revStateARevId" of "api-products" resource "revProductId"
+    Then The response status code should be 201
+    When I retrieve the gateway API info of "revProductId" until the response field "urlMappings[?(@.urlPattern=='/tier')].throttlingPolicy" is exactly the list "Unlimited" within 120 seconds
+    Then The response array field "urlMappings" should have exactly 6 entries
+    And The response field "urlMappings[*].urlPattern" should be exactly the list "/tier,/scoped,/open,/keep,/secure,/control"
+    And The response field "urlMappings[?(@.authScheme=='None')].urlPattern" should be exactly the list "/secure"
+    And The response field "urlMappings[?(@.urlPattern=='/scoped')].scopes[*]" should be exactly the list "{{revScopeA}}"
+    And The response field "urlMappings[?(@.urlPattern=='/control')].throttlingPolicy" should be exactly the list "Unlimited"
+    When I request an OAuth access token for the current user using password grant with scope "{{revScopeA}}"
+    Then The response status code should be 200
+    When I invoke the API at gateway context "{{revProductContext}}/1.0.0/scoped" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    When I request an OAuth access token for the current user using password grant with scope "{{revScopeB}}"
+    Then The response status code should be 200
+    When I invoke the API at gateway context "{{revProductContext}}/1.0.0/scoped" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 403 within 60 seconds
+    Then The response status code should be 403
+    And The error response should have code "900910" and message "The access token does not allow you to access the requested resource"
+    When I invoke the API at gateway context "{{revProductContext}}/1.0.0/open" with method "GET" without authentication until response status code becomes 401 within 60 seconds
+    Then The response status code should be 401
+    And The error response should have code "900902" message "Missing Credentials" and description containing "Make sure your API invocation call has a header"
+    When I invoke the API at gateway context "{{revProductContext}}/1.0.0/secure" with method "GET" without authentication until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    When I invoke the API at gateway context "{{revProductContext}}/1.0.0/open" with method "GET" using basic auth for actor "<actor>" with password "wrong-password" until response status code becomes 401 within 60 seconds
+    Then The response status code should be 401
+    And The error response should have code "900901" message "Invalid Credentials" and description containing "Make sure you have provided the correct security credentials"
+    When I invoke the API at gateway context "{{revProductContext}}/1.0.0/secure" with method "GET" using basic auth for actor "<actor>" with password "wrong-password" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+
+    # Roll forward to revision B again.
+    When I deploy revision "revStateBRevId" of "api-products" resource "revProductId"
+    Then The response status code should be 201
+    # Revision B's settings and enforcement were asserted in full above; here the gateway data must switch back to
+    # B, and one call per auth flip confirms the gateway serves it.
+    When I retrieve the gateway API info of "revProductId" until the response field "urlMappings[?(@.urlPattern=='/tier')].throttlingPolicy" is exactly the list "{{advThrottlePolicyName}}" within 120 seconds
+    Then The response field "urlMappings[?(@.authScheme=='None')].urlPattern" should be exactly the list "/open"
+    And The response field "urlMappings[?(@.urlPattern=='/scoped')].scopes[*]" should be exactly the list "{{revScopeB}}"
+    When I invoke the API at gateway context "{{revProductContext}}/1.0.0/open" with method "GET" without authentication until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    When I invoke the API at gateway context "{{revProductContext}}/1.0.0/secure" with method "GET" without authentication until response status code becomes 401 within 60 seconds
+    Then The response status code should be 401
+    And The error response should have code "900902" message "Missing Credentials" and description containing "Make sure your API invocation call has a header"
+
+    # Restoring revision A changes only the working copy — revision B stays the deployed revision and the gateway
+    # keeps serving it — and a revision cut from the restored working copy carries A's settings to the gateway.
+    When I restore revision "revStateARevId" of "api-products" resource "revProductId"
+    Then The response status code should be 201
+    When I retrieve the deployed revisions of "api-products" resource "revProductId"
+    Then The revision response should list exactly revision IDs "revStateBRevId"
+    When I retrieve the gateway API info of "revProductId" until the response field "urlMappings[?(@.authScheme=='None')].urlPattern" is exactly the list "/open" within 10 seconds
+    Then The response field "urlMappings[?(@.urlPattern=='/tier')].throttlingPolicy" should be exactly the list "{{advThrottlePolicyName}}"
+    When I put the following JSON payload in context as "revRestoredRev"
+    """
+    {"description":"revision of the restored working copy"}
+    """
+    And I make a request to create a revision for "api-products" resource "revProductId" with payload "revRestoredRev"
+    Then The response status code should be 201
+    And I extract response field "id" and store it as "revRestoredRevId"
+    When I deploy revision "revRestoredRevId" of "api-products" resource "revProductId"
+    Then The response status code should be 201
+    And the "api-products" resource "revProductId" should be live on the gateway, redeploying if propagation is lost and updating revision key "revRestoredRevId"
+    When I retrieve the gateway API info of "revProductId" until the response field "urlMappings[?(@.authScheme=='None')].urlPattern" is exactly the list "/secure" within 120 seconds
+    Then The response array field "urlMappings" should have exactly 6 entries
+    And The response field "urlMappings[?(@.urlPattern=='/tier')].throttlingPolicy" should be exactly the list "Unlimited"
+    And The response field "urlMappings[?(@.urlPattern=='/scoped')].scopes[*]" should be exactly the list "{{revScopeA}}"
+    When I invoke the API at gateway context "{{revProductContext}}/1.0.0/open" with method "GET" without authentication until response status code becomes 401 within 60 seconds
+    Then The response status code should be 401
+    And The error response should have code "900902" message "Missing Credentials" and description containing "Make sure your API invocation call has a header"
+    When I invoke the API at gateway context "{{revProductContext}}/1.0.0/secure" with method "GET" without authentication until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
 
     Examples:
       | actor             |
       | admin             |
       | admin@tenant1.com |
+
+  # A revision serves exactly its own resource set: a resource removed from the product is not served (404) by a
+  # revision deployed after the removal and an added one is; rolling back serves the removed resource again; a
+  # resource added back with new settings uses them, not an older revision's; and undeploying the revision removes
+  # the product — secured AND unauthenticated resources — from the gateway until it is deployed again, while its
+  # member API stays served; undeploying the member API, in turn, leaves the product served.
+  @cap:gateway @feat:rest-invocation @rule:product @type:regression @type:negative @dep:publisher
+  Scenario Outline: An API product revision serves exactly its own resources, and undeploying it removes them from the gateway as <actor>
+    Given The system is ready
+    And I have valid access tokens as "<actor>"
+    And I have created an api from "artifacts/payloads/create_apim_product_member_wildcard_api.json" as "pathsApiId" and deployed it
+    # The member API's own deployed revision (its /secured and /open resources), used to show the API and the
+    # product are deployed and undeployed independently.
+    And I put value "revisionId" in context as "pathsApiRevisionId"
+    When I retrieve the "apis" resource with id "pathsApiId"
+    And I extract response field "name" and store it as "pathsApiName"
+    And I extract response field "context" and store it as "pathsApiContext"
+    And I put the response payload in context as "pathsApiPayload"
+    When I update the "apis" resource "pathsApiId" and "pathsApiPayload" with configuration type "operations" and value:
+      """
+      [{"target":"/a","verb":"GET","authType":"Application & Application User","throttlingPolicy":"Unlimited","scopes":[],"operationPolicies":{"request":[],"response":[],"fault":[]}},
+       {"target":"/b","verb":"GET","authType":"Application & Application User","throttlingPolicy":"Unlimited","scopes":[],"operationPolicies":{"request":[],"response":[],"fault":[]}},
+       {"target":"/c","verb":"GET","authType":"Application & Application User","throttlingPolicy":"Unlimited","scopes":[],"operationPolicies":{"request":[],"response":[],"fault":[]}}]
+      """
+    Then The response status code should be 200
+    When I create an API product "${UNIQUE:PathsProduct}" with context "${UNIQUE:pathsProductCtx}" from API "pathsApiId" as "pathsProductId"
+    Then The response status code should be 201
+    And I extract response field "context" and store it as "pathsProductContext"
+    When I put the following JSON payload in context as "pathsRev1"
+    """
+    {"description":"resources a, b, c"}
+    """
+    And I make a request to create a revision for "api-products" resource "pathsProductId" with payload "pathsRev1"
+    Then The response status code should be 201
+    And I extract response field "id" and store it as "pathsRev1Id"
+    When I deploy revision "pathsRev1Id" of "api-products" resource "pathsProductId"
+    Then The response status code should be 201
+    And the "api-products" resource "pathsProductId" should be live on the gateway, redeploying if propagation is lost and updating revision key "pathsRev1Id"
+    When I publish the "api-products" resource with id "pathsProductId"
+    Then The response status code should be 200
+    When I have set up application with keys, subscribed to API "pathsProductId", and obtained access token for "pathsSubId"
+    Then The response status code should be 200
+    When I retrieve the gateway API info of "pathsProductId" until the response field "urlMappings[*].urlPattern" is exactly the list "/a,/b,/c" within 120 seconds
+    Then The response array field "urlMappings" should have exactly 3 entries
+    When I invoke the API at gateway context "{{pathsProductContext}}/1.0.0/c" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+
+    # Remove /c from the product and add /d (a new resource of the member API), then deploy a new revision.
+    When I retrieve the "apis" resource with id "pathsApiId"
+    And I put the response payload in context as "pathsApiPayload"
+    When I update the "apis" resource "pathsApiId" and "pathsApiPayload" with configuration type "operations" and value:
+      """
+      [{"target":"/a","verb":"GET","authType":"Application & Application User","throttlingPolicy":"Unlimited","scopes":[],"operationPolicies":{"request":[],"response":[],"fault":[]}},
+       {"target":"/b","verb":"GET","authType":"Application & Application User","throttlingPolicy":"Unlimited","scopes":[],"operationPolicies":{"request":[],"response":[],"fault":[]}},
+       {"target":"/c","verb":"GET","authType":"Application & Application User","throttlingPolicy":"Unlimited","scopes":[],"operationPolicies":{"request":[],"response":[],"fault":[]}},
+       {"target":"/d","verb":"GET","authType":"Application & Application User","throttlingPolicy":"Unlimited","scopes":[],"operationPolicies":{"request":[],"response":[],"fault":[]}}]
+      """
+    Then The response status code should be 200
+    When I retrieve the "api-products" resource with id "pathsProductId"
+    And I put the response payload in context as "pathsProductPayload"
+    When I update the "api-products" resource "pathsProductId" and "pathsProductPayload" with configuration type "apis" and value:
+      """
+      [{"apiId":"{{pathsApiId}}","name":"{{pathsApiName}}","operations":[
+        {"target":"/a","verb":"GET","authType":"Application & Application User","throttlingPolicy":"Unlimited","scopes":[]},
+        {"target":"/b","verb":"GET","authType":"Application & Application User","throttlingPolicy":"Unlimited","scopes":[]},
+        {"target":"/d","verb":"GET","authType":"Application & Application User","throttlingPolicy":"Unlimited","scopes":[]}]}]
+      """
+    Then The response status code should be 200
+    When I put the following JSON payload in context as "pathsRev2"
+    """
+    {"description":"resources a, b, d"}
+    """
+    And I make a request to create a revision for "api-products" resource "pathsProductId" with payload "pathsRev2"
+    Then The response status code should be 201
+    And I extract response field "id" and store it as "pathsRev2Id"
+    When I deploy revision "pathsRev2Id" of "api-products" resource "pathsProductId"
+    Then The response status code should be 201
+    And the "api-products" resource "pathsProductId" should be live on the gateway, redeploying if propagation is lost and updating revision key "pathsRev2Id"
+    When I retrieve the gateway API info of "pathsProductId" until the response field "urlMappings[*].urlPattern" is exactly the list "/a,/b,/d" within 120 seconds
+    Then The response array field "urlMappings" should have exactly 3 entries
+    When I invoke the API at gateway context "{{pathsProductContext}}/1.0.0/d" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    When I invoke the API at gateway context "{{pathsProductContext}}/1.0.0/d" with method "GET" without authentication until response status code becomes 401 within 60 seconds
+    Then The response status code should be 401
+    And The error response should have code "900902" message "Missing Credentials" and description containing "Make sure your API invocation call has a header"
+    When I invoke the API at gateway context "{{pathsProductContext}}/1.0.0/c" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 404 within 60 seconds
+    Then The response status code should be 404
+
+    # Roll back to the first revision: /c is served again and /d is not.
+    When I deploy revision "pathsRev1Id" of "api-products" resource "pathsProductId"
+    Then The response status code should be 201
+    When I retrieve the gateway API info of "pathsProductId" until the response field "urlMappings[*].urlPattern" is exactly the list "/a,/b,/c" within 120 seconds
+    Then The response array field "urlMappings" should have exactly 3 entries
+    When I invoke the API at gateway context "{{pathsProductContext}}/1.0.0/c" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    When I invoke the API at gateway context "{{pathsProductContext}}/1.0.0/d" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 404 within 60 seconds
+    Then The response status code should be 404
+
+    # Add /c back with NO security: the new revision serves it unauthenticated, not with the older revision's security.
+    When I retrieve the "apis" resource with id "pathsApiId"
+    And I put the response payload in context as "pathsApiPayload"
+    When I update the "apis" resource "pathsApiId" and "pathsApiPayload" with configuration type "operations" and value:
+      """
+      [{"target":"/a","verb":"GET","authType":"Application & Application User","throttlingPolicy":"Unlimited","scopes":[],"operationPolicies":{"request":[],"response":[],"fault":[]}},
+       {"target":"/b","verb":"GET","authType":"Application & Application User","throttlingPolicy":"Unlimited","scopes":[],"operationPolicies":{"request":[],"response":[],"fault":[]}},
+       {"target":"/c","verb":"GET","authType":"None","throttlingPolicy":"Unlimited","scopes":[],"operationPolicies":{"request":[],"response":[],"fault":[]}},
+       {"target":"/d","verb":"GET","authType":"Application & Application User","throttlingPolicy":"Unlimited","scopes":[],"operationPolicies":{"request":[],"response":[],"fault":[]}}]
+      """
+    Then The response status code should be 200
+    When I retrieve the "api-products" resource with id "pathsProductId"
+    And I put the response payload in context as "pathsProductPayload"
+    When I update the "api-products" resource "pathsProductId" and "pathsProductPayload" with configuration type "apis" and value:
+      """
+      [{"apiId":"{{pathsApiId}}","name":"{{pathsApiName}}","operations":[
+        {"target":"/a","verb":"GET","authType":"Application & Application User","throttlingPolicy":"Unlimited","scopes":[]},
+        {"target":"/b","verb":"GET","authType":"Application & Application User","throttlingPolicy":"Unlimited","scopes":[]},
+        {"target":"/c","verb":"GET","authType":"None","throttlingPolicy":"Unlimited","scopes":[]},
+        {"target":"/d","verb":"GET","authType":"Application & Application User","throttlingPolicy":"Unlimited","scopes":[]}]}]
+      """
+    Then The response status code should be 200
+    When I put the following JSON payload in context as "pathsRev3"
+    """
+    {"description":"resources a, b, c without security, d"}
+    """
+    And I make a request to create a revision for "api-products" resource "pathsProductId" with payload "pathsRev3"
+    Then The response status code should be 201
+    And I extract response field "id" and store it as "pathsRev3Id"
+    When I deploy revision "pathsRev3Id" of "api-products" resource "pathsProductId"
+    Then The response status code should be 201
+    And the "api-products" resource "pathsProductId" should be live on the gateway, redeploying if propagation is lost and updating revision key "pathsRev3Id"
+    When I retrieve the gateway API info of "pathsProductId" until the response field "urlMappings[?(@.authScheme=='None')].urlPattern" is exactly the list "/c" within 120 seconds
+    Then The response array field "urlMappings" should have exactly 4 entries
+    And The response field "urlMappings[*].urlPattern" should be exactly the list "/a,/b,/c,/d"
+    When I invoke the API at gateway context "{{pathsProductContext}}/1.0.0/c" with method "GET" without authentication until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    When I invoke the API at gateway context "{{pathsProductContext}}/1.0.0/d" with method "GET" without authentication until response status code becomes 401 within 60 seconds
+    Then The response status code should be 401
+    And The error response should have code "900902" message "Missing Credentials" and description containing "Make sure your API invocation call has a header"
+
+    # Undeploy: the gateway drops the product, its secured and unauthenticated resources alike; deploying the same
+    # revision again serves both.
+    When I undeploy revision "pathsRev3Id" of "api-products" resource "pathsProductId"
+    Then The response status code should be 201
+    When I retrieve the gateway API info of "pathsProductId" until response status code becomes 404 within 120 seconds
+    Then The response status code should be 404
+    When I invoke the API at gateway context "{{pathsProductContext}}/1.0.0/a" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 404 within 60 seconds
+    Then The response status code should be 404
+    When I invoke the API at gateway context "{{pathsProductContext}}/1.0.0/c" with method "GET" without authentication until response status code becomes 404 within 60 seconds
+    Then The response status code should be 404
+    # Undeploying the product leaves its member API deployed and served.
+    When I invoke the API at gateway context "{{pathsApiContext}}/1.0.0/open" with method "GET" without authentication until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    When I deploy revision "pathsRev3Id" of "api-products" resource "pathsProductId"
+    Then The response status code should be 201
+    When I retrieve the gateway API info of "pathsProductId" until response status code becomes 200 within 120 seconds
+    Then The response status code should be 200
+    When I invoke the API at gateway context "{{pathsProductContext}}/1.0.0/a" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    When I invoke the API at gateway context "{{pathsProductContext}}/1.0.0/c" with method "GET" without authentication until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+
+    # The reverse: undeploying the member API removes the API from the gateway, while the product built on it
+    # goes on serving its resources.
+    When I undeploy revision "pathsApiRevisionId" of "apis" resource "pathsApiId"
+    Then The response status code should be 201
+    When I invoke the API at gateway context "{{pathsApiContext}}/1.0.0/open" with method "GET" without authentication until response status code becomes 404 within 60 seconds
+    Then The response status code should be 404
+    When I invoke the API at gateway context "{{pathsProductContext}}/1.0.0/a" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    When I invoke the API at gateway context "{{pathsProductContext}}/1.0.0/c" with method "GET" without authentication until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+
+    Examples:
+      | actor             |
+      | admin             |
+      | admin@tenant1.com |
+
+  # A product created WITHOUT a version gets version 1.0.0 (create response, and the devportal context
+  # <context>/1.0.0), and is served at <context>/1.0.0 — secured and unauthenticated resources — and,
+  # as the default version, at the versionless <context>; a tenant product is not served without its /t/<tenant>
+  # prefix (in the super tenant that route is the product's own). A new version of it is served at
+  # <context>/2.0.0 while the original goes on being served.
+  @cap:gateway @feat:rest-invocation @rule:product @type:regression @type:negative @dep:publisher @dep:devportal
+  Scenario Outline: An API product created without a version is served at its 1.0.0 context, and so is its new version as <actor>
+    Given The system is ready
+    And I have valid access tokens as "<actor>"
+    And I have created an api from "artifacts/payloads/create_apim_product_member_wildcard_api.json" as "nvgApiId" and deployed it
+    And I generate a unique value and store it as "nvgProductCtx"
+    When I put an API product payload "${UNIQUE:NoVersionGwProduct}" with context "{{nvgProductCtx}}" from APIs "nvgApiId" in context as "nvgProductPayload"
+    And I remove the field "version" from the payload "nvgProductPayload"
+    And I create an "api-products" resource with payload "nvgProductPayload" as "nvgProductId"
+    Then The response status code should be 201
+    And The value of response field "version" should be "1.0.0"
+    And The value of response field "context" should be "<tenantPrefix>/{{nvgProductCtx}}"
+    And I extract response field "context" and store it as "nvgProductContext"
+    When I put the following JSON payload in context as "nvgRev"
+    """
+    {"description":"versionless product revision"}
+    """
+    And I make a request to create a revision for "api-products" resource "nvgProductId" with payload "nvgRev"
+    Then The response status code should be 201
+    When I deploy revision "revisionId" of "api-products" resource "nvgProductId"
+    Then The response status code should be 201
+    And the "api-products" resource "nvgProductId" should be live on the gateway, redeploying if propagation is lost
+    When I publish the "api-products" resource with id "nvgProductId"
+    Then The response status code should be 200
+    # The devportal context is pinned to <publisher context>/<version>, i.e. <context>/1.0.0.
+    Then The devportal should report API product "nvgProductId" exactly once with the same fields
+    When I retrieve the gateway API info of "nvgProductId" until the response field "context" is exactly the list "{{nvgProductContext}}/1.0.0" within 120 seconds
+    Then The value of response field "context" should be "{{nvgProductContext}}/1.0.0"
+    When I have set up application with keys, subscribed to API "nvgProductId", and obtained access token for "nvgSubId"
+    Then The response status code should be 200
+    When I invoke the API at gateway context "{{nvgProductContext}}/1.0.0/open" with method "GET" without authentication until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    And The response should contain "Hello World"
+    When I invoke the API at gateway context "{{nvgProductContext}}/1.0.0/secured" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    When I invoke the API at gateway context "{{nvgProductContext}}/1.0.0/secured" with method "GET" without authentication until response status code becomes 401 within 60 seconds
+    Then The response status code should be 401
+    And The error response should have code "900902" message "Missing Credentials" and description containing "Make sure your API invocation call has a header"
+    When I invoke the API at gateway context "{{nvgProductContext}}/open" with method "GET" without authentication until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    When I invoke the API at gateway context "/{{nvgProductCtx}}/1.0.0/open" with method "GET" without authentication until response status code becomes <unprefixedStatus> within 60 seconds
+    Then The response status code should be <unprefixedStatus>
+    # A new version of the versionless product.
+    When I create a new version "2.0.0" of API product "nvgProductId" with default version "false" as "nvgProductV2Id"
+    Then The response status code should be 201
+    When I put the following JSON payload in context as "nvgV2Rev"
+    """
+    {"description":"new version revision"}
+    """
+    And I make a request to create a revision for "api-products" resource "nvgProductV2Id" with payload "nvgV2Rev"
+    Then The response status code should be 201
+    When I deploy revision "revisionId" of "api-products" resource "nvgProductV2Id"
+    Then The response status code should be 201
+    And the "api-products" resource "nvgProductV2Id" should be live on the gateway, redeploying if propagation is lost
+    When I retrieve the gateway API info of "nvgProductV2Id" until the response field "context" is exactly the list "{{nvgProductContext}}/2.0.0" within 120 seconds
+    Then The value of response field "context" should be "{{nvgProductContext}}/2.0.0"
+    When I invoke the API at gateway context "{{nvgProductContext}}/2.0.0/open" with method "GET" without authentication until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    When I invoke the API at gateway context "{{nvgProductContext}}/1.0.0/open" with method "GET" without authentication until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+
+    Examples:
+      | actor             | tenantPrefix   | unprefixedStatus |
+      | admin             |                | 200              |
+      | admin@tenant1.com | /t/tenant1.com | 404              |
+
+  # After updates that carry another context and another version, or no context at all (all ignored), a new
+  # revision of the product is
+  # served on its ORIGINAL context only: the changed, version-first and other-version routes are 404. (A tenant
+  # product not being served without its tenant prefix is pinned in the versionless-product scenario above.)
+  @cap:gateway @feat:rest-invocation @rule:product @type:regression @type:negative @dep:publisher
+  Scenario Outline: An API product updated with another context or version is served on its original context only as <actor>
+    Given The system is ready
+    And I have valid access tokens as "<actor>"
+    And I have created an api from "artifacts/payloads/create_apim_product_member_wildcard_api.json" as "ctxApiId" and deployed it
+    And I generate a unique value and store it as "ctxProductCtx"
+    When I put an API product payload "${UNIQUE:CtxGwProduct}" with context "{{ctxProductCtx}}" from APIs "ctxApiId" in context as "ctxProductPayload"
+    And I set the field "version" to "2.0.0" in the payload "ctxProductPayload"
+    And I create an "api-products" resource with payload "ctxProductPayload" as "ctxProductId"
+    Then The response status code should be 201
+    And I extract response field "context" and store it as "ctxProductContext"
+    When I put the following JSON payload in context as "ctxRev1"
+    """
+    {"description":"initial revision"}
+    """
+    And I make a request to create a revision for "api-products" resource "ctxProductId" with payload "ctxRev1"
+    Then The response status code should be 201
+    When I deploy revision "revisionId" of "api-products" resource "ctxProductId"
+    Then The response status code should be 201
+    And the "api-products" resource "ctxProductId" should be live on the gateway, redeploying if propagation is lost
+    When I publish the "api-products" resource with id "ctxProductId"
+    Then The response status code should be 200
+    When I have set up application with keys, subscribed to API "ctxProductId", and obtained access token for "ctxSubId"
+    Then The response status code should be 200
+    # Three updates: a changed context with another version, a version-first context without a version, and no
+    # context field at all.
+    When I retrieve the "api-products" resource with id "ctxProductId"
+    And I put the response payload in context as "ctxUpdatePayload"
+    And I set the field "context" to "/{{ctxProductCtx}}changed" in the payload "ctxUpdatePayload"
+    And I set the field "version" to "9.9.9" in the payload "ctxUpdatePayload"
+    When I update "api-products" resource of id "ctxProductId" with payload "ctxUpdatePayload"
+    Then The response status code should be 200
+    When I set the field "context" to "/{version}/{{ctxProductCtx}}" in the payload "ctxUpdatePayload"
+    And I set the field "version" to null in the payload "ctxUpdatePayload"
+    And I update "api-products" resource of id "ctxProductId" with payload "ctxUpdatePayload"
+    Then The response status code should be 200
+    When I remove the field "context" from the payload "ctxUpdatePayload"
+    And I update "api-products" resource of id "ctxProductId" with payload "ctxUpdatePayload"
+    Then The response status code should be 200
+    When I put the following JSON payload in context as "ctxRev2"
+    """
+    {"description":"revision after the context updates"}
+    """
+    And I make a request to create a revision for "api-products" resource "ctxProductId" with payload "ctxRev2"
+    Then The response status code should be 201
+    When I deploy revision "revisionId" of "api-products" resource "ctxProductId"
+    Then The response status code should be 201
+    And the "api-products" resource "ctxProductId" should be live on the gateway, redeploying if propagation is lost
+    When I retrieve the gateway API info of "ctxProductId" until the response field "context" is exactly the list "{{ctxProductContext}}/2.0.0" within 120 seconds
+    Then The value of response field "context" should be "{{ctxProductContext}}/2.0.0"
+    When I invoke the API at gateway context "{{ctxProductContext}}/2.0.0/open" with method "GET" without authentication until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    When I invoke the API at gateway context "{{ctxProductContext}}/2.0.0/secured" with method "GET" using access token "generatedAccessToken" and payload "" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    When I invoke the API at gateway context "<tenantPrefix>/{{ctxProductCtx}}changed/2.0.0/open" with method "GET" without authentication until response status code becomes 404 within 60 seconds
+    Then The response status code should be 404
+    When I invoke the API at gateway context "<tenantPrefix>/2.0.0/{{ctxProductCtx}}/open" with method "GET" without authentication until response status code becomes 404 within 60 seconds
+    Then The response status code should be 404
+    When I invoke the API at gateway context "{{ctxProductContext}}/9.9.9/open" with method "GET" without authentication until response status code becomes 404 within 60 seconds
+    Then The response status code should be 404
+
+    Examples:
+      | actor             | tenantPrefix   |
+      | admin             |                |
+      | admin@tenant1.com | /t/tenant1.com |
+
+  # A product created with a VERSION-FIRST context (/{version}/<context>) is served at /<version>/<context>, and an
+  # update keeps that context template — the guard that keeping the stored template on update did not flatten a
+  # template the product was created with. (That the gateway serves a product's stored context after an update is
+  # shown once, in the context-update scenario above.)
+  @cap:gateway @feat:rest-invocation @rule:product @type:regression @dep:publisher
+  Scenario Outline: An API product with a version-first context is served there and keeps it after an update as <actor>
+    Given The system is ready
+    And I have valid access tokens as "<actor>"
+    And I have created an api from "artifacts/payloads/create_apim_product_member_wildcard_api.json" as "vfApiId" and deployed it
+    And I generate a unique value and store it as "vfProductCtx"
+    When I put an API product payload "${UNIQUE:VersionFirstProduct}" with context "/{version}/{{vfProductCtx}}" from APIs "vfApiId" in context as "vfProductPayload"
+    And I set the field "version" to "3.0.0" in the payload "vfProductPayload"
+    And I create an "api-products" resource with payload "vfProductPayload" as "vfProductId"
+    Then The response status code should be 201
+    And I extract response field "context" and store it as "vfProductContext"
+    When I put the following JSON payload in context as "vfRev1"
+    """
+    {"description":"version-first context revision"}
+    """
+    And I make a request to create a revision for "api-products" resource "vfProductId" with payload "vfRev1"
+    Then The response status code should be 201
+    When I deploy revision "revisionId" of "api-products" resource "vfProductId"
+    Then The response status code should be 201
+    And the "api-products" resource "vfProductId" should be live on the gateway, redeploying if propagation is lost
+    When I retrieve the gateway API info of "vfProductId" until the response field "context" is exactly the list "<tenantPrefix>/3.0.0/{{vfProductCtx}}" within 120 seconds
+    Then The value of response field "context" should be "<tenantPrefix>/3.0.0/{{vfProductCtx}}"
+    When I invoke the API at gateway context "<tenantPrefix>/3.0.0/{{vfProductCtx}}/open" with method "GET" without authentication until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    # Re-save the product: the version-first context template is kept.
+    When I retrieve the "api-products" resource with id "vfProductId"
+    And I put the response payload in context as "vfResavePayload"
+    When I update "api-products" resource of id "vfProductId" with payload "vfResavePayload"
+    Then The response status code should be 200
+    And The value of response field "context" should be "{{vfProductContext}}"
+
+    Examples:
+      | actor             | tenantPrefix   |
+      | admin             |                |
+      | admin@tenant1.com | /t/tenant1.com |
+

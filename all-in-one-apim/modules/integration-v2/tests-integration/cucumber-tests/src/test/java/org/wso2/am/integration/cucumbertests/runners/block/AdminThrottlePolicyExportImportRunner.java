@@ -21,7 +21,7 @@ import io.cucumber.testng.CucumberOptions;
 
 /**
  * Runner for throttling-policy export/import (the port of ThrottlePolicyExportImportTestCase). Runs in the
- * concurrent IntegrationV2-Admin block.
+ * IntegrationV2-DevPortal block.
  */
 @CucumberOptions(
         features = {

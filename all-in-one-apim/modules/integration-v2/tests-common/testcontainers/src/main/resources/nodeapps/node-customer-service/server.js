@@ -28,6 +28,26 @@ app.use(bodyParser.text({ type: 'text/plain' }));
 app.use(bodyParser.text({ type: 'text/xml' }));
 app.use(bodyParser.json());
 
+// Deterministic Atom feed fixture for the legacy YouTube sample API invocation test. The public YouTube Data API
+// used by the legacy test is retired, so serve the expected feed shape locally while preserving its request path.
+app.get('/feeds/api/standardfeeds/most_popular', (req, res) => {
+  const feed = '<?xml version="1.0" encoding="UTF-8"?>' +
+    '<feed xmlns="http://www.w3.org/2005/Atom">' +
+    '<category term="most_popular"/>' +
+    '<entry><id>video-1</id></entry>' +
+    '</feed>';
+  res.type('application/atom+xml').status(200).send(feed);
+});
+
+// Match the bundled calculator webapp behavior for APIMANAGER2611EndpointValidationTestCase: canonicalize the
+// context URL with a trailing-slash redirect, then serve the landing page for GET and HEAD.
+app.all(/^\/am\/sample\/calculator\/v1$/, (req, res) => {
+  res.redirect(302, `${req.path}/`);
+});
+app.get('/am/sample/calculator/v1/', (req, res) => {
+  res.type('html').status(200).send('<!DOCTYPE html><html lang="en"><head><title>WSO2 API Manager - Sample Calculator Api</title></head><body><h2>WSO2 API Manager - Sample Calculator Api</h2></body></html>');
+});
+
 app.use('/jaxrs_basic/services/customers/customerservice', customerRoutes);
 app.use('/jaxrs_basic/services/customers/customerservice', orderRoutes);
 

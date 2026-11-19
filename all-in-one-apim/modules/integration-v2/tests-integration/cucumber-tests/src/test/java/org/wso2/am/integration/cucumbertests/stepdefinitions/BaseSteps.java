@@ -34,10 +34,13 @@ import org.skyscreamer.jsonassert.JSONCompareMode;
 import org.testng.Assert;
 import org.wso2.am.integration.cucumbertests.utils.Identity;
 import org.wso2.am.integration.cucumbertests.utils.Names;
+import org.wso2.am.integration.cucumbertests.utils.ResourceCleanup;
 import org.wso2.am.integration.cucumbertests.utils.ServerReadiness;
 import org.wso2.am.integration.cucumbertests.utils.TestContext;
+import org.wso2.am.integration.cucumbertests.utils.TenantUserProvisioner;
 import org.wso2.am.integration.test.utils.Constants;
 import org.wso2.am.integration.cucumbertests.utils.Utils;
+import org.wso2.am.testcontainers.DistributedDynamicApimContainer;
 import org.wso2.am.integration.cucumbertests.utils.clients.SimpleHTTPClient;
 import org.wso2.carbon.automation.engine.context.beans.User;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
@@ -47,6 +50,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.Collection;
 import java.util.Collections;
@@ -86,7 +90,7 @@ public class BaseSteps {
      */
     @Given("I act as {string}")
     public void iActAs(String actorRef) {
-        Identity.setActingActor(actorRef);
+        Identity.setActingActor(Utils.resolveContextPlaceholders(actorRef));
     }
 
     /**
@@ -104,26 +108,61 @@ public class BaseSteps {
     @When("I have a valid DCR application as {string}")
     public void iHaveADCRApplicationAs(String actorRef) throws IOException {
 
-        createDcrApplication(Identity.resolveActor(actorRef));
+        createDcrApplication(Identity.resolveActor(actorRef), actorRef);
+    }
+
+    /**
+     * Creates a DCR client for a token subject while registering the client as a different actor. This is a
+     * deliberately explicit legacy-parity path: the legacy DevPortal client registered its DCR application as the
+     * super-tenant admin and then requested a password-grant token whose subject was the custom-role user.
+     * Generic DCR steps must keep their actor-owned semantics.
+     */
+    @Given("I have a valid DCR application for token subject {string} registered by {string}")
+    public void iHaveADCRApplicationForTokenSubjectRegisteredBy(String tokenSubjectRef, String ownerRef)
+            throws IOException {
+
+        User tokenSubject = Identity.resolveActor(tokenSubjectRef);
+        User registrationOwner = Identity.resolveActor(ownerRef);
+        createDcrApplication(tokenSubject, ownerRef, registrationOwner, "Production");
     }
 
     private void createDcrApplication(User actor) throws IOException {
 
+        createDcrApplication(actor, Identity.actingActorRef(), actor, null);
+    }
+
+    private void createDcrApplication(User actor, String ownerActorRef) throws IOException {
+
+        createDcrApplication(actor, ownerActorRef, actor, null);
+    }
+
+    private void createDcrApplication(User tokenSubject, String ownerActorRef, User registrationOwner,
+                                      String tokenScope) throws IOException {
+
         //Create json payload for DCR endpoint. The DCR client name must adhere to ^[\sa-zA-Z0-9._-]*$ — a
         // secondary-store actor's username carries the store-domain separator (e.g. SECONDARY.COM/secondaryAdmin1),
         // whose '/' is outside that set, so sanitize any disallowed char to '_' when DERIVING the name. This is
-        // cosmetic only: the actual OAuth identity is the untouched `owner` (actor.getUserName()) below.
-        String clientNameSafe = ("integration_test_app_" + actor.getUserNameWithoutDomain() + "_"
-                + actor.getUserDomain()).replaceAll("[^\\sa-zA-Z0-9._-]", "_");
+        // cosmetic only: the actual OAuth identity is the untouched owner below.
+        // The DCR client is scenario-owned. A deterministic actor-only name would make every scenario/runners share
+        // one OAuth client, and APIM can return that client's still-active access token with its remaining lifetime
+        // instead of minting a fresh 3600-second token. Keep this generated name stable for the bounded DCR retry
+        // below, but make each registration invocation unique across parallel runners and scenarios.
+        String clientNameBase = ("integration_test_app_" + tokenSubject.getUserNameWithoutDomain() + "_"
+                + tokenSubject.getUserDomain()).replaceAll("[^\\sa-zA-Z0-9._-]", "_");
+        String clientNameSafe = Names.unique(clientNameBase);
         JsonObject json = new JsonObject();
         json.addProperty("callbackUrl", "test.com");
         json.addProperty("clientName", clientNameSafe);
         json.addProperty("grantType", "client_credentials password refresh_token");
         json.addProperty("saasApp", true);
-        json.addProperty("owner", actor.getUserName());
+        json.addProperty("owner", registrationOwner.getUserName());
+        if (tokenScope != null && !tokenScope.isBlank()) {
+            json.addProperty("tokenScope", tokenScope);
+        }
 
         String encodedCredentials = Base64.getEncoder().encodeToString(
-                    (actor.getUserName() + ':' + actor.getPassword()).getBytes(StandardCharsets.UTF_8));
+                    (registrationOwner.getUserName() + ':' + registrationOwner.getPassword())
+                            .getBytes(StandardCharsets.UTF_8));
 
         Map<String, String> headers = new HashMap<>();
         headers.put("Authorization", "Basic " + encodedCredentials);
@@ -131,10 +170,10 @@ public class BaseSteps {
         // The gateway health-check can pass before the client-registration webapp finishes deploying, so a
         // DCR POST fired immediately after boot can hit a transient 500 "Dynamic Client Registration Service
         // not available" — a race that parallel runners sharing one freshly-booted container widen. Retrying
-        // the POST blindly is safe for THIS endpoint: DCR is an idempotent upsert keyed on clientName (which
-        // is deterministic per actor above — every token acquisition re-POSTs it and receives the existing
-        // client back), so even a create that committed server-side with a lost response just returns the
-        // same client on the retry. Retry until 200 or the startup window elapses, mirroring
+        // the POST blindly is safe for THIS endpoint: DCR is an idempotent upsert keyed on clientName, and the
+        // generated name remains stable across retries within this registration invocation. Therefore, even if
+        // a create committed server-side with a lost response, the retry returns the same client. Retry until
+        // 200 or the startup window elapses, mirroring
         // TenantUserProvisioner.awaitTenantMgtServiceReady for the admin services.
         String dcrUrl = Utils.getDCREndpointURL(getBaseUrl());
         long deadlineStart = System.currentTimeMillis();
@@ -174,7 +213,11 @@ public class BaseSteps {
         String dcrCredentials = Base64.getEncoder().encodeToString((clientId + ":" + clientSecret)
                 .getBytes(StandardCharsets.UTF_8));
 
-        TestContext.set(Identity.dcrCredentialsKey(actor), dcrCredentials);
+        TestContext.set(Identity.dcrCredentialsKey(tokenSubject), dcrCredentials);
+        // DCR clients are standalone OAuth service providers; application cleanup does not remove them. Register the
+        // client immediately after a successful response, preserving the explicit owner for tenant-scoped SOAP
+        // deregistration. A null owner reference correctly means the super-tenant admin.
+        ResourceCleanup.registerFor(ResourceCleanup.CREATED_DCR_CLIENT_IDS, clientId, ownerActorRef);
     }
 
     /**
@@ -206,7 +249,7 @@ public class BaseSteps {
         json.addProperty("grant_type", "password");
         json.addProperty("username", actor.getUserName());
         json.addProperty("password", actor.getPassword());
-        json.addProperty("scope", "apim:api_view apim:api_create apim:api_publish apim:api_delete apim:api_manage apim:api_import_export apim:subscription_manage apim:client_certificates_add apim:client_certificates_update apim:shared_scope_manage apim:common_operation_policy_manage apim:policies_import_export apim:api_generate_key apim:gateway_policy_manage apim:mcp_server_create apim:mcp_server_manage apim:mcp_server_publish apim:mcp_server_view apim:mcp_server_delete apim:mcp_server_list_view");
+        json.addProperty("scope", "apim:api_view apim:api_create apim:api_publish apim:api_delete apim:api_manage apim:api_import_export apim:api_product_import_export apim:subscription_manage apim:client_certificates_add apim:client_certificates_update apim:shared_scope_manage apim:common_operation_policy_manage apim:policies_import_export apim:api_generate_key apim:gateway_policy_manage apim:mcp_server_create apim:mcp_server_manage apim:mcp_server_publish apim:mcp_server_view apim:mcp_server_delete apim:mcp_server_list_view apim:llm_provider_read");
 
         HttpResponse response = SimpleHTTPClient.getInstance().doPost(Utils.getAPIMTokenEndpointURL(getBaseUrl()), headers,
             json.toString(), Constants.CONTENT_TYPES.APPLICATION_JSON);
@@ -239,31 +282,69 @@ public class BaseSteps {
 
     private void mintDevportalToken(User actor) throws Exception {
 
+        HttpResponse response = requestDevportalToken(actor);
+        Assert.assertEquals(response.getResponseCode(), 200, response.getData());
+
+        storeDevportalToken(actor, response);
+        log.info("Obtained Devportal access token for user " + actor.getUserName()
+                + " with expires_in (seconds): "
+                + Utils.extractValueFromPayload(response.getData(), "expires_in"));
+    }
+
+    private HttpResponse requestDevportalToken(User actor) throws IOException {
+
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION,
                 "Basic " + TestContext.get(Identity.dcrCredentialsKey(actor)).toString());
 
-        // create json payload to obtain devportal access token
         JsonObject json = new JsonObject();
         json.addProperty("grant_type", "password");
         json.addProperty("username", actor.getUserName());
         json.addProperty("password", actor.getPassword());
         json.addProperty("scope", "apim:app_manage apim:sub_manage apim:subscribe");
 
-        HttpResponse response = SimpleHTTPClient.getInstance().doPost(Utils.getAPIMTokenEndpointURL(getBaseUrl()), headers,
-            json.toString(), Constants.CONTENT_TYPES.APPLICATION_JSON);
-        Assert.assertEquals(response.getResponseCode(), 200, response.getData());
+        return SimpleHTTPClient.getInstance().doPost(Utils.getAPIMTokenEndpointURL(getBaseUrl()), headers,
+                json.toString(), Constants.CONTENT_TYPES.APPLICATION_JSON);
+    }
+
+    private void storeDevportalToken(User actor, HttpResponse response) throws IOException {
 
         String accessToken = Utils.extractValueFromPayload(response.getData(), "access_token").toString();
         TestContext.set(Identity.devportalTokenKey(actor), accessToken);
-        log.info("Obtained Devportal access token for user " + actor.getUserName()
-                + " with expires_in (seconds): "
-                + Utils.extractValueFromPayload(response.getData(), "expires_in"));
+    }
+
+    /**
+     * Read-only semantic barrier for the role-alias DevPortal path. A successful token response alone is not enough:
+     * APIM may issue a reduced-scope token while its role-alias mapping is still absent from the OAuth scope
+     * evaluator. Listing applications exercises the same app-management authorization used by the following create
+     * request without mutating any product state. Each poll mints a fresh token so a stale token cannot make this
+     * barrier pass.
+     */
+    @Given("the DevPortal application-management scope is ready for {string}")
+    public void theDevportalApplicationManagementScopeIsReadyFor(String actorRef) throws Exception {
+
+        User actor = Identity.resolveActor(actorRef);
+        HttpResponse last = Utils.retryUntil(Constants.RUNTIME_PROPAGATION_TIMEOUT,
+                () -> {
+                    HttpResponse tokenResponse = requestDevportalToken(actor);
+                    if (tokenResponse == null || tokenResponse.getResponseCode() != 200) {
+                        return tokenResponse;
+                    }
+                    storeDevportalToken(actor, tokenResponse);
+                    return SimpleHTTPClient.getInstance().doGet(Utils.getApplicationCreateURL(getBaseUrl()),
+                            Identity.bearerHeaders(Identity.devportalToken(actor)));
+                }, response -> response != null && response.getResponseCode() == 200);
+
+        Assert.assertNotNull(last, "DevPortal scope probe returned no response for '" + actorRef + "'");
+        Assert.assertEquals(last.getResponseCode(), 200,
+                "DevPortal application-management scope did not converge for '" + actorRef + "': "
+                        + last.getData());
     }
 
     /**
      * Obtains a valid Admin access token for the default actor (super-tenant admin).
      */
+    @Given("I have a valid Admin access token for the current user")
     public void iHaveValidAdminAccessToken() throws Exception {
 
         mintAdminToken(Identity.actingActor());
@@ -350,12 +431,21 @@ public class BaseSteps {
     @Given("I have valid access tokens as {string}")
     public void iHaveTokensAs(String actorRef) throws Exception {
 
-        Identity.setActingActor(actorRef);
-        User actor = Identity.resolveActor(actorRef);
+        String resolvedActorRef = Utils.resolveContextPlaceholders(actorRef);
+        Identity.setActingActor(resolvedActorRef);
+        User actor = Identity.resolveActor(resolvedActorRef);
         createDcrApplication(actor);
         mintPublisherToken(actor);
         mintDevportalToken(actor);
         mintAdminToken(actor);
+    }
+
+    /** Alias used by older feature prose that combines readiness with named-actor token setup. */
+    @Given("The system is ready and I have valid access tokens as {string}")
+    public void theSystemIsReadyAndIHaveTokensAs(String actorRef) throws Exception {
+
+        theSystemIsReady();
+        iHaveTokensAs(actorRef);
     }
 
     /**
@@ -366,11 +456,13 @@ public class BaseSteps {
      * (e.g. {@code publisherUser} vs {@code publisherUser@tenant1.com}).
      */
     @Given("The system is ready and I have valid publisher access tokens as {string}")
+    @Given("I have valid publisher access tokens as {string}")
     public void iHavePublisherTokensAs(String actorRef) throws Exception {
 
         theSystemIsReady();
-        Identity.setActingActor(actorRef);
-        User actor = Identity.resolveActor(actorRef);
+        String resolvedActorRef = Utils.resolveContextPlaceholders(actorRef);
+        Identity.setActingActor(resolvedActorRef);
+        User actor = Identity.resolveActor(resolvedActorRef);
         createDcrApplication(actor);
         mintPublisherToken(actor);
         mintDevportalToken(actor);
@@ -407,6 +499,26 @@ public class BaseSteps {
     }
 
     /**
+     * Switches to a DevPortal consumer and prepares only the credentials needed for application operations.
+     * Reuses credentials already created earlier in the scenario, which is useful when a Publisher actor also
+     * owns the application, while allowing a distinct subscriber actor to own it when API ownership and
+     * application privileges differ.
+     */
+    @Given("I use DevPortal consumer {string}, preparing credentials if needed")
+    public void iUseDevportalConsumerPreparingCredentialsIfNeeded(String actorRef) throws Exception {
+
+        String resolvedActorRef = Utils.resolveContextPlaceholders(actorRef);
+        Identity.setActingActor(resolvedActorRef);
+        User actor = Identity.resolveActor(resolvedActorRef);
+        if (!TestContext.contains(Identity.dcrCredentialsKey(actor))) {
+            createDcrApplication(actor, resolvedActorRef);
+        }
+        if (!TestContext.contains(Identity.devportalTokenKey(actor))) {
+            mintDevportalToken(actor);
+        }
+    }
+
+    /**
      * Replaces a literal substring in a stored context value and writes it back. Used to resolve a server-side
      * template placeholder that the publisher API returns verbatim — e.g. a version-first API's context is
      * stored as {@code /{version}/ctx}, and the gateway invocation needs {@code /1.0.0/ctx}.
@@ -440,6 +552,12 @@ public class BaseSteps {
         TestContext.set(Utils.normalizeContextKey(contextKey), resolvedValue.toString());
     }
 
+    /** Stores a literal Examples-table value for subsequent payload placeholder expansion. */
+    @When("I put literal value {string} in context as {string}")
+    public void iPutLiteralValueInContextAs(String value, String contextKey) {
+        TestContext.set(Utils.normalizeContextKey(contextKey), Utils.resolveContextPlaceholders(value));
+    }
+
     /**
      * Decodes the JWT stored under a context key (a {@code header.payload.signature} token) and asserts its
      * payload segment contains the expected substring. Used to verify token claims such as the internal API
@@ -463,6 +581,46 @@ public class BaseSteps {
                 "Decoded JWT payload does not contain '" + expected + "': " + payload);
     }
 
+    /** Decodes a JWT and asserts one named claim has the exact expected value. */
+    @Then("The JWT stored as {string} should have claim {string} equal to {string}")
+    public void theJwtStoredShouldHaveClaimEqualTo(String contextKey, String claim, String expectedValue) {
+
+        String jwt = TestContext.resolve(contextKey).toString();
+        String[] segments = jwt.split("\\.");
+        Assert.assertTrue(segments.length >= 2, "Malformed JWT (expected >= 2 segments): " + jwt);
+        String payload;
+        try {
+            payload = new String(Base64.getUrlDecoder().decode(segments[1]), StandardCharsets.UTF_8);
+        } catch (IllegalArgumentException e) {
+            payload = new String(Base64.getDecoder().decode(segments[1]), StandardCharsets.UTF_8);
+        }
+        JSONObject claims = new JSONObject(payload);
+        Assert.assertTrue(claims.has(claim), "Decoded JWT payload has no '" + claim + "' claim: " + payload);
+        Assert.assertEquals(String.valueOf(claims.get(claim)), expectedValue,
+                "Decoded JWT claim '" + claim + "' differs from expected value. Payload: " + payload);
+    }
+
+    /** Asserts that a JWT's standard exp and iat claims encode the requested lifetime in seconds. */
+    @Then("The JWT stored as {string} should have a validity of {int} seconds")
+    public void theJwtStoredShouldHaveValiditySeconds(String contextKey, int expectedSeconds) {
+        String jwt = TestContext.resolve(contextKey).toString();
+        String[] segments = jwt.split("\\.");
+        Assert.assertTrue(segments.length >= 2, "Malformed JWT (expected >= 2 segments): " + jwt);
+        String payload;
+        try {
+            payload = new String(Base64.getUrlDecoder().decode(segments[1]), StandardCharsets.UTF_8);
+        } catch (IllegalArgumentException e) {
+            payload = new String(Base64.getDecoder().decode(segments[1]), StandardCharsets.UTF_8);
+        }
+        JSONObject claims = new JSONObject(payload);
+        Assert.assertTrue(claims.has("iat"), "Decoded JWT payload has no 'iat' claim: " + payload);
+        Assert.assertTrue(claims.has("exp"), "Decoded JWT payload has no 'exp' claim: " + payload);
+        long issuedAt = claims.getLong("iat");
+        long expiresAt = claims.getLong("exp");
+        Assert.assertEquals(expiresAt - issuedAt, (long) expectedSeconds,
+                "JWT lifetime from exp - iat differs from expected seconds. Payload: " + payload);
+    }
+
     /**
      * Loads a JSON payload from a file and stores it in the test context.
      *
@@ -477,7 +635,8 @@ public class BaseSteps {
                 throw new FileNotFoundException("File not found on classpath: " + jsonFilePath);
             }
             String jsonPayload = IOUtils.toString(inputStream, StandardCharsets.UTF_8);
-            TestContext.set(Utils.normalizeContextKey(key), Utils.resolvePayloadPlaceholders(jsonPayload));
+            TestContext.set(Utils.normalizeContextKey(key),
+                    Utils.resolveContextPlaceholders(Utils.resolvePayloadPlaceholders(jsonPayload)));
         }
     }
 
@@ -754,7 +913,16 @@ public class BaseSteps {
     public void theResponseStatusCodeShouldBe(int expectedStatusCode) {
 
         HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
-        Assert.assertEquals(response.getResponseCode(), expectedStatusCode, response.getData());
+        Assert.assertEquals(response.getResponseCode(), expectedStatusCode,
+                response.getData() + ApplicationBaseSteps.unifiedSearchFailureHistory(response));
+    }
+
+    @Then("The response status code should not be {int}")
+    public void theResponseStatusCodeShouldNotBe(int unexpectedStatusCode) {
+        HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
+        Assert.assertNotNull(response, "No response captured");
+        Assert.assertNotEquals(response.getResponseCode(), unexpectedStatusCode,
+                "Unexpected response status code");
     }
 
 
@@ -777,7 +945,56 @@ public class BaseSteps {
                         + (response == null ? "no response at all" : "status " + response.getResponseCode()
                         + " with an empty body"));
         Assert.assertTrue(response.getData().contains(expectedValue),
-                "Expected response to contain '" + expectedValue + "' but it did not: " + response.getData());
+                "Expected response to contain '" + expectedValue + "' but it did not: " + response.getData()
+                        + ApplicationBaseSteps.unifiedSearchFailureHistory(response));
+    }
+
+    /**
+     * Applies a response-fragment assertion when a table-driven negative case has a known body contract. A dash
+     * means the scenario intentionally pins only the status because the response body for that exact request
+     * shape has not been established yet.
+     */
+    @Then("The collision response should contain {string} when specified")
+    public void collisionResponseShouldContainWhenSpecified(String expectedFragment) {
+
+        if (!"-".equals(expectedFragment)) {
+            responseShouldContainFieldValue(expectedFragment);
+        }
+    }
+
+    /** Asserts one exact XML error node; selecting no node or multiple nodes is a failure. */
+    @Then("The XML error response at XPath {string} should be {string}")
+    public void theXmlErrorResponseAtXPathShouldBe(String xpath, String expectedValue) throws Exception {
+
+        xpath = Utils.resolveContextPlaceholders(xpath);
+        expectedValue = Utils.resolveContextPlaceholders(expectedValue);
+        HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
+        Assert.assertTrue(response != null && (response.getResponseCode() < 200 || response.getResponseCode() >= 300)
+                        && response.getData() != null && !response.getData().isBlank(),
+                "Expected a non-2xx response with an XML error body for XPath '" + xpath + "'");
+        java.util.List<String> values = Utils.getNodeTextsByXPath(response.getData(), xpath);
+        Assert.assertEquals(values.size(), 1, "Expected exactly one XML error node at '" + xpath + "'");
+        Assert.assertEquals(values.get(0), expectedValue, "XML error node at '" + xpath + "'");
+    }
+
+    /**
+     * Asserts that a named field in a non-2xx JSON response contains the expected fragment. This keeps error
+     * diagnostics scoped to the field under test rather than allowing the text to match elsewhere in the payload.
+     */
+    @Then("The error response field {string} should contain {string}")
+    public void theErrorResponseFieldShouldContain(String fieldName, String expectedFragment) throws IOException {
+
+        fieldName = Utils.resolveContextPlaceholders(fieldName);
+        expectedFragment = Utils.resolveContextPlaceholders(expectedFragment);
+        HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
+        Assert.assertTrue(response != null && (response.getResponseCode() < 200 || response.getResponseCode() >= 300)
+                        && response.getData() != null && !response.getData().isBlank(),
+                "Expected a non-2xx response with a body to read error field '" + fieldName + "' from, but got: "
+                        + (response == null ? "null" : response.getResponseCode() + " / " + response.getData()));
+        Object actual = Utils.extractValueFromPayload(response.getData(), fieldName);
+        Assert.assertNotNull(actual, "Error field '" + fieldName + "' not present in response: " + response.getData());
+        Assert.assertTrue(String.valueOf(actual).contains(expectedFragment),
+                "Error field '" + fieldName + "' [" + actual + "] does not contain '" + expectedFragment + "'");
     }
 
     /**
@@ -800,6 +1017,24 @@ public class BaseSteps {
     public void theValueOfResponseFieldShouldBe(String fieldName, String expectedValue) throws IOException {
 
         assertResponseFieldValue(fieldName, expectedValue, true);
+    }
+
+    /** Asserts a response string field has the expected canonical prefix. */
+    @Then("The response field {string} should start with {string}")
+    public void theResponseFieldShouldStartWith(String fieldName, String expectedPrefix) throws IOException {
+
+        fieldName = Utils.resolveContextPlaceholders(fieldName);
+        expectedPrefix = Utils.resolveContextPlaceholders(expectedPrefix);
+        HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
+        Assert.assertNotNull(response, "No response is available while checking field '" + fieldName + "'");
+        Assert.assertTrue(response.getResponseCode() >= 200 && response.getResponseCode() < 300,
+                "Expected a successful response before checking field '" + fieldName + "', got "
+                        + response.getResponseCode() + " / " + response.getData());
+        Object actual = Utils.extractValueFromPayload(response.getData(), fieldName);
+        Assert.assertNotNull(actual, "Response field '" + fieldName + "' is missing: " + response.getData());
+        Assert.assertTrue(String.valueOf(actual).startsWith(expectedPrefix),
+                "Response field '" + fieldName + "' should start with '" + expectedPrefix + "' but was '"
+                        + actual + "'");
     }
 
     /**
@@ -851,6 +1086,66 @@ public class BaseSteps {
         Assert.assertEquals(String.valueOf(actual), expectedValue,
                 String.format("Field '%s' was [%s] but expected [%s]. Data: %s",
                         fieldName, actual, expectedValue, response.getData()));
+    }
+
+    /**
+     * Asserts that a field in a successful response is present as a non-blank string. Use for opaque identifiers
+     * whose exact generated value is intentionally unstable, but whose presence is part of the response contract.
+     *
+     * @param fieldName field name or JSONPath to read from the successful response body
+     */
+    @Then("The response field {string} should be non-blank")
+    public void theResponseFieldShouldBeNonBlank(String fieldName) throws IOException {
+
+        fieldName = Utils.resolveContextPlaceholders(fieldName);
+        HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
+        Assert.assertTrue(response != null && response.getResponseCode() >= 200 && response.getResponseCode() < 300
+                        && response.getData() != null && !response.getData().isBlank(),
+                "Expected a 2xx response with a body to read field '" + fieldName + "' from, but got: "
+                        + (response == null ? "null" : response.getResponseCode() + " / " + response.getData()));
+        Object actual = Utils.extractValueFromPayload(response.getData(), fieldName);
+        Assert.assertTrue(actual instanceof String && !((String) actual).isBlank(),
+                String.format("Response field '%s' was absent, non-string, or blank: [%s]. Data: %s",
+                        fieldName, actual, response.getData()));
+    }
+
+    /**
+     * Asserts membership of one whitespace-delimited token in a successful response field, such as the OAuth
+     * {@code scope} field. Comparing individual tokens prevents a requested scope from passing merely because
+     * its text appears inside a different scope name or another response property.
+     */
+    @Then("The response field {string} should contain token {string}")
+    public void theResponseFieldShouldContainToken(String fieldName, String expectedToken) throws IOException {
+
+        assertResponseFieldContainsToken(fieldName, expectedToken, true);
+    }
+
+    /** Asserts that one exact whitespace-delimited token is absent from a successful response field. */
+    @Then("The response field {string} should not contain token {string}")
+    public void theResponseFieldShouldNotContainToken(String fieldName, String unexpectedToken) throws IOException {
+
+        assertResponseFieldContainsToken(fieldName, unexpectedToken, false);
+    }
+
+    private void assertResponseFieldContainsToken(String fieldName, String expectedToken, boolean shouldContain)
+            throws IOException {
+
+        fieldName = Utils.resolveContextPlaceholders(fieldName);
+        expectedToken = Utils.resolveContextPlaceholders(expectedToken);
+        HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
+        Assert.assertTrue(response != null && response.getResponseCode() >= 200 && response.getResponseCode() < 300
+                        && response.getData() != null && !response.getData().isBlank(),
+                "Expected a 2xx response with a body to read field '" + fieldName + "' from, but got: "
+                        + (response == null ? "null" : response.getResponseCode() + " / " + response.getData()));
+        Object actual = Utils.extractValueFromPayload(response.getData(), fieldName);
+        Assert.assertTrue(actual instanceof String && !((String) actual).isBlank(),
+                String.format("Response field '%s' was absent, non-string, or blank: [%s]. Data: %s",
+                        fieldName, actual, response.getData()));
+        boolean containsToken = Arrays.asList(((String) actual).trim().split("\\s+")).contains(expectedToken);
+        Assert.assertEquals(containsToken, shouldContain,
+                String.format("Response field '%s' was [%s]; expected token '%s' %s. Data: %s",
+                        fieldName, actual, expectedToken, shouldContain ? "to be present" : "to be absent",
+                        response.getData()));
     }
 
     /**
@@ -934,20 +1229,13 @@ public class BaseSteps {
         for (String field : new String[] {"code", "type", "message", "description"}) {
             Matcher m = Pattern.compile(String.format(FAULT_ELEMENT, field), Pattern.DOTALL).matcher(body);
             if (m.find()) {
-                fault.put(field, unescapeXml(m.group(1).trim()));
+                fault.put(field, Utils.unescapeXml(m.group(1).trim()));
             }
         }
         Assert.assertTrue(fault.has("code"),
                 "Response body carries no fault envelope in either form (no embedded JSON object with a "
                         + "'code', no <code> element), got=" + response.getResponseCode() + "/" + body);
         return fault;
-    }
-
-    /** The five predefined XML entities, so a description carrying markup compares as its literal text. */
-    private static String unescapeXml(String value) {
-
-        return value.replace("&lt;", "<").replace("&gt;", ">").replace("&quot;", "\"")
-                .replace("&apos;", "'").replace("&amp;", "&");
     }
 
     /**
@@ -1174,6 +1462,15 @@ public class BaseSteps {
                 "Expected an empty response body but got: " + response.getData());
     }
 
+    /** Matches legacy API-update contracts that require a response payload, while allowing an empty string body. */
+    @Then("The response body should not be null")
+    public void theResponseBodyShouldNotBeNull() {
+
+        HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
+        Assert.assertNotNull(response, "No HTTP response found in TestContext.");
+        Assert.assertNotNull(response.getData(), "Expected a non-null response body.");
+    }
+
     /**
      * Asserts both substrings are present in the response and that the first occurs BEFORE the second — an
      * order-preserving check (e.g. resource order in a returned swagger) that is robust to server reformatting,
@@ -1289,6 +1586,12 @@ public class BaseSteps {
         TestContext.set(Utils.normalizeContextKey(toKey), value);
     }
 
+    /** Serializes a structured context value into an independent JSON string for explicit payload edits. */
+    @When("I serialize context value {string} as JSON into {string}")
+    public void iSerializeContextValueAsJson(String fromKey, String toKey) {
+        TestContext.set(Utils.normalizeContextKey(toKey), JSONObject.valueToString(TestContext.resolve(fromKey)));
+    }
+
     /**
      * Extracts a field value from a JSONObject stored in TestContext and stores it under another key.
      *
@@ -1384,6 +1687,49 @@ public class BaseSteps {
         Assert.assertNotNull(actual, "Response header '" + headerName + "' is not present");
         Assert.assertTrue(actual.contains(resolved),
                 "Response header '" + headerName + "' (" + actual + ") does not contain '" + resolved + "'");
+    }
+
+    /** Asserts a response header ends with a value while allowing gateway-specific host rewriting. */
+    @Then("The response header {string} should end with {string}")
+    public void responseHeaderShouldEndWith(String headerName, String expectedSuffix) {
+        String resolved = Utils.resolveContextPlaceholders(expectedSuffix);
+        String actual = responseHeaderValue(headerName);
+        Assert.assertNotNull(actual, "Response header '" + headerName + "' is not present");
+        Assert.assertTrue(actual.endsWith(resolved),
+                "Response header '" + headerName + "' (" + actual + ") does not end with '" + resolved + "'");
+    }
+
+    /** Asserts a response header does not end with a value. */
+    @Then("The response header {string} should not end with {string}")
+    public void responseHeaderShouldNotEndWith(String headerName, String unexpectedSuffix) {
+        String resolved = Utils.resolveContextPlaceholders(unexpectedSuffix);
+        String actual = responseHeaderValue(headerName);
+        Assert.assertNotNull(actual, "Response header '" + headerName + "' is not present");
+        Assert.assertFalse(actual.endsWith(resolved),
+                "Response header '" + headerName + "' (" + actual + ") unexpectedly ends with '" + resolved + "'");
+    }
+
+    /** Pins a response header's complete value when the wire contract is exact (for example Content-Type). */
+    @Then("The response header {string} should be exactly {string}")
+    public void responseHeaderShouldBeExactly(String headerName, String expected) {
+        String resolved = Utils.resolveContextPlaceholders(expected);
+        String actual = responseHeaderValue(headerName);
+        Assert.assertNotNull(actual, "Response header '" + headerName + "' is not present");
+        Assert.assertEquals(actual, resolved, "Response header '" + headerName + "' value mismatch");
+    }
+
+    /** Asserts a response header's exact value, or its complete absence when the expected value is "absent". */
+    @Then("The response header {string} should match expectation {string}")
+    public void responseHeaderShouldMatchExpectation(String headerName, String expectation) {
+        String actual = responseHeaderValue(headerName);
+        if ("absent".equalsIgnoreCase(expectation)) {
+            Assert.assertNull(actual, "Response header '" + headerName
+                    + "' unexpectedly present with value '" + actual + "'");
+        } else {
+            String resolved = Utils.resolveContextPlaceholders(expectation);
+            Assert.assertNotNull(actual, "Response header '" + headerName + "' is not present");
+            Assert.assertEquals(actual, resolved, "Response header '" + headerName + "' value mismatch");
+        }
     }
 
     /** Asserts a response header is present and its value does NOT contain the substring (e.g. no doubled slash). */
@@ -1659,7 +2005,10 @@ public class BaseSteps {
     @Then("I wait for the APIM server to be ready")
     public void waitForAPIMServerToBeReady() {
 
-        boolean isServerReady = ServerReadiness.awaitReady(getBaseUrl());
+        boolean distributed = TestContext.get("blockApimContainer") instanceof DistributedDynamicApimContainer;
+        boolean isServerReady = distributed
+                ? ServerReadiness.awaitHttpEndpoint(getBaseUrl() + "carbon/admin/login.jsp")
+                : ServerReadiness.awaitReady(getBaseUrl());
         // Report the window awaitReady ACTUALLY used (its no-arg overload passes SERVER_STARTUP_WAIT_TIME);
         // quoting the propagation timeout here understated the real wait and misled triage.
         Assert.assertTrue(isServerReady, "APIM server is not ready even after waiting for "
@@ -1693,15 +2042,17 @@ public class BaseSteps {
         // The deployed-revisions list is the publisher-plane distinguishing state — it flips as soon as the
         // revision is deployed, so it is available to the same actor that owns the API.
         String apiId = Utils.extractValueFromPayload(actualApiDetailsPayload, "id").toString();
-        // Use the tenant ADMIN (not the acting actor) — the gateway-artifact admin endpoint requires admin
-        // credentials, which a least-privilege publisher actor does not have.
+        // Use the Carbon super-tenant admin (not the acting actor) — the gateway-artifact controller endpoint is an
+        // SRE/admin operation. The target tenant remains selected by tenantDomain below.
         User tenantAdmin = Identity.actingTenantAdmin();
+        User gatewayManagementAdmin = Identity.gatewayManagementAdmin();
         String tenantDomain = tenantAdmin.getUserDomain();
 
         String artifactUrl = Utils.getAPIArtifactDeployedInGatewayURL(getBaseUrl(), apiName, apiVersion, tenantDomain);
 
         String encodedCredentials = Base64.getEncoder().encodeToString(
-                (tenantAdmin.getUserName() + ':' + tenantAdmin.getPassword()).getBytes(StandardCharsets.UTF_8));
+                (gatewayManagementAdmin.getUserName() + ':' + gatewayManagementAdmin.getPassword())
+                        .getBytes(StandardCharsets.UTF_8));
         Map<String, String> artifactHeaders = new HashMap<>();
         artifactHeaders.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Basic " + encodedCredentials);
 
@@ -1845,6 +2196,45 @@ public class BaseSteps {
     }
 
     /**
+     * Asserts the actor's exact physical username against the expected value for the current block mode. This
+     * keeps a scenario's behavior identical in standard and email-user blocks while making the mode-dependent
+     * identity transformation an explicit assertion rather than inferring it from successful authentication.
+     */
+    @Then("the actual value of {string} should match standard-mode value {string} and email-mode value {string}")
+    public void actualValueShouldMatchUsernameForBlockMode(String actualKey, String standardModeValue,
+                                                           String emailModeValue) {
+
+        Object actualValue = TestContext.resolve(actualKey);
+        Object emailUserMode = TestContext.get(TenantUserProvisioner.EMAIL_USER_MODE_KEY);
+        Assert.assertTrue(emailUserMode instanceof Boolean,
+                "Block did not publish the emailUserMode setting; cannot select the expected physical username");
+        String expectedValue = (Boolean) emailUserMode ? emailModeValue : standardModeValue;
+        Utils.assertConfigValueMatchesExpectedValue(actualValue, expectedValue);
+    }
+
+    /**
+     * Selects and asserts the product's exact expected HTTP response by configured username mode. This is used
+     * for email-shaped Basic credentials, which are valid only when email-domain parsing is enabled.
+     */
+    @Then("the email-shaped Basic-auth response should be accepted with body containing {string} when email username mode is enabled, otherwise rejected with code {string}")
+    public void emailShapedBasicAuthShouldFollowUsernameMode(String successBody, String standardModeErrorCode) {
+        Object emailUserMode = TestContext.get(TenantUserProvisioner.EMAIL_USER_MODE_KEY);
+        Assert.assertTrue(emailUserMode instanceof Boolean,
+                "Block did not publish the emailUserMode setting; cannot assert Basic-auth mode contract");
+        HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
+        Assert.assertNotNull(response, "No HTTP response was recorded for the Basic-auth invocation");
+        if ((Boolean) emailUserMode) {
+            Assert.assertEquals(response.getResponseCode(), 200, response.getData());
+            Assert.assertTrue(response.getData().contains(Utils.resolveContextPlaceholders(successBody)),
+                    "Successful email-user response did not contain the expected backend body: " + response.getData());
+        } else {
+            Assert.assertEquals(response.getResponseCode(), 403, response.getData());
+            JSONObject error = new JSONObject(response.getData());
+            Assert.assertEquals(error.optString("code"), standardModeErrorCode, response.getData());
+        }
+    }
+
+    /**
      * Asserts a value previously stored in context CONTAINS the given substring. The exact-match step above
      * cannot express this for values that are legitimately larger than what is being asserted — a rendered HTML
      * page, or the joined {@code Set-Cookie} headers of one response — where the assertion is that a specific
@@ -1911,6 +2301,20 @@ public class BaseSteps {
             throw new AssertionError("Response body is not valid JSON or could not be compared against '"
                     + jsonFilePath + "': " + response.getData(), e);
         }
+    }
+
+    /** Compares the complete HTTP response body byte-for-character with a fixture when wire serialization is contractual. */
+    @Then("The response body should exactly equal the file {string}")
+    public void theResponseBodyShouldExactlyEqualFile(String filePath) throws IOException {
+
+        HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
+        Assert.assertTrue(response != null && response.getResponseCode() >= 200 && response.getResponseCode() < 300
+                        && response.getData() != null,
+                "Expected a successful response with a body exactly matching '" + filePath + "', but got: "
+                        + (response == null ? "null" : response.getResponseCode() + " / " + response.getData()));
+        String expected = Utils.readClasspathResource(filePath);
+        Assert.assertEquals(response.getData(), expected,
+                "Response body serialization differed from the exact fixture '" + filePath + "'");
     }
 
 

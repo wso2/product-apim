@@ -4,13 +4,13 @@ Feature: Consumer Secret Rotation (single-secret model)
   Rotating an application's PRIMARY consumer secret, proven at the GATEWAY rather than on the management plane.
   Ports ApplicationRegenerateConsumerSecretTestCase.
 
-  WHY THIS NEEDS ITS OWN BLOCK — the finding that produced it. On DEFAULT config the rotation endpoint
+  WHY THIS NEEDS THE SINGLE-SECRET MODEL — the finding that produced it. On DEFAULT config the rotation endpoint
   (POST /applications/{appId}/oauth-keys/{keyMappingId}/regenerate-secret) answers 500 (900967): APIM's own DCR
   call is refused, because AMDefaultKeyManagerImpl#getNewApplicationConsumerSecret passes
   Base64.getUrlEncoder().encodeToString(clientId) where keymanager-operations' path parameter
   /dcr/register/{clientId}/regenerate-consumer-secret is documented as the RAW client identifier. With
   [oauth.multiple_client_secrets] enable = false the same call returns 200 — MEASURED, not inferred. So rotation
-  is a capability of the SINGLE-SECRET model, and this block pins it there. The multiple-secret model's own
+  is a capability of the SINGLE-SECRET model, and the blocks running this feature set that key. The multiple-secret model's own
   behaviour is covered by multiple_client_secrets.feature on the default block; the two are complementary halves
   of the same feature area, deliberately split by the config that selects between them.
 
@@ -26,6 +26,7 @@ Feature: Consumer Secret Rotation (single-secret model)
     Given The system is ready
     And I have valid access tokens as "<actor>"
     And I have created an api from "artifacts/payloads/create_apim_test_api.json" as "rotApiId" and deployed it
+    And the "apis" resource "rotApiId" should be live on the gateway, redeploying if propagation is lost
     When I publish the "apis" resource with id "rotApiId"
     Then The lifecycle status of API "rotApiId" should be "Published"
     When I retrieve the "apis" resource with id "rotApiId"

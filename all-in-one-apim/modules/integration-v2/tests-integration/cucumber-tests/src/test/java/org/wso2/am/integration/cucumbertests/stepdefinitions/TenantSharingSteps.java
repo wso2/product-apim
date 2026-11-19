@@ -24,11 +24,13 @@ import org.json.JSONObject;
 import org.testng.Assert;
 import org.wso2.am.integration.cucumbertests.utils.Identity;
 import org.wso2.am.integration.cucumbertests.utils.Requests;
+import org.wso2.am.integration.cucumbertests.utils.TenantPolicyDeployReadiness;
 import org.wso2.am.integration.cucumbertests.utils.TenantUserProvisioner;
 import org.wso2.am.integration.cucumbertests.utils.TestContext;
 import org.wso2.am.integration.cucumbertests.utils.Utils;
 import org.wso2.am.integration.cucumbertests.utils.clients.SimpleHTTPClient;
 import org.wso2.am.integration.test.utils.Constants;
+import org.wso2.am.testcontainers.ApimRuntime;
 import org.wso2.carbon.automation.engine.context.beans.User;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
@@ -123,7 +125,7 @@ public class TenantSharingSteps {
      * (/tmp/w10w8-run4-locked-deliveryprobe.log), so it is genuinely nondeterministic rather than a fixed lane
      * behaviour.
      *
-     * <p>This is {@code retryUntil} and not {@code awaitWithRetry} on purpose (§15): the STATUS is the assertion
+     * <p>This is {@code retryUntil} and not {@code HealGate.awaitOrHeal} on purpose (§15): the STATUS is the assertion
      * target of the row being ported (the legacy {@code assertEquals(SC_OK)}), so the retry must fail loudly if a
      * 200 is never reached rather than heal a prerequisite. Re-posting is safe because the event is idempotent —
      * it carries the desired {@code lifecycleStatus.activated} flag rather than a toggle. The LAST response stays
@@ -180,6 +182,23 @@ public class TenantSharingSteps {
         headers.put(KM_HEADER, KM_HEADER_VALUE);
         Requests.post(Utils.getBaseUrl() + "internal/data/v1/notify", headers, event.toString(),
                 Constants.CONTENT_TYPES.APPLICATION_JSON);
+    }
+
+    /**
+     * Waits until the tenant's default throttle policies have finished deploying as execution plans
+     * ({@link TenantPolicyDeployReadiness}). A deactivation sent while they are still deploying can leave the
+     * tenant cached as active, so the tenant keeps issuing tokens after a successful deactivate.
+     */
+    @Then("the throttle policy deployment for tenant {string} settles within {int} seconds")
+    public void theTenantPolicyDeploymentSettles(String tenantDomain, int timeoutSeconds) throws InterruptedException {
+
+        Object candidate = TestContext.get("blockApimContainer");
+        Assert.assertTrue(candidate instanceof ApimRuntime, "Block APIM container is not available in the test context");
+        TenantPolicyDeployReadiness.Result result =
+                TenantPolicyDeployReadiness.await((ApimRuntime) candidate, tenantDomain, timeoutSeconds);
+        Assert.assertNotNull(result, "No throttle policy deployment sample was obtained for " + tenantDomain);
+        Assert.assertTrue(result.settled(), "The throttle policy deployment for tenant " + tenantDomain
+                + " did not settle within " + timeoutSeconds + " s: " + result.diagnostics());
     }
 
     /**

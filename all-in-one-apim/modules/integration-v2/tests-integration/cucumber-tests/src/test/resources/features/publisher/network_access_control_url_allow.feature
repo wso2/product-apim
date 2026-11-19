@@ -5,7 +5,7 @@ Feature: Publisher Network Access Control - endpoint URL validation under an all
   allow-mode platform policy. In allow mode only allow-listed hosts pass, so any other host - including a
   private-network address - is blocked, and a platform allow-mode policy overrides a tenant-level allow policy
   (the platform decision is authoritative). Ports the HostValidationAllowModeTestCase cases. Runs in the
-  network-access-control-allow container (allow-mode, only the in-network fixtures host allow-listed).
+  IntegrationV2-ApprovalWorkflow block (allow-mode, only the in-network fixtures host allow-listed).
 
   @cap:publisher @feat:network-access-control @rule:allow-mode @type:negative @legacy:HostValidationAllowModeTestCase
   Scenario: Endpoint validation of a non-allow-listed URL is blocked under allow mode

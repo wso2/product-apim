@@ -20,11 +20,11 @@ package org.wso2.am.integration.cucumbertests.runners.block;
 import io.cucumber.testng.CucumberOptions;
 
 /**
- * Runner for the external-IdP self-validated-JWT block (IntegrationV2-ExternalIdpJwt in testng-v2.xml) - the v2
- * port of the legacy {@code ExternalIDPJWTTestCase} / {@code ExternalIDPJWTTestSuite} pair. No external Identity
- * Server is booted: both key managers here only SELF-VALIDATE JWTs the test signs itself against a committed PEM
- * certificate, so the block needs the node backend (the /reflect-headers route) and the block's backend-JWT
- * overlay, nothing else.
+ * Runner for the external-IdP self-validated JWT - the v2 port of the legacy {@code ExternalIDPJWTTestCase} /
+ * {@code ExternalIDPJWTTestSuite} pair. It uses no external Identity Server: both key managers here only
+ * SELF-VALIDATE JWTs the test signs itself against a committed PEM certificate, so it needs the node backend (the
+ * /reflect-headers route) and a backend-JWT overlay that excludes {@code http://idp.org/claims/mobileno}. Its
+ * scenarios change a key manager's tokenType at runtime, so it runs one runner at a time.
  *
  * <p>Runs the {@code _setup_} fixture pattern: {@code _setup_external_idp_jwt} provisions, per tenant, the API,
  * the application with Resident-KM token-exchange keys, the subscription and the two external key managers with

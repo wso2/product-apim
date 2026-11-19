@@ -2,7 +2,7 @@
 Feature: Prototype API runtime, mock and visibility
 
   Ports PrototypedAPITestcase (+ APIM23/APIM24 devportal visibility): an API deployed as a prototype
-  (lifecycle action "Deploy as a Prototype", endpoint config implementation_status=prototyped) is invocable
+  (lifecycle action "Deploy as a Prototype", which sets lifeCycleStatus PROTOTYPED) is invocable
   at the gateway with a subscription token, is demoted back to CREATED (after which invocation without auth is
   rejected), supports inline OAS mock-implementation generation — whose generated script is then deployed and
   ANSWERS at the gateway with no real backend — and appears under the devportal's prototyped
@@ -14,11 +14,21 @@ Feature: Prototype API runtime, mock and visibility
     Given The system is ready
     And I have valid access tokens as "<actor>"
     When I put JSON payload from file "artifacts/payloads/create_apim_prototype_api.json" in context as "protoPayload"
+    And I set the JSON object field "endpointConfig" from file "artifacts/payloads/prototype_endpoint_config.json" in the payload "protoPayload"
     And I create an "apis" resource with payload "protoPayload" as "protoApiId"
     Then The response status code should be 201
     When I change the lifecycle of API "protoApiId" with action "Deploy as a Prototype"
     Then The response status code should be 200
     And The lifecycle status of API "protoApiId" should be "Prototyped"
+    When I retrieve the "apis" resource with id "protoApiId"
+    Then The response status code should be 200
+    And I put the response payload in context as "protoApiUpdatePayload"
+    And I set the JSON object field "endpointConfig" from file "artifacts/payloads/prototype_endpoint_config_prototyped.json" in the payload "protoApiUpdatePayload"
+    When I update "apis" resource of id "protoApiId" with payload "protoApiUpdatePayload"
+    Then The response status code should be 200
+    When I retrieve the "apis" resource with id "protoApiId"
+    Then The response status code should be 200
+    And The value of response field "lifeCycleStatus" should be "PROTOTYPED"
     When I deploy the API with id "protoApiId"
     When I retrieve the "apis" resource with id "protoApiId"
     And I extract response field "context" and store it as "apiContext"
@@ -41,10 +51,20 @@ Feature: Prototype API runtime, mock and visibility
     Given The system is ready
     And I have valid access tokens as "<actor>"
     When I put JSON payload from file "artifacts/payloads/create_apim_prototype_api.json" in context as "protoPayload"
+    And I set the JSON object field "endpointConfig" from file "artifacts/payloads/prototype_endpoint_config.json" in the payload "protoPayload"
     And I create an "apis" resource with payload "protoPayload" as "protoApiId"
     Then The response status code should be 201
     When I change the lifecycle of API "protoApiId" with action "Deploy as a Prototype"
     Then The response status code should be 200
+    When I retrieve the "apis" resource with id "protoApiId"
+    Then The response status code should be 200
+    And I put the response payload in context as "protoApiUpdatePayload"
+    And I set the JSON object field "endpointConfig" from file "artifacts/payloads/prototype_endpoint_config_prototyped.json" in the payload "protoApiUpdatePayload"
+    When I update "apis" resource of id "protoApiId" with payload "protoApiUpdatePayload"
+    Then The response status code should be 200
+    When I retrieve the "apis" resource with id "protoApiId"
+    Then The response status code should be 200
+    And The value of response field "lifeCycleStatus" should be "PROTOTYPED"
     When I deploy the API with id "protoApiId"
     Then The response status code should be 201
     # Deploy-readiness gate BEFORE the demote, and it is load-bearing. The deploy and the demote each fire an
@@ -139,16 +159,47 @@ Feature: Prototype API runtime, mock and visibility
   Scenario Outline: A prototyped API is visible in the devportal as <actor>
     Given The system is ready
     And I have valid access tokens as "<actor>"
+    And I generate a unique value and store it as "protoApiNameSuffix"
     When I put JSON payload from file "artifacts/payloads/create_apim_prototype_api.json" in context as "protoPayload"
+    And I set the JSON object field "endpointConfig" from file "artifacts/payloads/prototype_endpoint_config.json" in the payload "protoPayload"
+    And I set the field "name" to "PrototypedVisibility{{protoApiNameSuffix}}" in the payload "protoPayload"
     And I create an "apis" resource with payload "protoPayload" as "protoApiId"
     Then The response status code should be 201
     When I change the lifecycle of API "protoApiId" with action "Deploy as a Prototype"
     Then The response status code should be 200
+    When I retrieve the "apis" resource with id "protoApiId"
+    Then The response status code should be 200
+    And I put the response payload in context as "protoApiUpdatePayload"
+    And I set the JSON object field "endpointConfig" from file "artifacts/payloads/prototype_endpoint_config_prototyped.json" in the payload "protoApiUpdatePayload"
+    When I update "apis" resource of id "protoApiId" with payload "protoApiUpdatePayload"
+    Then The response status code should be 200
+    When I retrieve the "apis" resource with id "protoApiId"
+    Then The response status code should be 200
+    And The value of response field "lifeCycleStatus" should be "PROTOTYPED"
     When I deploy the API with id "protoApiId"
+
+    # Publisher listing: assert the same identity tuple as the Store-list probe below, against the scenario's
+    # request-owned values rather than values copied from the response.
+    When I search Publisher APIs with content query "name:PrototypedVisibility{{protoApiNameSuffix}}" until the result count is 1 within 60 seconds
+    Then The response status code should be 200
+    And The response array field "list" should have exactly 1 entries
+    And The value of response field "list[0].id" should be "{{protoApiId}}"
+    And The value of response field "list[0].provider" should be "<expectedProvider>"
+    And The value of response field "list[0].name" should be "PrototypedVisibility{{protoApiNameSuffix}}"
+    And The value of response field "list[0].version" should be "1.0.0"
+
     When I retrieve the devportal API "protoApiId" until it contains "PROTOTYPED" within 60 seconds
     Then The response status code should be 200
+    When I search DevPortal APIs with content query "name:PrototypedVisibility{{protoApiNameSuffix}}" until the result count is 1 within 60 seconds
+    Then The response status code should be 200
+    And The response array field "list" should have exactly 1 entries
+    And The value of response field "list[0].id" should be "{{protoApiId}}"
+    And The value of response field "list[0].name" should be "PrototypedVisibility{{protoApiNameSuffix}}"
+    And The value of response field "list[0].provider" should be "<expectedProvider>"
+    And The value of response field "list[0].version" should be "1.0.0"
+    And The value of response field "list[0].lifeCycleStatus" should be "PROTOTYPED"
 
     Examples:
-      | actor             |
-      | admin             |
-      | admin@tenant1.com |
+      | actor             | expectedProvider |
+      | admin             | admin            |
+      | admin@tenant1.com | admin@tenant1.com |

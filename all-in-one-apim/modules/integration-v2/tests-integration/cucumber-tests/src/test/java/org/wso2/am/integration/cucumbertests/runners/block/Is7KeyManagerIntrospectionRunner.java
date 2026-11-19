@@ -20,7 +20,7 @@ package org.wso2.am.integration.cucumbertests.runners.block;
 import io.cucumber.testng.CucumberOptions;
 
 /**
- * Runner for the introspection-mode external-key-manager feature. Runs in the validation-modes block
+ * Runner for the introspection-mode external-key-manager feature. Runs in the IntegrationV2-Is7KeyManager block
  * (testng-v2.xml, bootExternalIdentityServer=true); the scenario registers the IS7 KM with
  * enableSelfValidationJWT=false (wso2is7-introspect.json) so the gateway validates tokens via IS
  * /oauth2/introspect. Proves

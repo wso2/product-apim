@@ -30,15 +30,19 @@ import org.wso2.am.integration.cucumbertests.utils.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wso2.am.integration.test.utils.Constants;
-import org.wso2.am.testcontainers.DynamicApimContainer;
+import org.wso2.am.testcontainers.ApimRuntime;
+import org.wso2.am.testcontainers.ContainerLogHistory;
+import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Logging glue — the two devops logging APIs and the server log files they drive. Ports
@@ -58,12 +62,9 @@ import java.util.Set;
  * </ul>
  *
  * <h2>Reading the log files</h2>
- * Legacy held a {@code BufferedReader} open on the log file for the life of the test class and consumed
- * forward from wherever the last read stopped. There is no such handle here (the file is inside the
- * container), so the equivalent is an explicit BYTE OFFSET: a scenario marks the file's current length, does
- * something, and then asserts only over what was appended after that mark. That makes each assertion about
- * the lines THIS scenario provoked and immune to whatever a previous scenario left behind — which matters far
- * more here than it did upstream, because in v2 the container is shared across a block.
+ * A scenario records a boot-scoped position in the container's retained log history, performs an action,
+ * and asserts only over text appended after that position. The mark survives rollover; evidence from an earlier
+ * scenario or boot cannot satisfy it. Separate files and components have separate marks.
  *
  * <h2>On the marker strings</h2>
  * The markers the features match are the literals the product actually emits, not the loose substrings legacy
@@ -97,8 +98,9 @@ public class LoggingSteps {
     private static final String CORRELATION_CONFIG_PATH = "api/am/devops/v0/config/correlation";
     private static final String TENANT_LOGS_PATH = "api/am/devops/v0/tenant-logs/";
 
-    /** Context key prefix under which {@link #iRecordLogFileLength} stores a file's marked length. */
+    /** Context key prefix under which {@link #iRecordLogFileLength} stores a file's marked position. */
     private static final String LOG_MARK_PREFIX = "logFileMark::";
+    private static final long LOG_EFFECT_POLL_MILLIS = 1000L;
 
     // ---------------------------------------------------------------------------------------------
     // Correlation logging configuration
@@ -124,9 +126,9 @@ public class LoggingSteps {
 
     /**
      * Asserts the response body is the correlation configuration document with exactly the named components
-     * enabled — all five present, in the declared order, each carrying the right {@code enabled} flag, and
-     * jdbc carrying its {@code deniedThreads} property. This is the structural equivalent of legacy's
-     * string equality against a hardcoded document, minus the brittleness of pinning key order.
+     * enabled — all five present, each carrying the right {@code enabled} flag, and jdbc carrying its
+     * {@code deniedThreads} property. Component order is deliberately not significant because the API does not
+     * guarantee a database-independent order for the returned array.
      */
     @Then("The correlation configuration should have exactly the components {string} enabled")
     public void theCorrelationConfigurationShouldHaveEnabled(String componentsCsv) {
@@ -137,11 +139,21 @@ public class LoggingSteps {
         Assert.assertEquals(components.length(), CORRELATION_COMPONENTS.size(),
                 "Correlation configuration should list every declared component. Body: " + body);
 
-        for (int i = 0; i < CORRELATION_COMPONENTS.size(); i++) {
-            String name = CORRELATION_COMPONENTS.get(i);
+        Map<String, JSONObject> actualByName = new HashMap<>();
+        for (int i = 0; i < components.length(); i++) {
             JSONObject component = components.getJSONObject(i);
-            Assert.assertEquals(component.getString("name"), name,
-                    "Component at position " + i + " should be '" + name + "'. Body: " + body);
+            String name = component.getString("name");
+            Assert.assertTrue(CORRELATION_COMPONENTS.contains(name),
+                    "Unexpected correlation component '" + name + "'. Body: " + body);
+            Assert.assertFalse(actualByName.containsKey(name),
+                    "Duplicate correlation component '" + name + "'. Body: " + body);
+            actualByName.put(name, component);
+        }
+        Assert.assertEquals(actualByName.keySet(), new LinkedHashSet<>(CORRELATION_COMPONENTS),
+                "Correlation configuration should contain exactly the declared components. Body: " + body);
+
+        for (String name : CORRELATION_COMPONENTS) {
+            JSONObject component = actualByName.get(name);
             Assert.assertEquals(component.getString("enabled"), Boolean.toString(expected.contains(name)),
                     "Component '" + name + "' has the wrong enabled flag. Body: " + body);
 
@@ -165,29 +177,130 @@ public class LoggingSteps {
         }
     }
 
-    /**
-     * Waits for a configuration change to reach the gateway — correlation logging or per-API logging.
-     * Both are devops PUTs propagated the same way, so they share this step; {@code what} names which
-     * one for readability in the scenario and in the log line.
-     *
-     * <p>The devops PUT is acknowledged as soon as the row is written to {@code AM_CORRELATION_CONFIGS}; the
-     * running gateway is updated SEPARATELY and asynchronously, by an event published
-     * on the event hub. So a 200 from the PUT — and even a GET that reads the new state straight back — does
-     * not yet mean the emitters have been switched.
-     *
-     * <p>This wait is therefore load-bearing rather than defensive, and it was established empirically: a
-     * first run asserted immediately after a 200 from the disable and the very next invocation still produced
-     * a full set of synapse and method-calls lines. It cannot be replaced by polling the assertion, because
-     * the traffic that would produce the lines is driven ONCE, before the check — by the time a poll noticed,
-     * the lines would already have been written.
-     */
-    @When("I wait {int} seconds for the {string} configuration to reach the gateway")
-    public void iWaitForConfigToPropagate(int seconds, String what) throws InterruptedException {
+    /** Waits for an enabled gateway logging configuration to emit its marker on successful API traffic. */
+    @When("I wait until the gateway log file {string} records marker {string} for API context {string} using access token {string} within {int} seconds")
+    public void waitForGatewayLogEffect(String fileName, String marker, String context, String accessToken,
+                                        int timeoutSeconds) throws InterruptedException, IOException {
 
-        // Logged because this is an UNCONDITIONAL wait: without it a run sits silent for the whole window and
-        // reads as a hang in CI. The label also names WHICH propagation is being waited on.
-        logger.info("Waiting {}s for the {} configuration to reach the gateway", seconds, what);
-        Thread.sleep(seconds * 1000L);
+        String expected = Utils.resolveContextPlaceholders(marker);
+        String resolvedContext = Utils.resolveContextPlaceholders(context);
+        LogProbe result = Utils.retryUntilWithInterval(timeoutSeconds * 1000L, LOG_EFFECT_POLL_MILLIS,
+                () -> gatewayLogProbe(fileName, expected, resolvedContext, accessToken),
+                probe -> probe.markerPresent);
+        Assert.assertTrue(result != null && result.responseCode == 200 && result.markerPresent,
+                "Gateway log marker '" + expected + "' did not become effective for context " + resolvedContext
+                        + " within " + timeoutSeconds + "s; last probe: " + result);
+    }
+
+    /**
+     * Waits until real, successful requests observe the disabled state for a complete quiet interval. A marker
+     * resets the interval; the feature's separate measured request and full negative observation window remain.
+     */
+    @When("I verify the gateway log file {string} has no marker {string} for API context {string} using access token {string} for {int} seconds within {int} seconds")
+    public void verifyGatewayLogEffectAbsent(String fileName, String marker, String context, String accessToken,
+                                             int quietSeconds, int timeoutSeconds)
+            throws InterruptedException, IOException {
+
+        String expected = Utils.resolveContextPlaceholders(marker);
+        String resolvedContext = Utils.resolveContextPlaceholders(context);
+        AtomicLong quietSince = new AtomicLong(0L);
+        LogProbe result = Utils.retryUntilWithInterval(timeoutSeconds * 1000L, LOG_EFFECT_POLL_MILLIS, () -> {
+            LogProbe probe = gatewayLogProbe(fileName, expected, resolvedContext, accessToken);
+            if (probe.markerPresent) {
+                quietSince.set(0L);
+            } else if (quietSince.get() == 0L) {
+                quietSince.set(System.currentTimeMillis());
+            }
+            return new LogProbe(probe.responseCode, probe.markerPresent, quietSince.get());
+        }, probe -> !probe.markerPresent && probe.quietSince > 0L
+                && System.currentTimeMillis() - probe.quietSince >= quietSeconds * 1000L);
+        Assert.assertTrue(result != null && result.responseCode == 200 && !result.markerPresent
+                        && result.quietSince > 0L
+                        && System.currentTimeMillis() - result.quietSince >= quietSeconds * 1000L,
+                "Gateway log marker '" + expected + "' did not remain absent for " + quietSeconds
+                        + "s within " + timeoutSeconds + "s; last probe: " + result);
+    }
+
+    /** Waits for the Tomcat HTTP marker on successful Publisher REST traffic. */
+    @When("I wait until the control-plane log file {string} records marker {string} through Publisher API reads within {int} seconds")
+    public void waitForControlPlaneLogEffect(String fileName, String marker, int timeoutSeconds)
+            throws InterruptedException, IOException {
+
+        String expected = Utils.resolveContextPlaceholders(marker);
+        LogProbe result = Utils.retryUntilWithInterval(timeoutSeconds * 1000L, LOG_EFFECT_POLL_MILLIS,
+                () -> controlPlaneLogProbe(fileName, expected), probe -> probe.markerPresent);
+        Assert.assertTrue(result != null && result.responseCode == 200 && result.markerPresent,
+                "Control-plane log marker '" + expected + "' did not become effective within " + timeoutSeconds
+                        + "s; last probe: " + result);
+    }
+
+    /** Establishes a marker-free interval using successful Publisher REST reads. */
+    @When("I verify the control-plane log file {string} has no marker {string} through Publisher API reads for {int} seconds within {int} seconds")
+    public void verifyControlPlaneLogEffectAbsent(String fileName, String marker, int quietSeconds,
+                                                  int timeoutSeconds)
+            throws InterruptedException, IOException {
+
+        String expected = Utils.resolveContextPlaceholders(marker);
+        AtomicLong quietSince = new AtomicLong(0L);
+        LogProbe result = Utils.retryUntilWithInterval(timeoutSeconds * 1000L, LOG_EFFECT_POLL_MILLIS, () -> {
+            LogProbe probe = controlPlaneLogProbe(fileName, expected);
+            if (probe.markerPresent) {
+                quietSince.set(0L);
+            } else if (quietSince.get() == 0L) {
+                quietSince.set(System.currentTimeMillis());
+            }
+            return new LogProbe(probe.responseCode, probe.markerPresent, quietSince.get());
+        }, probe -> !probe.markerPresent && probe.quietSince > 0L
+                && System.currentTimeMillis() - probe.quietSince >= quietSeconds * 1000L);
+        Assert.assertTrue(result != null && result.responseCode == 200 && !result.markerPresent
+                        && result.quietSince > 0L
+                        && System.currentTimeMillis() - result.quietSince >= quietSeconds * 1000L,
+                "Control-plane log marker '" + expected + "' did not remain absent for " + quietSeconds
+                        + "s within " + timeoutSeconds + "s; last probe: " + result);
+    }
+
+    private LogProbe gatewayLogProbe(String fileName, String marker, String context, String accessToken)
+            throws IOException {
+
+        ContainerLogHistory.Mark mark = container().readGatewayLogHistory(fileName).mark();
+        new APIInvocationSteps().invokeApiByContextOnce(context, "GET", accessToken, "");
+        HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
+        Assert.assertTrue(response != null && response.getResponseCode() == 200,
+                "Readiness traffic to " + context + " must succeed while checking logging propagation; got "
+                        + (response == null ? "no response" : response.getResponseCode() + " / "
+                        + response.getData()));
+        return new LogProbe(response.getResponseCode(),
+                containsMarker(container().readGatewayLogHistory(fileName).since(mark), marker), 0L);
+    }
+
+    private LogProbe controlPlaneLogProbe(String fileName, String marker) throws IOException {
+
+        ContainerLogHistory.Mark mark = container().readControlPlaneLogHistory(fileName).mark();
+        new PublisherBaseSteps().iRetrieveAllApis();
+        HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
+        Assert.assertTrue(response != null && response.getResponseCode() == 200,
+                "Publisher API read used as logging readiness traffic must succeed; got "
+                        + (response == null ? "no response" : response.getResponseCode() + " / "
+                        + response.getData()));
+        return new LogProbe(response.getResponseCode(),
+                containsMarker(container().readControlPlaneLogHistory(fileName).since(mark), marker), 0L);
+    }
+
+    private static final class LogProbe {
+        private final int responseCode;
+        private final boolean markerPresent;
+        private final long quietSince;
+
+        private LogProbe(int responseCode, boolean markerPresent, long quietSince) {
+            this.responseCode = responseCode;
+            this.markerPresent = markerPresent;
+            this.quietSince = quietSince;
+        }
+
+        @Override
+        public String toString() {
+            return "HTTP " + responseCode + ", markerPresent=" + markerPresent + ", quietSince=" + quietSince;
+        }
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -279,12 +392,19 @@ public class LoggingSteps {
     // ---------------------------------------------------------------------------------------------
 
     /**
-     * Marks a server log file's current length, so later assertions consider only what is appended after this
+     * Marks a server log file's current end, so later assertions consider only what is appended after this
      * point. The mark is per file name, so a scenario can track correlation.log and api.log independently.
      */
     @When("I mark the current end of the server log file {string}")
     public void iRecordLogFileLength(String fileName) {
-        TestContext.set(LOG_MARK_PREFIX + fileName, readLogFile(fileName).length());
+        TestContext.set(LOG_MARK_PREFIX + fileName, container().readGatewayLogHistory(fileName).mark());
+    }
+
+    /** Marks a control-plane log for a management-plane assertion. */
+    @When("I mark the current end of the control-plane server log file {string}")
+    public void iRecordControlPlaneLogFileLength(String fileName) {
+        TestContext.set(LOG_MARK_PREFIX + "control-plane::" + fileName,
+                container().readControlPlaneLogHistory(fileName).mark());
     }
 
     /**
@@ -300,6 +420,32 @@ public class LoggingSteps {
         Assert.assertTrue(appended != null && containsMarker(appended, expected),
                 "No line containing '" + expected + "' was appended to " + fileName + " within " + seconds
                         + "s. Appended since the mark:\n" + appended);
+    }
+
+    /** Polls the control-plane log until a line appended after the mark contains the marker. */
+    @Then("The control-plane server log file {string} should gain a line containing {string} within {int} seconds")
+    public void controlPlaneLogFileShouldGainLine(String fileName, String marker, int seconds)
+            throws InterruptedException {
+        String expected = Utils.resolveContextPlaceholders(marker);
+        String appended = Utils.retryUntil(seconds * 1000L,
+                () -> appendedSinceControlPlaneMark(fileName),
+                text -> containsMarker(text, expected));
+        Assert.assertTrue(appended != null && containsMarker(appended, expected),
+                "No line containing '" + expected + "' was appended to the control-plane " + fileName
+                        + " within " + seconds + "s. Appended since the mark:\n" + appended);
+    }
+
+    /** Waits for the control-plane log window and asserts that the marker is absent. */
+    @Then("The control-plane server log file {string} should gain no line containing {string} within {int} seconds")
+    public void controlPlaneLogFileShouldNotGainLine(String fileName, String marker, int seconds)
+            throws InterruptedException {
+        String unexpected = Utils.resolveContextPlaceholders(marker);
+        Thread.sleep(seconds * 1000L);
+        String appended = appendedSinceControlPlaneMark(fileName);
+        if (containsMarker(appended, unexpected)) {
+            Assert.fail("A line containing '" + unexpected + "' was appended to the control-plane " + fileName
+                    + " but none was expected. Appended since the mark:\n" + appended);
+        }
     }
 
     /**
@@ -337,6 +483,105 @@ public class LoggingSteps {
                 "No single line containing all of " + expected + " was appended to " + fileName + " within "
                         + seconds + "s. " + closestLineReport(appended, expected)
                         + "\nAppended since the mark:\n" + appended);
+    }
+
+    /**
+     * Asserts one structured ELK analytics event by parsing its JSON properties, so callers can check exact
+     * identity/status values and numeric latency fields without pinning serialized JSON field order. Expected
+     * values are exact strings, {@code <number>}, or {@code <present>}.
+     */
+    @Then("The server log file {string} should gain event {string} for API {string} with these fields within {int} seconds")
+    public void logFileShouldGainAnalyticsEvent(String fileName, String event, String apiName, int seconds,
+                                                DataTable expectedTable) throws InterruptedException {
+        String expectedApiName = Utils.resolveContextPlaceholders(apiName);
+        Map<String, String> expectedFields = new HashMap<>();
+        List<List<String>> rows = expectedTable.asLists(String.class);
+        Assert.assertTrue(rows.size() > 1 && rows.get(0).equals(Arrays.asList("field", "expected")),
+                "Analytics event expectations must have a 'field | expected' header.");
+        for (int i = 1; i < rows.size(); i++) {
+            Assert.assertEquals(rows.get(i).size(), 2, "Each analytics expectation must have two columns.");
+            expectedFields.put(rows.get(i).get(0), Utils.resolveContextPlaceholders(rows.get(i).get(1)));
+        }
+        Assert.assertFalse(expectedFields.isEmpty(), "No analytics event fields supplied.");
+
+        String eventPrefix = "apimMetrics: " + event + ", properties :";
+        String appended = Utils.retryUntil(seconds * 1000L,
+                () -> appendedSinceMark(fileName),
+                text -> matchingAnalyticsEvent(text, eventPrefix, expectedApiName, expectedFields) != null);
+        JSONObject actual = matchingAnalyticsEvent(appended, eventPrefix, expectedApiName, expectedFields);
+        Assert.assertNotNull(actual, "No " + event + " analytics event for API '" + expectedApiName
+                + "' with expected fields " + expectedFields + " was appended to " + fileName + " within "
+                + seconds + "s. Appended since the mark:\n" + appended);
+    }
+
+    private static JSONObject matchingAnalyticsEvent(String text, String eventPrefix, String apiName,
+                                                      Map<String, String> expectedFields) {
+        if (text == null) {
+            return null;
+        }
+        for (String line : text.split("\\R")) {
+            int prefixIndex = line.indexOf(eventPrefix);
+            if (prefixIndex < 0) {
+                continue;
+            }
+            try {
+                JSONObject event = new JSONObject(line.substring(prefixIndex + eventPrefix.length()).trim());
+                if (!apiName.equals(event.optString("apiName", null))) {
+                    continue;
+                }
+                boolean matches = true;
+                for (Map.Entry<String, String> expected : expectedFields.entrySet()) {
+                    String field = expected.getKey();
+                    String value = Utils.resolveContextPlaceholders(expected.getValue());
+                    if ("eventType".equals(field)) {
+                        String actualEventType = eventPrefix.endsWith("apim:response, properties :") ? "response"
+                                : eventPrefix.endsWith("apim:faulty, properties :") ? "fault" : null;
+                        if (!value.equals(actualEventType)) {
+                            matches = false;
+                            break;
+                        }
+                        continue;
+                    }
+                    Object actual = jsonField(event, field);
+                    if (actual == null || JSONObject.NULL.equals(actual)) {
+                        matches = false;
+                        break;
+                    }
+                    if ("<number>".equals(value)) {
+                        if (!(actual instanceof Number number) || !Double.isFinite(number.doubleValue())
+                                || number.doubleValue() < 0) {
+                            matches = false;
+                            break;
+                        }
+                    } else if ("<present>".equals(value)) {
+                        if (actual.toString().isEmpty()) {
+                            matches = false;
+                            break;
+                        }
+                    } else if (!value.equals(actual.toString())) {
+                        matches = false;
+                        break;
+                    }
+                }
+                if (matches) {
+                    return event;
+                }
+            } catch (RuntimeException ignored) {
+                // Keep polling while the log write is in progress; malformed lines appear in the final diagnostics.
+            }
+        }
+        return null;
+    }
+
+    private static Object jsonField(JSONObject object, String fieldPath) {
+        Object current = object;
+        for (String segment : fieldPath.split("\\.")) {
+            if (!(current instanceof JSONObject currentObject) || !currentObject.has(segment)) {
+                return null;
+            }
+            current = currentObject.opt(segment);
+        }
+        return current;
     }
 
     /** True when at least one appended line contains every marker (order-independent). */
@@ -469,25 +714,24 @@ public class LoggingSteps {
             throw new IllegalStateException("The end of " + fileName + " was never marked — the scenario must "
                     + "mark it before asserting on what was appended.");
         }
-        String content = readLogFile(fileName);
-        int from = Integer.parseInt(mark.toString());
-        // The file rolls over at 10MB, which resets its length; treat a shrink as "read it all".
-        return from <= content.length() ? content.substring(from) : content;
+        return container().readGatewayLogHistory(fileName).since((ContainerLogHistory.Mark) mark);
     }
 
-    private String readLogFile(String fileName) {
-        // Path shape owned by DynamicApimContainer alongside getContainerLog4j2Path(), so the in-container
-        // layout lives in one module; the accessor also validates apim.server.name instead of silently
-        // resolving a path containing "null".
-        return container().readContainerFile(container().getContainerLogFilePath(fileName));
+    private String appendedSinceControlPlaneMark(String fileName) {
+        Object mark = TestContext.get(LOG_MARK_PREFIX + "control-plane::" + fileName);
+        if (mark == null) {
+            throw new IllegalStateException("The end of the control-plane " + fileName
+                    + " was never marked — the scenario must mark it before asserting on what was appended.");
+        }
+        return container().readControlPlaneLogHistory(fileName).since((ContainerLogHistory.Mark) mark);
     }
 
-    private DynamicApimContainer container() {
+    private ApimRuntime container() {
         Object candidate = TestContext.get("blockApimContainer");
-        if (!(candidate instanceof DynamicApimContainer)) {
+        if (!(candidate instanceof ApimRuntime)) {
             throw new IllegalStateException("Block APIM container is not available in the test context");
         }
-        return (DynamicApimContainer) candidate;
+        return (ApimRuntime) candidate;
     }
 
     /**

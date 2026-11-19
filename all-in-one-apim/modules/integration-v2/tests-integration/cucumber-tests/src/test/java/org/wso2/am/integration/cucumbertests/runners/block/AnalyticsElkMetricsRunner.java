@@ -20,15 +20,17 @@ package org.wso2.am.integration.cucumbertests.runners.block;
 import io.cucumber.testng.CucumberOptions;
 
 /**
- * Runner for the ELK analytics metric log (ports APIMAnalyticsTest and
- * ELKAnalyticsWithRespondMediatorTestCase).
+ * Runner for the ELK analytics metric log (ports APIMAnalyticsTest, ELKAnalyticsWithRespondMediatorTestCase,
+ * and the documented invocation response/fault telemetry from APIInvocationStatPublisherTestCase).
  *
- * <p>Needs its own block: {@code [apim.analytics] enable/type} is server-global config, and once it is on every
- * invocation in the container writes an event to {@code apim_metrics.log}.
+ * <p>{@code [apim.analytics] enable/type} is server-global config, and once it is on every gateway invocation in
+ * the container writes an event to {@code apim_metrics.log}. It shares IntegrationV2-LoggingAndElkAnalytics only
+ * with runners that read other log files, one class at a time, so no sibling traffic lands in its mark window.
  */
 @CucumberOptions(
         features = {
-                "src/test/resources/features/analytics/elk_metrics.feature"
+                "src/test/resources/features/analytics/elk_metrics.feature",
+                "src/test/resources/features/analytics/invocation_stats.feature"
         },
         glue = {
                 "org.wso2.am.integration.cucumbertests.stepdefinitions"

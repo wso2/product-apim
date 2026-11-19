@@ -48,12 +48,12 @@ public final class Requests {
 
     /** A deferred HTTP call, so the funnel can clear {@code httpResponse} BEFORE the call is made. */
     @FunctionalInterface
-    private interface Call {
+    public interface HttpCall {
         HttpResponse invoke() throws IOException;
     }
 
-    /** The single clear -> call -> set primitive every method below funnels through. */
-    private static HttpResponse execute(Call call) throws IOException {
+    /** The single clear -> call -> set primitive every request funnel uses. */
+    public static HttpResponse execute(HttpCall call) throws IOException {
         TestContext.remove(HTTP_RESPONSE_KEY);
         HttpResponse response = call.invoke();
         TestContext.set(HTTP_RESPONSE_KEY, response);

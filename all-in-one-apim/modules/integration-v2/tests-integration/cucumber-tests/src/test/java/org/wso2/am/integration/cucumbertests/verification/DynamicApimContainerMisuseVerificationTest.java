@@ -73,6 +73,8 @@ public class DynamicApimContainerMisuseVerificationTest {
     public void abnormalKillReleasesHostPortButLeavesContainerRecord() throws Exception {
         String tomlContent = readDefaultToml();
         DynamicApimContainer container = new DynamicApimContainer("verify-1.4-kill", tomlContent);
+        Utils.applyDefaultTemplates(container,
+                ModulePathResolver.getModuleDir(DynamicApimContainerMisuseVerificationTest.class));
         container.withLabel(VERIFY_LABEL_KEY, VERIFY_LABEL_VALUE);
 
         String containerId = null;

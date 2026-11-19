@@ -9,7 +9,7 @@
  *     makes the broker an OAuth resource server against APIM's JWKS, disables basic auth and the fallback
  *     `default` clientUsername, and per app registration it provisions a clientUsername and an ACL profile
  *     derived from the served AsyncAPI's channels. Without this the broker accepts ANY credential, so every
- *     "bad credential is rejected" assertion would be vacuous -- see configureApimOAuth and ensureAclProfile.
+ *     "bad credential is rejected" assertion would be vacuous -- see configureApimOAuth and reconcileAclProfile.
  *     The HTTP port is opened only AFTER that configuration settles, so container readiness means "broker
  *     secured"; a failure is fatal rather than logged (see the server.listen block at the bottom).
  *
@@ -48,6 +48,8 @@
  */
 'use strict';
 const http = require('node:http');
+const { aclProfileNameFor, reconcileAclProfile } = require('./acl-reconciliation');
+const { fetchPublicKeys } = require('./jwks');
 
 const PORT = Number(process.env.PORT || 9081);
 
@@ -61,7 +63,7 @@ const EVENT_API_ID = 'api5t8w2rk';
 const APPLICATION_DOMAIN_ID = '3mfd8k2l9c';
 
 /*
- * MEASURED: the Solace plan is resolved BY NAME against the APIM SUBSCRIPTION TIER --
+ * The Solace plan is resolved BY NAME against the APIM SUBSCRIPTION TIER --
  * SolaceSubscriptionsNotifier passes SubscriptionEvent.getPolicyId() to
  * SolaceV2Apis.getEventApiProductPlanId(productId, planName), which fetches /plans and matches on `name`.
  * A miss fails with "Cannot find a Solace Plan with the name: '<tier>' in the Solace Event API Product".
@@ -123,7 +125,7 @@ const EVENT_API_PRODUCT = {
 const ASYNC_API_DEFINITION = {
     asyncapi: '2.2.0',
     /*
-     * These four x-ep-* extensions are REQUIRED and live under `info`. MEASURED the hard way: without
+     * These four x-ep-* extensions are REQUIRED and live under `info`. Without
      * them, subscribing to the imported API dies with
      *   NullPointerException: Cannot invoke "JsonElement.getAsString()" because the return value of
      *   "JsonObject.get(String)" is null
@@ -213,11 +215,10 @@ const log = (...a) => console.log('[solace-mock]', ...a);
 // is pure cost. So credentials pushed by APIM are turned into a real SEMP clientUsername here, and removed
 // again on delete.
 //
-// BEST-EFFORT BY DESIGN: every SEMP call is wrapped, and a failure is LOGGED but never fails the
-// control-plane response. Two reasons. (1) This file is also run standalone on a laptop with no broker at
-// all -- SEMP is simply absent then, and the control-plane flows must still work. (2) A SEMP hiccup must
-// not masquerade as an APIM defect; the whole point of the mock is that APIM's behaviour is what's under
-// test. Grep the "semp:" lines to see what was actually provisioned.
+// Low-level SEMP calls return structured outcomes and log failures. Standalone use without SEMP still
+// supports control-plane requests. With a broker configured, ACL reconciliation checks every operation and
+// fails the mock request if convergence fails, so an acknowledged revoke cannot silently leave stale grants.
+// Other callers retain their existing status/best-effort handling. Grep "semp:" for broker-side evidence.
 // Verified against solace/solace-pubsub-standard (SolOS 10.26) before use:
 //   POST   /SEMP/v2/config/msgVpns/default/clientUsernames        -> 200
 //   GET    /SEMP/v2/config/msgVpns/default/clientUsernames/{name} -> 200, and 400 once deleted
@@ -231,7 +232,7 @@ const SEMP_USER = process.env.SEMP_USER || 'admin';
 const SEMP_PASSWORD = process.env.SEMP_PASSWORD || 'admin';
 const SEMP_VPN = process.env.SEMP_VPN || 'default';
 
-async function semp(method, path, body) {
+async function sempRequest(method, path, body) {
     if (!SEMP_URL) { log(`     semp: SKIPPED (no SEMP_URL; running without a broker) ${method} ${path}`); return null; }
     const url = `${SEMP_URL}/SEMP/v2/config/msgVpns/${SEMP_VPN}${path}`;
     const auth = Buffer.from(`${SEMP_USER}:${SEMP_PASSWORD}`).toString('base64');
@@ -243,12 +244,29 @@ async function semp(method, path, body) {
         });
         const text = await res.text();
         log(`     semp: ${method} ${path} -> ${res.status}${res.ok ? '' : ' ' + text.slice(0, 180)}`);
-        return res.status;
+        let responseBody;
+        try { responseBody = JSON.parse(text); } catch { responseBody = null; }
+        return { status: res.status, body: responseBody };
     } catch (e) {
-        // Never rethrow: see BEST-EFFORT above.
+        // Never rethrow: callers handle a null outcome (see "Low-level SEMP calls" above).
         log(`     semp: ${method} ${path} -> FAILED ${e.message}`);
         return null;
     }
+}
+
+async function semp(method, path, body) {
+    const response = await sempRequest(method, path, body);
+    return response ? response.status : null;
+}
+
+// Serialize mutations within a registration, while independent applications can progress concurrently.
+const registrationMutations = new Map();
+function withRegistrationLock(id, operation) {
+    const next = (registrationMutations.get(id) || Promise.resolve()).catch(() => {}).then(operation);
+    registrationMutations.set(id, next);
+    const finished = () => { if (registrationMutations.get(id) === next) registrationMutations.delete(id); };
+    next.then(finished, finished);
+    return next;
 }
 
 /*
@@ -259,11 +277,10 @@ async function semp(method, path, body) {
  * has the client authenticate with the OAuth token the API-management system issued, and APIM's Solace
  * integration pushes an application's consumerKey/consumerSecret -- an OAuth CLIENT credential, not a
  * messaging password. So the broker has to be configured as an OAuth RESOURCE SERVER that trusts APIM as
- * the authorization server, and it validates the token by fetching APIM's JWKS. An earlier version of this
- * file provisioned the consumerKey/consumerSecret as a clientUsername + PASSWORD and switched the VPN to
- * `authenticationBasicType: internal`. That is a scheme the product never uses; it was removed.
+ * the authorization server, and it validates the token by fetching APIM's JWKS. Basic (password)
+ * authentication stays disabled on the VPN.
  *
- * EVERY LINE BELOW IS MEASURED, and four of these settings are non-obvious enough that guessing them
+ * Four of these settings are non-obvious enough that guessing them
  * produces a 403 with no clue in the HTTP response (the reason appears ONLY in the broker's
  * /usr/sw/jail/logs/event.log, as SYSTEM_CLIENT_CONNECT_AUTH_FAIL -- look there first, always):
  *
@@ -282,7 +299,7 @@ async function semp(method, path, body) {
  *                                  application; `client_id` (== `azp` == the application's consumerKey) is
  *                                  what identifies the app. Combined with disabling the fallback `default`
  *                                  clientUsername below, this is what makes the credential APIM pushed
- *                                  LOAD-BEARING -- see the mutation proof there.
+ *                                  LOAD-BEARING -- see the provisioning outcomes there.
  *
  *   authorizationGroupsClaimName:''Default is 'groups'. APIM's token has no `groups` claim, so authorization
  *                                  fails AFTER successful authentication with the easily-misread "No
@@ -303,7 +320,7 @@ async function semp(method, path, body) {
  *                                  passes. Verified, rather than assumed and disabled "to be safe".
  *
  * ORDER AND ONE-SHOT-NESS MATTER. The profile is created DISABLED, configured, then enabled, so it is never
- * briefly active with a half-written config. And this runs exactly ONCE at startup: MEASURED that patching a
+ * briefly active with a half-written config. And this runs exactly ONCE at startup: patching a
  * live profile DISCARDS THE CACHED JWKS ("No JSON Web Key exists to decode the token" on the next publish),
  * so reconfiguring mid-run would break invocations that were working. Do not make this lazy or repeated.
  *
@@ -314,6 +331,8 @@ async function semp(method, path, body) {
  */
 const OAUTH_PROFILE = process.env.OAUTH_PROFILE || 'wso2apim';
 const APIM_JWKS_URL = process.env.APIM_JWKS_URL || '';
+const APIM_ADDITIONAL_JWKS_URLS = JSON.parse(process.env.APIM_ADDITIONAL_JWKS_URLS || '[]');
+const BROKER_JWKS_URL = process.env.BROKER_JWKS_URL || APIM_JWKS_URL;
 const APIM_TOKEN_ISSUER = process.env.APIM_TOKEN_ISSUER || 'https://localhost:9443/oauth2/token';
 
 async function configureApimOAuth() {
@@ -325,7 +344,7 @@ async function configureApimOAuth() {
     await semp('POST', '/authenticationOauthProfiles', { oauthProfileName: OAUTH_PROFILE, enabled: false });
     const configured = await semp('PATCH', profile, {
         oauthRole: 'resource-server',
-        endpointJwks: APIM_JWKS_URL,
+        endpointJwks: BROKER_JWKS_URL,
         issuer: APIM_TOKEN_ISSUER,
         usernameClaimName: 'client_id',
         authorizationGroupsClaimName: '',
@@ -346,7 +365,7 @@ async function configureApimOAuth() {
     // Disable the fallback client username. The VPN ships an enabled `default` clientUsername that ANY
     // otherwise-unknown client falls back to -- which is why bogus:bogus connected at all. With it disabled,
     // the username resolved from the token's client_id claim MUST have been provisioned.
-    // MEASURED, and this is the mutation proof that provisioning is load-bearing rather than decoration:
+    // Broker outcomes by provisioning state:
     //   no clientUsername for the consumer key -> 403 "Client Username Is Shutdown"
     //   clientUsername provisioned             -> 200
     //   clientUsername deleted again           -> 403 "Client Username Is Shutdown"
@@ -407,7 +426,7 @@ async function probeApimOnce() {
  * authenticated client, so the invocation scenarios could only ever prove authentication -- an application
  * could publish to topics its subscription never granted and nothing would notice.
  *
- * Shape, MEASURED against SolOS 10.26 before writing it:
+ * SEMP shape on SolOS 10.26:
  *   POST /aclProfiles {aclProfileName, clientConnectDefaultAction:'allow',
  *                      publishTopicDefaultAction:'disallow', subscribeTopicDefaultAction:'disallow'} -> 200
  *   POST /aclProfiles/{name}/publishTopicExceptions {publishTopicException, publishTopicExceptionSyntax:'smf'}
@@ -419,9 +438,9 @@ async function probeApimOnce() {
  * NAME LENGTH IS A HARD 32 CHARS -- a hyphenated UUID is 36, so a registration id used verbatim fails with
  * "value must be no greater than 32 characters in length". De-hyphenating a UUID lands on exactly 32.
  *
- * Re-creating a profile or re-adding an exception answers 400 "already exists". That is expected on the
- * credentials path (which ensures the profile exists in case no access request preceded it) and is left to
- * semp()'s best-effort logging rather than being pre-checked with a GET.
+ * Reconciliation reads actual broker exceptions, retains the union of remaining approved grants, removes
+ * obsolete exceptions and adds missing ones. Credentials use the same reconciliation, so pushing credentials
+ * cannot clear an existing grant. Reads paginate; failed broker operations prevent a success acknowledgement.
  * ---------------------------------------------------------------------------
  */
 /*
@@ -451,27 +470,11 @@ function permissionsFromChannels() {
     return { publish, subscribe };
 }
 
-function aclProfileNameFor(registrationId) {
-    return String(registrationId).replace(/[^A-Za-z0-9_]/g, '').slice(0, 32);
-}
-
-async function ensureAclProfile(registrationId, permissions) {
-    const name = aclProfileNameFor(registrationId);
-    await semp('POST', '/aclProfiles', {
-        aclProfileName: name,
-        clientConnectDefaultAction: 'allow',
-        publishTopicDefaultAction: 'disallow',
-        subscribeTopicDefaultAction: 'disallow',
-    });
-    for (const topic of (permissions && permissions.publish) || []) {
-        await semp('POST', `/aclProfiles/${encodeURIComponent(name)}/publishTopicExceptions`,
-            { publishTopicException: topic, publishTopicExceptionSyntax: 'smf' });
-    }
-    for (const topic of (permissions && permissions.subscribe) || []) {
-        await semp('POST', `/aclProfiles/${encodeURIComponent(name)}/subscribeTopicExceptions`,
-            { subscribeTopicException: topic, subscribeTopicExceptionSyntax: 'smf' });
-    }
-    return name;
+async function reconcileRegistration(registrationId, accessRequests) {
+    // Standalone control-plane use deliberately has no broker. With SEMP configured, a failed write must
+    // fail the mock request, rather than acknowledging revocation while leaving the real broker unchanged.
+    if (!SEMP_URL) return aclProfileNameFor(registrationId);
+    return reconcileAclProfile(registrationId, accessRequests, sempRequest);
 }
 
 /**
@@ -488,7 +491,8 @@ async function provisionClientUsername(consumerKey, consumerSecret, registration
     // The profile normally already exists (the access request created it when the application subscribed);
     // this covers key generation with no preceding subscription, where the application ends up with a profile
     // that grants NOTHING -- which is the correct outcome, not an oversight.
-    const aclProfileName = await ensureAclProfile(registrationId, null);
+    const aclProfileName = await reconcileRegistration(registrationId,
+            ensureRegistration(registrationId, 'credentials').accessRequests);
     await semp('POST', '/clientUsernames', {
         clientUsername: consumerKey,
         password: consumerSecret || '',
@@ -503,10 +507,9 @@ async function deprovisionClientUsername(consumerKey) {
 }
 
 /*
- * MEASURED (2026-08-05, APIM 4.7.0-SNAPSHOT): on key generation, APIM posts straight to
+ * On key generation, APIM posts straight to
  *   POST /appRegistrations/{APIM-application-UUID}/credentials
- * having NEVER called POST /appRegistrations -- observed count of creates was exactly 0, and
- * isAppRegistrationExists()/GET /appRegistrations/{id} was not called either. So the registrationId is
+ * without calling POST /appRegistrations, isAppRegistrationExists() or GET /appRegistrations/{id}. So the registrationId is
  * the APIM application's own UUID, and the sub-resource arrives before anything creates the parent.
  *
  * A strict mock 404s that and the key-gen leg fails. Whether REAL Solace Cloud creates the registration
@@ -568,6 +571,17 @@ const server = http.createServer((req, res) => {
         const seg = path.split('?')[0].split('/').filter(Boolean);
         const m = req.method;
 
+        // Both APIM tenants use the same issuer but distinct signing keys. Serve their public keys unchanged;
+        // SolOS still validates the JWT signature and enforces the provisioned client's ACL.
+        if (m === 'GET' && seg[0] === '_mock' && seg[1] === 'jwks' && seg.length === 2) {
+            return fetchPublicKeys([APIM_JWKS_URL, ...APIM_ADDITIONAL_JWKS_URLS].filter(Boolean))
+                .then(keys => send(res, 200, keys))
+                .catch(error => {
+                    log(`     jwks: public-key proxy unavailable: ${error.message}`);
+                    return send(res, 503, { message: 'APIM public keys unavailable' });
+                });
+        }
+
         // ---- GET /eventApiProducts ------------------------------------------------ (data envelope)
         if (m === 'GET' && seg.length === 1 && seg[0] === 'eventApiProducts') {
             return send(res, 200, { data: [EVENT_API_PRODUCT], meta: {} });
@@ -587,7 +601,7 @@ const server = http.createServer((req, res) => {
         }
 
         // ---- POST /appRegistrations ------------------------------------------- (data-WRAPPED object)
-        // MEASURED: SolaceV2Apis.createAppRegistration does
+        // SolaceV2Apis.createAppRegistration does
         //     new Gson().fromJson(response.getAsJsonObject("data"), AppRegistration.class)
         // so a BARE registration object makes getAsJsonObject("data") return null, fromJson yield null,
         // and the caller NPE on registrationId. The wrapper is load-bearing.
@@ -619,10 +633,8 @@ const server = http.createServer((req, res) => {
                  * for. isAppRegistrationExists() decompiles to:
                  *     try { JsonObject r = client.getAppRegistration(id); return r != null && r.has("data"); }
                  *     catch (FeignException e) { if (e.status() == 404) return false; throw ...; }
-                 * An earlier version of this mock answered 200 {} instead, reasoning that has("data")==false
-                 * also yields false. That DOES make APIM work, but it is WRONG as a mock: it bypasses the
-                 * FeignException branch entirely, so the code path production actually takes against real
-                 * Solace never gets exercised. A mock that dodges the real path hides real bugs.
+                 * Answering 200 {} would also yield false, but would bypass the FeignException branch that
+                 * production takes against real Solace.
                  * Solace's APIM/DevPortal API documents 404 among its status codes.
                  */
                 if (!reg) {
@@ -637,15 +649,14 @@ const server = http.createServer((req, res) => {
                 // deployment would accumulate. The broker is shared by every scenario in the block, so this
                 // is not merely tidiness: leftover profiles would accumulate across a whole suite run.
                 // ORDER MATTERS: the profile is still referenced while a clientUsername using it exists.
-                const cleanup = reg
-                        ? Promise.all(reg.credentials.map(
-                                (c) => deprovisionClientUsername(c.secret && c.secret.consumerKey)))
-                        : Promise.resolve();
-                cleanup.then(() => semp('DELETE', `/aclProfiles/${encodeURIComponent(aclProfileNameFor(seg[1]))}`))
-                        .then(() => {
-                            delete state.registrations[seg[1]];
-                            send(res, 200, { data: { registrationId: seg[1], deleted: true }, meta: {} });
-                        })
+                withRegistrationLock(seg[1], async () => {
+                    const current = state.registrations[seg[1]];
+                    if (current) await Promise.all(current.credentials.map(
+                            (c) => deprovisionClientUsername(c.secret && c.secret.consumerKey)));
+                    await semp('DELETE', `/aclProfiles/${encodeURIComponent(aclProfileNameFor(seg[1]))}`);
+                    delete state.registrations[seg[1]];
+                    send(res, 200, { data: { registrationId: seg[1], deleted: true }, meta: {} });
+                })
                         .catch((error) => {
                             log(`     ERROR deleting registration ${seg[1]}: ${error.stack || error}`);
                             send(res, 500, { message: `failed to delete registration ${seg[1]}` });
@@ -656,7 +667,6 @@ const server = http.createServer((req, res) => {
 
         // ---- POST /appRegistrations/{id}/credentials -----------------------------------------
         if (m === 'POST' && seg.length === 3 && seg[0] === 'appRegistrations' && seg[2] === 'credentials') {
-            const reg = ensureRegistration(seg[1], 'credentials');
             const now = 1767225600000;
             const cred = {
                 secret: {
@@ -666,17 +676,19 @@ const server = http.createServer((req, res) => {
                 issuedAt: now,
                 expiresAt: now + 3600_000,
             };
-            reg.credentials.push(cred);
             /*
              * AWAIT the broker provisioning before answering 201 -- do NOT make this fire-and-forget.
-             * MEASURED: an earlier fire-and-forget version returned 201 immediately, and a test that
-             * published as soon as key generation returned raced the SEMP call and got 403 from the broker.
-             * It looked exactly like a credential defect. Awaiting also matches the real connector, which
+             * Answering first would let a test that publishes as soon as key generation returns race the
+             * SEMP call and get a 403 indistinguishable from a credential defect. Awaiting also matches the real connector, which
              * cannot honestly confirm a credential it has not yet created.
-             * Provisioning stays best-effort INTERNALLY (semp() never throws), so a broker-less run still
-             * gets its 201 -- awaiting changes the ordering, not the error policy.
+             * Broker-less standalone use still gets its 201. With SEMP configured, ACL reconciliation failures
+             * fail this mock request instead of acknowledging grants that were not installed.
              */
-            provisionClientUsername(cred.secret.consumerKey, cred.secret.consumerSecret, seg[1])
+            withRegistrationLock(seg[1], async () => {
+                const reg = ensureRegistration(seg[1], 'credentials');
+                await provisionClientUsername(cred.secret.consumerKey, cred.secret.consumerSecret, seg[1]);
+                reg.credentials.push(cred);
+            })
                     .then(() => send(res, 201, cred))
                     .catch((error) => {
                         log(`     ERROR provisioning credentials for registration ${seg[1]}: ${error.stack || error}`);
@@ -687,10 +699,9 @@ const server = http.createServer((req, res) => {
 
         // ---- POST|GET /appRegistrations/{id}/accessRequests ----------------------------------
         if (seg.length === 3 && seg[0] === 'appRegistrations' && seg[2] === 'accessRequests') {
-            const reg = ensureRegistration(seg[1], 'accessRequests');
             if (m === 'POST') {
                 const ar = {
-                    accessRequestId: nextId('acc'),
+                    accessRequestId: (body && body.accessRequestId) || nextId('acc'),
                     eventApiProductId: (body && body.eventApiProductId) || PRODUCT_ID,
                     planId: (body && body.planId) || PLAN_ID,
                     registrationId: seg[1],
@@ -705,33 +716,56 @@ const server = http.createServer((req, res) => {
                         maxTtl: 3600,
                         name: EVENT_API_PRODUCT.name,
                     },
-                    // NOT read by APIM, but no longer decorative: these are the topics the double GRANTS, and
+                    // NOT read by APIM: these are the topics the double GRANTS, and
                     // they are translated into broker ACL exceptions below. The application can publish to
                     // exactly this list and nothing else, which is what lets a scenario prove authorisation
                     // rather than just authentication. Both directions are granted on the AsyncAPI's channel.
                     permissions: permissionsFromChannels(),
                     messagingServiceConnections: [],
                 };
-                reg.accessRequests.push(ar);
+                // Commit only after broker convergence; GET must not advertise an unprovisioned grant.
                 // Provision the grant on the REAL broker before answering, for the same reason the credentials
                 // route awaits its SEMP call: a scenario that publishes as soon as the subscription returns
                 // would otherwise race the ACL write and be denied.
-                ensureAclProfile(seg[1], ar.permissions)
-                        .then(() => send(res, 201, { data: ar, meta: {} }))
+                withRegistrationLock(seg[1], async () => {
+                    const reg = ensureRegistration(seg[1], 'accessRequests');
+                    if (reg.accessRequests.some((existing) => existing.accessRequestId === ar.accessRequestId)) {
+                        return send(res, 409, { message: `access request ${ar.accessRequestId} already exists` });
+                    }
+                    const remaining = [...reg.accessRequests, ar];
+                    await reconcileRegistration(seg[1], remaining);
+                    reg.accessRequests = remaining;
+                    send(res, 201, { data: ar, meta: {} });
+                })
                         .catch((error) => {
                             log(`     ERROR provisioning access request for registration ${seg[1]}: ${error.stack || error}`);
                             send(res, 500, { message: `failed to provision access request for registration ${seg[1]}` });
                         });
                 return;
             }
-            if (m === 'GET') return send(res, 200, { data: reg.accessRequests, meta: {} });
+            if (m === 'GET') {
+                const reg = state.registrations[seg[1]];
+                return reg ? send(res, 200, { data: reg.accessRequests, meta: {} })
+                        : send(res, 404, { message: `registration ${seg[1]} not found` });
+            }
         }
 
         // ---- DELETE /appRegistrations/{id}/accessRequests/{accessRequestId} ------------------
         if (m === 'DELETE' && seg.length === 4 && seg[0] === 'appRegistrations' && seg[2] === 'accessRequests') {
-            const reg = state.registrations[seg[1]];
-            if (reg) reg.accessRequests = reg.accessRequests.filter((a) => a.accessRequestId !== seg[3]);
-            return send(res, 200, { accessRequestId: seg[3], deleted: true });
+            withRegistrationLock(seg[1], async () => {
+                const reg = state.registrations[seg[1]];
+                if (!reg || !reg.accessRequests.some((a) => a.accessRequestId === seg[3])) {
+                    return send(res, 404, { message: `access request ${seg[3]} not found` });
+                }
+                const remaining = reg.accessRequests.filter((a) => a.accessRequestId !== seg[3]);
+                await reconcileRegistration(seg[1], remaining);
+                reg.accessRequests = remaining;
+                send(res, 200, { accessRequestId: seg[3], deleted: true });
+            }).catch((error) => {
+                log(`     ERROR revoking access request ${seg[3]}: ${error.stack || error}`);
+                send(res, 500, { message: `failed to revoke access request ${seg[3]}` });
+            });
+            return;
         }
 
         // ---- debugging only; never assert against this ----------------------------------------
@@ -774,7 +808,7 @@ const server = http.createServer((req, res) => {
 configureApimOAuth()
     .then(() => {
         server.listen(PORT, () => {
-            log(`listening on http://localhost:${PORT}`);
+            log(`listening on http://localhost:${server.address().port}`);
             log(`set  [apim.solace_config]  apim_api_endpoint = "http://localhost:${PORT}"  token = "anything"`);
             log(`ids: product=${PRODUCT_ID} plan=${PLAN_ID} eventApi=${EVENT_API_ID}`);
         });

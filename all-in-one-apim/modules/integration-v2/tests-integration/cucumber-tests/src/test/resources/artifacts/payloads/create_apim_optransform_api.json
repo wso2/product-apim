@@ -16,11 +16,41 @@
     }
   },
   "description": "API with a jsonToXML request operation policy, aggregated into a product",
-  "tags": ["op-policy"],
-  "policies": ["Gold", "Bronze", "Unlimited"],
+  "tags": [
+    "op-policy"
+  ],
+  "policies": [
+    "Gold",
+    "Bronze",
+    "Unlimited"
+  ],
   "operations": [
     {
       "verb": "POST",
+      "target": "/reflect-body",
+      "authType": "Application & Application User",
+      "throttlingPolicy": "Unlimited",
+      "scopes": [],
+      "operationPolicies": {
+        "request": [
+          {
+            "policyName": "jsonToXML",
+            "policyVersion": "v1",
+            "parameters": {}
+          }
+        ],
+        "response": [],
+        "fault": [
+          {
+            "policyName": "jsonFault",
+            "policyVersion": "v1",
+            "parameters": {}
+          }
+        ]
+      }
+    },
+    {
+      "verb": "PUT",
       "target": "/reflect-body",
       "authType": "Application & Application User",
       "throttlingPolicy": "Unlimited",

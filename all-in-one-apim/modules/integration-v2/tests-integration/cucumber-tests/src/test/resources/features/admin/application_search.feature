@@ -9,58 +9,69 @@ Feature: Admin Application Search
   dimensions differ ONLY in whose application comes back, so a name-substring check cannot tell them apart.
 
   @cap:admin @feat:application-management @type:regression @legacy:ApplicationsSearchByNameOrOwnerTestCase
-  Scenario Outline: An admin can search its own applications by name and by owner as <actor>
+  Scenario Outline: An admin can search its own applications by exact or partial name and by owner as <actor>
     Given The system is ready
     And I have valid access tokens as "<actor>"
-    When I put JSON payload from file "artifacts/payloads/create_apim_test_app.json" in context as "searchAppPayload"
-    And I create an application with payload "searchAppPayload"
+    When I generate a unique alphanumeric value and store it as "searchAppStem"
+    And I put JSON payload from file "artifacts/payloads/create_apim_test_app.json" in context as "searchAppPayloadOne"
+    And I set the field "name" to "AppSearch{{searchAppStem}}One" in the payload "searchAppPayloadOne"
+    And I create an application with payload "searchAppPayloadOne"
     Then The response status code should be 201
-    And I extract response field "name" and store it as "searchAppName"
-    # Search by name.
-    When I search admin applications by name "{{searchAppName}}"
+    And I extract response field "name" and store it as "searchAppNameOne"
+    When I put JSON payload from file "artifacts/payloads/create_apim_test_app.json" in context as "searchAppPayloadTwo"
+    And I set the field "name" to "AppSearch{{searchAppStem}}Two" in the payload "searchAppPayloadTwo"
+    And I create an application with payload "searchAppPayloadTwo"
+    Then The response status code should be 201
+    And I extract response field "name" and store it as "searchAppNameTwo"
+    # Exact-name and shared-prefix searches use the same two uniquely named fixtures. The table asserts the full
+    # result set, so exact search must return one app and partial search must return both, with the right owner.
+    When I search admin applications by name "<query>"
     Then The response status code should be 200
-    And The searched applications should include "{{searchAppName}}" owned by "<actor>"
+    And The searched applications should contain exactly "<expectedNames>" owned by "<actor>"
     # Search by owner (the acting admin).
     When I search admin applications owned by actor "<actor>"
     Then The response status code should be 200
-    And The searched applications should include "{{searchAppName}}" owned by "<actor>"
+    And The searched applications should include "{{searchAppNameOne}}" owned by "<actor>"
+    And The searched applications should include "{{searchAppNameTwo}}" owned by "<actor>"
 
     Examples:
-      | actor             |
-      | admin             |
-      | admin@tenant1.com |
+      | actor             | query                         | expectedNames                               |
+      | admin             | {{searchAppNameOne}}          | {{searchAppNameOne}}                        |
+      | admin             | AppSearch{{searchAppStem}}    | {{searchAppNameOne}},{{searchAppNameTwo}}   |
+      | admin@tenant1.com  | {{searchAppNameOne}}          | {{searchAppNameOne}}                        |
+      | admin@tenant1.com  | AppSearch{{searchAppStem}}    | {{searchAppNameOne}},{{searchAppNameTwo}}   |
 
-  # The cross-owner dimension (legacy testApplicationSearchUserByName / testApplicationSearchUserByOwner, where
-  # the admin searched for the SUBSCRIBER-owned TestApp1/TestApp2): the application is created by the subscriber
-  # and the admin — a different principal — must still find it, by name and by ?user=<the subscriber>. The
-  # subscriber's own application is registered for teardown as the subscriber, so cleanup deletes it with that
-  # actor's devportal token (CLAUDE.md §5).
-  #
-  # The legacy class also expected the subscriber's auto-created DefaultApplication in the owner search, and that
-  # expectation holds here — verified live on 4.7.0: the owner search returns exactly two applications, the one
-  # created above and DefaultApplication, both under the subscriber. (The subscriber never logs into the portal;
-  # creating the application through the devportal is what materialises the subscriber and its DefaultApplication.)
-  # It is asserted ONLY in the owner search, which is where legacy expected it: the name search is filtered by our
-  # unique application name, so DefaultApplication legitimately does not come back there.
+  # The cross-owner dimension: a different admin must find both apps created by the subscriber, using either an
+  # exact name or their shared partial prefix, and owner search must continue to find them under that subscriber.
   @cap:admin @feat:application-management @rule:cross-owner @type:regression @dep:devportal @legacy:ApplicationsSearchByNameOrOwnerTestCase
-  Scenario Outline: An admin can search another user's applications by name and by owner as <actor>
+  Scenario Outline: An admin can search another user's applications by exact or partial name and by owner as <actor>
     Given The system is ready and I have valid devportal access token as "<appOwner>"
-    When I put JSON payload from file "artifacts/payloads/create_apim_test_app.json" in context as "otherAppPayload"
-    And I create an application with payload "otherAppPayload"
+    When I generate a unique alphanumeric value and store it as "otherAppStem"
+    And I put JSON payload from file "artifacts/payloads/create_apim_test_app.json" in context as "otherAppPayloadOne"
+    And I set the field "name" to "AppSearch{{otherAppStem}}One" in the payload "otherAppPayloadOne"
+    And I create an application with payload "otherAppPayloadOne"
     Then The response status code should be 201
-    And I extract response field "name" and store it as "otherAppName"
+    And I extract response field "name" and store it as "otherAppNameOne"
+    When I put JSON payload from file "artifacts/payloads/create_apim_test_app.json" in context as "otherAppPayloadTwo"
+    And I set the field "name" to "AppSearch{{otherAppStem}}Two" in the payload "otherAppPayloadTwo"
+    And I create an application with payload "otherAppPayloadTwo"
+    Then The response status code should be 201
+    And I extract response field "name" and store it as "otherAppNameTwo"
 
-    # Switch to the admin — a DIFFERENT principal from the application's owner — and search.
+    # Switch to the admin — a DIFFERENT principal from the application's owner — and verify exact and partial search.
     Given I have valid access tokens as "<actor>"
-    When I search admin applications by name "{{otherAppName}}"
+    When I search admin applications by name "<query>"
     Then The response status code should be 200
-    And The searched applications should include "{{otherAppName}}" owned by "<appOwner>"
+    And The searched applications should contain exactly "<expectedNames>" owned by "<appOwner>"
     When I search admin applications owned by actor "<appOwner>"
     Then The response status code should be 200
-    And The searched applications should include "{{otherAppName}}" owned by "<appOwner>"
+    And The searched applications should include "{{otherAppNameOne}}" owned by "<appOwner>"
+    And The searched applications should include "{{otherAppNameTwo}}" owned by "<appOwner>"
     And The searched applications should include "DefaultApplication" owned by "<appOwner>"
 
     Examples:
-      | actor             | appOwner                   |
-      | admin             | subscriberUser             |
-      | admin@tenant1.com | subscriberUser@tenant1.com |
+      | actor             | appOwner                   | query                        | expectedNames                             |
+      | admin             | subscriberUser             | {{otherAppNameOne}}          | {{otherAppNameOne}}                       |
+      | admin             | subscriberUser             | AppSearch{{otherAppStem}}    | {{otherAppNameOne}},{{otherAppNameTwo}}   |
+      | admin@tenant1.com  | subscriberUser@tenant1.com | {{otherAppNameOne}}          | {{otherAppNameOne}}                       |
+      | admin@tenant1.com  | subscriberUser@tenant1.com | AppSearch{{otherAppStem}}    | {{otherAppNameOne}},{{otherAppNameTwo}}   |

@@ -21,7 +21,10 @@ import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import org.apache.commons.io.IOUtils;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
+import org.skyscreamer.jsonassert.JSONAssert;
+import org.skyscreamer.jsonassert.JSONCompareMode;
 import org.testng.Assert;
 import org.wso2.am.integration.cucumbertests.utils.Identity;
 import org.wso2.am.integration.cucumbertests.utils.Requests;
@@ -37,6 +40,8 @@ import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -46,12 +51,54 @@ import java.util.Map;
  */
 public class AiApiSteps {
 
+    /**
+     * Confirms a model-selection response matches the complete pinned response document, allowing only its model
+     * field to be one of the explicitly configured choices. This preserves strict response-shape/content checking
+     * without assuming which choice wins when one invocation can legitimately select among several models.
+     */
+    @Then("The response body should equal the JSON file {string} with model set to one of {string}")
+    public void theResponseBodyShouldEqualJsonFileWithModelOneOf(String jsonFilePath, String allowedModels)
+            throws Exception {
+
+        HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
+        Assert.assertTrue(response != null && response.getResponseCode() >= 200 && response.getResponseCode() < 300
+                        && response.getData() != null && !response.getData().isBlank(),
+                "Expected a successful response with a body for model-selection comparison, but got: "
+                        + (response == null ? "null" : response.getResponseCode() + " / " + response.getData()));
+
+        JSONObject actual = new JSONObject(response.getData());
+        JSONObject expected = new JSONObject(readClasspath(jsonFilePath));
+        String actualModel = actual.optString("model", null);
+        List<String> acceptedModels = Arrays.stream(allowedModels.split(",")).map(String::trim).toList();
+        Assert.assertTrue(acceptedModels.contains(actualModel),
+                "Model-selection response used unexpected model '" + actualModel + "'; expected one of "
+                        + acceptedModels + ". Body: " + response.getData());
+        expected.put("model", actualModel);
+        try {
+            JSONAssert.assertEquals(expected.toString(), actual.toString(), JSONCompareMode.STRICT);
+        } catch (JSONException e) {
+            throw new AssertionError("Model-selection response was not valid JSON: " + response.getData(), e);
+        }
+    }
+
     /** Admin — GET /ai-service-providers (lists predefined + custom providers). Stores the response. */
     @When("I retrieve the AI service providers")
     public void iRetrieveAiServiceProviders() throws Exception {
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.adminToken());
         HttpResponse response = Requests.get(Utils.getAIServiceProvidersURL(Utils.getBaseUrl()), headers);
+    }
+
+    /**
+     * Publisher — GET /ai-service-providers. Lists the AI service providers of the acting actor's organization with
+     * the Publisher token ({@code apim:llm_provider_read}, granted to the creator and publisher roles), which is how
+     * an API creator looks up a provider's id. Stores the response.
+     */
+    @When("I retrieve the AI service providers from the publisher")
+    public void iRetrieveAiServiceProvidersFromPublisher() throws Exception {
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.publisherToken());
+        Requests.get(Utils.getPublisherAIServiceProvidersURL(Utils.getBaseUrl()), headers);
     }
 
     /**
@@ -300,6 +347,56 @@ public class AiApiSteps {
     }
 
     /**
+     * Asserts the AI service provider an AIAPI-subtype API is bound to, read from the captured Publisher API
+     * response: the stored {@code llmProviderId} must be EXACTLY the expected provider's id, together with its
+     * {@code llmProviderName} and {@code llmProviderApiVersion}. The id is the binding the product persists, so
+     * this is what proves which provider a reference resolved to — e.g. that an API created with another
+     * environment's id but a valid name and version is bound to the LOCAL provider, not to the id it was sent.
+     *
+     * <p>The Publisher returns {@code subtypeConfiguration.configuration} as a serialized JSON string rather than
+     * a nested object, so a JsonPath field assertion cannot reach the provider fields; an object is accepted too
+     * so the step does not depend on that serialization choice.</p>
+     *
+     * @param name       the expected provider name (e.g. {@code OpenAI})
+     * @param apiVersion the expected provider apiVersion (e.g. {@code 2.0.0})
+     * @param idKey      context key holding the expected provider id
+     */
+    @Then("The AI API in the response should be bound to AI service provider {string} version {string} with id {string}")
+    public void aiApiShouldBeBoundToAiServiceProvider(String name, String apiVersion, String idKey) {
+
+        String expectedId = TestContext.resolve(idKey).toString();
+        HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
+        Assert.assertTrue(response != null && response.getResponseCode() == 200
+                        && response.getData() != null && !response.getData().isBlank(),
+                "Expected a 200 API response with a body, got: "
+                        + (response == null ? "no response" : response.getResponseCode() + " / " + response.getData()));
+
+        JSONObject subtypeConfiguration = new JSONObject(response.getData()).optJSONObject("subtypeConfiguration");
+        Assert.assertNotNull(subtypeConfiguration, "API carries no subtypeConfiguration: " + response.getData());
+        Assert.assertEquals(subtypeConfiguration.optString("subtype"), "AIAPI",
+                "API is not an AIAPI-subtype API: " + subtypeConfiguration);
+        Object configuration = subtypeConfiguration.opt("configuration");
+        JSONObject aiConfiguration = null;
+        try {
+            if (configuration instanceof JSONObject) {
+                aiConfiguration = (JSONObject) configuration;
+            } else if (configuration instanceof String) {
+                aiConfiguration = new JSONObject((String) configuration);
+            }
+        } catch (JSONException e) {
+            Assert.fail("AI configuration is not a JSON object: " + configuration, e);
+        }
+        Assert.assertNotNull(aiConfiguration, "AIAPI-subtype API carries no AI configuration: " + subtypeConfiguration);
+
+        Assert.assertEquals(aiConfiguration.optString("llmProviderId"), expectedId,
+                "AI API is bound to the wrong LLM provider id: " + aiConfiguration);
+        Assert.assertEquals(aiConfiguration.optString("llmProviderName"), name,
+                "AI API is bound to the wrong LLM provider name: " + aiConfiguration);
+        Assert.assertEquals(aiConfiguration.optString("llmProviderApiVersion"), apiVersion,
+                "AI API is bound to the wrong LLM provider apiVersion: " + aiConfiguration);
+    }
+
+    /**
      * Publisher — GET /ai-service-providers/{id}/api-definition. Retrieves the provider's OWN OpenAPI definition
      * and publishes it as the response under test, so the feature asserts the 200 and then imports the retrieved
      * body verbatim (see the {@code import openapi definition captured as} step). Ports the
@@ -324,8 +421,8 @@ public class AiApiSteps {
     public void iRetrieveAiServiceProviderModels(String idKey) throws Exception {
         Object id = TestContext.resolve(idKey);
         Map<String, String> headers = new HashMap<>();
-        // The publisher models endpoint requires apim:llm_provider_read — carried by the admin token (llm provider
-        // scopes are admin-oriented; the publisher token's role does not grant them).
+        // The publisher models endpoint requires apim:llm_provider_read, which both the admin and the publisher
+        // token request; this step uses the admin token.
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + Identity.adminToken());
         HttpResponse response = Requests.get(Utils.getAIServiceProviderModelsURL(Utils.getBaseUrl(), id.toString()),
                 headers);
@@ -411,8 +508,9 @@ public class AiApiSteps {
                 .put("fault", new JSONArray());
         api.put("apiPolicies", apiPolicies);
 
-        HttpResponse putResp = Requests.put(Utils.getResourceEndpointURL(Utils.getBaseUrl(), "apis", actualApiId), headers,
-                api.toString(), Constants.CONTENT_TYPES.APPLICATION_JSON);
+        HttpResponse putResp = Requests.put(Utils.getResourceEndpointURL(Utils.getBaseUrl(), "apis", actualApiId),
+                headers, api.toString(), Constants.CONTENT_TYPES.APPLICATION_JSON);
+        TestContext.set("httpResponse", putResp);
     }
 
     /**

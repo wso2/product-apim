@@ -21,7 +21,7 @@ import io.cucumber.testng.CucumberOptions;
 
 /**
  * Runner for gateway-plane CORS handling (the port of CORSAccessControlAllowCredentialsHeaderTestCase). Runs in
- * the backend-enabled IntegrationV2-Gateway block; the per-scenario cleanup hook tears down the API/app.
+ * a backend-enabled IntegrationV2-Gateway-* block; the per-scenario cleanup hook tears down the API/app.
  */
 @CucumberOptions(
         features = {

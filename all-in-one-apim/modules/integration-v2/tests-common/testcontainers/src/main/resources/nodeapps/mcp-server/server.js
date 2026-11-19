@@ -17,8 +17,8 @@
 
 // A REAL mock MCP server built on the official @modelcontextprotocol/sdk (Streamable HTTP transport). It backs
 // the gateway MCP-server PROXY-mode invocation tests (MCPServerTestCase): the APIM gateway proxies a client's
-// MCP JSON-RPC (initialize / tools/list / tools/call) to this server. Exposes three real tools (echo, add,
-// get_pets) with actual dispatch — more faithful than the legacy WireMock canned stubs.
+// MCP JSON-RPC (initialize / tools/list / tools/call) to this server. Exposes real tools (echo, add, get_pets,
+// orderPizza) with actual dispatch — more faithful than the legacy WireMock canned stubs.
 const express = require('express');
 const { randomUUID } = require('crypto');
 const { Server } = require('@modelcontextprotocol/sdk/server/index.js');
@@ -31,19 +31,36 @@ const port = process.env.PORT || 3020;
 app.use(express.json());
 
 // Uses the SDK's LOW-LEVEL Server (McpServer is a thin wrapper over it) so the tools/list wire shape is exactly
-// what we return — a CLEAN inputSchema (no $schema / additionalProperties) and NO `execution` field. McpServer's
-// registerTool auto-injects those (newer MCP spec), which APIM 4.7.0's MCP feature-generator cannot map to URI
-// templates ("no URI templates were produced" → 500). Matching the legacy tool shape keeps the gateway happy.
+// what we return and no SDK-only `execution` field is injected. Most schemas stay draft-agnostic because the
+// APIM 4.7.0 feature generator cannot map SDK-generated schema extensions to URI templates. The echo tool
+// deliberately retains the Draft-07/additionalProperties fields from the legacy proxy regression contract.
 function buildServer() {
   const server = new Server({ name: 'wso2-mock-mcp', version: '1.0.0' }, { capabilities: { tools: {} } });
   server.setRequestHandler(ListToolsRequestSchema, async () => ({
     tools: [
       { name: 'echo', description: 'Echoes the provided message',
-        inputSchema: { type: 'object', properties: { message: { type: 'string' } }, required: ['message'] } },
+        inputSchema: { $schema: 'http://json-schema.org/draft-07/schema#', additionalProperties: false,
+          type: 'object', properties: {
+          message: { type: 'string', description: 'Message to echo' }
+        }, required: ['message'] } },
       { name: 'add', description: 'Adds two numbers',
         inputSchema: { type: 'object', properties: { a: { type: 'number' }, b: { type: 'number' } }, required: ['a', 'b'] } },
+      // Matches the legacy third-party proxy fixture's initially selected viewPizzaMenu tool.
+      { name: 'viewPizzaMenu', description: 'View the pizza menu. This tool provides a list of available pizzas.',
+        inputSchema: { type: 'object', properties: {}, required: [] } },
       { name: 'get_pets', description: 'Returns the list of pets',
         inputSchema: { type: 'object', properties: {}, required: [] } },
+      // Kept for the legacy proxy-tool-update parity case: the publisher adds this discovered tool while
+      // changing the existing echo description. Its schema stays draft-agnostic so the feature generator can map
+      // it to URI templates.
+      { name: 'orderPizza', description: 'Order a pizza from the menu. This tool allows you to place an order for a pizza.',
+        inputSchema: { type: 'object', properties: {
+          pizzaType: { type: 'string' },
+          quantity: { type: 'integer', minimum: 1 },
+          customerName: { type: 'string' },
+          deliveryAddress: { type: 'string' },
+          creditCardNumber: { type: 'string' }
+        }, required: ['pizzaType', 'quantity', 'customerName', 'deliveryAddress', 'creditCardNumber'] } },
       // A tool that carries metadata BEYOND name/description/inputSchema (annotations, _meta, outputSchema,
       // title): when APIM proxies this server, every one of these extra fields must survive into the gateway
       // tools/list response.
@@ -65,8 +82,14 @@ function buildServer() {
     if (name === 'add') {
       return { content: [{ type: 'text', text: String(args.a + args.b) }] };
     }
+    if (name === 'viewPizzaMenu') {
+      return { content: [{ type: 'text', text: 'Available pizzas: Margherita, Pepperoni' }] };
+    }
     if (name === 'get_pets') {
       return { content: [{ type: 'text', text: JSON.stringify([{ id: 1, name: 'max' }]) }] };
+    }
+    if (name === 'orderPizza') {
+      return { content: [{ type: 'text', text: 'Order placed for ' + String(args.quantity) + ' ' + String(args.pizzaType) } ] };
     }
     if (name === 'get_weather') {
       return { content: [{ type: 'text', text: JSON.stringify({ tempC: 21 }) }] };

@@ -41,33 +41,36 @@ import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.JSONCompareMode;
 import org.testng.Assert;
 import org.wso2.am.integration.test.utils.Constants;
+import org.wso2.am.testcontainers.DynamicApimContainer;
+import org.wso2.am.testcontainers.J2TemplateOverlay;
 import org.wso2.am.testcontainers.NodeAppServer;
 import org.wso2.carbon.automation.engine.context.beans.Tenant;
 import org.wso2.carbon.automation.engine.context.beans.User;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import java.io.*;
+import java.net.URI;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Base64;
-import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.UnaryOperator;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
 public class Utils {
     
     private static final Log log = LogFactory.getLog(Utils.class);
+    private static final ThreadLocal<Boolean> IN_RETRY_ATTEMPT = ThreadLocal.withInitial(() -> false);
     private static final ObjectMapper mapper = new ObjectMapper();
     private static final Pattern UNIQUE_PLACEHOLDER = Pattern.compile("\\$\\{UNIQUE:([^}]+)\\}");
 
@@ -79,6 +82,11 @@ public class Utils {
     /** The block's gateway HTTPS base URL from the shared context; throws if the block has not booted yet. */
     public static String getBaseGatewayUrl() {
         return requiredContextUrl("baseGatewayUrl");
+    }
+
+    /** The block's gateway HTTP base URL, used only by parity scenarios whose legacy contract is HTTP-specific. */
+    public static String getBaseGatewayHttpUrl() {
+        return requiredContextUrl("baseGatewayHttpUrl");
     }
 
     /** The block's gateway {@code ws://} base URL from the shared context; throws if not booted yet. */
@@ -113,6 +121,27 @@ public class Utils {
      */
     public static String getNodeBackendUrl(int containerPort) {
         return NodeAppServer.getInstance().getBaseUrl(containerPort);
+    }
+
+    /**
+     * Rewrites a host-published URL for a container that reaches the Docker host. Testcontainers may report
+     * {@code localhost} (or a loopback address) for a published port; that address is valid from the test JVM but
+     * points back to the calling container when used by a containerized product component.
+     */
+    public static String containerReachable(String url) {
+        URI uri = URI.create(url);
+        String host = uri.getHost();
+        boolean loopback = host == null || host.isBlank() || "localhost".equalsIgnoreCase(host)
+                || host.startsWith("127.");
+        if (!loopback) {
+            return url;
+        }
+        try {
+            return new URI(uri.getScheme(), uri.getUserInfo(), "host.docker.internal", uri.getPort(),
+                    uri.getPath(), uri.getQuery(), uri.getFragment()).toString();
+        } catch (java.net.URISyntaxException e) {
+            throw new IllegalArgumentException("Unable to make URL container-reachable: " + url, e);
+        }
     }
 
     private static String requiredContextUrl(String key) {
@@ -168,12 +197,17 @@ public class Utils {
      */
     private static <T> T pollWithin(long pollStart, long deadline, PollAttempt<T> attempt)
             throws InterruptedException {
+        return pollWithin(pollStart, deadline, attempt, Constants.RETRY_INTERVAL_TIME);
+    }
+
+    private static <T> T pollWithin(long pollStart, long deadline, PollAttempt<T> attempt, long pollIntervalMillis)
+            throws InterruptedException {
         while (System.currentTimeMillis() < deadline) {
             T outcome = attempt.attempt();
             if (outcome != null) {
                 return outcome;
             }
-            pollPause(pollStart, Constants.RETRY_INTERVAL_TIME);
+            pollPause(pollStart, pollIntervalMillis);
         }
         return null;
     }
@@ -211,22 +245,68 @@ public class Utils {
      */
     public static <T> T retryUntil(long timeoutMillis, RetryAttempt<T> attempt, RetryAccept<T> accept)
             throws InterruptedException {
+        return retryUntil(timeoutMillis, Constants.RETRY_INTERVAL_TIME, true, attempt, accept);
+    }
+
+    /**
+     * Same retry contract as {@link #retryUntil(long, RetryAttempt, RetryAccept)}, with an explicit poll interval
+     * and an exact timeout. This is for short, test-specific temporal preconditions; normal product readiness
+     * polling must continue to use the shared propagation-timeout floor of the three-argument overload.
+     */
+    public static <T> T retryUntilWithInterval(long timeoutMillis, long pollIntervalMillis, RetryAttempt<T> attempt,
+                                               RetryAccept<T> accept) throws InterruptedException {
+        return retryUntil(timeoutMillis, pollIntervalMillis, false, attempt, accept);
+    }
+
+    /**
+     * True while the current thread is running one {@link #retryUntil} attempt. Lets a request funnel bound a
+     * stalled call so it fails as a retriable {@link IOException} instead of consuming the whole window.
+     */
+    public static boolean inRetryAttempt() {
+        return IN_RETRY_ATTEMPT.get();
+    }
+
+    private static <T> T retryUntil(long timeoutMillis, long pollIntervalMillis, boolean applyPropagationFloor,
+                                    RetryAttempt<T> attempt, RetryAccept<T> accept) throws InterruptedException {
         long pollStart = System.currentTimeMillis();
-        long deadline = pollStart + Math.max(timeoutMillis, Constants.RUNTIME_PROPAGATION_TIMEOUT);
+        long deadline = pollStart + (applyPropagationFloor
+                ? Math.max(timeoutMillis, Constants.RUNTIME_PROPAGATION_TIMEOUT) : timeoutMillis);
         AtomicReference<T> lastResult = new AtomicReference<>();
+        AtomicReference<String> lastTransportError = new AtomicReference<>();
         T accepted = pollWithin(pollStart, deadline, () -> {
+            boolean enclosing = IN_RETRY_ATTEMPT.get();
+            IN_RETRY_ATTEMPT.set(true);
             try {
                 T result = attempt.attempt();
                 lastResult.set(result);
+                lastTransportError.set(null);
                 return accept.isAcceptable(result) ? result : null;
             } catch (IOException transientDuringWarmup) {
                 // Only transient connectivity is retried: a gateway still warming up refuses/severs the
                 // connection. Anything else (e.g. IllegalArgumentException from TestContext.resolve on a
                 // typo'd key) escapes to fail fast instead of being reported as a timeout.
+                String description = describeCauseChain(transientDuringWarmup);
+                if (!description.equals(lastTransportError.getAndSet(description))) {
+                    log.info("Retried attempt threw after " + (System.currentTimeMillis() - pollStart)
+                            + "ms of a " + (deadline - pollStart) + "ms window: " + description);
+                }
                 return null;
+            } finally {
+                IN_RETRY_ATTEMPT.set(enclosing);
             }
-        });
+        }, pollIntervalMillis);
         return accepted != null ? accepted : lastResult.get();
+    }
+
+    private static String describeCauseChain(Throwable throwable) {
+        StringBuilder description = new StringBuilder();
+        for (Throwable cause = throwable; cause != null; cause = cause.getCause()) {
+            if (description.length() > 0) {
+                description.append(" <- ");
+            }
+            description.append(cause.getClass().getSimpleName()).append(": ").append(cause.getMessage());
+        }
+        return description.toString();
     }
 
     /** One sample for {@link #awaitSettledCount}: reads the counter under test. Only {@link IOException} is retried. */
@@ -297,24 +377,19 @@ public class Utils {
     }
 
     /**
-     * Emits THE single grep-able diagnostic ({@code "auth-reject:"}) for an auth rejection observed inside a
-     * {@link #retryUntil} loop that did NOT expect one, and returns the same text for the caller's assertion
-     * message. Exists because this failure mode is otherwise near-undiagnosable from CI: the gateway logs only
-     * a masked {@code Invalid JWT token}, while the step reports a generic status mismatch after burning the
-     * whole window — the two are hard to correlate across parallel blocks, which cost one full investigation.
+     * Emits the terminal grep-able diagnostic ({@code "auth-reject:"}) when polling for a different status
+     * ends on an unexpected authentication rejection. Individual unexpected 401 responses are logged by
+     * {@link #logUnexpectedAuthRejectionAttempt} as they occur, including transient responses before recovery.
      *
      * <p>Logs the token's {@code jti} deliberately: the gateway's revoked-JWT map and invalid-token cache are
-     * BOTH keyed by it, so a jti here can be matched straight against a gateway {@code
-     * RevokedJWTDataHolder}/invalid-token-cache hit. A token rejected on EVERY attempt is almost never a
-     * propagation delay — both those caches outlive any window we wait (revocation until the token's own
-     * expiry, the invalid-token cache 900s by default), so replaying one can NEVER recover, and re-minting on
-     * rejection would only mask it: a freshly issued token must not be rejected intermittently.
+     * both keyed by it, so a jti can be correlated with a gateway cache hit. This method summarizes the final
+     * response; it does not imply that every earlier retry had the same result.
      */
     public static String logAuthRejection(String what, String tokenContextKey, String token, int statusCode,
                                           String responseBody, long elapsedMillis) {
         StringBuilder detail = new StringBuilder("auth-reject: ").append(what)
-                .append(" was rejected with status ").append(statusCode)
-                .append(" on every attempt over ").append(elapsedMillis / 1000).append("s");
+                .append(" ended with status ").append(statusCode)
+                .append(" after ").append(elapsedMillis / 1000).append("s of retries");
         if (tokenContextKey != null) {
             detail.append("; credential context key='").append(tokenContextKey).append('\'');
         }
@@ -329,6 +404,24 @@ public class Utils {
         String message = detail.toString();
         log.warn(message);
         return message;
+    }
+
+    /** Logs an individual unexpected 401 observed while polling for a different expected invocation status. */
+    public static void logUnexpectedAuthRejectionAttempt(String what, String tokenContextKey, String token,
+                                                         String responseBody, int attemptNumber,
+                                                         long elapsedMillis) {
+        StringBuilder detail = new StringBuilder("auth-reject-attempt: ").append(what)
+                .append(" returned unexpected status 401 on response attempt #").append(attemptNumber)
+                .append(" after ").append(elapsedMillis).append("ms");
+        if (tokenContextKey != null) {
+            detail.append("; credential context key='").append(tokenContextKey).append('\'');
+        }
+        detail.append("; ").append(describeCredential(token));
+        String body = responseBody == null ? "" : responseBody.trim();
+        if (!body.isBlank()) {
+            detail.append("; gateway said ").append(body.length() > 300 ? body.substring(0, 300) + "..." : body);
+        }
+        log.warn(detail.toString());
     }
 
     /**
@@ -542,6 +635,16 @@ public class Utils {
                 + "&tenantDomain=" + URLEncoder.encode(tenantDomain, StandardCharsets.UTF_8);
     }
 
+    /** Gateway management URL, distinct from the data-plane invocation URL in a distributed runtime. */
+    public static String getBaseGatewayManagementUrl() {
+        return requiredContextUrl("baseGatewayManagementUrl");
+    }
+
+    /** Traffic Manager management URL, distinct from the Gateway management URL in distributed topology. */
+    public static String getBaseTrafficManagerManagementUrl() {
+        return requiredContextUrl("baseTrafficManagerManagementUrl");
+    }
+
     /** Publisher — endpoint-certificate collection: {@code /endpoint-certificates} (POST multipart upload). */
     public static String getEndpointCertificatesURL(String baseUrl) {
         return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "endpoint-certificates";
@@ -683,6 +786,26 @@ public class Utils {
     }
 
     public static String getAPISearchEndpointURL(String baseUrl, String query, Integer limit, Integer offset) {
+        return getAPISearchEndpointURL(baseUrl, query, limit, offset, null);
+    }
+
+    /**
+     * Builds a publisher API listing URL, optionally opting in to the additional properties of each entry.
+     *
+     * <p>{@code expandProperties} is the listing's opt-in for {@code additionalProperties} /
+     * {@code additionalPropertiesMap}: omitted or {@code false} the listing returns both empty, {@code true}
+     * populates them. Passing {@code null} leaves the parameter off the URL entirely, which is the distinct
+     * "caller did not ask" case and is NOT the same request as an explicit {@code false}.
+     *
+     * @param baseUrl          the server base URL
+     * @param query            search condition, or null for an unfiltered listing
+     * @param limit            page size, or null for the server default
+     * @param offset           page offset, or null for the server default
+     * @param expandProperties true/false to send the parameter explicitly, null to omit it
+     * @return the assembled listing URL
+     */
+    public static String getAPISearchEndpointURL(String baseUrl, String query, Integer limit, Integer offset,
+                                                 Boolean expandProperties) {
 
         StringBuilder urlBuilder = new StringBuilder(baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "apis/");
 
@@ -695,6 +818,9 @@ public class Utils {
         }
         if (offset != null) {
             params.add("offset=" + offset);
+        }
+        if (expandProperties != null) {
+            params.add("expandProperties=" + expandProperties);
         }
 
         if (!params.isEmpty()) {
@@ -854,6 +980,11 @@ public class Utils {
         return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "apis/" + apiId + "/lifecycle-state";
     }
 
+    /** Publisher — retrieve the authoritative lifecycle state of an API product (GET). */
+    public static String getAPIProductLifecycleStateURL(String baseUrl, String apiProductId) {
+        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "api-products/" + apiProductId + "/lifecycle-state";
+    }
+
     /** Publisher — the lifecycle audit-trail / state-transition history of an API (GET). */
     public static String getAPILifecycleHistoryURL(String baseUrl, String apiId) {
         return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "apis/" + apiId + "/lifecycle-history";
@@ -962,6 +1093,12 @@ public class Utils {
     /** DevPortal — an API's OpenAPI definition: {@code /apis/{apiId}/swagger} (GET). Visibility-gated. */
     public static String getDevportalApiSwaggerURL(String baseUrl, String apiId) {
         return baseUrl + Constants.DEFAULT_DEVPORTAL + "apis/" + apiId + "/swagger";
+    }
+
+    /** DevPortal Swagger for a named gateway environment: {@code /apis/{apiId}/swagger?environmentName=...}. */
+    public static String getDevportalApiSwaggerURL(String baseUrl, String apiId, String environmentName) {
+        return getDevportalApiSwaggerURL(baseUrl, apiId) + "?environmentName="
+                + java.net.URLEncoder.encode(environmentName, java.nio.charset.StandardCharsets.UTF_8);
     }
 
     public static String getApiDocumentsURL(String baseUrl, String resourceId) {
@@ -1371,14 +1508,58 @@ public class Utils {
 
     /** Publisher REST API — export an API as an archive (GET, returns a zip). */
     public static String getApiExportURL(String baseUrl, String apiId, String format) {
-        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "apis/export?apiId="
-                + URLEncoder.encode(apiId, StandardCharsets.UTF_8) + "&format="
+        return getResourceExportURL(baseUrl, "apis", apiId, format);
+    }
+
+    /** Publisher REST — export an API or MCP server using its resource-specific identifier parameter. */
+    public static String getResourceExportURL(String baseUrl, String resourceType, String id, String format) {
+        String idParameter = switch (resourceType) {
+            case "apis" -> "apiId";
+            case "mcp-servers" -> "mcpServerId";
+            default -> throw new IllegalArgumentException("Unsupported export resource: " + resourceType);
+        };
+        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + resourceType + "/export?" + idParameter + "="
+                + URLEncoder.encode(id, StandardCharsets.UTF_8) + "&format="
                 + URLEncoder.encode(format, StandardCharsets.UTF_8);
     }
 
     /** Publisher REST API — import an API archive (POST multipart with the zip as the "file" part). */
     public static String getApiArchiveImportURL(String baseUrl) {
         return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "apis/import";
+    }
+
+    /**
+     * Publisher REST API — export an API product as an archive, addressed by name/version/provider (GET, returns a
+     * zip). Products have no export-by-id form.
+     */
+    public static String getApiProductExportURL(String baseUrl, String name, String version, String provider,
+                                                String format) {
+        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "api-products/export?name="
+                + URLEncoder.encode(name, StandardCharsets.UTF_8) + "&version="
+                + URLEncoder.encode(version, StandardCharsets.UTF_8) + "&providerName="
+                + URLEncoder.encode(provider, StandardCharsets.UTF_8) + "&format="
+                + URLEncoder.encode(format, StandardCharsets.UTF_8);
+    }
+
+    /**
+     * Publisher REST API — import an API product archive (POST multipart, the zip as the "file" part). The
+     * archive's provider is kept and its dependent APIs are neither imported nor updated, so only the product
+     * itself is under test.
+     */
+    public static String getApiProductImportURL(String baseUrl, boolean overwriteAPIProduct) {
+        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "api-products/import?preserveProvider=true"
+                + "&importAPIs=false&overwriteAPIs=false&overwriteAPIProduct=" + overwriteAPIProduct;
+    }
+
+    /**
+     * Gateway internal REST API — the in-memory API info the gateway holds for a deployed API or API product
+     * ({@code api/am/gateway/v2/apis/{apiId}?tenantDomain=}, Basic admin auth): its context, API-level policy and
+     * the per-resource {@code urlMappings} (auth scheme, rate limit, scopes) the gateway enforces. 404 once the
+     * gateway holds nothing for the id.
+     */
+    public static String getGatewayApiInfoURL(String baseUrl, String apiId, String tenantDomain) {
+        return baseUrl + Constants.GATEWAY + "apis/" + URLEncoder.encode(apiId, StandardCharsets.UTF_8)
+                + "?tenantDomain=" + URLEncoder.encode(tenantDomain, StandardCharsets.UTF_8);
     }
 
     /** Publisher REST API — upload a custom Synapse sequence backend for an API (PUT multipart: sequence + type). */
@@ -1483,6 +1664,11 @@ public class Utils {
         return baseUrl + Constants.DEFAULT_APIM_ADMIN + "ai-service-providers";
     }
 
+    /** Publisher REST API — AI service providers of the caller's organization (list). */
+    public static String getPublisherAIServiceProvidersURL(String baseUrl) {
+        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "ai-service-providers";
+    }
+
     /** Admin REST API — a single AI service provider by id (get/update/delete). */
     public static String getAIServiceProviderByIdURL(String baseUrl, String providerId) {
         return baseUrl + Constants.DEFAULT_APIM_ADMIN + "ai-service-providers/" + providerId;
@@ -1560,6 +1746,14 @@ public class Utils {
     /** Admin REST API — a single gateway environment by id (get/update/delete). */
     public static String getEnvironmentByIdURL(String baseUrl, String environmentId) {
         return baseUrl + Constants.DEFAULT_APIM_ADMIN + "environments/" + environmentId;
+    }
+
+    public static String getPlatformGatewaysURL(String baseUrl) {
+        return baseUrl + Constants.DEFAULT_APIM_ADMIN + "gateways";
+    }
+
+    public static String getPlatformGatewayByIdURL(String baseUrl, String gatewayId) {
+        return baseUrl + Constants.DEFAULT_APIM_ADMIN + "gateways/" + gatewayId;
     }
 
     /** Admin REST API — the gateway instances of an environment. */
@@ -1694,6 +1888,11 @@ public class Utils {
     /** Publisher REST API — AsyncAPI definition import (multipart {@code file} + {@code additionalProperties}). */
     public static String getImportAsyncApiURL(String baseUrl) {
         return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "apis/import-asyncapi";
+    }
+
+    /** Publisher REST API — AsyncAPI definition validation (multipart file / url). */
+    public static String getValidateAsyncApiURL(String baseUrl) {
+        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "apis/validate-asyncapi";
     }
 
     /** Publisher REST API — OpenAPI definition validation (multipart file / url). */
@@ -1977,6 +2176,82 @@ public class Utils {
     }
 
     /**
+     * Applies template overlays to a product configuration template, in order: the template counterpart of
+     * {@link #mergeTomls}. Each overlay sets leaf values at element paths; see {@link J2TemplateOverlay} for the
+     * format and its exactly-one-match rule.
+     *
+     * @param baseTemplatePath path to the product template
+     * @param overlayPaths     ordered paths to template overlays
+     * @return the template with every overlay applied
+     */
+    public static String mergeJ2(String baseTemplatePath, List<String> overlayPaths) throws IOException {
+        String merged = Files.readString(java.nio.file.Paths.get(baseTemplatePath));
+        for (String overlayPath : overlayPaths) {
+            try {
+                merged = J2TemplateOverlay.merge(merged, Files.readString(java.nio.file.Paths.get(overlayPath)));
+            } catch (IllegalArgumentException e) {
+                throw new IllegalArgumentException(overlayPath + " cannot be applied to " + baseTemplatePath + ": "
+                        + e.getMessage(), e);
+            }
+        }
+        return merged;
+    }
+
+    /**
+     * Produces the default-lane template overlays, the template counterpart of {@link #resolveDefaultToml}: every
+     * {@code .j2} file under {@code basic/templates} merged onto the product distribution template at the same
+     * relative path. Anything that constructs a {@code DynamicApimContainer} applies these through
+     * {@link #applyDefaultTemplates} so it boots the same configuration as the parallel block lane.
+     *
+     * @param moduleDir the integration-v2 cucumber-tests module directory
+     * @return merged template content keyed by its path relative to {@code repository/resources/conf/templates}
+     */
+    public static Map<String, String> resolveDefaultTemplates(String moduleDir) throws IOException {
+        java.nio.file.Path overlays = java.nio.file.Paths.get(moduleDir, Constants.DEFAULT_TEMPLATE_OVERLAYS_PATH)
+                .normalize();
+        java.nio.file.Path templates = java.nio.file.Paths.get(moduleDir, Constants.DISTRIBUTION_TEMPLATES_PATH)
+                .normalize();
+        if (!Files.isDirectory(overlays)) {
+            throw new IllegalStateException("Template overlay directory not found: " + overlays);
+        }
+        Map<String, String> merged = new TreeMap<>();
+        List<java.nio.file.Path> overlayFiles;
+        try (Stream<java.nio.file.Path> files = Files.walk(overlays)) {
+            overlayFiles = files.filter(Files::isRegularFile)
+                    .filter(path -> path.getFileName().toString().endsWith(".j2"))
+                    .sorted()
+                    .collect(Collectors.toList());
+        }
+        for (java.nio.file.Path overlay : overlayFiles) {
+            String relativePath = overlays.relativize(overlay).toString().replace(File.separatorChar, '/');
+            java.nio.file.Path template = templates.resolve(relativePath);
+            if (!Files.isRegularFile(template)) {
+                throw new IllegalStateException("Template overlay " + overlay + " has no product template at "
+                        + template);
+            }
+            merged.put(relativePath, mergeJ2(template.toString(), List.of(overlay.toString())));
+        }
+        return merged;
+    }
+
+    /**
+     * Applies the default-lane template overlays ({@link #resolveDefaultTemplates}) to an all-in-one container.
+     * Must be called before the container starts.
+     *
+     * @param container the container to configure
+     * @param moduleDir the integration-v2 cucumber-tests module directory
+     * @return the applied template paths, relative to {@code repository/resources/conf/templates}
+     */
+    public static List<String> applyDefaultTemplates(DynamicApimContainer container, String moduleDir)
+            throws IOException {
+        Map<String, String> templates = resolveDefaultTemplates(moduleDir);
+        for (Map.Entry<String, String> template : templates.entrySet()) {
+            container.withTemplate(template.getKey(), template.getValue());
+        }
+        return new ArrayList<>(templates.keySet());
+    }
+
+    /**
      * Recursively merges two ObjectNode instances. Values from changesNode override those in baseNode or
      * add if not present.
      *
@@ -2116,6 +2391,16 @@ public class Utils {
      * @return the input string with all placeholders resolved using values from {@link TestContext}
      */
     public static String resolveContextPlaceholders(String input) {
+        return resolveContextPlaceholders(input, java.util.function.UnaryOperator.identity());
+    }
+
+    /** Resolves context placeholders in XML, escaping each substituted value. */
+    public static String resolveXmlContextPlaceholders(String input) {
+        return resolveContextPlaceholders(input, Utils::escapeXml);
+    }
+
+    private static String resolveContextPlaceholders(String input,
+                                                    java.util.function.UnaryOperator<String> transform) {
         if (input == null) {
             return null;
         }
@@ -2131,7 +2416,7 @@ public class Utils {
                 throw new IllegalStateException("No value found in TestContext for key: " + contextKey);
             }
 
-            matcher.appendReplacement(resolved, Matcher.quoteReplacement(String.valueOf(value)));
+            matcher.appendReplacement(resolved, Matcher.quoteReplacement(transform.apply(String.valueOf(value))));
         }
 
         matcher.appendTail(resolved);
@@ -2153,6 +2438,22 @@ public class Utils {
                 .replace(">", "&gt;")
                 .replace("\"", "&quot;")
                 .replace("'", "&apos;");
+    }
+
+    /**
+     * Decodes the five predefined XML entities in text read out of an XML/SOAP response, the inverse of
+     * {@link #escapeXml}. {@code &amp;} is decoded last so an escaped entity ({@code &amp;lt;}) decodes to its
+     * literal text ({@code &lt;}) rather than to the character. A {@code null} value is returned unchanged.
+     */
+    public static String unescapeXml(String value) {
+        if (value == null) {
+            return null;
+        }
+        return value.replace("&lt;", "<")
+                .replace("&gt;", ">")
+                .replace("&quot;", "\"")
+                .replace("&apos;", "'")
+                .replace("&amp;", "&");
     }
 
     /**
@@ -2288,46 +2589,37 @@ public class Utils {
     }
 
     /**
-     * Rewrites, IN PLACE, the content of every zip entry whose base file name equals {@code fileName}, copying
-     * the rest through byte-for-byte — the write counterpart of {@link #zipEntryText}, for handing an archive
-     * back to the product with one file changed. Not expressible as {@link #unzip} + {@link #zipDirectory}:
-     * {@code zipDirectory} writes only the source directory's DIRECT children, so a nested archive (every export
-     * here is one) would lose everything below the top level. Throws when nothing matched rather than copying the
-     * archive through untouched, which would leave the caller asserting against the original and passing for the
-     * wrong reason.
+     * Copies {@code zipFile} into a NEW delete-on-exit zip in which the first entry whose base file name is
+     * {@code fileName} has its UTF-8 content replaced by {@code edit.apply(oldContent)}; every other entry, and the
+     * directory layout, is copied byte for byte. Used to change a field of an exported archive's definition
+     * ({@code api_product.json}) before importing it again, without re-creating the archive's structure by hand.
+     * Fails when no entry has that name, so a mistyped name cannot import the archive unchanged.
      */
-    public static void rewriteZipEntry(File zipFile, String fileName, UnaryOperator<String> rewrite)
+    public static File rewriteZipEntry(File zipFile, String fileName, java.util.function.UnaryOperator<String> edit)
             throws IOException {
-        // Files.createTempFile, not File.createTempFile: it is the one that asks for owner-only permissions.
-        File rewritten = Files.createTempFile("rewritten-", ".zip").toFile();
-        rewritten.deleteOnExit();
-        boolean matched = false;
-        try (ZipFile source = new ZipFile(zipFile);
-             ZipOutputStream out = new ZipOutputStream(
-                     new BufferedOutputStream(new FileOutputStream(rewritten)))) {
-            Enumeration<? extends ZipEntry> entries = source.entries();
-            while (entries.hasMoreElements()) {
-                ZipEntry entry = entries.nextElement();
+        File edited = File.createTempFile("edited-archive", ".zip");
+        edited.deleteOnExit();
+        boolean rewritten = false;
+        try (ZipInputStream zis = new ZipInputStream(new BufferedInputStream(new FileInputStream(zipFile)));
+             ZipOutputStream zos = new ZipOutputStream(new BufferedOutputStream(new FileOutputStream(edited)))) {
+            ZipEntry entry;
+            while ((entry = zis.getNextEntry()) != null) {
                 String name = entry.getName();
-                out.putNextEntry(new ZipEntry(name));
-                if (!entry.isDirectory()) {
-                    try (InputStream in = source.getInputStream(entry)) {
-                        if (name.substring(name.lastIndexOf('/') + 1).equals(fileName)) {
-                            matched = true;
-                            out.write(rewrite.apply(new String(in.readAllBytes(), StandardCharsets.UTF_8))
-                                    .getBytes(StandardCharsets.UTF_8));
-                        } else {
-                            out.write(in.readAllBytes());
-                        }
-                    }
+                byte[] content = zis.readAllBytes();
+                String base = name.substring(name.lastIndexOf('/') + 1);
+                if (!rewritten && !entry.isDirectory() && base.equals(fileName)) {
+                    content = edit.apply(new String(content, StandardCharsets.UTF_8))
+                            .getBytes(StandardCharsets.UTF_8);
+                    rewritten = true;
                 }
-                out.closeEntry();
+                zos.putNextEntry(new ZipEntry(name));
+                zos.write(content);
+                zos.closeEntry();
+                zis.closeEntry();
             }
         }
-        if (!matched) {
-            throw new IOException(fileName + " was not found in " + zipFile + ", so nothing was rewritten");
-        }
-        Files.copy(rewritten.toPath(), zipFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+        Assert.assertTrue(rewritten, "Archive " + zipFile + " has no entry named " + fileName + " to edit");
+        return edited;
     }
 
     /**

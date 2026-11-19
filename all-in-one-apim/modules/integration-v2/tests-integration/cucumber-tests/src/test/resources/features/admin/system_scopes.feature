@@ -22,9 +22,7 @@ Feature: Admin System Scope Role-Alias Mapping
     When I retrieve the role aliases
     Then The response status code should be 200
     And The response should contain "testRole"
-    When I clear all role aliases
-    Then The response status code should be 200
-    When I retrieve the role aliases
+    When I clear all role aliases and wait until alias "testRole" is absent
     Then The response status code should be 200
     And The response should not contain "testRole"
 
@@ -58,13 +56,13 @@ Feature: Admin System Scope Role-Alias Mapping
   Scenario Outline: The subscribe scope lookup for a non-existent user is not found as <actor>
     Given The system is ready
     And I have valid access tokens as "<actor>"
-    When I retrieve the system scope "apim:subscribe" for the raw user "noSuchUser${UNIQUE:NoUser}"
+    When I retrieve the system scope "apim:subscribe" for the raw user "noSuchUser${UNIQUE:NoUser}<tenantSuffix>"
     Then The response status code should be 404
 
     Examples:
-      | actor             |
-      | admin             |
-      | admin@tenant1.com |
+      | actor             | tenantSuffix |
+      | admin             |              |
+      | admin@tenant1.com | @tenant1.com |
 
   # Ports OAuthApplicationOwnerUpdateTestCase#updateApplicationOwnerWhenHavingCustomRoles — a subscriber whose
   # subscriber-ness comes ONLY from a role ALIAS (not from carrying Internal/subscriber) is a valid application owner.
@@ -99,13 +97,15 @@ Feature: Admin System Scope Role-Alias Mapping
     Then The response status code should be 200
     And The value of response field "name" should be "apim:subscribe"
 
-    # The alias-derived owner can act on the DevPortal and owns an application (its token carries apim:subscribe
-    # only because of the alias, so a 201 here already proves the mapping reached token issuance).
-    Given I have a valid DCR application as "aliasSubOwner"
+    # The alias-derived owner can act on the DevPortal and owns an application. The read-only scope barrier below
+    # proves the alias is effective in OAuth authorization before this mutating 201 assertion is attempted.
+    Given I have a valid DCR application for token subject "aliasSubOwner" registered by "admin"
     And I have a valid Devportal access token as "aliasSubOwner"
+    And the DevPortal application-management scope is ready for "aliasSubOwner"
     And I act as "aliasSubOwner"
     When I create an application "${UNIQUE:AliasOwnedApp}" with visibility "PRIVATE" as "aliasOwnedAppId"
     Then The response status code should be 201
+    And I extract response field "name" and store it as "aliasOwnedAppName"
 
     # The target needs its own DevPortal subscriber row before it can receive ownership (see the first scenario of
     # admin/application_owner_change.feature); creating a throwaway application as the target initialises it.
@@ -122,6 +122,7 @@ Feature: Admin System Scope Role-Alias Mapping
     When I retrieve the admin applications owned by "aliasSubTarget"
     Then The response status code should be 200
     And The response should contain "{{aliasOwnedAppId}}"
+    And The searched applications should include "{{aliasOwnedAppName}}" owned by "aliasSubTarget"
 
     # Restore the shared (tenant-global) alias configuration.
     When I clear all role aliases

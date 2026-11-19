@@ -1,0 +1,22 @@
+{
+  "name": "${UNIQUE:APIMProductMember}",
+  "context": "${UNIQUE:apiProductMemberContext}",
+  "version": "1.0.0",
+  "endpointConfig": {
+    "endpoint_type": "http",
+    "production_endpoints": {
+      "url": "http://nodebackend:3017/"
+    },
+    "sandbox_endpoints": {
+      "url": "http://nodebackend:3017/"
+    }
+  },
+  "description": "API product member on the wildcard backend, with a secured and an unauthenticated resource",
+  "policies": ["Gold", "Bronze", "Unlimited"],
+  "operations": [
+    {"verb": "GET", "target": "/secured", "authType": "Application & Application User", "throttlingPolicy": "Unlimited", "scopes": []},
+    {"verb": "GET", "target": "/open", "authType": "None", "throttlingPolicy": "Unlimited", "scopes": []}
+  ],
+  "additionalProperties": [],
+  "additionalPropertiesMap": {}
+}

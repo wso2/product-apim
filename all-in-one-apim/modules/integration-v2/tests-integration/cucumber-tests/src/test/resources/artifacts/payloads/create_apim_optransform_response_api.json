@@ -16,12 +16,66 @@
     }
   },
   "description": "API with an xmlToJson RESPONSE operation policy and a jsonFault fault policy, aggregated into a product",
-  "tags": ["op-policy-response"],
-  "policies": ["Gold", "Bronze", "Unlimited"],
+  "tags": [
+    "op-policy-response"
+  ],
+  "policies": [
+    "Gold",
+    "Bronze",
+    "Unlimited"
+  ],
   "operations": [
     {
       "verb": "POST",
       "target": "/reflect-body-typed",
+      "authType": "Application & Application User",
+      "throttlingPolicy": "Unlimited",
+      "scopes": [],
+      "operationPolicies": {
+        "request": [],
+        "response": [
+          {
+            "policyName": "xmlToJson",
+            "policyVersion": "v1",
+            "parameters": {}
+          }
+        ],
+        "fault": [
+          {
+            "policyName": "jsonFault",
+            "policyVersion": "v1",
+            "parameters": {}
+          }
+        ]
+      }
+    },
+    {
+      "verb": "PUT",
+      "target": "/reflect-body-typed",
+      "authType": "Application & Application User",
+      "throttlingPolicy": "Unlimited",
+      "scopes": [],
+      "operationPolicies": {
+        "request": [],
+        "response": [
+          {
+            "policyName": "xmlToJson",
+            "policyVersion": "v1",
+            "parameters": {}
+          }
+        ],
+        "fault": [
+          {
+            "policyName": "jsonFault",
+            "policyVersion": "v1",
+            "parameters": {}
+          }
+        ]
+      }
+    },
+    {
+      "verb": "POST",
+      "target": "/reflect-body-text",
       "authType": "Application & Application User",
       "throttlingPolicy": "Unlimited",
       "scopes": [],

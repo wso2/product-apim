@@ -7,7 +7,7 @@ Feature: Publisher Network Access Control - URL-gate entry points under a tenant
   before any outbound fetch: endpoint validation reports the block, and Key Manager / GraphQL / WSDL / OpenAPI /
   MCP / import entry points fail with HTTP 400 and a "could not be resolved" error. An allow-listed host still
   passes, and a second tenant with no policy is unaffected. Ports HostValidationTenantAllowModeTestCase. Runs in
-  the network-access-control-tenant-allow container (permissive platform; the tenant policy is the sole gate).
+  the IntegrationV2-CrossTenantSubscription block (permissive platform; the tenant policy is the sole gate).
 
   Background:
     Given The system is ready and I have valid publisher access tokens as "publisherUser"

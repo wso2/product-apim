@@ -20,7 +20,8 @@ package org.wso2.am.integration.cucumbertests.runners.block;
 import io.cucumber.testng.CucumberOptions;
 
 /**
- * Runner for the network access-control disabled negative-control tests - the port of HostValidationDisabledTestCase. With no policy configured the gate is inactive and no URL is blocked. Runs in the network-access-control-disabled container.
+ * Runner for the network access-control disabled negative-control tests - the port of HostValidationDisabledTestCase. With no policy configured the gate is inactive and no URL is blocked. Runs in the
+ * IntegrationV2-SandboxAndTokenExchangeDisabled block, which has no access-control policy.
  */
 @CucumberOptions(
         features = {

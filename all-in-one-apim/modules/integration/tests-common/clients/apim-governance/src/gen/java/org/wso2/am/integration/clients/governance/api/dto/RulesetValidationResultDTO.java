@@ -73,7 +73,7 @@ public static StatusEnum fromValue(String value) {
         return b;
     }
 }
-    throw new IllegalArgumentException("Unexpected value '" + value + "'");
+    return null;
 }
 
     public static class Adapter extends TypeAdapter<StatusEnum> {
@@ -156,7 +156,7 @@ public static StatusEnum fromValue(String value) {
         }
 
     /**
-        * Status of the ruleset validation.
+        * Status of the ruleset validation.  UNAPPLIED means the ruleset has not been evaluated for the artifact yet. Once evaluated, PASSED or FAILED is reported while per policy severity filtering is off, since every policy is then judged the same way. While it is on, this screen has no policy in its path, and the same ruleset can legitimately pass under one policy governing the artifact and fail under another, so null is reported instead of an invented status. 
     * @return status
     **/
         @javax.annotation.Nullable

@@ -24,24 +24,27 @@ Feature: Publisher-side API Visibility Across Domains
   index that has not yet seen the API. Every scenario therefore asserts the CREATOR's presence (count 1) FIRST —
   which proves the API is indexed — and only then asserts the cross-domain absences against that same warm index.
 
-  The API is created in carbon.super; carbon.super principals supply the same-domain assertions and
-  *@tenant1.com principals the other-domain ones (the block provisions both). The second same-domain creator is
-  provisioned inline (idempotent SOAP addUser) because the standard actor set offers only one non-admin creator,
-  and "another same-domain user, not merely the admin" is the load-bearing leg — with the admin alone one cannot
-  tell "only admins see it" from "the whole domain sees it".
+  Actor coverage is one logical matrix: primary-store and SECONDARY.COM publishers create in both tenants, with
+  all visibility/role combinations represented for each tenant/store combination. The same generic runner executes
+  this matrix in standard and emailUserMode blocks; the block-aware actor resolver supplies the corresponding
+  physical username. The same-domain peer is provisioned inline in both tenants, so every row checks the
+  same-domain non-admin path as well as the matching tenant admin and cross-domain principals.
 
   @cap:publisher @feat:visibility @rule:cross-domain @type:regression @legacy:APIVisibilityByDomainTestCase @legacy:APIVisibilityByPublicTestCase @legacy:APIVisibilityByRoleTestCase
-  Scenario Outline: A published API with <visibility> devportal visibility is listed in the Publisher for its own domain only
+  Scenario Outline: A published API with <visibility> devportal visibility created by <creatorActor> is listed only in <creatorTenant>
     Given The system is ready
     And I have valid access tokens as "admin"
-    And I provision user "visDomCreator2" with roles "Internal/creator,Internal/publisher,Internal/subscriber" in tenant "carbon.super"
-    And The system is ready and I have valid publisher access tokens as "visDomCreator2"
-    And The system is ready and I have valid publisher access tokens as "publisherUser@tenant1.com"
-    And I have valid access tokens as "admin@tenant1.com"
+    And I provision user "visDomPeer" with roles "Internal/creator,Internal/publisher,Internal/subscriber" in tenant "carbon.super"
+    And I provision user "visDomPeer" with roles "Internal/creator,Internal/publisher,Internal/subscriber" in tenant "tenant1.com"
+    And The system is ready and I have valid publisher access tokens as "visDomPeer"
+    And The system is ready and I have valid publisher access tokens as "visDomPeer@tenant1.com"
+    And The system is ready and I have valid access tokens as "<sameDomainAdmin>"
+    And The system is ready and I have valid publisher access tokens as "<otherDomainPeer>"
+    And I have valid access tokens as "<otherDomainAdmin>"
 
-    # Author + publish as the least-privileged carbon.super creator, under a scenario-unique name so the
+    # Author + publish as the table-selected least-privileged publisher, under a scenario-unique name so the
     # name-scoped list query below resolves to exactly this API.
-    Given The system is ready and I have valid publisher access tokens as "publisherUser"
+    Given The system is ready and I have valid publisher access tokens as "<creatorActor>"
     And I generate a unique value and store it as "visDomName"
     And I put JSON payload from file "artifacts/payloads/create_apim_test_api.json" in context as "visDomPayload"
     And I set the field "name" to "{{visDomName}}" in the payload "visDomPayload"
@@ -53,28 +56,41 @@ Feature: Publisher-side API Visibility Across Domains
     When I search Publisher APIs with content query "name:{{visDomName}}" until the result count is 1 within 60 seconds
     Then The response status code should be 200
 
-    # PRESENT for the SAME-domain admin.
-    When I act as "admin"
+    # PRESENT for the creator's SAME-domain admin.
+    When I act as "<sameDomainAdmin>"
     And I search Publisher APIs with content query "name:{{visDomName}}" until the result count is 1 within 60 seconds
     Then The response status code should be 200
 
     # PRESENT for ANOTHER creator in the same domain (neither the creator nor an admin).
-    When I act as "visDomCreator2"
+    When I act as "visDomPeer@<creatorTenant>"
     And I search Publisher APIs with content query "name:{{visDomName}}" until the result count is 1 within 60 seconds
     Then The response status code should be 200
 
     # ABSENT for a creator in ANOTHER domain.
-    When I act as "publisherUser@tenant1.com"
+    When I act as "<otherDomainPeer>"
     And I search Publisher APIs with content query "name:{{visDomName}}" until the result count is 0 within 60 seconds
     Then The response status code should be 200
 
     # ABSENT for the ADMIN of another domain — a tenant admin is not a superuser over other tenants.
-    When I act as "admin@tenant1.com"
+    When I act as "<otherDomainAdmin>"
     And I search Publisher APIs with content query "name:{{visDomName}}" until the result count is 0 within 60 seconds
     Then The response status code should be 200
 
     Examples:
-      | visibility | roles               |
-      | PUBLIC     |                     |
-      | PRIVATE    |                     |
-      | RESTRICTED | Internal/subscriber |
+      | visibility | roles               | creatorActor                            | creatorTenant | sameDomainAdmin  | otherDomainPeer                              | otherDomainAdmin |
+      | PUBLIC     |                     | publisherUser                           | carbon.super  | superTenantAdmin | publisherUser@tenant1.com                    | admin@tenant1.com |
+      | PRIVATE    |                     | publisherUser                           | carbon.super  | superTenantAdmin | publisherUser@tenant1.com                    | admin@tenant1.com |
+      | RESTRICTED | Internal/subscriber | publisherUser                           | carbon.super  | superTenantAdmin | publisherUser@tenant1.com                    | admin@tenant1.com |
+      | RESTRICTED | admin               | publisherUser                           | carbon.super  | superTenantAdmin | publisherUser@tenant1.com                    | admin@tenant1.com |
+      | PUBLIC     |                     | publisherUser@tenant1.com               | tenant1.com   | admin@tenant1.com | publisherUser                                | superTenantAdmin |
+      | PRIVATE    |                     | publisherUser@tenant1.com               | tenant1.com   | admin@tenant1.com | publisherUser                                | superTenantAdmin |
+      | RESTRICTED | Internal/subscriber | publisherUser@tenant1.com               | tenant1.com   | admin@tenant1.com | publisherUser                                | superTenantAdmin |
+      | RESTRICTED | admin               | publisherUser@tenant1.com               | tenant1.com   | admin@tenant1.com | publisherUser                                | superTenantAdmin |
+      | PUBLIC     |                     | SECONDARY.COM/publisherUser1             | carbon.super  | superTenantAdmin | SECONDARY.COM/publisherUser1@tenant1.com     | admin@tenant1.com |
+      | PRIVATE    |                     | SECONDARY.COM/publisherUser1             | carbon.super  | superTenantAdmin | SECONDARY.COM/publisherUser1@tenant1.com     | admin@tenant1.com |
+      | RESTRICTED | Internal/subscriber | SECONDARY.COM/publisherUser1             | carbon.super  | superTenantAdmin | SECONDARY.COM/publisherUser1@tenant1.com     | admin@tenant1.com |
+      | RESTRICTED | admin               | SECONDARY.COM/publisherUser1             | carbon.super  | superTenantAdmin | SECONDARY.COM/publisherUser1@tenant1.com     | admin@tenant1.com |
+      | PUBLIC     |                     | SECONDARY.COM/publisherUser1@tenant1.com | tenant1.com   | admin@tenant1.com | SECONDARY.COM/publisherUser1                 | superTenantAdmin |
+      | PRIVATE    |                     | SECONDARY.COM/publisherUser1@tenant1.com | tenant1.com   | admin@tenant1.com | SECONDARY.COM/publisherUser1                 | superTenantAdmin |
+      | RESTRICTED | Internal/subscriber | SECONDARY.COM/publisherUser1@tenant1.com | tenant1.com   | admin@tenant1.com | SECONDARY.COM/publisherUser1                 | superTenantAdmin |
+      | RESTRICTED | admin               | SECONDARY.COM/publisherUser1@tenant1.com | tenant1.com   | admin@tenant1.com | SECONDARY.COM/publisherUser1                 | superTenantAdmin |

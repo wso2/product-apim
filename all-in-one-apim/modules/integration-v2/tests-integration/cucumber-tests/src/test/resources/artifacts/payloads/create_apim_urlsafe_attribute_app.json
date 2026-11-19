@@ -1,0 +1,8 @@
+{
+  "name": "${UNIQUE:APIMUrlSafeAttributeApp}",
+  "throttlingPolicy": "Unlimited",
+  "description": "JWT application for URL-safe backend claim assertions",
+  "attributes": {
+    "Optional attribute": ""
+  }
+}

@@ -7,6 +7,7 @@
   "tokenEndpoint": "https://wso2is.com:9444/oauth2/token",
   "revokeEndpoint": "https://wso2is.com:9444/oauth2/revoke",
   "scopeManagementEndpoint": "https://wso2is.com:9444/api/identity/oauth2/v1.0/scopes",
+  "userInfoEndpoint": "https://wso2is.com:9444/oauth2/userinfo",
   "consumerKeyClaim": "azp",
   "scopesClaim": "scope",
   "enabled": true,

@@ -1,0 +1,70 @@
+{
+  "name": "SwaggerPetstore_v3",
+  "context": "${UNIQUE:SwaggerPetstorev3}",
+  "version": "1.0.0",
+  "description": null,
+  "type": "HTTP",
+  "endpointImplementationType": "ENDPOINT",
+  "endpointConfig": {
+    "endpoint_type": "http",
+    "production_endpoints": {
+      "url": "http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/"
+    },
+    "sandbox_endpoints": {
+      "url": "http://nodebackend:3001/jaxrs_basic/services/customers/customerservice/"
+    }
+  },
+  "apiThrottlingPolicy": "Unlimited",
+  "authorizationHeader": "X-Authorization",
+  "policies": ["Unlimited"],
+  "transport": ["http", "https"],
+  "securityScheme": ["oauth2", "oauth_basic_auth_mandatory"],
+  "visibility": "PUBLIC",
+  "subscriptionAvailability": "ALL_TENANTS",
+  "accessControl": "NONE",
+  "accessControlRoles": [],
+  "cacheTimeout": 300,
+  "responseCachingEnabled": false,
+  "enableSchemaValidation": false,
+  "isDefaultVersion": false,
+  "corsConfiguration": {
+    "corsConfigurationEnabled": true,
+    "accessControlAllowOrigins": ["*"],
+    "accessControlAllowCredentials": false,
+    "accessControlAllowHeaders": ["authorization", "Access-Control-Allow-Origin", "Content-Type", "SOAPAction"],
+    "accessControlAllowMethods": ["GET", "PUT", "POST", "DELETE", "PATCH", "OPTIONS"]
+  },
+  "scopes": [
+    {
+      "scope": {
+        "name": "SwaggerPetstore_v3",
+        "description": "SwaggerPetstore_v3",
+        "bindings": ["admin"]
+      }
+    }
+  ],
+  "operations": [
+    {
+      "target": "/pets",
+      "verb": "GET",
+      "authType": "Application & Application User",
+      "throttlingPolicy": "Unlimited",
+      "scopes": ["SwaggerPetstore_v3"]
+    },
+    {
+      "target": "/pets",
+      "verb": "POST",
+      "authType": "Application & Application User",
+      "throttlingPolicy": "Unlimited",
+      "scopes": ["SwaggerPetstore_v3"]
+    },
+    {
+      "target": "/pets/{petId}",
+      "verb": "GET",
+      "authType": "Application & Application User",
+      "throttlingPolicy": "Unlimited",
+      "scopes": []
+    }
+  ],
+  "tags": []
+}

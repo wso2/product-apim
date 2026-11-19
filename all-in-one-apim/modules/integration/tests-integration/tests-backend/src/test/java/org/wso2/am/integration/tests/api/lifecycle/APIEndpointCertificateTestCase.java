@@ -21,6 +21,7 @@ package org.wso2.am.integration.tests.api.lifecycle;
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.testng.Assert;
@@ -198,7 +199,7 @@ public class APIEndpointCertificateTestCase extends APIManagerLifecycleBaseTest 
     }
 
     @Test(groups = {"wso2.am"}, description = "test Upload Endpoint Certificate", dependsOnMethods = {
-            "testUploadEndpointCertificate"})
+            "testInvokeAPI"})
     public void testUploadSameEndpointCertificateInSameAlias() {
 
         String cert = getAMResourceLocation() + File.separator + "endpointCertificate" + File.separator + "endpoint" +
@@ -214,8 +215,10 @@ public class APIEndpointCertificateTestCase extends APIManagerLifecycleBaseTest 
         }
     }
 
+    //An expired certificate is still written to the trust store before it is rejected, so this runs last,
+    //clear of both the deployment and the removal the other tests depend on.
     @Test(groups = {"wso2.am"}, description = "test Upload Endpoint Certificate", dependsOnMethods = {
-            "testUploadEndpointCertificate"})
+            "testDeleteNotAvailableCert"})
     public void testUploadExpiredCert() {
 
         String cert = getAMResourceLocation() + File.separator + "endpointCertificate" + File.separator + "expired.cer";
@@ -325,7 +328,7 @@ public class APIEndpointCertificateTestCase extends APIManagerLifecycleBaseTest 
     }
 
     @Test(groups = {"wso2.am"}, description = "test Upload Endpoint Certificate", dependsOnMethods = {
-            "testInvokeAPI"})
+            "testUploadSameEndpointCertificateInSameAlias"})
     public void testInvokeAPIAfterRemovingCertificate() throws InterruptedException, XPathExpressionException,
             IOException, ApiException {
 
@@ -456,9 +459,53 @@ public class APIEndpointCertificateTestCase extends APIManagerLifecycleBaseTest 
     @AfterClass(alwaysRun = true)
     public void destroy() throws Exception {
 
-        restAPIStore.deleteApplication(applicationId);
-        restAPIPublisher.deleteAPI(apiId);
-        wireMockServer.stop();
-        serverConfigurationManager.restoreToLastConfiguration();
+        List<String> failures = new ArrayList<>();
+        try {
+            //Remove the certificates here too, since testInvokeAPIAfterRemovingCertificate is skipped whenever an
+            //earlier test fails.
+            deleteEndpointCertificateIfPresent("endpoint-1", failures);
+            deleteEndpointCertificateIfPresent("endpoint-2", failures);
+            try {
+                if (StringUtils.isNotBlank(applicationId)) {
+                    restAPIStore.deleteApplication(applicationId);
+                }
+            } catch (Exception e) {
+                failures.add("application " + applicationId + ": " + e.getMessage());
+            }
+            try {
+                if (StringUtils.isNotBlank(apiId)) {
+                    restAPIPublisher.deleteAPI(apiId);
+                }
+            } catch (Exception e) {
+                failures.add("API " + apiId + ": " + e.getMessage());
+            }
+            try {
+                if (wireMockServer != null) {
+                    wireMockServer.stop();
+                }
+            } catch (Exception e) {
+                failures.add("backend server: " + e.getMessage());
+            }
+        } finally {
+            if (serverConfigurationManager != null) {
+                serverConfigurationManager.restoreToLastConfiguration();
+            }
+        }
+        Assert.assertTrue(failures.isEmpty(), "Clean up did not complete: " + failures);
+    }
+
+    private void deleteEndpointCertificateIfPresent(String alias, List<String> failures) {
+
+        try {
+            restAPIPublisher.deleteEndpointCertificate(alias);
+            log.info("Removed leftover endpoint certificate " + alias + " during clean up");
+        } catch (ApiException e) {
+            //Already removed is the wanted state, so a 404 is not a failure.
+            if (e.getCode() != 404) {
+                failures.add("endpoint certificate " + alias + ": " + e.getMessage());
+            }
+        } catch (Exception e) {
+            failures.add("endpoint certificate " + alias + ": " + e.getMessage());
+        }
     }
 }

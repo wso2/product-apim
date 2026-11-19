@@ -3,12 +3,12 @@
   "displayName": "Test Key Manager Auth0",
   "type": "Auth0",
   "description": "This is a test key manager",
-  "issuer": "https://dev-ted144kt.us.auth0.com/",
+  "issuer": "http://nodebackend:3028/",
   "introspectionEndpoint": "none",
-  "clientRegistrationEndpoint": "https://dev-ted144kt.us.auth0.com/oidc/register",
-  "tokenEndpoint": "https://dev-ted144kt.us.auth0.com/oauth/token",
-  "revokeEndpoint": "https://dev-ted144kt.us.auth0.com/oauth/revoke",
-  "authorizeEndpoint": "https://dev-ted144kt.us.auth0.com/authorize",
+  "clientRegistrationEndpoint": "http://nodebackend:3028/oidc/register",
+  "tokenEndpoint": "http://nodebackend:3028/oauth/token",
+  "revokeEndpoint": "http://nodebackend:3028/oauth/revoke",
+  "authorizeEndpoint": "http://nodebackend:3028/authorize",
   "consumerKeyClaim": "azp",
   "scopesClaim": "scope",
   "enabled": true,
@@ -23,7 +23,7 @@
   ],
   "certificates": {
     "type": "JWKS",
-    "value": "https://dev-ted144kt.us.auth0.com/.well-known/jwks.json"
+    "value": "http://nodebackend:3028/.well-known/jwks.json"
   },
   "additionalProperties": {
     "client_id": "clientIdValue",

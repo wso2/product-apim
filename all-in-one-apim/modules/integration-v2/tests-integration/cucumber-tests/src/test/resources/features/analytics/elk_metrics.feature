@@ -79,6 +79,10 @@ Feature: ELK Analytics Metric Logging
     # Register the common operation policy first so the API can reference it by name.
     And I create a new common policy with spec "artifacts/payloads/policySpecFiles/respond_mediator.j2" and "artifacts/payloads/policySpecFiles/respond_mediator.yaml" as "respondPolicyId"
     Then The response status code should be 201
+    When I retrieve available common policies
+    Then The response status code should be 200
+    And The response array field "list[?(@.name=='respond_mediator')]" should have exactly 1 entries
+    And The response field "list[?(@.name=='respond_mediator')].id" should be exactly the list "{{respondPolicyId}}"
     And I have created an api from "artifacts/payloads/create_apim_elk_respond_api.json" as "respondApiId" and deployed it
     And the "apis" resource "respondApiId" should be live on the gateway, redeploying if propagation is lost
     When I publish the "apis" resource with id "respondApiId"

@@ -334,6 +334,10 @@ Feature: Publisher API Runtime & Common Configuration
       Updated without touching the thumbnail
       """
     Then The response status code should be 200
+    # The v4 API DTO exposes the thumbnail state as hasThumbnail; the legacy thumbnailUri field is not writable here.
+    When I retrieve the "apis" resource with id "thumbApiId"
+    Then The response status code should be 200
+    And The value of response field "hasThumbnail" should be "true"
     When I retrieve the thumbnail for API "thumbApiId"
     Then The response status code should be 200
 
@@ -342,19 +346,18 @@ Feature: Publisher API Runtime & Common Configuration
       | publisherUser             |
       | publisherUser@tenant1.com |
 
-  # The publisher endpoint-validation API probes a backend endpoint and reports its reachability. The target is
-  # the APIM's own Carbon Version service, reachable from the server itself (no separate backend needed). Verified
-  # live on 4.7.0: a reachable endpoint validates with statusCode 202 (Accepted) — the auth-protected sample
-  # webapp instead reports its 401, so 202 is the healthy/reachable signal. Ports APIMANAGER2611.
+  # The publisher endpoint-validation API probes the DevPortal web app and reports its reachability. A reachable
+  # endpoint returns statusCode 200 (OK), while the auth-protected sample still validates the expected 401. Ports
+  # APIMANAGER2611.
   @cap:publisher @feat:api-config @type:regression @legacy:APIMANAGER2611EndpointValidationTestCase
   Scenario Outline: A reachable backend endpoint validates successfully as <actor>
     Given The system is ready and I have valid publisher access tokens as "<actor>"
     And I put JSON payload from file "artifacts/payloads/create_apim_test_api.json" in context as "valApiPayload"
     And I create an "apis" resource with payload "valApiPayload" as "valApiId"
-    When I validate the endpoint "https://localhost:9443/services/Version" for API "valApiId"
+    When I validate the endpoint "https://localhost:9443/devportal/" for API "valApiId"
     Then The response status code should be 200
-    And The value of response field "statusCode" should be "202"
-    And The response should contain "Accepted"
+    And The value of response field "statusCode" should be "200"
+    And The response should contain "OK"
 
     Examples:
       | actor                     |
@@ -379,10 +382,45 @@ Feature: Publisher API Runtime & Common Configuration
     ["tag18-1","tag18-2","tag18-3","{{editTag}}"]
     """
     Then The response status code should be 200
+    And The value of response field "id" should be "{{editApiId}}"
     When I retrieve the "apis" resource with id "editApiId"
     Then The response status code should be 200
     And The response should contain "This is test API - New Description"
+    And The value of response field "description" should be "This is test API - New Description"
     And The response should contain "{{editTag}}"
+
+    Examples:
+      | actor                     |
+      | publisherUser             |
+      | publisherUser@tenant1.com |
+
+  # The same metadata edit on a PUBLISHED API with a deployed revision: the update keeps the API PUBLISHED, the
+  # updated API is re-revisioned and redeployed (201), and the new values persist on re-fetch.
+  @cap:publisher @feat:api-config @rule:metadata @type:regression @legacy:EditAPIAndCheckUpdatedInformationTestCase
+  Scenario Outline: Update a published, deployed REST API's tags and description persist as <actor>
+    Given The system is ready and I have valid publisher access tokens as "<actor>"
+    And I generate a unique value and store it as "pubEditTag"
+    And I have created an api from "artifacts/payloads/create_apim_test_api.json" as "pubEditApiId" and deployed it
+    When I publish the "apis" resource with id "pubEditApiId"
+    Then The lifecycle status of API "pubEditApiId" should be "Published"
+    When I retrieve the "apis" resource with id "pubEditApiId"
+    And I put the response payload in context as "pubEditApiFull"
+    And I set the field "description" to "This is test API - New Description" in the payload "pubEditApiFull"
+    And I update the "apis" resource "pubEditApiId" and "pubEditApiFull" with configuration type "tags" and value:
+    """
+    ["tag18-1","tag18-2","tag18-3","{{pubEditTag}}"]
+    """
+    Then The response status code should be 200
+    And The value of response field "id" should be "{{pubEditApiId}}"
+    And The value of response field "lifeCycleStatus" should be "PUBLISHED"
+    When I deploy the API with id "pubEditApiId"
+    Then The response status code should be 201
+    When I retrieve the "apis" resource with id "pubEditApiId"
+    Then The response status code should be 200
+    And The value of response field "lifeCycleStatus" should be "PUBLISHED"
+    And The response should contain "This is test API - New Description"
+    And The value of response field "description" should be "This is test API - New Description"
+    And The response should contain "{{pubEditTag}}"
 
     Examples:
       | actor                     |
@@ -404,6 +442,7 @@ Feature: Publisher API Runtime & Common Configuration
     And I set the field "securityScheme" to null in the payload "nullApiFull1"
     And I update "apis" resource of id "nullApiId" with payload "nullApiFull1"
     Then The response status code should be 200
+    And The value of response field "id" should be "{{nullApiId}}"
     # Observable state (pinned live): a null securityScheme is NOT applied — the server retains/re-defaults the
     # scheme set, so the retrieved API still carries the default schemes.
     When I retrieve the "apis" resource with id "nullApiId"
@@ -418,12 +457,74 @@ Feature: Publisher API Runtime & Common Configuration
     And I set the field "endpointConfig" to null in the payload "nullApiFull2"
     And I update "apis" resource of id "nullApiId" with payload "nullApiFull2"
     Then The response status code should be 200
+    And The value of response field "id" should be "{{nullApiId}}"
     # Observable state (pinned live): unlike securityScheme, a null endpointConfig IS applied — the retrieved API
     # carries no endpoint configuration any more (the create payload's production/sandbox endpoints are gone).
     When I retrieve the "apis" resource with id "nullApiId"
     Then The response status code should be 200
     And The response should not contain "production_endpoints"
     And The response should not contain "sandbox_endpoints"
+
+    Examples:
+      | actor                     |
+      | publisherUser             |
+      | publisherUser@tenant1.com |
+
+  # The same null-field updates against a PUBLISHED API with a deployed revision: each update is accepted (200),
+  # returns the API, and the API stays PUBLISHED.
+  @cap:publisher @feat:api-config @rule:null-fields @type:regression @legacy:UpdateAPINullPointerTestCase
+  Scenario Outline: A published API update that nulls optional fields is accepted as <actor>
+    Given The system is ready and I have valid publisher access tokens as "<actor>"
+    And I have created an api from "artifacts/payloads/create_apim_test_api.json" as "pubNullApiId" and deployed it
+    When I publish the "apis" resource with id "pubNullApiId"
+    Then The lifecycle status of API "pubNullApiId" should be "Published"
+    When I retrieve the "apis" resource with id "pubNullApiId"
+    And I put the response payload in context as "pubNullApiFull1"
+    And I set the field "securityScheme" to null in the payload "pubNullApiFull1"
+    And I update "apis" resource of id "pubNullApiId" with payload "pubNullApiFull1"
+    Then The response status code should be 200
+    And The value of response field "id" should be "{{pubNullApiId}}"
+    And The value of response field "lifeCycleStatus" should be "PUBLISHED"
+    When I retrieve the "apis" resource with id "pubNullApiId"
+    And I extract response field "securityScheme" and store it as "pubNullApiPostSS"
+    Then the actual value of "pubNullApiPostSS" should match the expected value:
+    """
+    ["oauth_basic_auth_api_key_mandatory","oauth2"]
+    """
+    When I retrieve the "apis" resource with id "pubNullApiId"
+    And I put the response payload in context as "pubNullApiFull2"
+    And I set the field "endpointConfig" to null in the payload "pubNullApiFull2"
+    And I update "apis" resource of id "pubNullApiId" with payload "pubNullApiFull2"
+    Then The response status code should be 200
+    And The value of response field "id" should be "{{pubNullApiId}}"
+    And The value of response field "lifeCycleStatus" should be "PUBLISHED"
+    When I retrieve the "apis" resource with id "pubNullApiId"
+    Then The response status code should be 200
+    And The value of response field "lifeCycleStatus" should be "PUBLISHED"
+    And The response should not contain "production_endpoints"
+    And The response should not contain "sandbox_endpoints"
+
+    # Combined-null edge case: legacy's endpoint-null update used a fresh API DTO, so endpointConfig and
+    # securityScheme were both null/unspecified in the SAME update request. Keep the two independent null checks
+    # above, and additionally protect the interaction from triggering a server-side null dereference.
+    When I retrieve the "apis" resource with id "pubNullApiId"
+    And I put the response payload in context as "pubNullApiFullCombinedNull"
+    And I set the field "securityScheme" to null in the payload "pubNullApiFullCombinedNull"
+    And I set the field "endpointConfig" to null in the payload "pubNullApiFullCombinedNull"
+    And I update "apis" resource of id "pubNullApiId" with payload "pubNullApiFullCombinedNull"
+    Then The response status code should be 200
+    And The value of response field "id" should be "{{pubNullApiId}}"
+    And The value of response field "lifeCycleStatus" should be "PUBLISHED"
+    When I retrieve the "apis" resource with id "pubNullApiId"
+    Then The response status code should be 200
+    And The value of response field "lifeCycleStatus" should be "PUBLISHED"
+    And The response should not contain "production_endpoints"
+    And The response should not contain "sandbox_endpoints"
+    And I extract response field "securityScheme" and store it as "pubNullApiPostCombinedSS"
+    Then the actual value of "pubNullApiPostCombinedSS" should match the expected value:
+    """
+    ["oauth_basic_auth_api_key_mandatory","oauth2"]
+    """
 
     Examples:
       | actor                     |
@@ -486,7 +587,7 @@ Feature: Publisher API Runtime & Common Configuration
   # Tagged api-config because the subject is context-field fidelity (what the publisher persists and matches for
   # the field as authored), not versioning behaviour. The payload's context is uniquely generated, so the count of 1
   # is exact by construction under parallel execution.
-  @cap:publisher @feat:api-config @rule:context-template @type:regression @legacy:DynamicAPIContextTestCase
+  @cap:publisher @feat:api-config @rule:context-template @type:regression
   Scenario Outline: A templated-context API is found in the publisher by its raw context template as <actor>
     Given The system is ready and I have valid publisher access tokens as "<actor>"
     And I have created an api from "artifacts/payloads/create_apim_templated_context_search_api.json" as "tcApiId" and deployed it
@@ -499,7 +600,7 @@ Feature: Publisher API Runtime & Common Configuration
     # the raw form the API was authored with.
     And I extract response field "context" and store it as "tcApiContext"
     When I search Publisher APIs with content query "context:{{tcApiContext}}/{version}" until the result count is 1 within 60 seconds
-    Then The response should contain "{{tcApiName}}"
+    Then The value of response field "list[0].name" should be "{{tcApiName}}"
 
     Examples:
       | actor                     |
@@ -507,7 +608,7 @@ Feature: Publisher API Runtime & Common Configuration
       | publisherUser@tenant1.com |
 
   # Publisher-plane contract for BACKEND endpoint security (the management-plane half of the endpoint-security
-  # legacy suite — the gateway-injection half lives in gateway/security_enforcement). Ports the publisher-observable
+  # legacy suite — the gateway-injection half lives in gateway/endpoint_security). Ports the publisher-observable
   # assertions of AddEndPointSecurityPerTypeTestCase (create-path) + ChangeEndPointSecurityPerTypeTestCase
   # (update-path): on create/update the Publisher API stores per-type (production/sandbox) endpoint_security, echoes
   # back the non-secret fields (type, username / clientId, tokenUrl, enabled) and REDACTS the secret — the stored
@@ -544,7 +645,7 @@ Feature: Publisher API Runtime & Common Configuration
 
   # BASIC update path: change the production credential via GET-mutate-PUT of endpointConfig; the update response
   # reflects the NEW username, keeps redacting the password, and the old credential is gone. Publisher-plane only.
-  @cap:publisher @feat:api-config @rule:endpoint-security @type:regression @legacy:ChangeEndPointSecurityPerTypeTestCase
+  @cap:publisher @feat:api-config @rule:endpoint-security @type:regression @legacy:ChangeEndPointSecurityPerTypeTestCase @legacy:APITestCase
   Scenario Outline: Updating an API's BASIC endpoint-security credential reflects the change and keeps the secret redacted as <actor>
     Given The system is ready and I have valid publisher access tokens as "<actor>"
     And I put JSON payload from file "artifacts/payloads/create_apim_endpoint_sec_change.json" in context as "epubPayload"
@@ -583,7 +684,7 @@ Feature: Publisher API Runtime & Common Configuration
   # tokenUrl and the clientId, and REDACTS the clientSecret. Ports the publisher-observable assertions of
   # AddEndPointSecurityPerTypeTestCase#testAddEndpointSecurityForOauthForClientCredentialsGrantType (the clientId
   # is preserved, clientSecret comes back ""). Publisher-plane only — the gateway token-fetch/injection is proven
-  # separately in gateway/security_enforcement.
+  # separately in gateway/endpoint_security.
   @cap:publisher @feat:api-config @rule:endpoint-security @type:regression @legacy:AddEndPointSecurityPerTypeTestCase
   Scenario Outline: Creating an API with per-type OAUTH endpoint security round-trips the config and redacts the client secret as <actor>
     Given The system is ready and I have valid publisher access tokens as "<actor>"
@@ -593,7 +694,7 @@ Feature: Publisher API Runtime & Common Configuration
     And The response should contain "OAUTH"
     And The response should contain "epProdClientId0001"
     And The response should contain "epSandClientId0002"
-    And The response should contain "https://localhost:9443/oauth2/token"
+    And The response should contain "{{backendOAuthTokenUrl}}"
     # The client secrets are redacted — never returned in plaintext.
     And The response should not contain "epProdClientSecret0001"
     And The response should not contain "epSandClientSecret0002"
@@ -632,3 +733,64 @@ Feature: Publisher API Runtime & Common Configuration
       | actor                     |
       | publisherUser             |
       | publisherUser@tenant1.com |
+
+  # The listing is served from the search index and is tenant-global, so every read below is scoped to this
+  # API's unique name and retried; an unfiltered read has no stable contents to assert against while sibling
+  # classes create APIs in the same block.
+  @cap:publisher @feat:api-config @rule:additional-properties @type:regression @legacy:APIM534GetAllTheAPIsCreatedThroughThePublisherRestAPITestCase
+  Scenario Outline: The API listing reports additional properties only when expandProperties is requested in <tenant>
+    Given I act as "admin<tenantSuffix>"
+    When I update the "apis" resource "configApiId<tenantSuffix>" and "configApiPayload<tenantSuffix>" with configuration type "additionalProperties" and value:
+      """
+      [{"name":"dept","value":"finance","display":false},{"name":"owner","value":"jane","display":true}]
+      """
+    Then The response status code should be 200
+    When I retrieve the "apis" resource with id "configApiId<tenantSuffix>"
+    Then The response status code should be 200
+    And I extract response field "name" and store it as "expandPropsApiName<tenantSuffix>"
+
+    # Baseline: the single-API endpoint carries the properties unconditionally.
+    And The response array field "additionalProperties" should have exactly 2 entries
+    And The response array field "additionalPropertiesMap.*" should have exactly 2 entries
+    And The value of response field "additionalPropertiesMap.dept.value" should be "finance"
+    And The value of response field "additionalPropertiesMap.owner__display.value" should be "jane"
+
+    # Omitting the parameter leaves both fields empty, which is the pre-existing listing behaviour.
+    When I search the Publisher API listing for name "expandPropsApiName<tenantSuffix>" with expandProperties "" until it is listed
+    Then The response array field "list" should have exactly 1 entries
+    And The response array field "list[0].additionalProperties" should have exactly 0 entries
+    And The response array field "list[0].additionalPropertiesMap.*" should have exactly 0 entries
+    And The response should not contain "finance"
+    And The response should not contain "jane"
+
+    # An explicit false is the same request as omitting it.
+    When I search the Publisher API listing for name "expandPropsApiName<tenantSuffix>" with expandProperties "false" until it is listed
+    Then The response array field "list" should have exactly 1 entries
+    And The response array field "list[0].additionalProperties" should have exactly 0 entries
+    And The response array field "list[0].additionalPropertiesMap.*" should have exactly 0 entries
+    And The response should not contain "finance"
+    And The response should not contain "jane"
+
+    # Opted in, the listing reports what the single-API endpoint reports. The map is keyed by the raw property
+    # name, so a Developer Portal visible property keeps its __display suffix in the key while its name is
+    # stripped, and its map entry's display is false even though the array entry's is true.
+    When I search the Publisher API listing for name "expandPropsApiName<tenantSuffix>" with expandProperties "true" until it is listed
+    Then The response array field "list" should have exactly 1 entries
+    And The response array field "list[0].additionalProperties" should have exactly 2 entries
+    And The response array field "list[0].additionalPropertiesMap.*" should have exactly 2 entries
+    And The response field "list[0].additionalProperties[*].name" should be exactly the list "dept,owner"
+    And The response field "list[0].additionalProperties[?(@.name=='dept')].value" should be exactly the list "finance"
+    And The response field "list[0].additionalProperties[?(@.name=='dept')].display" should be exactly the list "false"
+    And The response field "list[0].additionalProperties[?(@.name=='owner')].value" should be exactly the list "jane"
+    And The response field "list[0].additionalProperties[?(@.name=='owner')].display" should be exactly the list "true"
+    And The value of response field "list[0].additionalPropertiesMap.dept.name" should be "dept"
+    And The value of response field "list[0].additionalPropertiesMap.dept.value" should be "finance"
+    And The value of response field "list[0].additionalPropertiesMap.dept.display" should be "false"
+    And The value of response field "list[0].additionalPropertiesMap.owner__display.name" should be "owner"
+    And The value of response field "list[0].additionalPropertiesMap.owner__display.value" should be "jane"
+    And The value of response field "list[0].additionalPropertiesMap.owner__display.display" should be "false"
+
+    Examples:
+      | tenant      | tenantSuffix |
+      | super       |              |
+      | tenant1.com | @tenant1.com |

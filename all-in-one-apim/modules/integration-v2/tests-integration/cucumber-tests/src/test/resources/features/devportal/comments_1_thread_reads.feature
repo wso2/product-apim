@@ -30,7 +30,7 @@ Feature: API Comment Threads — Read Surface Across Both Planes
   Runs x2 tenants (super tenant and tenant1.com), like the mutation half in comments_2_thread_mutations — every
   Examples table here carries both actor rows. What is under test is plane and pagination semantics, which are
   tenant-independent, so the second row is a routing sanity check rather than the point of the scenario;
-  devportal/comments.feature covers the comment CRUD arc itself.
+  comments_2_thread_mutations covers the edit, authorization and cascade-delete arcs for these same fixtures.
 
   # ---------------------------------------------------------------------------------------------------------
   # PUBLISHER plane
@@ -38,6 +38,8 @@ Feature: API Comment Threads — Read Surface Across Both Planes
 
   # Ports testPublisherGetAllCommentsTest.
   @cap:devportal @feat:comments @type:regression @rule:publisher-plane @dep:publisher @legacy:PublisherCommentTest
+
+
   Scenario Outline: The publisher-plane root comment list returns both roots with the publisher entry point and no parent as <actor>
     Given The system is ready and I have valid publisher access tokens as "<actor>"
     When I retrieve all "publisher" comments of API "ptApiId<suffix>" with limit 5 offset 0
@@ -56,11 +58,16 @@ Feature: API Comment Threads — Read Surface Across Both Planes
 
     Examples:
       | actor                     | suffix       |
-      | admin                     |              |
+      | superTenantAdmin                     |              |
       | admin@tenant1.com         | @tenant1.com |
+      | publisherUser |              |
+      | SECONDARY.COM/publisherUser1 |              |
+      | publisherUser@tenant1.com | @tenant1.com |
+      | SECONDARY.COM/publisherUser1@tenant1.com | @tenant1.com |
 
   # Ports testPublisherPaginatedRootCommentsTest.
   @cap:devportal @feat:comments @type:regression @rule:publisher-plane @dep:publisher @legacy:PublisherCommentTest
+
   Scenario Outline: The publisher-plane root comment list honours a non-zero offset as <actor>
     Given The system is ready and I have valid publisher access tokens as "<actor>"
     When I retrieve all "publisher" comments of API "ptApiId<suffix>" with limit 3 offset 1
@@ -72,11 +79,16 @@ Feature: API Comment Threads — Read Surface Across Both Planes
 
     Examples:
       | actor                     | suffix       |
-      | admin                     |              |
+      | superTenantAdmin                     |              |
       | admin@tenant1.com         | @tenant1.com |
+      | publisherUser |              |
+      | SECONDARY.COM/publisherUser1 |              |
+      | publisherUser@tenant1.com | @tenant1.com |
+      | SECONDARY.COM/publisherUser1@tenant1.com | @tenant1.com |
 
   # Ports testPublisherTotalCommentsOfPaginatedRootCommentsTest (which legacy guarded behind an if on total).
   @cap:devportal @feat:comments @type:regression @rule:publisher-plane @dep:publisher @legacy:PublisherCommentTest
+
   Scenario Outline: The publisher-plane root comment list reports the collection total independently of the page size as <actor>
     Given The system is ready and I have valid publisher access tokens as "<actor>"
     When I retrieve all "publisher" comments of API "ptApiId<suffix>" with limit 1 offset 0
@@ -88,11 +100,16 @@ Feature: API Comment Threads — Read Surface Across Both Planes
 
     Examples:
       | actor                     | suffix       |
-      | admin                     |              |
+      | superTenantAdmin                     |              |
       | admin@tenant1.com         | @tenant1.com |
+      | publisherUser |              |
+      | SECONDARY.COM/publisherUser1 |              |
+      | publisherUser@tenant1.com | @tenant1.com |
+      | SECONDARY.COM/publisherUser1@tenant1.com | @tenant1.com |
 
   # Ports the comment-with-replies half of testAddRepliesToRootCommentByAdminTest (PublisherCommentTest).
   @cap:devportal @feat:comments @type:regression @rule:publisher-plane @dep:publisher @legacy:PublisherCommentTest
+
   Scenario Outline: A publisher-plane comment fetched with its replies carries all three, each parented to it as <actor>
     Given The system is ready and I have valid publisher access tokens as "<actor>"
     When I retrieve the "publisher" comment "ptRoot1<suffix>" of API "ptApiId<suffix>" with reply limit 3 offset 0
@@ -121,11 +138,16 @@ Feature: API Comment Threads — Read Surface Across Both Planes
 
     Examples:
       | actor                     | suffix       |
-      | admin                     |              |
+      | superTenantAdmin                     |              |
       | admin@tenant1.com         | @tenant1.com |
+      | publisherUser |              |
+      | SECONDARY.COM/publisherUser1 |              |
+      | publisherUser@tenant1.com | @tenant1.com |
+      | SECONDARY.COM/publisherUser1@tenant1.com | @tenant1.com |
 
   # Ports testPublisherPaginatedCommentListTest.
   @cap:devportal @feat:comments @type:regression @rule:publisher-plane @dep:publisher @legacy:PublisherCommentTest
+
   Scenario Outline: The replies embedded in a publisher-plane comment honour a non-zero reply offset as <actor>
     Given The system is ready and I have valid publisher access tokens as "<actor>"
     When I retrieve the "publisher" comment "ptRoot1<suffix>" of API "ptApiId<suffix>" with reply limit 3 offset 1
@@ -140,11 +162,16 @@ Feature: API Comment Threads — Read Surface Across Both Planes
 
     Examples:
       | actor                     | suffix       |
-      | admin                     |              |
+      | superTenantAdmin                     |              |
       | admin@tenant1.com         | @tenant1.com |
+      | publisherUser |              |
+      | SECONDARY.COM/publisherUser1 |              |
+      | publisherUser@tenant1.com | @tenant1.com |
+      | SECONDARY.COM/publisherUser1@tenant1.com | @tenant1.com |
 
   # Ports testPublisherGetRepliesOfCommentTest.
   @cap:devportal @feat:comments @type:regression @rule:publisher-plane @dep:publisher @legacy:PublisherCommentTest
+
   Scenario Outline: The publisher-plane replies collection of a comment lists every reply with its parent and entry point as <actor>
     Given The system is ready and I have valid publisher access tokens as "<actor>"
     When I retrieve the "publisher" replies of comment "ptRoot1<suffix>" of API "ptApiId<suffix>" with limit 5 offset 0
@@ -168,11 +195,16 @@ Feature: API Comment Threads — Read Surface Across Both Planes
 
     Examples:
       | actor                     | suffix       |
-      | admin                     |              |
+      | superTenantAdmin                     |              |
       | admin@tenant1.com         | @tenant1.com |
+      | publisherUser |              |
+      | SECONDARY.COM/publisherUser1 |              |
+      | publisherUser@tenant1.com | @tenant1.com |
+      | SECONDARY.COM/publisherUser1@tenant1.com | @tenant1.com |
 
   # Ports testPublisherPaginationOfRepliesOfCommentTest.
   @cap:devportal @feat:comments @type:regression @rule:publisher-plane @dep:publisher @legacy:PublisherCommentTest
+
   Scenario Outline: The publisher-plane replies collection honours a non-zero offset as <actor>
     Given The system is ready and I have valid publisher access tokens as "<actor>"
     When I retrieve the "publisher" replies of comment "ptRoot1<suffix>" of API "ptApiId<suffix>" with limit 3 offset 1
@@ -186,11 +218,16 @@ Feature: API Comment Threads — Read Surface Across Both Planes
 
     Examples:
       | actor                     | suffix       |
-      | admin                     |              |
+      | superTenantAdmin                     |              |
       | admin@tenant1.com         | @tenant1.com |
+      | publisherUser |              |
+      | SECONDARY.COM/publisherUser1 |              |
+      | publisherUser@tenant1.com | @tenant1.com |
+      | SECONDARY.COM/publisherUser1@tenant1.com | @tenant1.com |
 
   # Ports testPublisherTotalRepliesOfPaginationOfRepliesOfCommentTest (legacy guarded it behind an if on total).
   @cap:devportal @feat:comments @type:regression @rule:publisher-plane @dep:publisher @legacy:PublisherCommentTest
+
   Scenario Outline: The publisher-plane replies collection reports the collection total independently of the page size as <actor>
     Given The system is ready and I have valid publisher access tokens as "<actor>"
     When I retrieve the "publisher" replies of comment "ptRoot1<suffix>" of API "ptApiId<suffix>" with limit 1 offset 0
@@ -201,19 +238,25 @@ Feature: API Comment Threads — Read Surface Across Both Planes
 
     Examples:
       | actor                     | suffix       |
-      | admin                     |              |
+      | superTenantAdmin                     |              |
       | admin@tenant1.com         | @tenant1.com |
+      | publisherUser |              |
+      | SECONDARY.COM/publisherUser1 |              |
+      | publisherUser@tenant1.com | @tenant1.com |
+      | SECONDARY.COM/publisherUser1@tenant1.com | @tenant1.com |
 
   # ---------------------------------------------------------------------------------------------------------
-  # DEVPORTAL plane — only the reads devportal/comments.feature does NOT already cover. That feature asserts the
-  # root count, the reply count and reply-offset visibility by substring; what is missing and added here is the
-  # per-member exactness (id, category, entryPoint, parentCommentId), a non-zero offset on the ROOT list, and the
-  # pagination totals.
+  # DEVPORTAL plane — assert the complete read contract: per-member identity and metadata, non-zero root/reply
+  # offsets, and pagination totals, in addition to the basic counts.
   # ---------------------------------------------------------------------------------------------------------
   # Ports testDevPortalGetAllCommentsTest.
   @cap:devportal @feat:comments @type:regression @rule:devportal-plane @dep:publisher @legacy:DevPortalCommentTest
+
   Scenario Outline: The devportal-plane root comment list returns both roots with the devportal entry point and no parent as <actor>
-    Given The system is ready and I have valid publisher access tokens as "<actor>"
+    Given The system is ready
+    And I act as "<actor>"
+    And I have a valid DCR application for the current user
+    And I have a valid Devportal access token for the current user
     When I retrieve all "devportal" comments of API "dtApiId<suffix>" with limit 5 offset 0
     Then The response status code should be 200
     And The value of response field "count" should be "2"
@@ -230,13 +273,21 @@ Feature: API Comment Threads — Read Surface Across Both Planes
 
     Examples:
       | actor                     | suffix       |
-      | admin                     |              |
+      | superTenantAdmin                     |              |
       | admin@tenant1.com         | @tenant1.com |
+      | subscriberUser |              |
+      | SECONDARY.COM/subscriberUser1 |              |
+      | subscriberUser@tenant1.com | @tenant1.com |
+      | SECONDARY.COM/subscriberUser1@tenant1.com | @tenant1.com |
 
   # Ports testDevPortalPaginatedRootCommentsTest.
   @cap:devportal @feat:comments @type:regression @rule:devportal-plane @dep:publisher @legacy:DevPortalCommentTest
+
   Scenario Outline: The devportal-plane root comment list honours a non-zero offset as <actor>
-    Given The system is ready and I have valid publisher access tokens as "<actor>"
+    Given The system is ready
+    And I act as "<actor>"
+    And I have a valid DCR application for the current user
+    And I have a valid Devportal access token for the current user
     When I retrieve all "devportal" comments of API "dtApiId<suffix>" with limit 3 offset 1
     Then The response status code should be 200
     And The value of response field "count" should be "1"
@@ -246,13 +297,21 @@ Feature: API Comment Threads — Read Surface Across Both Planes
 
     Examples:
       | actor                     | suffix       |
-      | admin                     |              |
+      | superTenantAdmin                     |              |
       | admin@tenant1.com         | @tenant1.com |
+      | subscriberUser |              |
+      | SECONDARY.COM/subscriberUser1 |              |
+      | subscriberUser@tenant1.com | @tenant1.com |
+      | SECONDARY.COM/subscriberUser1@tenant1.com | @tenant1.com |
 
   # Ports testDevPortalTotalCommentsOfPaginatedRootCommentsTest (legacy guarded it behind an if on total).
   @cap:devportal @feat:comments @type:regression @rule:devportal-plane @dep:publisher @legacy:DevPortalCommentTest
+
   Scenario Outline: The devportal-plane root comment list reports the collection total independently of the page size as <actor>
-    Given The system is ready and I have valid publisher access tokens as "<actor>"
+    Given The system is ready
+    And I act as "<actor>"
+    And I have a valid DCR application for the current user
+    And I have a valid Devportal access token for the current user
     When I retrieve all "devportal" comments of API "dtApiId<suffix>" with limit 1 offset 0
     Then The response status code should be 200
     And The value of response field "count" should be "1"
@@ -261,13 +320,21 @@ Feature: API Comment Threads — Read Surface Across Both Planes
 
     Examples:
       | actor                     | suffix       |
-      | admin                     |              |
+      | superTenantAdmin                     |              |
       | admin@tenant1.com         | @tenant1.com |
+      | subscriberUser |              |
+      | SECONDARY.COM/subscriberUser1 |              |
+      | subscriberUser@tenant1.com | @tenant1.com |
+      | SECONDARY.COM/subscriberUser1@tenant1.com | @tenant1.com |
 
   # Ports the comment-with-replies half of testAddRepliesToRootCommentByAdminTest (DevPortalCommentTest).
   @cap:devportal @feat:comments @type:regression @rule:devportal-plane @dep:publisher @legacy:DevPortalCommentTest
+
   Scenario Outline: A devportal-plane comment fetched with its replies carries all three, each parented to it as <actor>
-    Given The system is ready and I have valid publisher access tokens as "<actor>"
+    Given The system is ready
+    And I act as "<actor>"
+    And I have a valid DCR application for the current user
+    And I have a valid Devportal access token for the current user
     When I retrieve the "devportal" comment "dtRoot1<suffix>" of API "dtApiId<suffix>" with reply limit 3 offset 0
     Then The response status code should be 200
     And The value of response field "id" should be "{{dtRoot1<suffix>}}"
@@ -294,14 +361,21 @@ Feature: API Comment Threads — Read Surface Across Both Planes
 
     Examples:
       | actor                     | suffix       |
-      | admin                     |              |
+      | superTenantAdmin                     |              |
       | admin@tenant1.com         | @tenant1.com |
+      | subscriberUser |              |
+      | SECONDARY.COM/subscriberUser1 |              |
+      | subscriberUser@tenant1.com | @tenant1.com |
+      | SECONDARY.COM/subscriberUser1@tenant1.com | @tenant1.com |
 
-  # Ports testDevPortalPaginatedCommentListTest — the exact-count/exact-index form of the substring reply-offset
-  # check devportal/comments.feature already makes.
+  # Ports testDevPortalPaginatedCommentListTest with exact member identity as well as the reply-offset contract.
   @cap:devportal @feat:comments @type:regression @rule:devportal-plane @dep:publisher @legacy:DevPortalCommentTest
+
   Scenario Outline: The replies embedded in a devportal-plane comment honour a non-zero reply offset as <actor>
-    Given The system is ready and I have valid publisher access tokens as "<actor>"
+    Given The system is ready
+    And I act as "<actor>"
+    And I have a valid DCR application for the current user
+    And I have a valid Devportal access token for the current user
     When I retrieve the "devportal" comment "dtRoot1<suffix>" of API "dtApiId<suffix>" with reply limit 3 offset 1
     Then The response status code should be 200
     And The value of response field "$.replies.count" should be "2"
@@ -314,13 +388,21 @@ Feature: API Comment Threads — Read Surface Across Both Planes
 
     Examples:
       | actor                     | suffix       |
-      | admin                     |              |
+      | superTenantAdmin                     |              |
       | admin@tenant1.com         | @tenant1.com |
+      | subscriberUser |              |
+      | SECONDARY.COM/subscriberUser1 |              |
+      | subscriberUser@tenant1.com | @tenant1.com |
+      | SECONDARY.COM/subscriberUser1@tenant1.com | @tenant1.com |
 
   # Ports testDevPortalGetRepliesOfCommentTest.
   @cap:devportal @feat:comments @type:regression @rule:devportal-plane @dep:publisher @legacy:DevPortalCommentTest
+
   Scenario Outline: The devportal-plane replies collection of a comment lists every reply with its parent and entry point as <actor>
-    Given The system is ready and I have valid publisher access tokens as "<actor>"
+    Given The system is ready
+    And I act as "<actor>"
+    And I have a valid DCR application for the current user
+    And I have a valid Devportal access token for the current user
     When I retrieve the "devportal" replies of comment "dtRoot1<suffix>" of API "dtApiId<suffix>" with limit 5 offset 0
     Then The response status code should be 200
     And The value of response field "count" should be "3"
@@ -342,13 +424,21 @@ Feature: API Comment Threads — Read Surface Across Both Planes
 
     Examples:
       | actor                     | suffix       |
-      | admin                     |              |
+      | superTenantAdmin                     |              |
       | admin@tenant1.com         | @tenant1.com |
+      | subscriberUser |              |
+      | SECONDARY.COM/subscriberUser1 |              |
+      | subscriberUser@tenant1.com | @tenant1.com |
+      | SECONDARY.COM/subscriberUser1@tenant1.com | @tenant1.com |
 
   # Ports testDevPortalPaginationOfRepliesOfCommentTest.
   @cap:devportal @feat:comments @type:regression @rule:devportal-plane @dep:publisher @legacy:DevPortalCommentTest
+
   Scenario Outline: The devportal-plane replies collection honours a non-zero offset as <actor>
-    Given The system is ready and I have valid publisher access tokens as "<actor>"
+    Given The system is ready
+    And I act as "<actor>"
+    And I have a valid DCR application for the current user
+    And I have a valid Devportal access token for the current user
     When I retrieve the "devportal" replies of comment "dtRoot1<suffix>" of API "dtApiId<suffix>" with limit 3 offset 1
     Then The response status code should be 200
     And The value of response field "count" should be "2"
@@ -360,13 +450,21 @@ Feature: API Comment Threads — Read Surface Across Both Planes
 
     Examples:
       | actor                     | suffix       |
-      | admin                     |              |
+      | superTenantAdmin                     |              |
       | admin@tenant1.com         | @tenant1.com |
+      | subscriberUser |              |
+      | SECONDARY.COM/subscriberUser1 |              |
+      | subscriberUser@tenant1.com | @tenant1.com |
+      | SECONDARY.COM/subscriberUser1@tenant1.com | @tenant1.com |
 
   # Ports testDevPortalTotalRepliesOfPaginationOfRepliesOfCommentTest (legacy guarded it behind an if on total).
   @cap:devportal @feat:comments @type:regression @rule:devportal-plane @dep:publisher @legacy:DevPortalCommentTest
+
   Scenario Outline: The devportal-plane replies collection reports the collection total independently of the page size as <actor>
-    Given The system is ready and I have valid publisher access tokens as "<actor>"
+    Given The system is ready
+    And I act as "<actor>"
+    And I have a valid DCR application for the current user
+    And I have a valid Devportal access token for the current user
     When I retrieve the "devportal" replies of comment "dtRoot1<suffix>" of API "dtApiId<suffix>" with limit 1 offset 0
     Then The response status code should be 200
     And The value of response field "count" should be "1"
@@ -375,8 +473,12 @@ Feature: API Comment Threads — Read Surface Across Both Planes
 
     Examples:
       | actor                     | suffix       |
-      | admin                     |              |
+      | superTenantAdmin                     |              |
       | admin@tenant1.com         | @tenant1.com |
+      | subscriberUser |              |
+      | SECONDARY.COM/subscriberUser1 |              |
+      | subscriberUser@tenant1.com | @tenant1.com |
+      | SECONDARY.COM/subscriberUser1@tenant1.com | @tenant1.com |
 
   # ---------------------------------------------------------------------------------------------------------
   # CROSS-PLANE reads — the same thread read from the OTHER plane. The entryPoint travels with the comment, so a
@@ -385,8 +487,12 @@ Feature: API Comment Threads — Read Surface Across Both Planes
   # ---------------------------------------------------------------------------------------------------------
   # Ports testVerifyDevPortalGetAllCommentsTest.
   @cap:devportal @feat:comments @type:regression @rule:cross-plane @dep:publisher @legacy:PublisherCommentTest
+
   Scenario Outline: A devportal-plane list of a publisher-entered thread reports the publisher entry point as <actor>
-    Given The system is ready and I have valid publisher access tokens as "<actor>"
+    Given The system is ready
+    And I act as "<actor>"
+    And I have a valid DCR application for the current user
+    And I have a valid Devportal access token for the current user
     When I retrieve all "devportal" comments of API "ptApiId<suffix>" with limit 5 offset 0
     Then The response status code should be 200
     And The value of response field "count" should be "2"
@@ -402,13 +508,21 @@ Feature: API Comment Threads — Read Surface Across Both Planes
 
     Examples:
       | actor                     | suffix       |
-      | admin                     |              |
+      | superTenantAdmin                     |              |
       | admin@tenant1.com         | @tenant1.com |
+      | subscriberUser |              |
+      | SECONDARY.COM/subscriberUser1 |              |
+      | subscriberUser@tenant1.com | @tenant1.com |
+      | SECONDARY.COM/subscriberUser1@tenant1.com | @tenant1.com |
 
   # Ports testVerifyDevPortalPaginatedRootCommentsTest.
   @cap:devportal @feat:comments @type:regression @rule:cross-plane @dep:publisher @legacy:PublisherCommentTest
+
   Scenario Outline: A devportal-plane list of a publisher-entered thread honours a non-zero offset as <actor>
-    Given The system is ready and I have valid publisher access tokens as "<actor>"
+    Given The system is ready
+    And I act as "<actor>"
+    And I have a valid DCR application for the current user
+    And I have a valid Devportal access token for the current user
     When I retrieve all "devportal" comments of API "ptApiId<suffix>" with limit 3 offset 1
     Then The response status code should be 200
     And The value of response field "count" should be "1"
@@ -417,13 +531,21 @@ Feature: API Comment Threads — Read Surface Across Both Planes
 
     Examples:
       | actor                     | suffix       |
-      | admin                     |              |
+      | superTenantAdmin                     |              |
       | admin@tenant1.com         | @tenant1.com |
+      | subscriberUser |              |
+      | SECONDARY.COM/subscriberUser1 |              |
+      | subscriberUser@tenant1.com | @tenant1.com |
+      | SECONDARY.COM/subscriberUser1@tenant1.com | @tenant1.com |
 
   # Ports testVerifyDevPortalGetRepliesOfCommentTest.
   @cap:devportal @feat:comments @type:regression @rule:cross-plane @dep:publisher @legacy:PublisherCommentTest
+
   Scenario Outline: The devportal-plane replies collection of a publisher-entered comment lists every reply as <actor>
-    Given The system is ready and I have valid publisher access tokens as "<actor>"
+    Given The system is ready
+    And I act as "<actor>"
+    And I have a valid DCR application for the current user
+    And I have a valid Devportal access token for the current user
     When I retrieve the "devportal" replies of comment "ptRoot1<suffix>" of API "ptApiId<suffix>" with limit 5 offset 0
     Then The response status code should be 200
     And The value of response field "count" should be "3"
@@ -440,13 +562,21 @@ Feature: API Comment Threads — Read Surface Across Both Planes
 
     Examples:
       | actor                     | suffix       |
-      | admin                     |              |
+      | superTenantAdmin                     |              |
       | admin@tenant1.com         | @tenant1.com |
+      | subscriberUser |              |
+      | SECONDARY.COM/subscriberUser1 |              |
+      | subscriberUser@tenant1.com | @tenant1.com |
+      | SECONDARY.COM/subscriberUser1@tenant1.com | @tenant1.com |
 
   # Ports testVerifyDevPortalPaginationOfRepliesOfCommentTest.
   @cap:devportal @feat:comments @type:regression @rule:cross-plane @dep:publisher @legacy:PublisherCommentTest
+
   Scenario Outline: The devportal-plane replies collection of a publisher-entered comment honours a non-zero offset as <actor>
-    Given The system is ready and I have valid publisher access tokens as "<actor>"
+    Given The system is ready
+    And I act as "<actor>"
+    And I have a valid DCR application for the current user
+    And I have a valid Devportal access token for the current user
     When I retrieve the "devportal" replies of comment "ptRoot1<suffix>" of API "ptApiId<suffix>" with limit 3 offset 1
     Then The response status code should be 200
     And The value of response field "count" should be "2"
@@ -457,11 +587,16 @@ Feature: API Comment Threads — Read Surface Across Both Planes
 
     Examples:
       | actor                     | suffix       |
-      | admin                     |              |
+      | superTenantAdmin                     |              |
       | admin@tenant1.com         | @tenant1.com |
+      | subscriberUser |              |
+      | SECONDARY.COM/subscriberUser1 |              |
+      | subscriberUser@tenant1.com | @tenant1.com |
+      | SECONDARY.COM/subscriberUser1@tenant1.com | @tenant1.com |
 
   # Ports testVerifyPublisherGetAllCommentsTest.
   @cap:devportal @feat:comments @type:regression @rule:cross-plane @dep:publisher @legacy:DevPortalCommentTest
+
   Scenario Outline: A publisher-plane list of a devportal-entered thread reports the devportal entry point as <actor>
     Given The system is ready and I have valid publisher access tokens as "<actor>"
     When I retrieve all "publisher" comments of API "dtApiId<suffix>" with limit 5 offset 0
@@ -479,11 +614,16 @@ Feature: API Comment Threads — Read Surface Across Both Planes
 
     Examples:
       | actor                     | suffix       |
-      | admin                     |              |
+      | superTenantAdmin                     |              |
       | admin@tenant1.com         | @tenant1.com |
+      | publisherUser |              |
+      | SECONDARY.COM/publisherUser1 |              |
+      | publisherUser@tenant1.com | @tenant1.com |
+      | SECONDARY.COM/publisherUser1@tenant1.com | @tenant1.com |
 
   # Ports testVerifyPublisherPaginatedCommentListTest.
   @cap:devportal @feat:comments @type:regression @rule:cross-plane @dep:publisher @legacy:DevPortalCommentTest
+
   Scenario Outline: A publisher-plane read of a devportal-entered comment honours a non-zero reply offset as <actor>
     Given The system is ready and I have valid publisher access tokens as "<actor>"
     When I retrieve the "publisher" comment "dtRoot1<suffix>" of API "dtApiId<suffix>" with reply limit 3 offset 1
@@ -497,11 +637,16 @@ Feature: API Comment Threads — Read Surface Across Both Planes
 
     Examples:
       | actor                     | suffix       |
-      | admin                     |              |
+      | superTenantAdmin                     |              |
       | admin@tenant1.com         | @tenant1.com |
+      | publisherUser |              |
+      | SECONDARY.COM/publisherUser1 |              |
+      | publisherUser@tenant1.com | @tenant1.com |
+      | SECONDARY.COM/publisherUser1@tenant1.com | @tenant1.com |
 
   # Ports testVerifyPublisherGetRepliesOfCommentTest.
   @cap:devportal @feat:comments @type:regression @rule:cross-plane @dep:publisher @legacy:DevPortalCommentTest
+
   Scenario Outline: The publisher-plane replies collection of a devportal-entered comment lists every reply as <actor>
     Given The system is ready and I have valid publisher access tokens as "<actor>"
     When I retrieve the "publisher" replies of comment "dtRoot1<suffix>" of API "dtApiId<suffix>" with limit 5 offset 0
@@ -520,11 +665,16 @@ Feature: API Comment Threads — Read Surface Across Both Planes
 
     Examples:
       | actor                     | suffix       |
-      | admin                     |              |
+      | superTenantAdmin                     |              |
       | admin@tenant1.com         | @tenant1.com |
+      | publisherUser |              |
+      | SECONDARY.COM/publisherUser1 |              |
+      | publisherUser@tenant1.com | @tenant1.com |
+      | SECONDARY.COM/publisherUser1@tenant1.com | @tenant1.com |
 
   # Ports testVerifyPublisherPaginationOfRepliesOfCommentTest.
   @cap:devportal @feat:comments @type:regression @rule:cross-plane @dep:publisher @legacy:DevPortalCommentTest
+
   Scenario Outline: The publisher-plane replies collection of a devportal-entered comment honours a non-zero offset as <actor>
     Given The system is ready and I have valid publisher access tokens as "<actor>"
     When I retrieve the "publisher" replies of comment "dtRoot1<suffix>" of API "dtApiId<suffix>" with limit 3 offset 1
@@ -537,5 +687,9 @@ Feature: API Comment Threads — Read Surface Across Both Planes
 
     Examples:
       | actor                     | suffix       |
-      | admin                     |              |
+      | superTenantAdmin                     |              |
       | admin@tenant1.com         | @tenant1.com |
+      | publisherUser |              |
+      | SECONDARY.COM/publisherUser1 |              |
+      | publisherUser@tenant1.com | @tenant1.com |
+      | SECONDARY.COM/publisherUser1@tenant1.com | @tenant1.com |

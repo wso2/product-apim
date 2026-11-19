@@ -1,0 +1,16 @@
+<!--
+  Test-framework template OVERLAY for repository/conf/registry.xml.j2.
+
+  This is NOT a full template. Each leaf value below is written into the product distribution template
+    modules/distribution/product/src/main/resources/conf/templates/repository/conf/registry.xml.j2
+  at the same element path (J2TemplateOverlay), and the result is copied into the container before boot, where the
+  server renders it with deployment.toml as usual. Only literal values can be set here; a value the template renders
+  from deployment.toml belongs in the deployment.toml overlay beside this file.
+
+  enableCache: the registry resource cache is off. Under the suite's concurrent CRUD load, a read of an API artifact
+  that lands while another request is writing it re-caches the previous version, and that write can then commit the
+  stale content (for example, a publish that leaves the API in Created). Product default is true.
+-->
+<wso2registry>
+    <enableCache>false</enableCache>
+</wso2registry>

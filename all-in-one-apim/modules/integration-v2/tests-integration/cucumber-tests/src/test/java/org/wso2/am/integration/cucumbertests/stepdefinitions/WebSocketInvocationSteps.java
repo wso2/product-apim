@@ -21,6 +21,8 @@ import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.skyscreamer.jsonassert.JSONAssert;
+import org.skyscreamer.jsonassert.JSONCompareMode;
 import org.testng.Assert;
 import org.wso2.am.integration.cucumbertests.utils.TestContext;
 import org.wso2.am.integration.cucumbertests.utils.Utils;
@@ -117,6 +119,53 @@ public class WebSocketInvocationSteps {
     }
 
     /**
+     * Measures one WebSocket connection without retrying the handshake or echo. A retry here creates another
+     * backend connection and can inflate proxy CONNECT counts; readiness must be established before this step.
+     */
+    @When("I invoke the WebSocket API once at gateway ws context {string} with message {string} using access token {string} expecting echo {string}")
+    public void invokeWebSocketOnce(String context, String message, String accessToken, String expectedEcho)
+            throws Exception {
+
+        String token = TestContext.resolve(accessToken).toString();
+        String received = connectSendReceive(buildWsUrl(context), token, message, true);
+        Assert.assertEquals(received, expectedEcho,
+                "Single WebSocket invocation did not return the expected echo; the connection is not retried.");
+    }
+
+    @When("I invoke the WebSocket API at gateway ws context {string} with message {string} using access token {string} expecting echo {string} within {int} seconds and await close")
+    public void invokeWebSocketAndAwaitClose(String context, String message, String accessToken, String expectedEcho,
+                                             int timeoutSeconds) throws Exception {
+
+        String resolvedContext = Utils.resolveContextPlaceholders(context);
+        String token = TestContext.resolve(accessToken).toString();
+        String base = Utils.getBaseGatewayWsUrl();
+        if (base.endsWith("/")) {
+            base = base.substring(0, base.length() - 1);
+        }
+        String wsUrl = base + (resolvedContext.startsWith("/") ? "" : "/") + resolvedContext;
+        long startedMillis = System.currentTimeMillis();
+        AtomicReference<Throwable> lastFailure = new AtomicReference<>();
+        String received = Utils.retryUntil(timeoutSeconds * 1000L,
+                () -> {
+                    try {
+                        return connectSendReceive(wsUrl, token, message, true);
+                    } catch (InterruptedException interrupted) {
+                        Thread.currentThread().interrupt();
+                        return null;
+                    } catch (Exception failedAttempt) {
+                        lastFailure.set(failedAttempt);
+                        return null;
+                    }
+                }, echo -> echo != null);
+        String authDetail = received != null ? ""
+                : authRejectionDetail(wsUrl, accessToken, token, lastFailure, startedMillis);
+        Assert.assertNotNull(received, "WebSocket API did not echo a response and close cleanly within the deadline; "
+                + "last error: " + lastErrorOf(lastFailure) + authDetail);
+        Assert.assertEquals(received, expectedEcho,
+                "WebSocket echo mismatch — expected the backend to return the message uppercased.");
+    }
+
+    /**
      * As {@link #invokeWebSocket} but authenticates with an API KEY in the {@code apikey} header (the WS api-key
      * auth mode — {@code wscat -H "apikey: <key>"} in the docs) instead of an OAuth token.
      */
@@ -156,6 +205,91 @@ public class WebSocketInvocationSteps {
     public void invokeWsExpectRejectionToken(String context, String accessToken, int timeoutSeconds) throws Exception {
         String token = TestContext.resolve(accessToken).toString();
         expectRejection(buildWsUrl(context), "Authorization", "Bearer " + token, timeoutSeconds);
+    }
+
+    @When("I wait until WebSocket API at gateway ws context {string} echoes message {string} with access token {string} as {string} within {int} seconds")
+    public void waitUntilWebSocketEchoWithToken(String context, String message, String accessToken,
+                                                String expectedEcho, int timeoutSeconds) throws Exception {
+        String token = TestContext.resolve(accessToken).toString();
+        Map<String, String> headers = Map.of("Authorization", "Bearer " + token);
+        waitUntilWebSocketEcho(buildWsUrl(context), headers, message, expectedEcho, timeoutSeconds);
+    }
+
+    @When("I wait until WebSocket API at gateway ws context {string} echoes message {string} with api key {string} as {string} within {int} seconds")
+    public void waitUntilWebSocketEchoWithApiKey(String context, String message, String apiKey,
+                                                 String expectedEcho, int timeoutSeconds) throws Exception {
+        String key = TestContext.resolve(apiKey).toString();
+        Map<String, String> headers = Map.of("apikey", key);
+        waitUntilWebSocketEcho(buildWsUrl(context), headers, message, expectedEcho, timeoutSeconds);
+    }
+
+    @When("I wait until WebSocket API at gateway ws context {string} echoes message {string} with api key {string} and referer {string} as {string} within {int} seconds")
+    public void waitUntilWebSocketEchoWithApiKeyAndReferer(String context, String message, String apiKey,
+                                                           String referer, String expectedEcho,
+                                                           int timeoutSeconds) throws Exception {
+        waitUntilWebSocketEcho(buildWsUrl(context), apiKeyAndReferer(apiKey, referer), message, expectedEcho,
+                timeoutSeconds);
+    }
+
+    @When("I wait until WebSocket API at gateway wss context {string} echoes message {string} with api key {string} as {string} within {int} seconds")
+    public void waitUntilSecureWebSocketEchoWithApiKey(String context, String message, String apiKey,
+                                                       String expectedEcho, int timeoutSeconds) throws Exception {
+        String key = TestContext.resolve(apiKey).toString();
+        waitUntilWebSocketEcho(buildWssUrl(context), Map.of("apikey", key), message, expectedEcho, timeoutSeconds);
+    }
+
+    private void waitUntilWebSocketEcho(String wsUrl, Map<String, String> headers, String message,
+                                        String expectedEcho, int timeoutSeconds) throws Exception {
+        AtomicReference<String> lastEcho = new AtomicReference<>();
+        AtomicReference<Throwable> lastFailure = new AtomicReference<>();
+        String readyEcho = Utils.retryUntilWithInterval(timeoutSeconds * 1000L, Constants.RETRY_INTERVAL_TIME, () -> {
+            try {
+                String echo = connectSendReceive(wsUrl, headers, message);
+                lastEcho.set(echo);
+                return echo;
+            } catch (InterruptedException interrupted) {
+                Thread.currentThread().interrupt();
+                return null;
+            } catch (Exception unavailable) {
+                lastFailure.set(unavailable);
+                return null;
+            }
+        }, expectedEcho::equals);
+        Assert.assertEquals(readyEcho, expectedEcho,
+                "Gateway WebSocket route did not return the readiness echo within " + timeoutSeconds + "s; lastEcho="
+                        + lastEcho.get() + ", lastError=" + lastErrorOf(lastFailure));
+    }
+
+    /**
+     * Waits for the gateway to reject a valid token at the WebSocket handshake with exactly the given HTTP status. The
+     * gateway reports a failed scope check as HTTP 401 ({@code HandshakeErrorConstants.API_AUTH_ERROR}). A successful
+     * WebSocket echo means the current gateway revision still permits this token; other failures (including a missing
+     * route during a redeploy) are inconclusive and do not satisfy the gate.
+     */
+    @When("I wait until the gateway rejects WebSocket access token {string} with HTTP {int} at context {string} within {int} seconds")
+    public void waitUntilWsScopeIsEnforced(String accessToken, int expectedStatus, String context,
+                                           int timeoutSeconds) throws Exception {
+        String token = TestContext.resolve(accessToken).toString();
+        String wsUrl = buildWsUrl(context);
+        AtomicBoolean observedEcho = new AtomicBoolean(false);
+        AtomicReference<Throwable> lastFailure = new AtomicReference<>();
+        Boolean rejected = Utils.retryUntilWithInterval(timeoutSeconds * 1000L, Constants.RETRY_INTERVAL_TIME, () -> {
+            try {
+                String echo = connectSendReceive(wsUrl, token, "readiness-probe");
+                observedEcho.set(true);
+                lastFailure.set(new AssertionError("Gateway accepted the token and returned: " + echo));
+                return null;
+            } catch (InterruptedException interrupted) {
+                Thread.currentThread().interrupt();
+                return null;
+            } catch (Exception rejectedOrUnavailable) {
+                lastFailure.set(rejectedOrUnavailable);
+                return handshakeStatus(rejectedOrUnavailable) == expectedStatus ? Boolean.TRUE : null;
+            }
+        }, outcome -> outcome != null);
+        Assert.assertEquals(rejected, Boolean.TRUE,
+                "Gateway did not return HTTP " + expectedStatus + " for the scope-less WebSocket token within "
+                        + timeoutSeconds + "s; observedEcho=" + observedEcho.get() + ", last outcome=" + lastErrorOf(lastFailure));
     }
 
     /** As above but the rejected credential is an API KEY in the {@code apikey} header (e.g. expired / not enabled). */
@@ -568,43 +702,16 @@ public class WebSocketInvocationSteps {
     /**
      * Connects to a deployed GraphQL API's subscription endpoint through the gateway WS inbound (subprotocol
      * {@code graphql-ws}), performs the graphql-ws handshake (connection_init → connection_ack), sends a
-     * {@code start} message carrying the subscription query, and asserts the first {@code data} message contains
-     * {@code expectedData}. Retries the whole flow until it succeeds or the deadline elapses. Ports the core
+     * {@code start} message carrying the subscription query, and asserts the exact {@code data} frame against a
+     * JSON fixture. Retries connection/warm-up failures until the deadline elapses. Ports the core
      * subscription invocation of GraphqlSubscriptionTestCase (liftStatusChange → {"name":"Astra Express"}).
      */
-    @When("I invoke the GraphQL subscription at gateway ws context {string} with query {string} using access token {string} expecting data containing {string} within {int} seconds")
-    public void invokeGraphqlSubscription(String context, String query, String accessToken, String expectedData,
-                                          int timeoutSeconds) throws Exception {
+    @When("I invoke the GraphQL subscription at gateway ws context {string} with query {string} using access token {string} expecting exact data frame from JSON file {string} within {int} seconds")
+    public void invokeGraphqlSubscription(String context, String query, String accessToken,
+                                          String expectedDataFrameFile, int timeoutSeconds) throws Exception {
 
-        String resolvedContext = Utils.resolveContextPlaceholders(context);
-        String token = TestContext.resolve(accessToken).toString();
-        String base = Utils.getBaseGatewayWsUrl();
-        if (base.endsWith("/")) {
-            base = base.substring(0, base.length() - 1);
-        }
-        String wsUrl = base + (resolvedContext.startsWith("/") ? "" : "/") + resolvedContext;
-
-        long startedMillis = System.currentTimeMillis();
-        AtomicReference<Throwable> lastFailure = new AtomicReference<>();
-        String data = Utils.retryUntil(timeoutSeconds * 1000L, () -> {
-            try {
-                return subscribeAndReceive(wsUrl, token, query, lastFailure);
-            } catch (InterruptedException interrupted) {
-                // Cancellation is not a transient/expected outcome — restore the flag so the envelope's next
-                // pause rethrows it instead of reading this as a retryable attempt.
-                Thread.currentThread().interrupt();
-                return null;
-            } catch (Exception connectingWhileWarmup) {
-                lastFailure.set(connectingWhileWarmup);
-                return null;
-            }
-        }, message -> message != null && message.contains(expectedData));
-        String authDetail = data != null ? ""
-                : authRejectionDetail(wsUrl, accessToken, token, lastFailure, startedMillis);
-        Assert.assertNotNull(data, "GraphQL subscription returned no data message within the deadline; last error: "
-                + lastErrorOf(lastFailure) + authDetail);
-        Assert.assertTrue(data.contains(expectedData),
-                "GraphQL subscription data did not contain '" + expectedData + "'; last message: " + data);
+        graphqlSubscriptionExpectDataFrame(context, query, accessToken, expectedDataFrameFile, timeoutSeconds,
+                false);
     }
 
 /**
@@ -615,10 +722,12 @@ public class WebSocketInvocationSteps {
      * WS inbound must pull the credential off the handshake's query string before any header is available.
      * Mirrors the plain-WebSocket {@code using access token query param} step for the same reason.
      */
-    @When("I invoke the GraphQL subscription at gateway ws context {string} with query {string} using access token query param {string} expecting data containing {string} within {int} seconds")
+    @When("I invoke the GraphQL subscription at gateway ws context {string} with query {string} using access token query param {string} expecting exact data frame from JSON file {string} within {int} seconds")
     public void invokeGraphqlSubscriptionTokenQueryParam(String context, String query, String accessToken,
-                                                        String expectedData, int timeoutSeconds) throws Exception {
-        graphqlSubscriptionExpectData(context, query, accessToken, expectedData, timeoutSeconds, true);
+                                                        String expectedDataFrameFile, int timeoutSeconds)
+            throws Exception {
+        graphqlSubscriptionExpectDataFrame(context, query, accessToken, expectedDataFrameFile, timeoutSeconds,
+                true);
     }
 
     /**
@@ -1008,8 +1117,13 @@ public class WebSocketInvocationSteps {
                 return handshake.getResponse().statusCode();
             }
             String message = cause.getMessage();
-            if (message != null && (message.contains("status code 401") || message.contains("401 Unauthorized"))) {
-                return 401;
+            if (message != null) {
+                if (message.contains("status code 401") || message.contains("401 Unauthorized")) {
+                    return 401;
+                }
+                if (message.contains("status code 403") || message.contains("403 Forbidden")) {
+                    return 403;
+                }
             }
         }
         return 0;
@@ -1211,7 +1325,7 @@ public class WebSocketInvocationSteps {
     private String subscribeAndReceive(String wsUrl, String token, String query,
                                        AtomicReference<Throwable> lastFailure) throws Exception {
         HttpClient client = HttpClient.newBuilder().sslContext(trustAllSslContext()).build();
-        CompletableFuture<Void> ack = new CompletableFuture<>();
+        CompletableFuture<String> ack = new CompletableFuture<>();
         CompletableFuture<String> data = new CompletableFuture<>();
         WebSocket ws;
         try {
@@ -1235,7 +1349,7 @@ public class WebSocketInvocationSteps {
                             String msg = parts.toString();
                             parts.setLength(0);
                             if (msg.contains("connection_ack")) {
-                                ack.complete(null);
+                                ack.complete(msg);
                             } else if (msg.contains("\"data\"")) {
                                 data.complete(msg);
                             }
@@ -1262,7 +1376,9 @@ public class WebSocketInvocationSteps {
             // here for the same reason — give the backend leg time to come up before the graphql-ws handshake.
             Thread.sleep(15000);
             ws.sendText("{\"type\":\"connection_init\",\"payload\":{}}", true);
-            ack.get(30, TimeUnit.SECONDS);
+            String ackFrame = ack.get(30, TimeUnit.SECONDS);
+            Assert.assertEquals(ackFrame, "{\"type\":\"connection_ack\"}",
+                    "GraphQL subscription connection acknowledgement frame differed");
             String start = "{\"id\":\"1\",\"type\":\"start\",\"payload\":{\"variables\":{},\"extensions\":{},"
                     + "\"operationName\":null,\"query\":\"" + query.replace("\"", "\\\"") + "\"}}";
             ws.sendText(start, true);
@@ -1292,6 +1408,11 @@ public class WebSocketInvocationSteps {
         return connectSendReceive(wsUrl, "Authorization", "Bearer " + token, message);
     }
 
+    private String connectSendReceive(String wsUrl, String token, String message, boolean awaitClose)
+            throws Exception {
+        return connectSendReceive(wsUrl, "Authorization", "Bearer " + token, message, awaitClose);
+    }
+
     /**
      * One connect → sendText → await first text response → close cycle, presenting the given auth header
      * ({@code Authorization: Bearer <token>} or {@code apikey: <key>}). Returns the response, or throws if the
@@ -1304,11 +1425,24 @@ public class WebSocketInvocationSteps {
         return connectSendReceive(wsUrl, headers, message);
     }
 
+    private String connectSendReceive(String wsUrl, String headerName, String headerValue, String message,
+                                      boolean awaitClose) throws Exception {
+        Map<String, String> headers = new LinkedHashMap<>();
+        headers.put(headerName, headerValue);
+        return connectSendReceive(wsUrl, headers, message, awaitClose);
+    }
+
     /** Multi-header variant (e.g. Authorization + Origin for CORS). Sets each header on the WS upgrade request. */
     private String connectSendReceive(String wsUrl, Map<String, String> headers, String message)
             throws Exception {
+        return connectSendReceive(wsUrl, headers, message, false);
+    }
+
+    private String connectSendReceive(String wsUrl, Map<String, String> headers, String message, boolean awaitClose)
+            throws Exception {
         HttpClient client = HttpClient.newBuilder().sslContext(trustAllSslContext()).build();
         CompletableFuture<String> response = new CompletableFuture<>();
+        CompletableFuture<Void> closeReceived = new CompletableFuture<>();
         WebSocket.Builder builder = client.newWebSocketBuilder();
         for (Map.Entry<String, String> e : headers.entrySet()) {
             builder.header(e.getKey(), e.getValue());
@@ -1329,6 +1463,12 @@ public class WebSocketInvocationSteps {
                             webSocket.request(1);
                             return null;
                         }
+
+                        @Override
+                        public CompletionStage<?> onClose(WebSocket webSocket, int statusCode, String reason) {
+                            closeReceived.complete(null);
+                            return null;
+                        }
                     })
                     .get(20, TimeUnit.SECONDS);
             ws.sendText(message, true);
@@ -1336,8 +1476,15 @@ public class WebSocketInvocationSteps {
         } finally {
             if (ws != null) {
                 try {
-                    ws.sendClose(WebSocket.NORMAL_CLOSURE, "done");
+                    CompletableFuture<WebSocket> closeSent = ws.sendClose(WebSocket.NORMAL_CLOSURE, "done");
+                    if (awaitClose) {
+                        closeSent.get(5, TimeUnit.SECONDS);
+                        closeReceived.get(5, TimeUnit.SECONDS);
+                    }
                 } catch (Exception closeFailure) {
+                    if (awaitClose) {
+                        throw closeFailure;
+                    }
                     log.warn("Ignoring failure to send WebSocket close frame: " + closeFailure.getMessage());
                 }
             }
@@ -1360,8 +1507,11 @@ public class WebSocketInvocationSteps {
      * Shared body of the two graphql-ws data-subscription steps above; {@code tokenInQueryParam} selects whether
      * the credential is presented as {@code ?access_token=} on the URL or as an {@code Authorization} header.
      */
-    private void graphqlSubscriptionExpectData(String context, String query, String accessToken, String expectedData,
-                                               int timeoutSeconds, boolean tokenInQueryParam) throws Exception {
+    private void graphqlSubscriptionExpectDataFrame(String context, String query, String accessToken,
+                                                    String expectedDataFrameFile, int timeoutSeconds,
+                                                    boolean tokenInQueryParam) throws Exception {
+
+        String expectedDataFrame = Utils.readClasspathResource(expectedDataFrameFile);
 
         String resolvedContext = Utils.resolveContextPlaceholders(context);
         String token = TestContext.resolve(accessToken).toString();
@@ -1392,12 +1542,12 @@ public class WebSocketInvocationSteps {
                 lastFailure.set(connectingWhileWarmup);
                 return null;
             }
-        }, message -> message != null && message.contains(expectedData));
+        }, message -> message != null);
         String authDetail = data != null ? ""
                 : authRejectionDetail(finalWsUrl, accessToken, token, lastFailure, startedMillis);
         Assert.assertNotNull(data, "GraphQL subscription returned no data message within the deadline; last error: "
                 + lastErrorOf(lastFailure) + authDetail);
-        Assert.assertTrue(data.contains(expectedData),
-                "GraphQL subscription data did not contain '" + expectedData + "'; last message: " + data);
+        JSONAssert.assertEquals("GraphQL subscription data frame did not match " + expectedDataFrameFile,
+                expectedDataFrame, data, JSONCompareMode.STRICT);
     }
 }

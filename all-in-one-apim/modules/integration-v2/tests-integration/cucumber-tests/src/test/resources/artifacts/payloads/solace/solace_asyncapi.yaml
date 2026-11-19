@@ -1,6 +1,7 @@
 # AsyncAPI for a Solace event API, shaped like what Solace Event Portal RETURNS rather than the minimum
-# APIM will accept. Mirrors the shim's fixture (tests-common/testcontainers/.../solaceshim/server.js) --
-# keep the two in step, and keep the x-ep ids equal to the shim's PRODUCT_ID / EVENT_API_ID.
+# APIM will accept. Shares the shim's Event Portal ids and channel (tests-common/testcontainers/.../solaceshim/server.js).
+# Keep the x-ep ids equal to the shim's PRODUCT_ID / EVENT_API_ID. This import fixture declares MQTT
+# and HTTP operation bindings: APIM derives asyncTransportProtocols from operation bindings, not server protocols.
 #
 # THE x-ep-* EXTENSIONS UNDER `info` ARE LOAD-BEARING. Without them, IMPORT STILL SUCCEEDS and the
 # failure appears later, in another plane: subscribing dies with
@@ -34,6 +35,13 @@ channels:
   orders/created:
     subscribe:
       operationId: onOrderCreated
+      bindings:
+        mqtt:
+          qos: 1
+          bindingVersion: '0.2.0'
+        http:
+          type: response
+          bindingVersion: '0.1.0'
       message:
         payload:
           type: object
@@ -51,3 +59,7 @@ servers:
       solace:
         bindingVersion: '0.3.0'
         msgVpn: default
+  mqtt:
+    url: 'solacebroker:1883'
+    protocol: mqtt
+    description: Solace PubSub+ MQTT endpoint

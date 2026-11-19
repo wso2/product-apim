@@ -33,8 +33,10 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Provisioning helper extracted from {@code TenantUserInitialisationSteps} so the same SOAP-build +
@@ -67,6 +69,10 @@ public final class TenantUserProvisioner {
      */
     private static final String EMAIL_USERNAME_MAIL_DOMAIN = "@email.com";
 
+    /** APIM roles that the block-level user provisioning assigns to its standard actors. */
+    private static final Set<String> REQUIRED_APIM_ROLES = Set.of(
+            "Internal/creator", "Internal/publisher", "Internal/subscriber");
+
     private TenantUserProvisioner() {
     }
 
@@ -87,17 +93,24 @@ public final class TenantUserProvisioner {
      * splits a ref on its FIRST {@code @} into {@code <userKey>@<domain>}, and the userKey registered here is
      * still the plain base name, so every existing {@code Examples} actor column keeps working verbatim.
      *
-     * <p>Left UNCHANGED for a name that is already store-qualified ({@code SECONDARY.COM/publisherUser1}) — a
-     * secondary-store username is addressed through its store domain, not a mail domain — and for a name that
-     * already carries the mail domain, so the transform is idempotent.
+     * <p>For a store-qualified name ({@code SECONDARY.COM/publisherUser1}), the store prefix is preserved and the
+     * mail domain is applied to the store-local username ({@code SECONDARY.COM/publisherUser1@email.com}). This is
+     * required in email-user mode too: APIM needs the tenant-qualified login to contain both the mail-domain and
+     * tenant separators, regardless of the user store. A name that already carries the mail domain is left alone,
+     * so the transform is idempotent.
      */
     public static String physicalUserName(String baseName) {
 
-        if (baseName == null || !emailUserMode() || baseName.contains("/")
-                || baseName.endsWith(EMAIL_USERNAME_MAIL_DOMAIN)) {
+        if (baseName == null || !emailUserMode()) {
             return baseName;
         }
-        return baseName + EMAIL_USERNAME_MAIL_DOMAIN;
+        int storeSeparator = baseName.lastIndexOf('/');
+        String storePrefix = storeSeparator < 0 ? "" : baseName.substring(0, storeSeparator + 1);
+        String storeLocalName = storeSeparator < 0 ? baseName : baseName.substring(storeSeparator + 1);
+        if (storeLocalName.endsWith(EMAIL_USERNAME_MAIL_DOMAIN)) {
+            return baseName;
+        }
+        return storePrefix + storeLocalName + EMAIL_USERNAME_MAIL_DOMAIN;
     }
 
     /** Whether the block currently in scope runs in email-as-username mode. */
@@ -308,6 +321,98 @@ public final class TenantUserProvisioner {
     }
 
     /**
+     * Waits until the APIM internal roles required by the standard test actors exist in the tenant user store.
+     * Tenant Management becoming reachable is not sufficient: on a fresh distributed MySQL database, the
+     * APIM role bootstrap can still be in progress when the first addUser request arrives.
+     */
+    public static void awaitRequiredApimRoles(String tenantDomain) throws InterruptedException {
+
+        long deadlineStart = System.currentTimeMillis();
+        long deadline = deadlineStart + Constants.SERVER_STARTUP_WAIT_TIME;
+        while (System.currentTimeMillis() < deadline) {
+            try {
+                Tenant tenant = Utils.getTenantFromContext(tenantDomain);
+                boolean allRolesReady = true;
+                for (String role : REQUIRED_APIM_ROLES) {
+                    if (!isExistingRole(tenant, role)) {
+                        allRolesReady = false;
+                        break;
+                    }
+                }
+                if (allRolesReady) {
+                    logger.info("APIM internal roles are ready for tenant " + tenantDomain);
+                    return;
+                }
+            } catch (Exception ignored) {
+                // User-store/bootstrap services can still be initializing; retry until the startup deadline.
+            }
+            logger.info("Waiting for APIM internal roles to be ready for tenant " + tenantDomain + "...");
+            Utils.pollPause(deadlineStart, 1000);
+        }
+        throw new IllegalStateException("APIM internal roles did not become ready for tenant " + tenantDomain
+                + " within " + (Constants.SERVER_STARTUP_WAIT_TIME / 1000) + "s");
+    }
+
+    private static boolean isExistingRole(Tenant tenant, String role) throws IOException, JaxenException {
+
+        String payload = "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" "
+                + "xmlns:ser=\"http://service.ws.um.carbon.wso2.org\">"
+                + "<soapenv:Header/><soapenv:Body>"
+                + "<ser:isExistingRole><ser:roleName>" + Utils.escapeXml(role)
+                + "</ser:roleName></ser:isExistingRole>"
+                + "</soapenv:Body></soapenv:Envelope>";
+        User tenantAdmin = tenant.getTenantAdmin();
+        HttpResponse response = SimpleHTTPClient.getInstance().sendSoapRequest(
+                Utils.getRemoteUserStoreManagerServiceURL(Utils.getBaseUrl()), payload, "urn:isExistingRole",
+                tenantAdmin.getUserName(), tenantAdmin.getPassword());
+        if (response == null || response.getResponseCode() != 200 || response.getData() == null) {
+            throw new IOException("isExistingRole for '" + role + "' in tenant '" + tenant.getDomain()
+                    + "' returned " + (response == null ? "null" : response.getResponseCode() + "/"
+                    + response.getData()));
+        }
+        List<String> values = Utils.getNodeTextsByXPath(response.getData(), "//*[local-name()='return']");
+        if (values.size() != 1 || !("true".equalsIgnoreCase(values.get(0))
+                || "false".equalsIgnoreCase(values.get(0)))) {
+            throw new IOException("isExistingRole for '" + role + "' in tenant '" + tenant.getDomain()
+                    + "' returned an invalid response: " + response.getData());
+        }
+        return Boolean.parseBoolean(values.get(0));
+    }
+
+    /** Checks for a role before teardown so deleting an already-absent role does not fault in the user store. */
+    public static boolean roleExists(String tenantDomain, String role) throws IOException {
+
+        try {
+            return isExistingRole(Utils.getTenantFromContext(tenantDomain), role);
+        } catch (JaxenException e) {
+            throw new IOException("Could not read role existence for '" + role + "' in tenant '" + tenantDomain
+                    + "'", e);
+        }
+    }
+
+    /**
+     * Waits until a scenario-created role is visible through the tenant's user-store manager. A successful
+     * {@code addRole} response can precede visibility of a SECONDARY.COM role to {@code addUser}; provisioners
+     * must wait here before assigning that role to an actor.
+     */
+    public static void awaitRoleExists(String tenantDomain, String role) throws InterruptedException {
+
+        Tenant tenant = Utils.getTenantFromContext(tenantDomain);
+        Boolean exists = Utils.retryUntil(Constants.SERVER_STARTUP_WAIT_TIME, () -> {
+            try {
+                return isExistingRole(tenant, role);
+            } catch (JaxenException e) {
+                throw new IOException("Could not read role readiness for '" + role + "' in tenant '"
+                        + tenantDomain + "'", e);
+            }
+        }, Boolean.TRUE::equals);
+        if (!Boolean.TRUE.equals(exists)) {
+            throw new IllegalStateException("Role '" + role + "' did not become visible in tenant '" + tenantDomain
+                    + "' within " + (Constants.SERVER_STARTUP_WAIT_TIME / 1000) + "s");
+        }
+    }
+
+    /**
      * Creates a user in the given tenant via the user-admin service, skipping creation if the username
      * already exists, then attaches the user to the tenant bean in shared scope. Copied from the
      * {@code "I add user ... to the tenant domain ..."} step (with the existing-users retrieval, formerly a
@@ -418,6 +523,57 @@ public final class TenantUserProvisioner {
         }
     }
 
+    /** Creates a role with initial permissions and assigns it to an existing tenant user via UserAdmin. */
+    public static void createRoleAndAssign(String tenantDomain, String roleName, String username,
+                                           List<String> permissions) throws IOException {
+
+        Tenant tenant = Utils.getTenantFromContext(tenantDomain);
+        StringBuilder permissionsXml = new StringBuilder();
+        for (String permission : permissions) {
+            permissionsXml.append("<xsd:permissions>").append(Utils.escapeXml(permission))
+                    .append("</xsd:permissions>");
+        }
+        String payload = "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" "
+                + "xmlns:xsd=\"http://org.apache.axis2/xsd\"><soapenv:Header/><soapenv:Body>"
+                + "<xsd:addRole><xsd:roleName>" + Utils.escapeXml(roleName) + "</xsd:roleName>"
+                + "<xsd:userList>" + Utils.escapeXml(physicalUserName(username)) + "</xsd:userList>" + permissionsXml
+                + "<xsd:isSharedRole>false</xsd:isSharedRole></xsd:addRole></soapenv:Body></soapenv:Envelope>";
+        HttpResponse response = SimpleHTTPClient.getInstance().sendSoapRequest(
+                Utils.getMultipleCredentialsUserAdminServiceURL(Utils.getBaseUrl()), payload, "urn:addRole",
+                tenant.getTenantAdmin().getUserName(), tenant.getTenantAdmin().getPassword());
+        assertSoapSuccess("UserAdmin.addRole", tenantDomain, response);
+    }
+
+    /** Replaces a role's UI permission set, matching UserManagementClient.setRoleUIPermission semantics. */
+    public static void setRoleUIPermissions(String tenantDomain, String roleName, List<String> permissions)
+            throws IOException {
+
+        Tenant tenant = Utils.getTenantFromContext(tenantDomain);
+        StringBuilder resourcesXml = new StringBuilder();
+        for (String permission : permissions) {
+            resourcesXml.append("<xsd:rawResources>").append(Utils.escapeXml(permission))
+                    .append("</xsd:rawResources>");
+        }
+        String payload = "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" "
+                + "xmlns:xsd=\"http://org.apache.axis2/xsd\"><soapenv:Header/><soapenv:Body>"
+                + "<xsd:setRoleUIPermission><xsd:roleName>" + Utils.escapeXml(roleName) + "</xsd:roleName>"
+                + resourcesXml + "</xsd:setRoleUIPermission></soapenv:Body></soapenv:Envelope>";
+        HttpResponse response = SimpleHTTPClient.getInstance().sendSoapRequest(
+                Utils.getMultipleCredentialsUserAdminServiceURL(Utils.getBaseUrl()), payload,
+                "urn:setRoleUIPermission", tenant.getTenantAdmin().getUserName(), tenant.getTenantAdmin().getPassword());
+        assertSoapSuccess("UserAdmin.setRoleUIPermission", tenantDomain, response);
+    }
+
+    private static void assertSoapSuccess(String operation, String tenantDomain, HttpResponse response)
+            throws IOException {
+
+        int code = response == null ? -1 : response.getResponseCode();
+        if (code < 200 || code >= 300) {
+            throw new IOException(operation + " for tenant '" + tenantDomain + "' failed with " + code + ": "
+                    + (response == null ? "no response" : response.getData()));
+        }
+    }
+
     /**
      * Returns the roles of a user via RemoteUserStoreManagerService {@code getRoleListOfUser} (the raw response
      * body). Used to verify case-insensitive-username resolution on the secondary store (an UPPERCASE username
@@ -436,6 +592,30 @@ public final class TenantUserProvisioner {
                 tenantAdmin.getUserName(), tenantAdmin.getPassword());
         Assert.assertEquals(response.getResponseCode(), 200, response.getData());
         return response.getData();
+    }
+
+    /** Updates a user's role membership via RemoteUserStoreManagerService {@code updateRoleListOfUser}. */
+    public static void updateRoleListOfUser(String tenantDomain, String userName, String deletedRole,
+                                            String addedRole) throws IOException {
+        Tenant tenant = Utils.getTenantFromContext(tenantDomain);
+        User tenantAdmin = tenant.getTenantAdmin();
+        String payload = "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" "
+                + "xmlns:ser=\"http://service.ws.um.carbon.wso2.org\">"
+                + "<soapenv:Header/><soapenv:Body>"
+                + "<ser:updateRoleListOfUser>"
+                + "<ser:userName>" + Utils.escapeXml(userName) + "</ser:userName>"
+                + "<ser:deletedRoles>" + Utils.escapeXml(deletedRole) + "</ser:deletedRoles>"
+                + "<ser:newRoles>" + Utils.escapeXml(addedRole) + "</ser:newRoles>"
+                + "</ser:updateRoleListOfUser>"
+                + "</soapenv:Body></soapenv:Envelope>";
+        HttpResponse response = SimpleHTTPClient.getInstance().sendSoapRequest(
+                Utils.getRemoteUserStoreManagerServiceURL(Utils.getBaseUrl()), payload,
+                "urn:updateRoleListOfUser", tenantAdmin.getUserName(), tenantAdmin.getPassword());
+        int code = response == null ? -1 : response.getResponseCode();
+        if (code < 200 || code >= 300) {
+            throw new IOException("updateRoleListOfUser for '" + userName + "' in tenant '" + tenantDomain
+                    + "' failed with " + code + ": " + (response == null ? "no response" : response.getData()));
+        }
     }
 
     /**
@@ -544,10 +724,11 @@ public final class TenantUserProvisioner {
      */
     public static void addStoreUserAsActor(String tenantDomain, String userKey, String storeQualifiedName,
                                            String password, String roles) throws IOException {
-        addUserInStore(tenantDomain, storeQualifiedName, password, roles);
+        String physicalStoreUsername = physicalUserName(storeQualifiedName);
+        addUserInStore(tenantDomain, physicalStoreUsername, password, roles);
         Tenant tenant = Utils.getTenantFromContext(tenantDomain);
         User actor = new User();
-        actor.setUserName(storeQualifiedName + Constants.CHAR_AT + tenantDomain);
+        actor.setUserName(physicalStoreUsername + Constants.CHAR_AT + tenantDomain);
         actor.setPassword(password);
         actor.setKey(userKey);
         tenant.addTenantUsers(actor);
@@ -690,8 +871,15 @@ public final class TenantUserProvisioner {
                 + "<soapenv:Header/><soapenv:Body>"
                 + "<ser:deleteRole><ser:roleName>" + Utils.escapeXml(roleName) + "</ser:roleName></ser:deleteRole>"
                 + "</soapenv:Body></soapenv:Envelope>";
-        SimpleHTTPClient.getInstance().sendSoapRequest(Utils.getRemoteUserStoreManagerServiceURL(Utils.getBaseUrl()),
-                payload, "urn:deleteRole", tenantAdmin.getUserName(), tenantAdmin.getPassword());
+        HttpResponse response = SimpleHTTPClient.getInstance().sendSoapRequest(
+                Utils.getRemoteUserStoreManagerServiceURL(Utils.getBaseUrl()), payload, "urn:deleteRole",
+                tenantAdmin.getUserName(), tenantAdmin.getPassword());
+        int responseCode = response == null ? -1 : response.getResponseCode();
+        if (responseCode < 200 || responseCode >= 300) {
+            throw new IOException("deleteRole for '" + roleName + "' in tenant '" + tenantDomain
+                    + "' failed with HTTP " + responseCode + ": "
+                    + (response == null ? "no response" : response.getData()));
+        }
     }
 
     /**
@@ -751,7 +939,7 @@ public final class TenantUserProvisioner {
      * Retrieves the domains of all existing tenants via the Tenant Management Admin Service. Copied from
      * the {@code "I retrieve existing tenant details"} step, returning the parsed domains directly.
      */
-    private static List<String> retrieveExistingTenantDomains() throws IOException, JaxenException {
+    public static List<String> retrieveExistingTenantDomains() throws IOException, JaxenException {
 
         HttpResponse response = sendRetrieveTenants();
         Assert.assertEquals(response.getResponseCode(), 200, response.getData());
@@ -781,7 +969,7 @@ public final class TenantUserProvisioner {
      * service. Copied from the {@code "I retrieve all existing users in the tenant domain ..."} step,
      * returning the parsed usernames directly.
      */
-    private static List<String> retrieveExistingUsers(Tenant tenant) throws IOException, JaxenException {
+    public static List<String> retrieveExistingUsers(Tenant tenant) throws IOException, JaxenException {
 
         String payload =
                 "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" " +
@@ -881,14 +1069,42 @@ public final class TenantUserProvisioner {
     public static void updateOidcScopeClaims(String tenantDomain, String scope, String[] addClaims)
             throws IOException {
         Tenant tenant = Utils.getTenantFromContext(tenantDomain);
+        Set<String> scopeNames = getOidcScopeNames(tenant);
+        if (!scopeNames.contains(scope)) {
+            StringBuilder claimsXml = new StringBuilder();
+            for (String claim : addClaims) {
+                claimsXml.append("<xsd:claims>").append(claim).append("</xsd:claims>");
+            }
+            String payload = "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" " +
+                    "xmlns:xsd=\"http://org.apache.axis2/xsd\">" +
+                    "<soapenv:Header/><soapenv:Body><xsd:addScope><xsd:scope>" + scope + "</xsd:scope>" +
+                    claimsXml + "</xsd:addScope></soapenv:Body></soapenv:Envelope>";
+            String url = Utils.getOAuthAdminServiceURL(Utils.getBaseUrl());
+            HttpResponse response = SimpleHTTPClient.getInstance().sendSoapRequest(url, payload, "urn:addScope",
+                    tenant.getTenantAdmin().getUserName(), tenant.getTenantAdmin().getPassword());
+            Assert.assertTrue(response.getResponseCode() == 200 || response.getResponseCode() == 202,
+                    "addScope " + scope + " failed (" + response.getResponseCode() + "): " + response.getData());
+            return;
+        }
+        Set<String> existingClaims = getOidcScopeClaims(tenant, scope);
         StringBuilder claimsXml = new StringBuilder();
         for (String c : addClaims) {
-            claimsXml.append("<xsd:addClaims>").append(c).append("</xsd:addClaims>");
+            if (!existingClaims.contains(c)) {
+                claimsXml.append("<xsd:addClaims>").append(c).append("</xsd:addClaims>");
+            }
+        }
+        // OAuthAdminService's legacy updateScope appends mappings and does not ignore duplicates. Multiple
+        // scenarios (including a Scenario Outline's examples) may share the same tenant scope, so only send
+        // claims that are not already mapped. The generated Axis stub serializes an empty deleteClaims array by
+        // omitting that element entirely; preserve that wire format here.
+        if (claimsXml.length() == 0) {
+            return;
         }
         String payload = "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" " +
                 "xmlns:xsd=\"http://org.apache.axis2/xsd\">" +
                 "<soapenv:Header/><soapenv:Body>" +
-                "<xsd:updateScope><xsd:scope>" + scope + "</xsd:scope>" + claimsXml + "</xsd:updateScope>" +
+                "<xsd:updateScope><xsd:scope>" + scope + "</xsd:scope>" + claimsXml +
+                "</xsd:updateScope>" +
                 "</soapenv:Body></soapenv:Envelope>";
         String url = Utils.getOAuthAdminServiceURL(Utils.getBaseUrl());
         HttpResponse response = SimpleHTTPClient.getInstance().sendSoapRequest(url, payload, "urn:updateScope",
@@ -896,6 +1112,50 @@ public final class TenantUserProvisioner {
         int code = response.getResponseCode();
         Assert.assertTrue(code == 200 || code == 202,
                 "updateScope " + scope + " failed (" + code + "): " + response.getData());
+    }
+
+    private static Set<String> getOidcScopeClaims(Tenant tenant, String scope) throws IOException {
+        String payload = "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" " +
+                "xmlns:xsd=\"http://org.apache.axis2/xsd\">" +
+                "<soapenv:Header/><soapenv:Body><xsd:getClaims><xsd:scope>" + scope +
+                "</xsd:scope></xsd:getClaims></soapenv:Body></soapenv:Envelope>";
+        String url = Utils.getOAuthAdminServiceURL(Utils.getBaseUrl());
+        HttpResponse response = SimpleHTTPClient.getInstance().sendSoapRequest(url, payload, "urn:getClaims",
+                tenant.getTenantAdmin().getUserName(), tenant.getTenantAdmin().getPassword());
+        Assert.assertTrue(response.getResponseCode() == 200 || response.getResponseCode() == 202,
+                "getClaims " + scope + " failed (" + response.getResponseCode() + "): " + response.getData());
+        return parseOAuthAdminReturns(response, "getClaims " + scope);
+    }
+
+    private static Set<String> getOidcScopeNames(Tenant tenant) throws IOException {
+        String payload = "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" " +
+                "xmlns:xsd=\"http://org.apache.axis2/xsd\">" +
+                "<soapenv:Header/><soapenv:Body><xsd:getScopeNames/></soapenv:Body></soapenv:Envelope>";
+        String url = Utils.getOAuthAdminServiceURL(Utils.getBaseUrl());
+        HttpResponse response = SimpleHTTPClient.getInstance().sendSoapRequest(url, payload, "urn:getScopeNames",
+                tenant.getTenantAdmin().getUserName(), tenant.getTenantAdmin().getPassword());
+        Assert.assertTrue(response.getResponseCode() == 200 || response.getResponseCode() == 202,
+                "getScopeNames failed (" + response.getResponseCode() + "): " + response.getData());
+        return parseOAuthAdminReturns(response, "getScopeNames");
+    }
+
+    private static Set<String> parseOAuthAdminReturns(HttpResponse response, String operation) throws IOException {
+        try {
+            javax.xml.parsers.DocumentBuilderFactory factory = javax.xml.parsers.DocumentBuilderFactory.newInstance();
+            factory.setNamespaceAware(true);
+            factory.setFeature(javax.xml.XMLConstants.FEATURE_SECURE_PROCESSING, true);
+            factory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+            org.w3c.dom.Document document = factory.newDocumentBuilder().parse(
+                    new java.io.ByteArrayInputStream(response.getData().getBytes(StandardCharsets.UTF_8)));
+            org.w3c.dom.NodeList returns = document.getElementsByTagNameNS("*", "return");
+            Set<String> values = new HashSet<>();
+            for (int i = 0; i < returns.getLength(); i++) {
+                values.add(returns.item(i).getTextContent());
+            }
+            return values;
+        } catch (Exception e) {
+            throw new IOException("Unable to parse OAuthAdminService " + operation + " response", e);
+        }
     }
 
     /**
@@ -956,6 +1216,13 @@ public final class TenantUserProvisioner {
      */
     public static void addRequestedClaimsToServiceProvider(String tenantDomain, String consumerKey,
                                                            String[] claimUris) throws IOException {
+        addRequestedClaimsToServiceProvider(tenantDomain, consumerKey, claimUris, true);
+    }
+
+    /** Requests claims without making the identity provider require an interactive value for absent claims. */
+    public static void addRequestedClaimsToServiceProvider(String tenantDomain, String consumerKey,
+                                                           String[] claimUris, boolean mandatory)
+            throws IOException {
         Tenant tenant = Utils.getTenantFromContext(tenantDomain);
         String spName = getSpNameByConsumerKey(tenantDomain, consumerKey);
         String getResp = getServiceProvider(tenantDomain, spName);
@@ -985,7 +1252,8 @@ public final class TenantUserProvisioner {
                     .append("<").append(ax).append(":localClaim xsi:type=\"").append(ax).append(":Claim\"><")
                     .append(ax).append(":claimUri>").append(uri).append("</").append(ax).append(":claimUri></")
                     .append(ax).append(":localClaim>")
-                    .append("<").append(ax).append(":mandatory>true</").append(ax).append(":mandatory>")
+                    .append("<").append(ax).append(":mandatory>").append(mandatory)
+                    .append("</").append(ax).append(":mandatory>")
                     .append("<").append(ax).append(":remoteClaim xsi:type=\"").append(ax).append(":Claim\"><")
                     .append(ax).append(":claimUri>").append(uri).append("</").append(ax).append(":claimUri></")
                     .append(ax).append(":remoteClaim>")

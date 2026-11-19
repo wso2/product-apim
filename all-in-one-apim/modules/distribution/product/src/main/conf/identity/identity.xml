@@ -1607,7 +1607,6 @@
         <Resource context="(.*)/client-registration/v0.17(.*)" secured="false" http-method="all" />
         <Resource context="(.*)/devportal(.*)" secured="false" http-method="all" />
         <Resource context="(.*)/internal/data/v1(.*)" secured="false" http-method="all" />
-        <Resource context="(.*)/keymanager-operations(.*)" secured="false" http-method="all" />
         <Resource context="(.*)/publisher(.*)" secured="false" http-method="all" />
         <Resource context="(.*)/usage-data-receiver(.*)" secured="false" http-method="all" />
         <Resource context="(.*)/registry/resourceContent(.*)" secured="false" http-method="all"/>

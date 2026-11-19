@@ -6,8 +6,10 @@ Feature: Publisher Service Catalog
   and sorting, update it, import/export it, read which APIs consume it, and delete it — plus the negatives
   (duplicate key, missing definition, invalid id on the entry/definition/usage/update/delete endpoints, invalid
   search parameters, and deleting a service an API still uses). Ports ServiceCatalogRestAPITestCase in full. Runs as
-  the tenant admin in both tenants; each scenario uses a scenario-unique service key/name/version so parallel runs
-  stay isolated, and every scenario is self-contained — none depends on another's artifacts or on declaration order.
+  least-privilege primary and secondary-store publishers across super-tenant and tenant identities, including email-form
+  usernames. The same actor rows run in standard and email-user blocks; block-aware identity resolution selects the
+  correct physical username. Each scenario uses scenario-unique service keys/names/versions so parallel runs stay
+  isolated and is self-contained.
   Services and APIs are torn down by the cleanup hook, which sweeps APIs before services so a service still bound
   to an API is never left undeletable.
 
@@ -21,6 +23,8 @@ Feature: Publisher Service Catalog
     # Create a service (multipart metadata + OAS3 definition).
     When I create a service catalog entry named "{{svcName}}" version "v1" key "{{svcKey}}" from definition "artifacts/service-catalog/definition1.yaml" as "svcId"
     Then The value of response field "name" should be "{{svcName}}"
+    And The value of response field "version" should be "v1"
+    And The value of response field "serviceKey" should be "{{svcKey}}"
 
     # Retrieve it by id, and its definition.
     When I retrieve the service catalog entry "svcId"
@@ -35,11 +39,16 @@ Feature: Publisher Service Catalog
     When I search service catalog entries by "name" "{{svcName}}"
     Then The response status code should be 200
     And The response list should have 1 entries
+    And The value of response field "$.list[0].name" should be "{{svcName}}"
+    And The value of response field "$.list[0].serviceKey" should be "{{svcKey}}"
     When I search service catalog entries by "key" "{{svcKey}}"
-    Then The response list should have 1 entries
+    Then The response status code should be 200
+    And The response list should have 1 entries
+    And The value of response field "$.list[0].name" should be "{{svcName}}"
+    And The value of response field "$.list[0].serviceKey" should be "{{svcKey}}"
     When I search service catalog entries by "definitionType" "OAS3"
     Then The response status code should be 200
-    And The response should contain "{{svcName}}"
+    And The service catalog search results should contain name "{{svcName}}", key "{{svcKey}}", and definition type "OAS3"
 
     # Delete it, then a re-fetch is 404.
     When I delete the service catalog entry "svcId"
@@ -47,10 +56,12 @@ Feature: Publisher Service Catalog
     When I retrieve the service catalog entry "svcId"
     Then The response status code should be 404
 
-    Examples:
+    Examples: Primary and secondary-store actors in both tenants
       | actor             |
-      | admin             |
-      | admin@tenant1.com |
+      | publisherUser             |
+      | publisherUser@tenant1.com |
+      | SECONDARY.COM/publisherUser1             |
+      | SECONDARY.COM/publisherUser1@tenant1.com |
 
   # Negatives: a duplicate service key is 409, a create with no definition file is 400, and an invalid/unknown id
   # is 404. Ports the negative assertions of testCreateAService + testGetServiceByUUID.
@@ -61,25 +72,34 @@ Feature: Publisher Service Catalog
     And I generate a unique value and store it as "dupKey"
     And I generate a unique value and store it as "dupName"
     When I create a service catalog entry named "{{dupName}}" version "v1" key "{{dupKey}}" from definition "artifacts/service-catalog/definition1.yaml" as "dupSvcId"
+    # The alternate valid OpenAPI document must also register; use a distinct key so the negative below isolates duplicate-key handling.
+    And I create a service catalog entry named "{{dupName}}-definition2" version "v1" key "{{dupKey}}-definition2" from definition "artifacts/service-catalog/definition2.yaml" as "definition2SvcId"
     # A second entry reusing the same key is rejected 409.
     When I attempt to create a service catalog entry named "{{dupName}}2" version "v1" key "{{dupKey}}" from definition "artifacts/service-catalog/definition2.yaml"
     Then The response status code should be 409
     # A create with no definition file is rejected 400.
     When I attempt to create a service catalog entry named "{{dupName}}3" version "v1" key "{{dupKey}}3" without a definition
     Then The response status code should be 400
-    # An unknown service id is 404.
-    When I retrieve the service catalog entry with raw id "01234567-0123-0123-0123-012345678901"
+    # A well-formed but unknown UUID and the malformed, truncated UUID used by legacy both return 404.
+    When I generate a random UUID and store it as "unknownEntryId"
+    And I retrieve the service catalog entry "unknownEntryId"
     Then The response status code should be 404
-    # The DEFINITION endpoint is a separate resource with its own lookup, so its unknown-id 404 is asserted
-    # separately from the entry 404 above (ports the invalid-UUID half of testGetServiceDefinition).
+    When I retrieve the service catalog entry with raw id "<malformedServiceId>"
+    Then The response status code should be 404
+    # Definition lookup is a separate endpoint; keep its unknown-UUID and malformed-ID checks independent.
     When I generate a random UUID and store it as "unknownSvcId"
     And I retrieve the definition of service catalog entry "unknownSvcId"
     Then The response status code should be 404
+    When I put literal value "<malformedServiceId>" in context as "malformedSvcId"
+    And I retrieve the definition of service catalog entry "malformedSvcId"
+    Then The response status code should be 404
 
-    Examples:
-      | actor             |
-      | admin             |
-      | admin@tenant1.com |
+    Examples: Primary and secondary-store actors in both tenants
+      | actor             | malformedServiceId      |
+      | publisherUser             | 01234567-0123-0123-0123 |
+      | publisherUser@tenant1.com | 01234567-0123-0123-0123 |
+      | SECONDARY.COM/publisherUser1             | 01234567-0123-0123-0123 |
+      | SECONDARY.COM/publisherUser1@tenant1.com | 01234567-0123-0123-0123 |
 
   # Pagination: three entries sharing a scenario-unique name prefix — limit caps the page, offset skips. Ports the
   # limit/offset assertions of testSearchService (reduced to a deterministic 3-entry set).
@@ -91,18 +111,26 @@ Feature: Publisher Service Catalog
     When I create a service catalog entry named "{{pgKey}}0" version "v1" key "{{pgKey}}0" from definition "artifacts/service-catalog/definition1.yaml" as "pgSvc0"
     And I create a service catalog entry named "{{pgKey}}1" version "v1" key "{{pgKey}}1" from definition "artifacts/service-catalog/definition1.yaml" as "pgSvc1"
     And I create a service catalog entry named "{{pgKey}}2" version "v1" key "{{pgKey}}2" from definition "artifacts/service-catalog/definition1.yaml" as "pgSvc2"
-    # All three share the prefix -> full search returns 3; limit 2 caps at 2; offset 2 returns the last 1.
+    # All three share the prefix. Explicit name ordering makes page membership deterministic despite concurrent catalog writes.
     When I search service catalog entries by name "{{pgKey}}" with limit 10 and offset 0
     Then The response list should have 3 entries
+    And The value of response field "$.list[0].name" should be "{{pgKey}}0"
+    And The value of response field "$.list[1].name" should be "{{pgKey}}1"
+    And The value of response field "$.list[2].name" should be "{{pgKey}}2"
     When I search service catalog entries by name "{{pgKey}}" with limit 2 and offset 0
     Then The response list should have 2 entries
+    And The value of response field "$.list[0].name" should be "{{pgKey}}0"
+    And The value of response field "$.list[1].name" should be "{{pgKey}}1"
     When I search service catalog entries by name "{{pgKey}}" with limit 10 and offset 2
     Then The response list should have 1 entries
+    And The value of response field "$.list[0].name" should be "{{pgKey}}2"
 
-    Examples:
+    Examples: Primary and secondary-store actors in both tenants
       | actor             |
-      | admin             |
-      | admin@tenant1.com |
+      | publisherUser             |
+      | publisherUser@tenant1.com |
+      | SECONDARY.COM/publisherUser1             |
+      | SECONDARY.COM/publisherUser1@tenant1.com |
 
   # Ports the import surface of ServiceCatalogRestAPITestCase (testImportService): a services archive (.zip
   # carrying serviceMetadata + a definition) is registered in one call. service1.zip carries the
@@ -119,10 +147,12 @@ Feature: Publisher Service Catalog
     When I attempt to import a service catalog archive with no file
     Then The response status code should be 400
 
-    Examples:
+    Examples: Primary and secondary-store actors in both tenants
       | actor             |
-      | admin             |
-      | admin@tenant1.com |
+      | publisherUser             |
+      | publisherUser@tenant1.com |
+      | SECONDARY.COM/publisherUser1             |
+      | SECONDARY.COM/publisherUser1@tenant1.com |
 
   # Import overwrite semantics (testImportService), verified live end-to-end. The Service Catalog import is
   # HASH-based (the response carries an md5/SHA-256 of the service), so re-import behaviour depends on BOTH the
@@ -165,11 +195,12 @@ Feature: Publisher Service Catalog
     Then The response status code should be 200
     And The service catalog import should report 1 imported services
 
-    Examples:
+    Examples: Primary and secondary-store actors in both tenants
       | actor             |
-      | admin             |
-      | admin@tenant1.com |
-
+      | publisherUser             |
+      | publisherUser@tenant1.com |
+      | SECONDARY.COM/publisherUser1             |
+      | SECONDARY.COM/publisherUser1@tenant1.com |
   # Ports testUpdateService. The identity fields (name/version/serviceKey) survive an update untouched while the
   # mutable metadata (description) is replaced, and the entry keeps the SAME id — the update is in-place, not a
   # replace-with-new-row. The two negatives use the non-asserting attempt-variants so the status is asserted in the
@@ -201,14 +232,19 @@ Feature: Publisher Service Catalog
     When I generate a random UUID and store it as "unknownUpdSvcId"
     And I attempt to update the service catalog entry "unknownUpdSvcId" named "{{updName}}" version "v1" key "{{updKey}}" with description "Updated catalog entry" from definition "artifacts/service-catalog/definition1.yaml"
     Then The response status code should be 404
+    When I put literal value "<malformedServiceId>" in context as "malformedUpdSvcId"
+    And I attempt to update the service catalog entry "malformedUpdSvcId" named "{{updName}}" version "v1" key "{{updKey}}" with description "Updated catalog entry" from definition "artifacts/service-catalog/definition1.yaml"
+    Then The response status code should be 404
     # An update carrying no definition file is 400.
     When I attempt to update the service catalog entry "updSvcId" named "{{updName}}" version "v1" key "{{updKey}}" with description "Updated catalog entry" without a definition
     Then The response status code should be 400
 
-    Examples:
-      | actor             |
-      | admin             |
-      | admin@tenant1.com |
+    Examples: Primary and secondary-store actors in both tenants
+      | actor             | malformedServiceId      |
+      | publisherUser             | 01234567-0123-0123-0123 |
+      | publisherUser@tenant1.com | 01234567-0123-0123-0123 |
+      | SECONDARY.COM/publisherUser1             | 01234567-0123-0123-0123 |
+      | SECONDARY.COM/publisherUser1@tenant1.com | 01234567-0123-0123-0123 |
 
   # Ports testExportService. The export addresses the service by NAME + VERSION (not id) and returns a zipped
   # archive; the step proves it is a real, complete archive (non-empty, unzips, carries both metadata and
@@ -224,10 +260,12 @@ Feature: Publisher Service Catalog
     # A name that matches no service is 404 even though the version exists.
     When I export the service catalog entry named "{{expName}}-absent" version "v1" expecting status 404
 
-    Examples:
+    Examples: Primary and secondary-store actors in both tenants
       | actor             |
-      | admin             |
-      | admin@tenant1.com |
+      | publisherUser             |
+      | publisherUser@tenant1.com |
+      | SECONDARY.COM/publisherUser1             |
+      | SECONDARY.COM/publisherUser1@tenant1.com |
 
   # Ports testCreateAnAPIThroughPublisher + testGetServiceUsage + testDeleteService as ONE ordered arc, because each
   # step's expectation only holds in a particular state: create service -> create an API bound to it via serviceInfo
@@ -271,11 +309,19 @@ Feature: Publisher Service Catalog
     Then The response status code should be 404
     When I delete the service catalog entry "unknownUseSvcId"
     Then The response status code should be 404
+    # Malformed IDs are rejected by both usage and delete endpoints too.
+    When I put literal value "<malformedServiceId>" in context as "malformedUseSvcId"
+    And I retrieve the usage of service catalog entry "malformedUseSvcId"
+    Then The response status code should be 404
+    When I delete the service catalog entry "malformedUseSvcId"
+    Then The response status code should be 404
 
-    Examples:
-      | actor             |
-      | admin             |
-      | admin@tenant1.com |
+    Examples: Primary and secondary-store actors in both tenants
+      | actor             | malformedServiceId      |
+      | publisherUser             | 01234567-0123-0123-0123 |
+      | publisherUser@tenant1.com | 01234567-0123-0123-0123 |
+      | SECONDARY.COM/publisherUser1             | 01234567-0123-0123-0123 |
+      | SECONDARY.COM/publisherUser1@tenant1.com | 01234567-0123-0123-0123 |
 
   # Ports the version-search and sort dimensions of testSearchService. The catalog is tenant-global, so both are
   # scoped to this scenario's own entries: a scenario-unique VERSION makes the version search return exactly one
@@ -308,10 +354,12 @@ Feature: Publisher Service Catalog
     And The value of response field "$.list[0].name" should be "{{srtPrefix}}beta"
     And The value of response field "$.list[1].name" should be "{{srtPrefix}}alpha"
 
-    Examples:
+    Examples: Primary and secondary-store actors in both tenants
       | actor             |
-      | admin             |
-      | admin@tenant1.com |
+      | publisherUser             |
+      | publisherUser@tenant1.com |
+      | SECONDARY.COM/publisherUser1             |
+      | SECONDARY.COM/publisherUser1@tenant1.com |
 
   # Ports the invalid-parameter negatives of testSearchService, each pinning its own exact 400 (legacy asserted
   # these inside catch blocks, so a search that wrongly SUCCEEDED would have passed). The rejection happens on
@@ -330,7 +378,9 @@ Feature: Publisher Service Catalog
     When I search service catalog entries by name "" sorted by "name" in "acs" order
     Then The response status code should be 400
 
-    Examples:
+    Examples: Primary and secondary-store actors in both tenants
       | actor             |
-      | admin             |
-      | admin@tenant1.com |
+      | publisherUser             |
+      | publisherUser@tenant1.com |
+      | SECONDARY.COM/publisherUser1             |
+      | SECONDARY.COM/publisherUser1@tenant1.com |

@@ -117,7 +117,7 @@ public class UserAccountSteps {
      * <p>The rule is tenant-specific, verified on a live container: the doubly-qualified form is required only
      * against a TENANT-deployed API. In the SUPER tenant a single {@code @} is already read as a super-tenant
      * login, so the raw store name authenticates too (200). Both arcs are pinned in
-     * {@code gateway/basic_auth_email_username.feature}.
+     * {@code gateway/basic_auth_security.feature}.
      *
      * <p>Legacy {@code APISecurityTestCase} exercised this with the hardcoded store names
      * {@code apisecUser2@wso2.com} / {@code apisecUser2@abc.com}; the email domain is a step parameter here so the
@@ -140,6 +140,21 @@ public class UserAccountSteps {
                                                   String usernameKey) throws IOException {
 
         provisionUser(Names.unique(namePrefix) + Constants.CHAR_AT + emailDomain, password, roles, usernameKey);
+    }
+
+    /** Provisions the same scenario user as a plain username in standard blocks and an email username in email mode. */
+    @When("I provision a user with name prefix {string} and email domain {string} only in email-user mode password {string} and roles {string} storing the username as {string}")
+    public void iProvisionModeAwareScenarioUser(String namePrefix, String emailDomain, String password, String roles,
+                                                String usernameKey) throws IOException {
+        Object emailUserMode = TestContext.get(TenantUserProvisioner.EMAIL_USER_MODE_KEY);
+        if (!(emailUserMode instanceof Boolean)) {
+            throw new IllegalStateException("Block did not publish the emailUserMode setting");
+        }
+        String username = Names.unique(namePrefix);
+        if ((Boolean) emailUserMode) {
+            username += Constants.CHAR_AT + emailDomain;
+        }
+        provisionUser(username, password, roles, usernameKey);
     }
 
     /**

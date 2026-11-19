@@ -20,7 +20,7 @@ package org.wso2.am.integration.cucumbertests.runners.block;
 import io.cucumber.testng.CucumberOptions;
 
 /**
- * Runner for devportal/application-sharing. Belongs to the IntegrationV2-CustomAuthHeaderAndAppSharing block,
+ * Runner for devportal/application-sharing. Belongs to the IntegrationV2-GatewayAuthAndApplicationConfig block,
  * whose container enables {@code [apim.devportal] enable_application_sharing} via a feature-specific TOML
  * overlay so the application {@code groups} field is honoured rather than silently dropped. Each scenario
  * creates and registers its own application; teardown is the per-scenario {@code @cleanup} hook.

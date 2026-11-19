@@ -84,6 +84,12 @@ Feature: Admin Secondary User Store (case-insensitive)
     # REVERSE direction: UPPER-case-created user resolved by a LOWER-case username.
     And the roles of store user "SECONDARY.COM/ciuserb" in tenant "<tenant>" should contain "SECONDARY.COM/CIROLETWO"
 
+    # Legacy role-list mutation: resolve the uppercase-created user by its lowercase name, remove its uppercase role,
+    # add the lowercase role, then immediately read back the same user and verify both sides of the update.
+    When I update the role list of store user "SECONDARY.COM/ciuserb" in tenant "<tenant>", removing "SECONDARY.COM/CIROLETWO" and adding "SECONDARY.COM/ciroleone"
+    Then the roles of store user "SECONDARY.COM/ciuserb" in tenant "<tenant>" should not contain "SECONDARY.COM/CIROLETWO"
+    And the roles of store user "SECONDARY.COM/ciuserb" in tenant "<tenant>" should contain "SECONDARY.COM/ciroleone"
+
     # Delete both ROLES only, leaving the users in place so their role lists remain queryable.
     When I remove the secondary user store role "SECONDARY.COM/ciroleone" in tenant "<tenant>"
     And I remove the secondary user store role "SECONDARY.COM/CIROLETWO" in tenant "<tenant>"

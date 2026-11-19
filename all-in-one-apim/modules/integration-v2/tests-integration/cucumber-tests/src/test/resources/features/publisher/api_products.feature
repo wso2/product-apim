@@ -9,7 +9,10 @@ Feature: Publisher API Products
   verify the aggregation and the publisher listing fidelity, re-validate the product's own generated definition
   through the OAS validator, reject a malformed context, create a new version (incl. as default), confirm the
   product tracks its underlying API through a re-save, mutual-SSL security + a client certificate on a PRODUCT,
-  and the product revision lifecycle (reusing the generic revision steps with resourceType "api-products").
+  and the product revision lifecycle (reusing the generic revision steps with resourceType "api-products"). It
+  also covers a product's rate limits (a product-level policy on every resource, on create, update, new version and
+  import), its version and context (a versionless create gets 1.0.0; neither an update nor an import changes them)
+  and product archive import.
   Gateway invocation of a product is covered by gateway/api_product_invocation. ×2 tenant where the concern is
   tenant-agnostic. Legacy's SUPER_TENANT_USER_STORE_USER factory mode is ported as a third actor dimension:
   SECONDARY.COM store actors drive the create arc and a dedicated full-lifecycle scenario, which is why this
@@ -23,6 +26,9 @@ Feature: Publisher API Products
     And I have created an api from "artifacts/payloads/create_apim_test_api_two.json" as "prodApiTwoId" and deployed it
     When I create an API product "${UNIQUE:AggProduct}" with context "${UNIQUE:aggProductCtx}" from APIs "prodApiId,prodApiTwoId" as "productId"
     Then The response status code should be 201
+    # The create response echoes the request: name, version, context (tenant-prefixed for a tenant provider) and
+    # the creator as provider — also for a store-qualified creator.
+    And The create response of API product "productId" should echo its name, context, version and the provider of actor "<actor>"
     # A freshly created product sits in CREATED (it is published by a separate lifecycle transition).
     And The value of response field "state" should be "CREATED"
     # Both member APIs are aggregated, each contributing its own resource set.
@@ -39,6 +45,8 @@ Feature: Publisher API Products
     And The response should contain "/assets"
     # Publisher listing fidelity: the product is listed exactly once and the listing agrees with its own GET.
     Then The publisher product list should report API product "productId" exactly once with the same info fields
+    # The product read back by id is the product that was created, field by field.
+    And The API product "productId" read from the publisher should match its create response
 
     # The last two rows are legacy's SUPER_TENANT_USER_STORE_USER factory mode: the creator lives in the
     # SECONDARY.COM JDBC user store, so its username is store-qualified and the product records a provider derived
@@ -71,6 +79,46 @@ Feature: Publisher API Products
       | publisherUser             |
       | publisherUser@tenant1.com |
 
+  # The member API is IMPORTED from legacy's OpenAPI definition whose operations reference components/parameters,
+  # components/headers and a PATH-LEVEL parameter through $ref. The product is deployed and published, and the
+  # definition it generates from that member must still be a valid OpenAPI document — the reference-resolution
+  # case testAPIProductSwaggerDefinition exists for.
+  @cap:publisher @feat:products @type:regression @dep:publisher @legacy:APIProductCreationTestCase
+  Scenario Outline: An API product over a member imported from a $ref-bearing OpenAPI definition generates a valid definition as <actor>
+    Given The system is ready and I have valid publisher access tokens as "<actor>"
+    When I import openapi definition from "artifacts/payloads/api_product_ref_member_oas.yaml" with additional properties "artifacts/payloads/api_product_ref_member_props.json" as "refMemberApiId"
+    Then The response status code should be 201
+    And I have created an api from "artifacts/payloads/create_apim_test_api_two.json" as "refMemberApiTwoId" and deployed it
+    When I create an API product "${UNIQUE:RefProduct}" with context "${UNIQUE:refProductCtx}" from APIs "refMemberApiId,refMemberApiTwoId" as "refProductId"
+    Then The response status code should be 201
+    And The response array field "apis" should have exactly 2 entries
+    When I put the following JSON payload in context as "refProductRev"
+    """
+    {"description":"ref-member product revision"}
+    """
+    And I make a request to create a revision for "api-products" resource "refProductId" with payload "refProductRev"
+    Then The response status code should be 201
+    When I deploy revision "revisionId" of "api-products" resource "refProductId"
+    Then The response status code should be 201
+    Then The publisher product list should report API product "refProductId" exactly once with the same info fields
+    When I publish the "api-products" resource with id "refProductId"
+    Then The response status code should be 200
+    And The value of response field "workflowStatus" should be "APPROVED"
+    And The value of response field "lifecycleState.state" should be "Published"
+    When I retrieve the API product swagger of "refProductId"
+    Then The response status code should be 200
+    # The member's $ref'd operations are carried into the product definition.
+    And The response should contain "/users/{userID}/products/{productID}"
+    And I put the response payload in context as "refProductDefinition"
+    When I validate the openapi definition captured as "refProductDefinition"
+    Then The response status code should be 200
+    And The value of response field "isValid" should be "true"
+
+    Examples:
+      | actor                     |
+      | publisherUser             |
+      | publisherUser@tenant1.com |
+
   # Legacy tested a context embedding a {version} template (its assertions sat in a catch block with no fail(),
   # so a successful create would have passed silently). Asserted unconditionally here, with the exact status and
   # error message the product returns.
@@ -87,7 +135,7 @@ Feature: Publisher API Products
       | publisherUser             |
       | publisherUser@tenant1.com |
 
-  @cap:publisher @feat:products @type:negative @dep:publisher @legacy:APIProductCreationTestCase
+  @cap:publisher @feat:products @type:negative @dep:publisher
   Scenario Outline: An API product context containing spaces is rejected as <actor>
     Given The system is ready and I have valid publisher access tokens as "<actor>"
     And I have created an api from "artifacts/payloads/create_apim_test_api.json" as "spaceCtxApiId" and deployed it
@@ -99,17 +147,25 @@ Feature: Publisher API Products
       | publisherUser             |
       | publisherUser@tenant1.com |
 
+  # The product carries a product-level rate limit (the shipped 10KPerMin), which the new version keeps on every
+  # resource.
   @cap:publisher @feat:products @type:regression @dep:publisher @legacy:APIProductCreationTestCase
   Scenario Outline: Create a new version of an API product as <actor>
     Given The system is ready and I have valid publisher access tokens as "<actor>"
     And I have created an api from "artifacts/payloads/create_apim_test_api.json" as "verApiId" and deployed it
-    When I create an API product "${UNIQUE:VerProduct}" with context "${UNIQUE:verProductCtx}" from API "verApiId" as "verProductId"
+    When I put an API product payload "${UNIQUE:VerProduct}" with context "${UNIQUE:verProductCtx}" from APIs "verApiId" in context as "verProductPayload"
+    And I set the field "apiThrottlingPolicy" to "10KPerMin" in the payload "verProductPayload"
+    And I create an "api-products" resource with payload "verProductPayload" as "verProductId"
     Then The response status code should be 201
     When I create a new version "2.0.0" of API product "verProductId" with default version "false" as "verProductV2Id"
     Then The response status code should be 201
     When I retrieve the "api-products" resource with id "verProductV2Id"
     Then The response status code should be 200
     And The response should contain "2.0.0"
+    And The value of response field "version" should be "2.0.0"
+    And The value of response field "apiThrottlingPolicy" should be "10KPerMin"
+    And The response array field "apis[*].operations[*].throttlingPolicy" should have exactly 2 entries
+    And The response field "apis[*].operations[*].throttlingPolicy" should be exactly the list "10KPerMin"
 
     Examples:
       | actor                     |
@@ -129,11 +185,50 @@ Feature: Publisher API Products
       """
       true
       """
+    When I retrieve the "api-products" resource with id "defProductV2Id"
+    Then The response status code should be 200
+    And The value of response field "version" should be "2.0.0"
 
     Examples:
       | actor                     |
       | publisherUser             |
       | publisherUser@tenant1.com |
+
+  # Legacy copied a product that was already DEPLOYED and PUBLISHED (its two version tests differ only in the
+  # default-version flag), so the copy is also taken from a published two-API product here.
+  @cap:publisher @feat:products @type:regression @dep:publisher @legacy:APIProductCreationTestCase
+  Scenario Outline: A new version of a published API product is created with default version <defaultVersion> as <actor>
+    Given The system is ready and I have valid publisher access tokens as "<actor>"
+    And I have created an api from "artifacts/payloads/create_apim_test_api.json" as "pubVerApiId" and deployed it
+    And I have created an api from "artifacts/payloads/create_apim_test_api_two.json" as "pubVerApiTwoId" and deployed it
+    When I create an API product "${UNIQUE:PubVerProduct}" with context "${UNIQUE:pubVerProductCtx}" from APIs "pubVerApiId,pubVerApiTwoId" as "pubVerProductId"
+    Then The response status code should be 201
+    When I put the following JSON payload in context as "pubVerRev"
+    """
+    {"description":"published-source product revision"}
+    """
+    And I make a request to create a revision for "api-products" resource "pubVerProductId" with payload "pubVerRev"
+    Then The response status code should be 201
+    When I deploy revision "revisionId" of "api-products" resource "pubVerProductId"
+    Then The response status code should be 201
+    Then The publisher product list should report API product "pubVerProductId" exactly once with the same info fields
+    When I publish the "api-products" resource with id "pubVerProductId"
+    Then The response status code should be 200
+    And The value of response field "workflowStatus" should be "APPROVED"
+    And The value of response field "lifecycleState.state" should be "Published"
+    When I create a new version "2.0.0" of API product "pubVerProductId" with default version "<defaultVersion>" as "pubVerProductV2Id"
+    Then The response status code should be 201
+    When I retrieve the "api-products" resource with id "pubVerProductV2Id"
+    Then The response status code should be 200
+    And The value of response field "version" should be "2.0.0"
+    And The value of response field "isDefaultVersion" should be "<defaultVersion>"
+
+    Examples:
+      | actor                     | defaultVersion |
+      | publisherUser             | false          |
+      | publisherUser@tenant1.com | false          |
+      | publisherUser             | true           |
+      | publisherUser@tenant1.com | true           |
 
   @cap:publisher @feat:products @type:regression @dep:publisher @legacy:APIProductCreationTestCase
   Scenario Outline: An API product tracks its underlying API after the API is updated as <actor>
@@ -165,6 +260,68 @@ Feature: Publisher API Products
       | publisherUser             |
       | publisherUser@tenant1.com |
 
+  # Legacy's product had a DEPLOYED revision when its underlying API changed and the product was re-saved.
+  @cap:publisher @feat:products @type:regression @dep:publisher @legacy:APIProductCreationTestCase
+  Scenario Outline: A deployed API product tracks its underlying API after the API is updated as <actor>
+    Given The system is ready and I have valid publisher access tokens as "<actor>"
+    And I have created an api from "artifacts/payloads/create_apim_test_api.json" as "depTrackApiId" and deployed it
+    When I create an API product "${UNIQUE:DepTrackProduct}" with context "${UNIQUE:depTrackProductCtx}" from API "depTrackApiId" as "depTrackProductId"
+    Then The response status code should be 201
+    When I put the following JSON payload in context as "depTrackRev"
+    """
+    {"description":"deployed product revision before the member update"}
+    """
+    And I make a request to create a revision for "api-products" resource "depTrackProductId" with payload "depTrackRev"
+    Then The response status code should be 201
+    When I deploy revision "revisionId" of "api-products" resource "depTrackProductId"
+    Then The response status code should be 201
+    When I retrieve the "apis" resource with id "depTrackApiId"
+    And I put the response payload in context as "depTrackApiPayload"
+    When I update the "apis" resource "depTrackApiId" and "depTrackApiPayload" with configuration type "description" and value:
+      """
+      Updated backing API for a deployed product
+      """
+    Then The response status code should be 200
+    When I retrieve the "api-products" resource with id "depTrackProductId"
+    Then The response status code should be 200
+    And I put the response payload in context as "depTrackProductPayload"
+    When I update "api-products" resource of id "depTrackProductId" with payload "depTrackProductPayload"
+    Then The response status code should be 200
+    And The response field "apis[*].apiId" should be exactly the list "{{depTrackApiId}}"
+    And The API product "depTrackProductId" entry for API "depTrackApiId" should have the same operations count as the API
+
+    Examples:
+      | actor                     |
+      | publisherUser             |
+      | publisherUser@tenant1.com |
+
+  # An APIM_ADMIN may create a product ON BEHALF OF another provider; the named provider is kept rather than
+  # replaced by the caller (legacy created its revision product with an explicit provider as the super admin).
+  @cap:publisher @feat:products @type:regression @dep:publisher @legacy:APIProductRevisionTestCase
+  Scenario Outline: An admin creates an API product on behalf of another provider as <actor>
+    Given The system is ready and I have valid publisher access tokens as "<actor>"
+    And I have created an api from "artifacts/payloads/create_apim_test_api.json" as "onBehalfApiId" and deployed it
+    When I create an API product "${UNIQUE:OnBehalfProduct}" with context "${UNIQUE:onBehalfProductCtx}" and provider of actor "<provider>" from APIs "onBehalfApiId" as "onBehalfProductId"
+    Then The response status code should be 201
+    And The create response of API product "onBehalfProductId" should echo its name, context, version and the provider of actor "<provider>"
+    And The provider of "api-products" resource "onBehalfProductId" should match actor "<provider>"
+    And The API product "onBehalfProductId" read from the publisher should match its create response
+    Then The publisher product list should report API product "onBehalfProductId" exactly once with the same info fields
+    When I put the following JSON payload in context as "onBehalfRev"
+    """
+    {"description":"on-behalf product revision"}
+    """
+    And I make a request to create a revision for "api-products" resource "onBehalfProductId" with payload "onBehalfRev"
+    Then The response status code should be 201
+    When I deploy revision "revisionId" of "api-products" resource "onBehalfProductId"
+    Then The response status code should be 201
+    And The provider of "api-products" resource "onBehalfProductId" should match actor "<provider>"
+
+    Examples:
+      | actor             | provider                  |
+      | admin             | publisherUser             |
+      | admin@tenant1.com | publisherUser@tenant1.com |
+
   @cap:publisher @feat:products @type:regression @dep:publisher @legacy:APIProductRevisionTestCase
   Scenario Outline: API product revision lifecycle — create, list, deploy, undeploy, restore, delete as <actor>
     Given The system is ready and I have valid publisher access tokens as "<actor>"
@@ -181,10 +338,13 @@ Feature: Publisher API Products
     And I extract response field "id" and store it as "prodRevId"
     When I retrieve the revisions of "api-products" resource "revProductId"
     Then The response status code should be 200
+    And The revision list should contain exactly revision "prodRevId"
 
     When I deploy revision "prodRevId" of "api-products" resource "revProductId"
     Then The response status code should be 201
     And I wait until "api-products" "revProductId" revision is deployed in the gateway
+    # The deployed product revision actually reaches the gateway (legacy waitForDeployAPI read it back there).
+    And the "api-products" resource "revProductId" should be live on the gateway, redeploying if propagation is lost and updating revision key "prodRevId"
     When I undeploy revision "prodRevId" of "api-products" resource "revProductId"
     Then The response status code should be 201
     When I restore revision "prodRevId" of "api-products" resource "revProductId"
@@ -202,6 +362,60 @@ Feature: Publisher API Products
       | actor                     |
       | publisherUser             |
       | publisherUser@tenant1.com |
+
+  # Legacy APIProductRevisionTestCase runs its revision lifecycle as an administrator against a product with two
+  # member APIs and an arbitrary provider that is not a provisioned user (legacy used a random UUID). Keep that
+  # fixture distinct from the owner-created product above: it protects admin authorization, multi-member revision
+  # snapshots, null-vhost undeploy, and restore fidelity. The provider is a static non-existent name built in the
+  # block's physical username form, so an email-username block reads the tenant row's provider as a tenant user
+  # rather than a super-tenant email username; a short name keeps the email-form, tenant-qualified provider within
+  # the publisher's 50-character provider limit.
+  @cap:publisher @feat:revisions @type:regression @parity:api-product-revision-full-lifecycle @dep:publisher @legacy:APIProductRevisionTestCase
+  Scenario Outline: An admin manages revisions of a two-member API product with an arbitrary non-existent provider as <actor>
+    Given The system is ready and I have valid publisher access tokens as "<actor>"
+    And I have created an api from "artifacts/payloads/create_apim_test_api.json" as "adminRevApiOneId" and deployed it
+    And I have created an api from "artifacts/payloads/create_apim_test_api_two.json" as "adminRevApiTwoId" and deployed it
+    And I store the physical username of unprovisioned user "<providerBase>" as "adminRevProvider"
+    When I create an API product "${UNIQUE:AdminRevisionProduct}" with context "${UNIQUE:adminRevisionProductCtx}" and provider "{{adminRevProvider}}<providerTenantSuffix>" from APIs "adminRevApiOneId,adminRevApiTwoId" as "adminRevProductId"
+    Then The response status code should be 201
+    And The create response of API product "adminRevProductId" should echo its name, context, version and requested provider for actor "<actor>"
+    And The API product "adminRevProductId" read from the publisher should match its create response
+
+    When I put the following JSON payload in context as "adminProdRevPayload"
+    """
+    {"description":"admin two-member product revision"}
+    """
+    And I make a request to create a revision for "api-products" resource "adminRevProductId" with payload "adminProdRevPayload"
+    Then The response status code should be 201
+    And I extract response field "id" and store it as "adminProdRevId"
+    When I retrieve the revisions of "api-products" resource "adminRevProductId"
+    Then The response status code should be 200
+    And The revision list should contain exactly revision "adminProdRevId"
+
+    When I deploy revision "adminProdRevId" of "api-products" resource "adminRevProductId"
+    Then The response status code should be 201
+    And I wait until "api-products" "adminRevProductId" revision is deployed in the gateway
+    And the "api-products" resource "adminRevProductId" should be live on the gateway, redeploying if propagation is lost and updating revision key "adminProdRevId"
+    When I put the following JSON payload in context as "adminNullVhostUndeploy"
+    """
+    [{"name":"{{gatewayEnvironment}}","vhost":null,"displayOnDevportal":true}]
+    """
+    And I undeploy revision "adminProdRevId" of "api-products" resource "adminRevProductId" with payload "adminNullVhostUndeploy"
+    Then The response status code should be 201
+
+    When I restore revision "adminProdRevId" of "api-products" resource "adminRevProductId"
+    Then The response status code should be 201
+    When I retrieve the "api-products" resource with id "adminRevProductId"
+    Then The response status code should be 200
+    And The response array field "apis[*].apiId" should have exactly 2 entries
+    And The response field "apis[*].apiId" should be exactly the list "{{adminRevApiOneId}},{{adminRevApiTwoId}}"
+    When I delete revision "adminProdRevId" of "api-products" resource "adminRevProductId"
+    Then The response status code should be 200
+
+    Examples:
+      | actor             | providerBase      | providerTenantSuffix |
+      | admin             | arbitraryprovider |                      |
+      | admin@tenant1.com | arbitraryprovider | @tenant1.com         |
 
   @cap:publisher @feat:products @type:negative @dep:publisher @legacy:APIProductLifecycleTest
   Scenario Outline: A published API product with an active subscription cannot be deleted until it is retired as <actor>
@@ -242,6 +456,7 @@ Feature: Publisher API Products
     When I retrieve the subscriptions of API "d5ProductId"
     Then The response status code should be 200
     And The subscription list should contain exactly 0 subscriptions
+    And The subscription "d5SubId" should no longer exist
     When I delete the "api-products" resource with id "d5ProductId"
     Then The response status code should be 200
 
@@ -339,23 +554,25 @@ Feature: Publisher API Products
       | admin             |
       | admin@tenant1.com |
 
-  # The rest of legacy's SUPER_TENANT_USER_STORE_USER fan-out — testPublishAPIProduct,
-  # testChangeAPIProductLifecycleStateToBlockedState, testDeleteDeprecatedAPIProductsWithSubscription and
-  # testDeleteRetiredAPIProducts — driven end to end by SECONDARY.COM store actors. It is a separate scenario
-  # rather than extra Examples rows on the arcs above because those act as "admin" (they need consumer scopes on
-  # one principal), and there is NO admin store actor to fan out to: the primary admin role poisons a store
-  # account, which then authenticates as 401. Two store principals cover the same ground instead — the store
-  # publisher drives the publisher plane and the store subscriber the consumer plane, both inside the same tenant.
-  # The gateway's answer to a BLOCKED / DEPRECATED product (503 / 200) is not re-asserted here; that is
-  # gateway/api_product_invocation's subject and needs its block's backend. What this pins is the publisher-plane
-  # half: the transitions themselves, and that a store-resident provider owns them.
-  @cap:publisher @feat:products @rule:secondary-userstore @type:regression @dep:publisher @dep:devportal @dep:admin @legacy:APIProductLifecycleTest
+  # The rest of legacy's SUPER_TENANT_USER_STORE_USER fan-out — testCreateAPIProduct (internal key while CREATED),
+  # testPublishAPIProduct, testChangeAPIProductLifecycleStateToBlockedState, testDeleteDeprecatedAPIProductsWithSubscription
+  # and testDeleteRetiredAPIProducts — driven end to end by SECONDARY.COM store actors, on the publisher, devportal
+  # AND gateway planes. It is a separate scenario rather than extra Examples rows on the admin arcs because there is
+  # NO admin store actor to fan out to: the primary admin role poisons a store account, which then authenticates as
+  # 401. Two store principals cover the same ground instead — the store publisher drives the publisher plane and the
+  # store subscriber the consumer plane (its OWN password-grant token is what the gateway validates), both inside
+  # the same tenant. This feature's block starts the node backend for the gateway half.
+  @cap:publisher @feat:products @rule:secondary-userstore @type:regression @dep:publisher @dep:devportal @dep:admin @dep:gateway @legacy:APIProductLifecycleTest
   Scenario Outline: An API product created by a secondary-store publisher completes its lifecycle and can be deleted when retired as <actor>
     Given The system is ready and I have valid publisher access tokens as "<actor>"
-    And I have created an api from "artifacts/payloads/create_apim_test_api.json" as "storeProdApiId" and deployed it
-    When I create an API product "${UNIQUE:StoreProduct}" with context "${UNIQUE:storeProductCtx}" from API "storeProdApiId" as "storeProductId"
+    And I have created an api from "artifacts/payloads/create_apim_product_lifecycle_api.json" as "storeProdApiId" and deployed it
+    And the "apis" resource "storeProdApiId" should be live on the gateway, redeploying if propagation is lost
+    And I have created an api from "artifacts/payloads/create_apim_product_leasing_api.json" as "storeProdApiTwoId" and deployed it
+    And the "apis" resource "storeProdApiTwoId" should be live on the gateway, redeploying if propagation is lost
+    When I create an API product "${UNIQUE:StoreProduct}" with context "${UNIQUE:storeProductCtx}" from APIs "storeProdApiId,storeProdApiTwoId" as "storeProductId"
     Then The response status code should be 201
     And The value of response field "state" should be "CREATED"
+    And The create response of API product "storeProductId" should echo its name, context, version and the provider of actor "<actor>"
     When I put the following JSON payload in context as "storeProdRev"
     """
     {"description":"product revision for the secondary-store lifecycle"}
@@ -364,6 +581,21 @@ Feature: Publisher API Products
     Then The response status code should be 201
     When I deploy revision "revisionId" of "api-products" resource "storeProductId"
     Then The response status code should be 201
+    And the "api-products" resource "storeProductId" should be live on the gateway, redeploying if propagation is lost
+    And The API product "storeProductId" read from the publisher should match its create response
+    When I retrieve the "api-products" resource with id "storeProductId"
+    And I extract response field "context" and store it as "storeProductContext"
+    # CREATED but deployed: the store publisher's internal key invokes it, on the versioned and versionless routes.
+    When I generate an internal API key for API "storeProductId" and store it as "storeInternalKey"
+    Then The response status code should be 200
+    When I invoke the API at gateway context "{{storeProductContext}}/1.0.0/customers/123/" with method "GET" using internal key "storeInternalKey" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    And The response should contain "\"name\":\"John\""
+    When I invoke the API at gateway context "{{storeProductContext}}/customers/123/" with method "GET" using internal key "storeInternalKey" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    And The response should contain "\"name\":\"John\""
+    When I invoke the API at gateway context "{{storeProductContext}}/customers" with method "GET" using internal key "storeInternalKey" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
     # Publish: auto-approved, lands in Published and offers exactly the four onward transitions.
     When I publish the "api-products" resource with id "storeProductId"
     Then The response status code should be 200
@@ -372,27 +604,71 @@ Feature: Publisher API Products
     And The response array field "lifecycleState.availableTransitions" should have exactly 4 entries
     # WHICH four, not just how many — a count alone is satisfied by any four transitions.
     And The response field "lifecycleState.availableTransitions[*].event" should be exactly the list "Block,Deploy as a Prototype,Demote to Created,Deprecate"
-    # Block, then Re-Publish — the publisher-plane half of the blocked-state arc.
+    # A store SUBSCRIBER in the same tenant sees the published product, subscribes, keys an application and
+    # invokes with its OWN password-grant token.
+    Given The system is ready and I have valid devportal access token as "SECONDARY.COM/subscriberUser1<tenantSuffix>"
+    Then The devportal should report API product "storeProductId" with lifecycle status "PUBLISHED"
+    And The devportal should report API product "storeProductId" exactly once with the same fields as published by "<actor>"
+    And The devportal should advertise gateway endpoint URLs for API product "storeProductId"
+    # The store subscriber subscribes an application of its own (subscription and key DTOs asserted) and takes
+    # application tokens plus its OWN password-grant user tokens on both key mappings.
+    When I have set up application with production and sandbox keys, subscribed to API "storeProductId" with plan "Unlimited", and obtained the four credentials as "storeProdSubId"
+    When I invoke the API at gateway context "{{storeProductContext}}/customers" with method "GET" using access token "productionUserToken" and payload "" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    When I invoke the API at gateway context "{{storeProductContext}}/customers" with method "POST" using access token "productionUserToken" and payload "" with content type "text/plain" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    When I invoke the API at gateway context "{{storeProductContext}}/customers/123" with method "PUT" using access token "productionUserToken" and payload "" with content type "text/plain" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    When I invoke the API at gateway context "{{storeProductContext}}/customers/123" with method "DELETE" using access token "productionUserToken" and payload "" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    When I invoke the API at gateway context "{{storeProductContext}}/1.0.0/customers/123/" with method "GET" using access token "productionUserToken" and payload "" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    And The value of response field "name" should be "John"
+    When I invoke the API at gateway context "{{storeProductContext}}/1.0.0/customers/123/" with method "GET" using access token "sandboxUserToken" and payload "" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    And The value of response field "name" should be "John"
+    When I invoke the API at gateway context "{{storeProductContext}}/1.0.0/assets" with method "GET" using access token "productionUserToken" and payload "" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    And The response should contain "Hello World"
+    When I invoke every operation of the product leasing member at "{{storeProductContext}}/1.0.0" with access tokens "productionUserToken,productionAppToken" expecting status 200 and body "Hello World"
+    # Block, then Re-Publish — the blocked product refuses the store subscriber (503) and serves it again after.
+    Given I act as "<actor>"
     When I change the lifecycle of "api-products" resource "storeProductId" with action "Block"
     Then The response status code should be 200
+    And The value of response field "workflowStatus" should be "APPROVED"
     And The value of response field "lifecycleState.state" should be "Blocked"
+    And The response field "lifecycleState.availableTransitions[*].event" should be exactly the list "Deprecate,Re-Publish"
+    Given I act as "SECONDARY.COM/subscriberUser1<tenantSuffix>"
+    When I invoke the API at gateway context "{{storeProductContext}}/1.0.0/customers/123/" with method "GET" using access token "productionUserToken" and payload "" until response status code becomes 503 within 60 seconds
+    Then The response status code should be 503
+    When I invoke the API at gateway context "{{storeProductContext}}/customers/123/" with method "GET" using access token "productionUserToken" and payload "" until response status code becomes 503 within 60 seconds
+    Then The response status code should be 503
+    When I invoke the API at gateway context "{{storeProductContext}}/customers" with method "GET" using access token "productionUserToken" and payload "" until response status code becomes 503 within 60 seconds
+    Then The response status code should be 503
+    When I invoke the API at gateway context "{{storeProductContext}}/customers" with method "GET" without authentication until response status code becomes 503 within 60 seconds
+    Then The response status code should be 503
+    When I invoke the API at gateway context "{{storeProductContext}}/customers/123/" with method "GET" without authentication until response status code becomes 503 within 60 seconds
+    Then The response status code should be 503
+    Given I act as "<actor>"
     When I change the lifecycle of "api-products" resource "storeProductId" with action "Re-Publish"
     Then The response status code should be 200
+    And The value of response field "workflowStatus" should be "APPROVED"
     And The value of response field "lifecycleState.state" should be "Published"
-    # A store SUBSCRIBER in the same tenant takes out a subscription on the store publisher's product.
-    Given The system is ready and I have valid devportal access token as "SECONDARY.COM/subscriberUser1<tenantSuffix>"
-    When I put the following JSON payload in context as "storeProdAppPayload"
-    """
-    {"name":"${UNIQUE:StoreProductApp}","throttlingPolicy":"Unlimited","description":"secondary-store consumer application"}
-    """
-    And I create an application with payload "storeProdAppPayload"
-    Then The response status code should be 201
-    When I put the following JSON payload in context as "storeProdSubPayload"
-    """
-    {"applicationId": "{{applicationId}}", "apiId": "{{apiId}}", "throttlingPolicy": "Unlimited"}
-    """
-    And I subscribe to API "storeProductId" using application "createdAppId" with payload "storeProdSubPayload" as "storeProdSubId"
-    Then The response status code should be 201
+    Given I act as "SECONDARY.COM/subscriberUser1<tenantSuffix>"
+    Then The devportal should report API product "storeProductId" with lifecycle status "PUBLISHED"
+    And The devportal should report API product "storeProductId" exactly once with the same fields as published by "<actor>"
+    When I invoke the API at gateway context "{{storeProductContext}}/customers" with method "GET" using access token "productionUserToken" and payload "" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    When I invoke the API at gateway context "{{storeProductContext}}/customers" with method "POST" using access token "productionUserToken" and payload "" with content type "text/plain" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    When I invoke the API at gateway context "{{storeProductContext}}/customers/123" with method "PUT" using access token "productionUserToken" and payload "" with content type "text/plain" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    When I invoke the API at gateway context "{{storeProductContext}}/customers/123" with method "DELETE" using access token "productionUserToken" and payload "" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    When I invoke the API at gateway context "{{storeProductContext}}/1.0.0/customers/123/" with method "GET" using access token "productionUserToken" and payload "" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    And The value of response field "name" should be "John"
+    When I invoke every operation of the product leasing member at "{{storeProductContext}}/1.0.0" with access tokens "productionUserToken,sandboxUserToken" expecting status 200 and body "Hello World"
     # Back as the store publisher: delete is refused while that subscription is active.
     Given I act as "<actor>"
     When I delete the "api-products" resource with id "storeProductId"
@@ -403,13 +679,32 @@ Feature: Publisher API Products
     And The value of response field "workflowStatus" should be "APPROVED"
     When I retrieve the "api-products" resource with id "storeProductId"
     Then The response should contain "DEPRECATED"
+    And I wait until API product "storeProductId" has lifecycle state "Deprecated" and transition "Retire" available
+    When I invoke the API at gateway context "{{storeProductContext}}/customers" with method "GET" using access token "productionUserToken" and payload "" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    When I invoke the API at gateway context "{{storeProductContext}}/customers" with method "POST" using access token "productionUserToken" and payload "" with content type "text/plain" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    When I invoke the API at gateway context "{{storeProductContext}}/customers/123" with method "PUT" using access token "productionUserToken" and payload "" with content type "text/plain" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    When I invoke the API at gateway context "{{storeProductContext}}/customers/123" with method "DELETE" using access token "productionUserToken" and payload "" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    # A deprecated product is still readable on the devportal and still serves its subscriber.
+    Given I act as "SECONDARY.COM/subscriberUser1<tenantSuffix>"
+    Then The devportal should report API product "storeProductId" with lifecycle status "DEPRECATED"
+    When I invoke the API at gateway context "{{storeProductContext}}/1.0.0/customers/123/" with method "GET" using access token "productionUserToken" and payload "" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    And The value of response field "name" should be "John"
+    When I invoke every operation of the product leasing member at "{{storeProductContext}}/1.0.0" with access tokens "productionUserToken" expecting status 200 and body "Hello World"
     # Retiring removes the subscription, which is what then allows the delete to succeed.
+    Given I act as "<actor>"
     When I change the lifecycle of "api-products" resource "storeProductId" with action "Retire"
     Then The response status code should be 200
+    And The value of response field "workflowStatus" should be "APPROVED"
     And The value of response field "lifecycleState.state" should be "Retired"
     When I retrieve the subscriptions of API "storeProductId"
     Then The response status code should be 200
     And The subscription list should contain exactly 0 subscriptions
+    And The subscription "storeProdSubId" should no longer exist
     When I delete the "api-products" resource with id "storeProductId"
     Then The response status code should be 200
 
@@ -444,6 +739,10 @@ Feature: Publisher API Products
     When I upload client certificate "artifacts/certs/mutualssl/cert_chain_root.cer" with alias "<certAlias>" to API "mtlsProductId" for tier "Unlimited"
     Then The response status code should be 201
     And The client certificates of API product "mtlsProductId" should list alias "<certAlias>"
+    # Legacy uploaded to the key-type-scoped endpoint with key type SANDBOX.
+    When I upload client certificate "artifacts/certs/mutualssl/cert_chain_intermediate.cer" with alias "<certAlias>sb" and key type "SANDBOX" to API "mtlsProductId" for tier "Unlimited"
+    Then The response status code should be 201
+    And The "SANDBOX" client certificates of API product "mtlsProductId" should list alias "<certAlias>sb"
     # A mutual-SSL product still revisions and deploys.
     When I put the following JSON payload in context as "mtlsProductRev"
     """
@@ -459,3 +758,610 @@ Feature: Publisher API Products
       | actor                     | certAlias         |
       | publisherUser             | mtlsproductsuper  |
       | publisherUser@tenant1.com | mtlsproducttenant |
+
+  # These two thorough API-product flows retain the email-username ownership assertions while running through
+  # the generic feature in both standard and email-user blocks. Only the actor's expected physical username
+  # varies by block; provider, lifecycle, gateway, subscription, and response assertions remain exact.
+  # testCreateAPIProduct + testPublishAPIProduct + testChangeAPIProductLifecycleStateToBlockedState +
+  # testDeleteRetiredAPIProducts, in one arc, as the block-aware admin. Block -> Re-Publish is included because
+  # BLOCKED is the one transition that is reversible, and the recovery is what proves the block did not strand
+  # the product under the same provider identity.
+  @cap:publisher @feat:products @rule:email-username @type:regression @dep:publisher @dep:devportal @legacy:APIProductLifecycleTest
+  Scenario Outline: An API product provider identity survives its full lifecycle as <actor>
+    Given The system is ready
+    And I have valid access tokens as "<actor>"
+
+    # Pin the physical username FIRST — if the block ever provisioned plain usernames, everything below would
+    # still pass, and this feature would be silently testing nothing.
+    When I store the acting actor credentials as "emailProductOwner" and "emailProductOwnerPassword"
+    Then the actual value of "emailProductOwner" should match standard-mode value "<standardUsername>" and email-mode value "<emailUsername>"
+
+    And I have created an api from "artifacts/payloads/create_apim_product_lifecycle_api.json" as "emailLcApiId" and deployed it
+    And the "apis" resource "emailLcApiId" should be live on the gateway, redeploying if propagation is lost
+    And I have created an api from "artifacts/payloads/create_apim_product_leasing_api.json" as "emailLcApiTwoId" and deployed it
+    And the "apis" resource "emailLcApiTwoId" should be live on the gateway, redeploying if propagation is lost
+    When I create an API product "${UNIQUE:EmailLcProduct}" with context "${UNIQUE:emailLcProductCtx}" from APIs "emailLcApiId,emailLcApiTwoId" as "emailLcProductId"
+    Then The response status code should be 201
+    And The response array field "apis" should have exactly 2 entries
+    And The response field "apis[*].apiId" should be exactly the list "{{emailLcApiId}},{{emailLcApiTwoId}}"
+    And The value of response field "state" should be "CREATED"
+
+    # The assertion the dimension exists for: the product is attributed to the EMAIL principal.
+    And The provider of "api-products" resource "emailLcProductId" should match actor "<actor>"
+    And The create response of API product "emailLcProductId" should echo its name, context, version and the provider of actor "<actor>"
+
+    # Revision + deploy, then — still CREATED — the publisher's internal key invokes the product on the
+    # versioned and the versionless route.
+    When I put the following JSON payload in context as "emailLcRev"
+    """
+    {"description":"email-provider product revision"}
+    """
+    And I make a request to create a revision for "api-products" resource "emailLcProductId" with payload "emailLcRev"
+    Then The response status code should be 201
+    When I deploy revision "revisionId" of "api-products" resource "emailLcProductId"
+    Then The response status code should be 201
+    And the "api-products" resource "emailLcProductId" should be live on the gateway, redeploying if propagation is lost
+    Then The publisher product list should report API product "emailLcProductId" exactly once with the same info fields
+    And The API product "emailLcProductId" read from the publisher should match its create response
+    When I retrieve the "api-products" resource with id "emailLcProductId"
+    And I extract response field "context" and store it as "emailLcProductContext"
+    When I generate an internal API key for API "emailLcProductId" and store it as "emailLcInternalKey"
+    Then The response status code should be 200
+    When I invoke the API at gateway context "{{emailLcProductContext}}/1.0.0/customers/123/" with method "GET" using internal key "emailLcInternalKey" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    And The response should contain "\"name\":\"John\""
+    When I invoke the API at gateway context "{{emailLcProductContext}}/customers/123/" with method "GET" using internal key "emailLcInternalKey" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    And The response should contain "\"name\":\"John\""
+    When I invoke the API at gateway context "{{emailLcProductContext}}/customers" with method "GET" using internal key "emailLcInternalKey" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+
+    # Publish — auto-approved, and the onward transition set is pinned exactly (legacy asserted the count).
+    When I publish the "api-products" resource with id "emailLcProductId"
+    Then The response status code should be 200
+    And The value of response field "workflowStatus" should be "APPROVED"
+    And The value of response field "lifecycleState.state" should be "Published"
+    And The response array field "lifecycleState.availableTransitions" should have exactly 4 entries
+    # WHICH four — the transition set is a property of the api-products lifecycle, so it is identical to the
+    # plain-username scenario's; an provider actor must not change it.
+    And The response field "lifecycleState.availableTransitions[*].event" should be exactly the list "Block,Deploy as a Prototype,Demote to Created,Deprecate"
+    When I retrieve the "api-products" resource with id "emailLcProductId"
+    Then The response should contain "PUBLISHED"
+    # A published product reaches the devportal plane under the same provider actor.
+    Then The devportal should report API product "emailLcProductId" exactly once with the same fields
+    And The devportal should advertise gateway endpoint URLs for API product "emailLcProductId"
+    # Subscribe and take legacy's four credentials; the user tokens' subject is the resolved principal.
+    When I have set up application with production and sandbox keys, subscribed to API "emailLcProductId" with plan "Unlimited", and obtained the four credentials as "emailLcSubId"
+    When I invoke the API at gateway context "{{emailLcProductContext}}/customers" with method "GET" using access token "productionUserToken" and payload "" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    When I invoke the API at gateway context "{{emailLcProductContext}}/customers" with method "POST" using access token "productionUserToken" and payload "" with content type "text/plain" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    When I invoke the API at gateway context "{{emailLcProductContext}}/customers/123" with method "PUT" using access token "productionUserToken" and payload "" with content type "text/plain" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    When I invoke the API at gateway context "{{emailLcProductContext}}/customers/123" with method "DELETE" using access token "productionUserToken" and payload "" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    When I invoke the API at gateway context "{{emailLcProductContext}}/1.0.0/customers/123/" with method "GET" using access token "productionUserToken" and payload "" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    And The value of response field "name" should be "John"
+    When I invoke the API at gateway context "{{emailLcProductContext}}/1.0.0/customers/123/" with method "GET" using access token "sandboxUserToken" and payload "" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    And The value of response field "name" should be "John"
+    When I invoke the API at gateway context "{{emailLcProductContext}}/1.0.0/assets" with method "GET" using access token "productionAppToken" and payload "" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    And The response should contain "Hello World"
+    When I invoke the API at gateway context "{{emailLcProductContext}}/1.0.0/assets" with method "POST" using access token "sandboxAppToken" and payload "" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    And The response should contain "Hello World"
+    When I invoke every operation of the product leasing member at "{{emailLcProductContext}}/1.0.0" with access tokens "productionUserToken,sandboxUserToken" expecting status 200 and body "Hello World"
+
+    # BLOCKED, then recovered — the reversible transition.
+    When I change the lifecycle of "api-products" resource "emailLcProductId" with action "Block"
+    Then The response status code should be 200
+    And The value of response field "workflowStatus" should be "APPROVED"
+    And The value of response field "lifecycleState.state" should be "Blocked"
+    And The response field "lifecycleState.availableTransitions[*].event" should be exactly the list "Deprecate,Re-Publish"
+    When I retrieve the "api-products" resource with id "emailLcProductId"
+    Then The response should contain "BLOCKED"
+    When I invoke the API at gateway context "{{emailLcProductContext}}/1.0.0/customers/123/" with method "GET" using access token "productionUserToken" and payload "" until response status code becomes 503 within 60 seconds
+    Then The response status code should be 503
+    When I invoke the API at gateway context "{{emailLcProductContext}}/customers/123/" with method "GET" using access token "productionUserToken" and payload "" until response status code becomes 503 within 60 seconds
+    Then The response status code should be 503
+    When I invoke the API at gateway context "{{emailLcProductContext}}/customers" with method "GET" using access token "productionUserToken" and payload "" until response status code becomes 503 within 60 seconds
+    Then The response status code should be 503
+    When I invoke the API at gateway context "{{emailLcProductContext}}/customers" with method "GET" without authentication until response status code becomes 503 within 60 seconds
+    Then The response status code should be 503
+    When I invoke the API at gateway context "{{emailLcProductContext}}/customers/123/" with method "GET" without authentication until response status code becomes 503 within 60 seconds
+    Then The response status code should be 503
+    When I change the lifecycle of "api-products" resource "emailLcProductId" with action "Re-Publish"
+    Then The response status code should be 200
+    And The value of response field "workflowStatus" should be "APPROVED"
+    And The value of response field "lifecycleState.state" should be "Published"
+    When I retrieve the "api-products" resource with id "emailLcProductId"
+    Then The response should contain "PUBLISHED"
+    Then The devportal should report API product "emailLcProductId" exactly once with the same fields
+    When I invoke the API at gateway context "{{emailLcProductContext}}/customers" with method "GET" using access token "productionUserToken" and payload "" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    When I invoke the API at gateway context "{{emailLcProductContext}}/customers" with method "POST" using access token "productionUserToken" and payload "" with content type "text/plain" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    When I invoke the API at gateway context "{{emailLcProductContext}}/customers/123" with method "PUT" using access token "productionUserToken" and payload "" with content type "text/plain" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    When I invoke the API at gateway context "{{emailLcProductContext}}/customers/123" with method "DELETE" using access token "productionUserToken" and payload "" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    When I invoke the API at gateway context "{{emailLcProductContext}}/1.0.0/customers/123/" with method "GET" using access token "productionUserToken" and payload "" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    And The value of response field "name" should be "John"
+    When I invoke every operation of the product leasing member at "{{emailLcProductContext}}/1.0.0" with access tokens "productionUserToken,sandboxUserToken" expecting status 200 and body "Hello World"
+
+    # Deprecate -> Retire -> delete. A retired product is deletable (legacy testDeleteRetiredAPIProducts).
+    When I change the lifecycle of "api-products" resource "emailLcProductId" with action "Deprecate"
+    Then The response status code should be 200
+    And The value of response field "workflowStatus" should be "APPROVED"
+    When I retrieve the "api-products" resource with id "emailLcProductId"
+    Then The response should contain "DEPRECATED"
+    Then The devportal should report API product "emailLcProductId" with lifecycle status "DEPRECATED"
+    When I invoke the API at gateway context "{{emailLcProductContext}}/customers" with method "GET" using access token "productionUserToken" and payload "" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    When I invoke the API at gateway context "{{emailLcProductContext}}/customers" with method "POST" using access token "productionUserToken" and payload "" with content type "text/plain" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    When I invoke the API at gateway context "{{emailLcProductContext}}/customers/123" with method "PUT" using access token "productionUserToken" and payload "" with content type "text/plain" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    When I invoke the API at gateway context "{{emailLcProductContext}}/customers/123" with method "DELETE" using access token "productionUserToken" and payload "" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    When I invoke the API at gateway context "{{emailLcProductContext}}/1.0.0/customers/123/" with method "GET" using access token "sandboxUserToken" and payload "" until response status code becomes 200 within 60 seconds
+    Then The response status code should be 200
+    And The value of response field "name" should be "John"
+    When I invoke every operation of the product leasing member at "{{emailLcProductContext}}/1.0.0" with access tokens "productionUserToken" expecting status 200 and body "Hello World"
+    When I change the lifecycle of "api-products" resource "emailLcProductId" with action "Retire"
+    Then The response status code should be 200
+    And The value of response field "workflowStatus" should be "APPROVED"
+    And The value of response field "lifecycleState.state" should be "Retired"
+    When I retrieve the "api-products" resource with id "emailLcProductId"
+    Then The response should contain "RETIRED"
+    When I retrieve the subscriptions of API "emailLcProductId"
+    Then The response status code should be 200
+    And The subscription list should contain exactly 0 subscriptions
+    And The subscription "emailLcSubId" should no longer exist
+    # The provider survives the whole lifecycle — a transition must not rewrite ownership.
+    And The provider of "api-products" resource "emailLcProductId" should match actor "<actor>"
+    When I delete the "api-products" resource with id "emailLcProductId"
+    Then The response status code should be 200
+
+    Examples:
+      | actor                  | standardUsername  | emailUsername                     |
+      | superTenantAdmin       | admin             | emailAdmin@email.com@carbon.super |
+      | admin@tenant1.com      | admin@tenant1.com | admin@email.com@tenant1.com       |
+
+  # testDeleteDeprecatedAPIProductsWithSubscription: a PUBLISHED product carrying an active subscription is
+  # refused deletion (409) and only becomes deletable once RETIRED. Driven here by the email-form admin on both
+  # planes — it creates the product AND subscribes to it — so the refusal is pinned for a subscription whose
+  # owner and provider are both resolved principals.
+  @cap:publisher @feat:products @rule:email-username @type:negative @dep:publisher @dep:devportal @legacy:APIProductLifecycleTest
+  Scenario Outline: A subscribed API product owned by the provider actor cannot be deleted until retired as <actor>
+    Given The system is ready
+    And I have valid access tokens as "<actor>"
+    When I store the acting actor credentials as "emailSubProductOwner" and "emailSubProductOwnerPassword"
+    Then the actual value of "emailSubProductOwner" should match standard-mode value "<standardUsername>" and email-mode value "<emailUsername>"
+
+    And I have created an api from "artifacts/payloads/create_apim_test_api.json" as "emailSubApiId" and deployed it
+    And I have created an api from "artifacts/payloads/create_apim_test_api_two.json" as "emailSubApiTwoId" and deployed it
+    When I create an API product "${UNIQUE:EmailSubProduct}" with context "${UNIQUE:emailSubProductCtx}" from APIs "emailSubApiId,emailSubApiTwoId" as "emailSubProductId"
+    Then The response status code should be 201
+    And The provider of "api-products" resource "emailSubProductId" should match actor "<actor>"
+    When I put the following JSON payload in context as "emailSubRev"
+    """
+    {"description":"email-provider subscribed product revision"}
+    """
+    And I make a request to create a revision for "api-products" resource "emailSubProductId" with payload "emailSubRev"
+    Then The response status code should be 201
+    When I deploy revision "revisionId" of "api-products" resource "emailSubProductId"
+    Then The response status code should be 201
+    When I publish the "api-products" resource with id "emailSubProductId"
+    Then The response status code should be 200
+    And The value of response field "workflowStatus" should be "APPROVED"
+
+    # An application owned by the same resolved principal subscribes to the product.
+    When I put JSON payload from file "artifacts/payloads/create_apim_test_app.json" in context as "emailSubAppPayload"
+    And I create an application with payload "emailSubAppPayload"
+    Then The response status code should be 201
+    When I put the following JSON payload in context as "emailProductSubPayload"
+    """
+    {"applicationId": "{{applicationId}}", "apiId": "{{apiId}}", "throttlingPolicy": "Unlimited"}
+    """
+    And I subscribe to API "emailSubProductId" using application "createdAppId" with payload "emailProductSubPayload" as "emailProductSubId"
+    Then The response status code should be 201
+
+    # The subject: deletion is refused while the subscription is live.
+    When I delete the "api-products" resource with id "emailSubProductId"
+    Then The response status code should be 409
+    And The response should contain "active subscriptions exist"
+
+    # Retire first, then the same delete succeeds — so the 409 above was about the subscription, not about
+    # an provider actor being unable to delete its own product.
+    When I change the lifecycle of "api-products" resource "emailSubProductId" with action "Deprecate"
+    Then The response status code should be 200
+    And The value of response field "workflowStatus" should be "APPROVED"
+    When I change the lifecycle of "api-products" resource "emailSubProductId" with action "Retire"
+    Then The response status code should be 200
+    And The value of response field "workflowStatus" should be "APPROVED"
+    And The value of response field "lifecycleState.state" should be "Retired"
+    # Retiring removed the subscription.
+    When I retrieve the subscriptions of API "emailSubProductId"
+    Then The response status code should be 200
+    And The subscription list should contain exactly 0 subscriptions
+    And The subscription "emailProductSubId" should no longer exist
+    When I delete the "api-products" resource with id "emailSubProductId"
+    Then The response status code should be 200
+
+    Examples:
+      | actor                  | standardUsername  | emailUsername                     |
+      | superTenantAdmin       | admin             | emailAdmin@email.com@carbon.super |
+      | admin@tenant1.com      | admin@tenant1.com | admin@email.com@tenant1.com       |
+
+  # ---------------------------------------------------------------------------------------------------------------
+  # Rate limits, version and context of an API product. Every product below aggregates one
+  # member API on the wildcard backend with a secured resource (/secured) and an UNAUTHENTICATED one (/open), so a
+  # setting that skips unauthenticated resources is caught. The gateway half — the deployed revision's resource
+  # settings, 429 enforcement and the routes a product is served on — is in gateway/api_product_invocation and
+  # gateway/throttling_enforcement.
+  # ---------------------------------------------------------------------------------------------------------------
+
+  # A product-level rate limit is applied to EVERY resource of the product, the unauthenticated one included, in
+  # place of the member API's resource limits, and a later change of the API's resource limits doesn't reach it.
+  # The shipped advanced policies stand in for the product-level (10KPerMin) and resource (20KPerMin) limits: only
+  # which policy each resource stores is asserted here (its enforcement is in gateway/throttling_enforcement).
+  @cap:publisher @feat:products @rule:rate-limit @type:regression
+  Scenario Outline: A product-level rate limit applies to every resource of an API product as <actor>
+    Given The system is ready and I have valid publisher access tokens as "<actor>"
+    And I have created an api from "artifacts/payloads/create_apim_product_member_wildcard_api.json" as "plApiId" and deployed it
+    When I retrieve the "apis" resource with id "plApiId"
+    And I put the response payload in context as "plApiPayload"
+    When I update the "apis" resource "plApiId" and "plApiPayload" with configuration type "operations" and value:
+      """
+      [{"target":"/secured","verb":"GET","authType":"Application & Application User","throttlingPolicy":"20KPerMin","scopes":[],"operationPolicies":{"request":[],"response":[],"fault":[]}},{"target":"/open","verb":"GET","authType":"None","throttlingPolicy":"Unlimited","scopes":[],"operationPolicies":{"request":[],"response":[],"fault":[]}}]
+      """
+    Then The response status code should be 200
+    When I put an API product payload "${UNIQUE:ProdLevelProduct}" with context "${UNIQUE:prodLevelCtx}" from APIs "plApiId" in context as "plProductPayload"
+    And I set the field "apiThrottlingPolicy" to "10KPerMin" in the payload "plProductPayload"
+    And I create an "api-products" resource with payload "plProductPayload" as "plProductId"
+    Then The response status code should be 201
+    When I retrieve the "api-products" resource with id "plProductId"
+    Then The response status code should be 200
+    And The value of response field "apiThrottlingPolicy" should be "10KPerMin"
+    # Both resources carry the product-level policy — the count pins that neither lost its policy.
+    And The response array field "apis[*].operations[*].throttlingPolicy" should have exactly 2 entries
+    And The response field "apis[*].operations[*].throttlingPolicy" should be exactly the list "10KPerMin"
+    And The response field "apis[*].operations[?(@.target=='/open')].authType" should be exactly the list "None"
+    # Changing the member API's resource tier doesn't reach a product with a product-level policy.
+    When I retrieve the "apis" resource with id "plApiId"
+    And I put the response payload in context as "plApiPayload"
+    When I update the "apis" resource "plApiId" and "plApiPayload" with configuration type "operations" and value:
+      """
+      [{"target":"/secured","verb":"GET","authType":"Application & Application User","throttlingPolicy":"20KPerMin","scopes":[],"operationPolicies":{"request":[],"response":[],"fault":[]}},{"target":"/open","verb":"GET","authType":"None","throttlingPolicy":"20KPerMin","scopes":[],"operationPolicies":{"request":[],"response":[],"fault":[]}}]
+      """
+    Then The response status code should be 200
+    When I retrieve the "api-products" resource with id "plProductId"
+    Then The response array field "apis[*].operations[*].throttlingPolicy" should have exactly 2 entries
+    And The response field "apis[*].operations[*].throttlingPolicy" should be exactly the list "10KPerMin"
+
+    Examples:
+      | actor                     |
+      | publisherUser             |
+      | publisherUser@tenant1.com |
+
+  # A product WITHOUT a product-level policy (operation level) takes each resource's rate limit from its member
+  # API; setting a product-level policy by an update replaces them all, and clearing it gives them back.
+  @cap:publisher @feat:products @rule:rate-limit @type:regression
+  Scenario Outline: An operation-level API product takes its API's resource rate limits until a product-level rate limit is set as <actor>
+    Given The system is ready and I have valid publisher access tokens as "<actor>"
+    And I have created an api from "artifacts/payloads/create_apim_product_member_wildcard_api.json" as "olApiId" and deployed it
+    When I retrieve the "apis" resource with id "olApiId"
+    And I put the response payload in context as "olApiPayload"
+    When I update the "apis" resource "olApiId" and "olApiPayload" with configuration type "operations" and value:
+      """
+      [{"target":"/secured","verb":"GET","authType":"Application & Application User","throttlingPolicy":"20KPerMin","scopes":[],"operationPolicies":{"request":[],"response":[],"fault":[]}},{"target":"/open","verb":"GET","authType":"None","throttlingPolicy":"Unlimited","scopes":[],"operationPolicies":{"request":[],"response":[],"fault":[]}}]
+      """
+    Then The response status code should be 200
+    When I create an API product "${UNIQUE:OpLevelProduct}" with context "${UNIQUE:opLevelCtx}" from API "olApiId" as "olProductId"
+    Then The response status code should be 201
+    When I retrieve the "api-products" resource with id "olProductId"
+    Then The response field "apis[*].operations[?(@.target=='/secured')].throttlingPolicy" should be exactly the list "20KPerMin"
+    And The response field "apis[*].operations[?(@.target=='/open')].throttlingPolicy" should be exactly the list "Unlimited"
+    # Set a product-level policy by an update: it replaces the rate limit of every resource.
+    And I put the response payload in context as "olProductPayload"
+    When I update the "api-products" resource "olProductId" and "olProductPayload" with configuration type "apiThrottlingPolicy" and value:
+      """
+      10KPerMin
+      """
+    Then The response status code should be 200
+    When I retrieve the "api-products" resource with id "olProductId"
+    Then The value of response field "apiThrottlingPolicy" should be "10KPerMin"
+    And The response array field "apis[*].operations[*].throttlingPolicy" should have exactly 2 entries
+    And The response field "apis[*].operations[*].throttlingPolicy" should be exactly the list "10KPerMin"
+    # A product-level Unlimited is a product-level policy too: every resource is Unlimited, the secured one included.
+    And I put the response payload in context as "olProductUnlimitedPayload"
+    When I update the "api-products" resource "olProductId" and "olProductUnlimitedPayload" with configuration type "apiThrottlingPolicy" and value:
+      """
+      Unlimited
+      """
+    Then The response status code should be 200
+    When I retrieve the "api-products" resource with id "olProductId"
+    Then The value of response field "apiThrottlingPolicy" should be "Unlimited"
+    And The response array field "apis[*].operations[*].throttlingPolicy" should have exactly 2 entries
+    And The response field "apis[*].operations[*].throttlingPolicy" should be exactly the list "Unlimited"
+    # Clear it again: each resource is back on its member API's own rate limit.
+    And I put the response payload in context as "olProductClearPayload"
+    And I set the field "apiThrottlingPolicy" to null in the payload "olProductClearPayload"
+    When I update "api-products" resource of id "olProductId" with payload "olProductClearPayload"
+    Then The response status code should be 200
+    When I retrieve the "api-products" resource with id "olProductId"
+    Then The response field "apis[*].operations[?(@.target=='/secured')].throttlingPolicy" should be exactly the list "20KPerMin"
+    And The response field "apis[*].operations[?(@.target=='/open')].throttlingPolicy" should be exactly the list "Unlimited"
+
+    Examples:
+      | actor                     |
+      | publisherUser             |
+      | publisherUser@tenant1.com |
+
+  # Product import needs the apim:api_product_import_export scope, which only admin (and Internal/devops) holds, so
+  # the import scenarios run as admin.
+  # Importing a product applies the ARCHIVE's product-level policy to every resource: the archive is edited to
+  # carry another product-level policy and Unlimited on every resource, and the imported product must carry the
+  # archive's product-level policy on all of them, not the resource limits written in the archive.
+  @cap:publisher @feat:products @rule:rate-limit @type:regression
+  Scenario Outline: Importing an API product applies the archive's product-level rate limit to every resource as <actor>
+    Given The system is ready
+    And I have valid access tokens as "<actor>"
+    And I have created an api from "artifacts/payloads/create_apim_product_member_wildcard_api.json" as "ipApiId" and deployed it
+    When I put an API product payload "${UNIQUE:ImportLevelProduct}" with context "${UNIQUE:importLevelCtx}" from APIs "ipApiId" in context as "ipProductPayload"
+    And I set the field "apiThrottlingPolicy" to "10KPerMin" in the payload "ipProductPayload"
+    And I create an "api-products" resource with payload "ipProductPayload" as "ipProductId"
+    Then The response status code should be 201
+    When I export the API product "ipProductId" to an archive as "ipArchive"
+    And I edit the exported API product archive "ipArchive" into "ipEditedArchive" with:
+      """
+      {"apiThrottlingPolicy":"20KPerMin","apis[*].operations[*].throttlingPolicy":"Unlimited"}
+      """
+    And I import the API product archive "ipEditedArchive" with overwrite "true"
+    Then The response status code should be 200
+    When I retrieve the "api-products" resource with id "ipProductId"
+    Then The value of response field "apiThrottlingPolicy" should be "20KPerMin"
+    And The response array field "apis[*].operations[*].throttlingPolicy" should have exactly 2 entries
+    And The response field "apis[*].operations[*].throttlingPolicy" should be exactly the list "20KPerMin"
+
+    Examples:
+      | actor             |
+      | superTenantAdmin  |
+      | admin@tenant1.com |
+
+  # A versionless create resolves to the same name + version 1.0.0 identity as an explicit one, so a second product
+  # with an existing product's name is refused whether or not it names a version — on the existing product's
+  # context (an explicit 1.0.0 conflicting proves the versionless product IS 1.0.0), and without a version on
+  # another context, where the conflict can only be the name and version. A BLANK version is not a missing one:
+  # the request validation refuses it.
+  @cap:publisher @feat:products @rule:context-version @type:negative
+  Scenario Outline: Creating an API product with an existing name or a blank version is rejected as <actor>
+    Given The system is ready and I have valid publisher access tokens as "<actor>"
+    And I have created an api from "artifacts/payloads/create_apim_product_member_wildcard_api.json" as "dupApiId" and deployed it
+    And I generate a unique value and store it as "dupProductName"
+    And I generate a unique value and store it as "dupProductCtx"
+    When I put an API product payload "{{dupProductName}}" with context "{{dupProductCtx}}" from APIs "dupApiId" in context as "dupProductPayload"
+    And I remove the field "version" from the payload "dupProductPayload"
+    And I create an "api-products" resource with payload "dupProductPayload" as "dupProductId"
+    Then The response status code should be 201
+    And The value of response field "version" should be "1.0.0"
+    # The same name and context, without a version and with version 1.0.0.
+    When I attempt to create an "api-products" resource with payload "dupProductPayload"
+    Then The response status code should be 409
+    And The value of error response field "code" should be "900300"
+    When I put an API product payload "{{dupProductName}}" with context "{{dupProductCtx}}" from APIs "dupApiId" in context as "dupSameContextPayload"
+    And I attempt to create an "api-products" resource with payload "dupSameContextPayload"
+    Then The response status code should be 409
+    And The value of error response field "code" should be "900300"
+    # The same name on another context, without a version: the conflict can only be the name and version.
+    When I put an API product payload "{{dupProductName}}" with context "${UNIQUE:dupProductOtherCtx}" from APIs "dupApiId" in context as "dupNoVersionPayload"
+    And I remove the field "version" from the payload "dupNoVersionPayload"
+    And I attempt to create an "api-products" resource with payload "dupNoVersionPayload"
+    Then The response status code should be 409
+    And The value of error response field "code" should be "900300"
+    # A blank version on a new name.
+    When I put an API product payload "${UNIQUE:BlankVersionProduct}" with context "${UNIQUE:blankVersionCtx}" from APIs "dupApiId" in context as "dupBlankVersionPayload"
+    And I set the field "version" to "" in the payload "dupBlankVersionPayload"
+    And I attempt to create an "api-products" resource with payload "dupBlankVersionPayload"
+    Then The response status code should be 400
+    And The response should contain "Validation Error"
+    And The value of error response field "error[0].code" should be "400_version"
+
+    Examples:
+      | actor                     |
+      | publisherUser             |
+      | publisherUser@tenant1.com |
+
+  # The context and version of a product are fixed at create: an update is accepted but keeps both, whatever the
+  # request carries — a changed context, a moved context keeping the {version} template, a version-first context,
+  # the context without its tenant prefix (the stored context itself in the super tenant), a null or absent
+  # context, no version, or another version (which is not created as a product of its own). A blank context or
+  # version is refused by the request validation.
+  @cap:publisher @feat:products @rule:context-version @type:negative @dep:devportal
+  Scenario Outline: Updating an API product never changes its context or version as <actor>
+    Given The system is ready
+    And I have valid access tokens as "<actor>"
+    And I have created an api from "artifacts/payloads/create_apim_product_member_wildcard_api.json" as "updApiId" and deployed it
+    And I generate a unique value and store it as "updProductName"
+    And I generate a unique value and store it as "updProductCtx"
+    When I put an API product payload "{{updProductName}}" with context "{{updProductCtx}}" from APIs "updApiId" in context as "updProductPayload"
+    And I set the field "version" to "2.0.0" in the payload "updProductPayload"
+    And I create an "api-products" resource with payload "updProductPayload" as "updProductId"
+    Then The response status code should be 201
+    And The value of response field "context" should be "<tenantPrefix>/{{updProductCtx}}"
+    When I publish the "api-products" resource with id "updProductId"
+    Then The response status code should be 200
+    When I retrieve the "api-products" resource with id "updProductId"
+    And I put the response payload in context as "updContextPayload"
+    # After every update the stored context and version are pinned exactly; the devportal context is derived from
+    # them, so it is checked once, at the end.
+    And I set the field "context" to "/{{updProductCtx}}changed" in the payload "updContextPayload"
+    When I update "api-products" resource of id "updProductId" with payload "updContextPayload"
+    Then The response status code should be 200
+    And The value of response field "context" should be "<tenantPrefix>/{{updProductCtx}}"
+    And The value of response field "version" should be "2.0.0"
+    When I set the field "context" to "/{{updProductCtx}}moved/{version}" in the payload "updContextPayload"
+    And I update "api-products" resource of id "updProductId" with payload "updContextPayload"
+    Then The response status code should be 200
+    And The value of response field "context" should be "<tenantPrefix>/{{updProductCtx}}"
+    And The value of response field "version" should be "2.0.0"
+    When I set the field "context" to "/{version}/{{updProductCtx}}" in the payload "updContextPayload"
+    And I update "api-products" resource of id "updProductId" with payload "updContextPayload"
+    Then The response status code should be 200
+    And The value of response field "context" should be "<tenantPrefix>/{{updProductCtx}}"
+    And The value of response field "version" should be "2.0.0"
+    When I set the field "context" to "/{{updProductCtx}}" in the payload "updContextPayload"
+    And I update "api-products" resource of id "updProductId" with payload "updContextPayload"
+    Then The response status code should be 200
+    And The value of response field "context" should be "<tenantPrefix>/{{updProductCtx}}"
+    And The value of response field "version" should be "2.0.0"
+    When I set the field "context" to null in the payload "updContextPayload"
+    And I update "api-products" resource of id "updProductId" with payload "updContextPayload"
+    Then The response status code should be 200
+    And The value of response field "context" should be "<tenantPrefix>/{{updProductCtx}}"
+    And The value of response field "version" should be "2.0.0"
+    When I remove the field "context" from the payload "updContextPayload"
+    And I update "api-products" resource of id "updProductId" with payload "updContextPayload"
+    Then The response status code should be 200
+    And The value of response field "context" should be "<tenantPrefix>/{{updProductCtx}}"
+    And The value of response field "version" should be "2.0.0"
+    When I retrieve the "api-products" resource with id "updProductId"
+    And I put the response payload in context as "updVersionPayload"
+    And I set the field "version" to null in the payload "updVersionPayload"
+    When I update "api-products" resource of id "updProductId" with payload "updVersionPayload"
+    Then The response status code should be 200
+    And The value of response field "context" should be "<tenantPrefix>/{{updProductCtx}}"
+    And The value of response field "version" should be "2.0.0"
+    When I set the field "version" to "9.9.9" in the payload "updVersionPayload"
+    And I update "api-products" resource of id "updProductId" with payload "updVersionPayload"
+    Then The response status code should be 200
+    And The value of response field "context" should be "<tenantPrefix>/{{updProductCtx}}"
+    And The value of response field "version" should be "2.0.0"
+    # The product exports at its own version, and the other version was not created as a product of its own.
+    And I attempt to export the API product named "{{updProductName}}" version "2.0.0" expecting status 200
+    And I attempt to export the API product named "{{updProductName}}" version "9.9.9" expecting status 404
+    # A blank context or version is not a missing one: the request validation refuses both.
+    When I retrieve the "api-products" resource with id "updProductId"
+    And I put the response payload in context as "updBlankPayload"
+    And I set the field "context" to "" in the payload "updBlankPayload"
+    And I update "api-products" resource of id "updProductId" with payload "updBlankPayload"
+    Then The response status code should be 400
+    And The response should contain "Validation Error"
+    And The value of error response field "error[0].code" should be "400_context"
+    When I retrieve the "api-products" resource with id "updProductId"
+    And I put the response payload in context as "updBlankPayload"
+    And I set the field "version" to "" in the payload "updBlankPayload"
+    And I update "api-products" resource of id "updProductId" with payload "updBlankPayload"
+    Then The response status code should be 400
+    And The response should contain "Validation Error"
+    And The value of error response field "error[0].code" should be "400_version"
+    When I retrieve the "api-products" resource with id "updProductId"
+    Then The value of response field "context" should be "<tenantPrefix>/{{updProductCtx}}"
+    And The value of response field "version" should be "2.0.0"
+    Then The devportal should report API product "updProductId" exactly once with the same fields
+
+    Examples:
+      | actor             | tenantPrefix   |
+      | superTenantAdmin  |                |
+      | admin@tenant1.com | /t/tenant1.com |
+
+  # Importing an archive of an EXISTING product: with overwrite, the import updates the product but keeps its
+  # context and version — a changed, version-first or unprefixed context in the archive is ignored, and an archive
+  # without a version updates the existing 1.0.0 (its description lands on the same product id); without
+  # overwrite, the import is refused.
+  @cap:publisher @feat:products @rule:import @type:regression @type:negative
+  Scenario Outline: Importing an archive of an existing API product keeps its context and version as <actor>
+    Given The system is ready
+    And I have valid access tokens as "<actor>"
+    And I have created an api from "artifacts/payloads/create_apim_product_member_wildcard_api.json" as "impApiId" and deployed it
+    And I generate a unique value and store it as "impProductCtx"
+    When I create an API product "${UNIQUE:ImportCtxProduct}" with context "{{impProductCtx}}" from API "impApiId" as "impProductId"
+    Then The response status code should be 201
+    When I export the API product "impProductId" to an archive as "impArchive"
+    And I edit the exported API product archive "impArchive" into "impMovedArchive" with:
+      """
+      {"context":"/{{impProductCtx}}moved"}
+      """
+    And I import the API product archive "impMovedArchive" with overwrite "true"
+    Then The response status code should be 200
+    When I retrieve the "api-products" resource with id "impProductId"
+    Then The value of response field "context" should be "<tenantPrefix>/{{impProductCtx}}"
+    And The value of response field "version" should be "1.0.0"
+    When I edit the exported API product archive "impArchive" into "impVersionFirstArchive" with:
+      """
+      {"context":"/{version}/{{impProductCtx}}"}
+      """
+    And I import the API product archive "impVersionFirstArchive" with overwrite "true"
+    Then The response status code should be 200
+    When I retrieve the "api-products" resource with id "impProductId"
+    Then The value of response field "context" should be "<tenantPrefix>/{{impProductCtx}}"
+    And The value of response field "version" should be "1.0.0"
+    When I edit the exported API product archive "impArchive" into "impUnprefixedArchive" with:
+      """
+      {"context":"/{{impProductCtx}}"}
+      """
+    And I import the API product archive "impUnprefixedArchive" with overwrite "true"
+    Then The response status code should be 200
+    When I retrieve the "api-products" resource with id "impProductId"
+    Then The value of response field "context" should be "<tenantPrefix>/{{impProductCtx}}"
+    And The value of response field "version" should be "1.0.0"
+    When I edit the exported API product archive "impArchive" into "impNoVersionArchive" with:
+      """
+      {"version":null,"description":"Imported without a version"}
+      """
+    And I import the API product archive "impNoVersionArchive" with overwrite "true"
+    Then The response status code should be 200
+    When I retrieve the "api-products" resource with id "impProductId"
+    Then The value of response field "description" should be "Imported without a version"
+    And The value of response field "context" should be "<tenantPrefix>/{{impProductCtx}}"
+    And The value of response field "version" should be "1.0.0"
+    # The same archive without overwrite is refused: the product already exists.
+    When I import the API product archive "impArchive" with overwrite "false"
+    Then The response status code should be 409
+    And The value of error response field "code" should be "900300"
+
+    Examples:
+      | actor             | tenantPrefix   |
+      | superTenantAdmin  |                |
+      | admin@tenant1.com | /t/tenant1.com |
+
+  # Importing a NEW product (another name and context, no id, no version) creates it as version 1.0.0 with a
+  # context of its own, carrying the archive's product-level policy on every resource (the shipped 10KPerMin
+  # advanced policy, so no admin is needed). The import answers with a message, not the product, so the product is
+  # found through its export by name and version 1.0.0 — which is itself the proof that it was created as 1.0.0.
+  @cap:publisher @feat:products @rule:import @type:regression
+  Scenario Outline: Importing a new API product without a version creates version 1.0.0 as <actor>
+    Given The system is ready
+    And I have valid access tokens as "<actor>"
+    And I have created an api from "artifacts/payloads/create_apim_product_member_wildcard_api.json" as "impNewApiId" and deployed it
+    When I put an API product payload "${UNIQUE:ImportSourceProduct}" with context "${UNIQUE:importSourceCtx}" from APIs "impNewApiId" in context as "impSourcePayload"
+    And I set the field "apiThrottlingPolicy" to "10KPerMin" in the payload "impSourcePayload"
+    And I create an "api-products" resource with payload "impSourcePayload" as "impSourceProductId"
+    Then The response status code should be 201
+    And I generate a unique value and store it as "impNewProductName"
+    And I generate a unique value and store it as "impNewProductCtx"
+    When I export the API product "impSourceProductId" to an archive as "impSourceArchive"
+    And I edit the exported API product archive "impSourceArchive" into "impNewArchive" with:
+      """
+      {"name":"{{impNewProductName}}","context":"/{{impNewProductCtx}}","id":null,"version":null}
+      """
+    And I import the API product archive "impNewArchive" with overwrite "false"
+    Then The response status code should be 200
+    When I resolve the id of the API product named "{{impNewProductName}}" version "1.0.0" from its export as "impNewProductId"
+    And I retrieve the "api-products" resource with id "impNewProductId"
+    Then The response status code should be 200
+    And The value of response field "name" should be "{{impNewProductName}}"
+    And The value of response field "version" should be "1.0.0"
+    And The value of response field "context" should be "<tenantPrefix>/{{impNewProductCtx}}"
+    And The value of response field "apiThrottlingPolicy" should be "10KPerMin"
+    And The response array field "apis[*].operations[*].throttlingPolicy" should have exactly 2 entries
+    And The response field "apis[*].operations[*].throttlingPolicy" should be exactly the list "10KPerMin"
+
+    Examples:
+      | actor             | tenantPrefix   |
+      | superTenantAdmin  |                |
+      | admin@tenant1.com | /t/tenant1.com |

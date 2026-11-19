@@ -19,7 +19,10 @@ package org.wso2.am.integration.cucumbertests.runners.block;
 
 import io.cucumber.testng.CucumberOptions;
 
-/** Runner for admin gateway-environment CRUD. Runs in the IntegrationV2-Admin block; parallel-safe (uniquely-named envs). */
+/**
+ * Runner for admin gateway-environment CRUD. Runs in the IntegrationV2-DevPortal block; parallel-safe
+ * (uniquely-named envs).
+ */
 @CucumberOptions(
         features = {"src/test/resources/features/admin/gateway_environments.feature"},
         glue = {"org.wso2.am.integration.cucumbertests.stepdefinitions"},

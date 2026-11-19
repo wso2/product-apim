@@ -26,8 +26,7 @@ import io.cucumber.testng.CucumberOptions;
 @CucumberOptions(
         features = {"src/test/resources/features/publisher/api_revisions.feature"},
         glue = {"org.wso2.am.integration.cucumbertests.stepdefinitions"},
-        plugin = {"pretty", "html:target/cucumber-report/publisher-api-revisions.html"},
-        tags = "not @rule:deployment-ack"
+        plugin = {"pretty", "html:target/cucumber-report/publisher-api-revisions.html"}
 )
 public class PublisherAPIRevisionsRunner extends BaseBlockRunner {
 }

@@ -30,8 +30,10 @@ import org.wso2.carbon.automation.engine.context.beans.User;
 import org.wso2.carbon.automation.test.utils.http.client.HttpResponse;
 
 import java.io.IOException;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Revision assertions that need more than a status/substring check, and therefore cannot be expressed with the
@@ -62,6 +64,68 @@ public class ApiRevisionSteps {
      * first revision (NOT by the API create) and removed by {@code RegistryPersistenceImpl.deleteAPI}.
      */
     private static final String API_ARTIFACT_REGISTRY_PATH = "/_system/governance/apimgt/applicationdata/apis/";
+
+    /**
+     * Confirms that a Publisher API GET returned a readable representation of the requested API, rather than
+     * merely trusting the earlier create response. This preserves APIRevisionTestCase's post-create read check.
+     */
+    @Then("The API representation for {string} should be readable")
+    public void apiRepresentationShouldBeReadable(String apiIdKey) {
+
+        String apiId = TestContext.resolve(apiIdKey).toString();
+        HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
+        Assert.assertTrue(response != null && response.getResponseCode() == 200,
+                "Could not read API " + apiId + ": " + (response == null ? "no response" : response.getResponseCode()
+                        + "/" + response.getData()));
+        Assert.assertTrue(response.getData() != null && !response.getData().isBlank(),
+                "Publisher returned an empty API representation for " + apiId);
+
+        JSONObject api = new JSONObject(response.getData());
+        Assert.assertEquals(api.optString("id"), apiId,
+                "Publisher returned a different API representation than requested: " + response.getData());
+        Assert.assertTrue(!api.optString("name").isBlank() && !api.optString("context").isBlank()
+                        && !api.optString("version").isBlank(),
+                "Publisher API representation is incomplete for " + apiId + ": " + response.getData());
+    }
+
+    /**
+     * Asserts the complete revision-list contract relevant to the caller: every row has a unique, non-empty id,
+     * and the result contains exactly the expected revision IDs. Used for both unfiltered and deployed-only
+     * listings so a 200 response with an empty or incorrectly filtered list cannot pass.
+     *
+     * @param expectedRevisionIdKeys comma-separated TestContext keys of the expected revisions
+     */
+    @Then("The revision response should list exactly revision IDs {string}")
+    public void revisionResponseShouldListExactlyRevisionIds(String expectedRevisionIdKeys) {
+
+        HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
+        Assert.assertTrue(response != null && response.getResponseCode() == 200 && response.getData() != null
+                        && !response.getData().isBlank(),
+                "Could not retrieve revision list: " + (response == null ? "no response" : response.getResponseCode()
+                        + "/" + response.getData()));
+
+        JSONArray revisions = new JSONObject(response.getData()).optJSONArray("list");
+        Assert.assertNotNull(revisions, "Revision response has no list array: " + response.getData());
+
+        Set<String> expectedIds = new LinkedHashSet<>();
+        for (String contextKey : expectedRevisionIdKeys.split(",")) {
+            String id = TestContext.resolve(contextKey.trim()).toString();
+            Assert.assertTrue(expectedIds.add(id), "Duplicate expected revision ID context key: " + contextKey);
+        }
+
+        Set<String> actualIds = new LinkedHashSet<>();
+        for (int i = 0; i < revisions.length(); i++) {
+            JSONObject revision = revisions.optJSONObject(i);
+            Assert.assertNotNull(revision, "Revision list entry " + i + " is not an object: " + response.getData());
+            String id = revision.optString("id", "").trim();
+            Assert.assertTrue(!id.isBlank(), "Revision list entry " + i + " has no non-empty id: " + revision);
+            Assert.assertTrue(actualIds.add(id), "Revision list contains duplicate id " + id + ": " + response.getData());
+        }
+        Assert.assertEquals(revisions.length(), expectedIds.size(),
+                "Revision list row count differs from expected IDs; response=" + response.getData());
+        Assert.assertEquals(actualIds, expectedIds,
+                "Revision list IDs differ from expected; response=" + response.getData());
+    }
 
     /**
      * Asserts the deployment-acknowledgement contract of a DEPLOYED revision: the revision's {@code

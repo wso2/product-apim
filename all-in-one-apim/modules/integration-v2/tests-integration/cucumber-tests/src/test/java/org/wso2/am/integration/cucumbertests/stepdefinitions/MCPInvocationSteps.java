@@ -17,11 +17,14 @@
 
 package org.wso2.am.integration.cucumbertests.stepdefinitions;
 
+import io.cucumber.docstring.DocString;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.skyscreamer.jsonassert.JSONAssert;
+import org.skyscreamer.jsonassert.JSONCompareMode;
 import org.testng.Assert;
 import org.wso2.am.integration.cucumbertests.utils.TestContext;
 import org.wso2.am.integration.cucumbertests.utils.Utils;
@@ -35,6 +38,7 @@ import java.net.http.HttpResponse;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -373,48 +377,61 @@ public class MCPInvocationSteps {
     }
 
     /**
-     * Negative auth: attempts a tool INVOCATION with an INVALID bearer token and asserts the gateway rejects it
-     * with the EXACT {@code expectedStatus} (strict — so a future change of code is caught as a regression).
-     * FINDINGS (verify-first): (a) the gateway does NOT authenticate the MCP {@code initialize} handshake (200
-     * even with a bad token) — auth is enforced at {@code tools/call}; (b) the rejection code differs by
-     * subtype — the proxy subtype returns 401, the DirectBackend (OpenAPI) subtype returns 403 — so each
-     * feature asserts its own exact code. Retries only to ride out warm-up.
+     * Negative auth: calls an existing tool of the MCP server with an INVALID bearer token and asserts the gateway
+     * rejects the token: the exact {@code expectedStatus} AND the gateway fault's {@code code} and {@code message}.
+     * The rejection is read from whichever request the gateway refuses first, the {@code initialize} handshake or
+     * the {@code tools/call}. Naming a tool the server exposes keeps a resource-matching failure (900906, which also
+     * maps to 403) from satisfying the step; the error code pins that the token itself was refused. Retries only to
+     * ride out warm-up (a not-yet-routable server answers 404).
      */
-    @When("I invoke the MCP server at gateway context {string} version {string} with an invalid token expecting status {int} within {int} seconds")
-    public void invokeMcpInvalidToken(String context, String version, int expectedStatus, int timeoutSeconds)
+    @When("I invoke the MCP tool {string} at gateway context {string} version {string} with an invalid token expecting status {int} with error code {string} and message {string} within {int} seconds")
+    public void invokeMcpToolWithInvalidToken(String toolName, String context, String version, int expectedStatus,
+                                              String expectedCode, String expectedMessage, int timeoutSeconds)
             throws Exception {
         String mcpUrl = buildMcpUrl(context, version);
         String badToken = "invalid-mcp-token-xyz";
-        String callPayload = "{\"jsonrpc\":\"2.0\",\"id\":7,\"method\":\"tools/call\",\"params\":{"
-                + "\"name\":\"echo\",\"arguments\":{\"message\":\"x\"}}}";
+        String callPayload = new JSONObject()
+                .put("jsonrpc", "2.0").put("id", 7).put("method", "tools/call")
+                .put("params", new JSONObject().put("name", toolName).put("arguments", new JSONObject()))
+                .toString();
         HttpClient client = newClient();
-        AtomicInteger last = new AtomicInteger(-1);
+        AtomicReference<HttpResponse<String>> rejection = new AtomicReference<>();
         // No auth-rejection marker in this step: the rejection IS what it asserts (a deliberately invalid
         // token), so logging one would fire on expected behaviour.
-        Integer matched = Utils.retryUntil(timeoutSeconds * 1000L, () -> {
+        Utils.retryUntil(timeoutSeconds * 1000L, () -> {
             try {
-                // A tool call with a bad token — the handshake may 200, but the invocation must be rejected.
                 HttpResponse<String> initResp = post(client, mcpUrl, badToken, null, INIT);
-                if (initResp.statusCode() == expectedStatus) {
-                    return initResp.statusCode(); // rejected already at the handshake with the exact code
+                if (initResp.statusCode() == 404) {
+                    return null; // not routable yet
+                }
+                if (initResp.statusCode() >= 400) {
+                    rejection.set(initResp);
+                    return initResp;
                 }
                 String sessionId = initResp.headers().firstValue("mcp-session-id").orElse(null);
                 post(client, mcpUrl, badToken, sessionId, INITIALIZED);
                 HttpResponse<String> callResp = post(client, mcpUrl, badToken, sessionId, callPayload);
-                last.set(callResp.statusCode());
-                if (last.get() == expectedStatus) {
-                    return callResp.statusCode();
-                }
-                return null;
+                rejection.set(callResp);
+                return callResp;
             } catch (IOException transientDuringWarmup) {
-                // retry
                 return null;
             }
-        }, result -> true);
-        if (matched == null) {
-            Assert.fail("MCP invalid-token tool call expected status " + expectedStatus + " but last was "
-                    + last.get());
+        }, result -> result != null);
+        HttpResponse<String> rejected = rejection.get();
+        Assert.assertNotNull(rejected, "MCP server at " + mcpUrl + " never answered within " + timeoutSeconds + "s");
+        Assert.assertEquals(rejected.statusCode(), expectedStatus,
+                "MCP invalid-token request was not rejected with the expected status: " + rejected.body());
+        JSONObject fault;
+        try {
+            fault = new JSONObject(rejected.body());
+        } catch (JSONException notJson) {
+            throw new AssertionError("MCP invalid-token rejection did not carry a JSON fault: " + rejected.body(),
+                    notJson);
         }
+        Assert.assertEquals(String.valueOf(fault.opt("code")), expectedCode,
+                "MCP invalid-token rejection carried an unexpected error code: " + rejected.body());
+        Assert.assertEquals(fault.optString("message"), expectedMessage,
+                "MCP invalid-token rejection carried an unexpected error message: " + rejected.body());
     }
 
     /**
@@ -508,7 +525,13 @@ public class MCPInvocationSteps {
                     lastError.set("initialize status=" + initResp.statusCode() + " body=" + body);
                     return null;
                 }
-                JSONObject result = new JSONObject(body).optJSONObject("result");
+                JSONObject envelope = new JSONObject(body);
+                if (!Set.of("jsonrpc", "id", "result").equals(envelope.keySet())
+                        || !"2.0".equals(envelope.optString("jsonrpc")) || envelope.optInt("id", -1) != 0) {
+                    lastError.set("initialize JSON-RPC envelope differed from id=0 response contract: " + envelope);
+                    return null;
+                }
+                JSONObject result = envelope.optJSONObject("result");
                 if (result == null) {
                     lastError.set("initialize response carries no result object: " + body);
                     return null;
@@ -576,7 +599,13 @@ public class MCPInvocationSteps {
                     lastError.set("tools/call status=" + callResp.statusCode() + " body=" + body);
                     return null;
                 }
-                JSONObject result = new JSONObject(body).optJSONObject("result");
+                JSONObject envelope = new JSONObject(body);
+                if (!Set.of("jsonrpc", "id", "result").equals(envelope.keySet())
+                        || !"2.0".equals(envelope.optString("jsonrpc")) || envelope.optInt("id", -1) != 4) {
+                    lastError.set("tools/call JSON-RPC envelope differed from id=4 response contract: " + envelope);
+                    return null;
+                }
+                JSONObject result = envelope.optJSONObject("result");
                 if (result == null) {
                     lastError.set("tools/call response carries no result object: " + body);
                     return null;
@@ -724,6 +753,13 @@ public class MCPInvocationSteps {
                     lastError.set("tools/list status=" + listResp.statusCode() + " body=" + listBody);
                     return null;
                 }
+                JSONObject envelope = new JSONObject(listBody);
+                if (!Set.of("jsonrpc", "id", "result").equals(envelope.keySet())
+                        || !"2.0".equals(envelope.optString("jsonrpc")) || envelope.optInt("id", -1) != 1
+                        || envelope.optJSONObject("result") == null) {
+                    lastError.set("tools/list JSON-RPC envelope differed from id=1 response contract: " + envelope);
+                    return null;
+                }
                 List<String> actual = toolNames(listBody);
                 lastOrder.set(actual);
                 if (expected.equals(actual)) {
@@ -745,7 +781,179 @@ public class MCPInvocationSteps {
         }
     }
 
+    /**
+     * Asserts the complete Gateway {@code tools/list} JSON-RPC response, including envelope, ordered tool array,
+     * and every metadata field. This complements the focused order/metadata steps where legacy compared the whole
+     * response body; it must not silently allow extra or omitted tool fields.
+     */
+    @Then("the MCP tools list at gateway context {string} version {string} using access token {string} should "
+            + "match exactly this JSON-RPC response within {int} seconds:")
+    public void mcpToolsListShouldMatchExactResponse(String context, String version, String accessToken,
+                                                      int timeoutSeconds, String expectedResponseJson)
+            throws Exception {
+        String mcpUrl = buildMcpUrl(context, version);
+        String token = TestContext.resolve(accessToken).toString();
+        JSONObject expected = new JSONObject(Utils.resolveContextPlaceholders(expectedResponseJson));
+
+        HttpClient client = newClient();
+        AtomicReference<String> lastError = new AtomicReference<>();
+        AtomicInteger lastStatus = new AtomicInteger(-1);
+        long startedMillis = System.currentTimeMillis();
+        JSONObject actual = Utils.retryUntil(timeoutSeconds * 1000L, () -> {
+            try {
+                HttpResponse<String> initResp = post(client, mcpUrl, token, null, INIT);
+                lastStatus.set(initResp.statusCode());
+                String initBody = sseOrJson(initResp.body());
+                if (initResp.statusCode() != 200 || initBody == null || initBody.isBlank()) {
+                    lastError.set("initialize status=" + initResp.statusCode() + " body=" + initBody);
+                    return null;
+                }
+                String sessionId = initResp.headers().firstValue("mcp-session-id").orElse(null);
+                post(client, mcpUrl, token, sessionId, INITIALIZED);
+
+                HttpResponse<String> listResp = post(client, mcpUrl, token, sessionId, TOOLS_LIST);
+                lastStatus.set(listResp.statusCode());
+                String listBody = sseOrJson(listResp.body());
+                if (listResp.statusCode() != 200 || listBody == null || listBody.isBlank()) {
+                    lastError.set("tools/list status=" + listResp.statusCode() + " body=" + listBody);
+                    return null;
+                }
+                JSONObject response = new JSONObject(listBody);
+                if (expected.similar(response)) {
+                    return response;
+                }
+                lastError.set("tools/list response differed; expected=" + expected + "; actual=" + response);
+                return null;
+            } catch (IOException | JSONException transientDuringPropagation) {
+                lastError.set(transientDuringPropagation.getMessage());
+                return null;
+            }
+        }, result -> true);
+        if (actual == null) {
+            Assert.fail("Gateway tools/list did not match the exact JSON-RPC response within " + timeoutSeconds
+                    + " seconds; last: " + lastError.get()
+                    + authRejectionDetail(mcpUrl, accessToken, token, lastStatus.get(), lastError.get(),
+                            startedMillis));
+        }
+    }
+
     /** Tool names from a {@code tools/list} JSON-RPC result, in the order the gateway advertised them. */
+    @Then("the MCP tools list at gateway context {string} version {string} using access token {string} should "
+            + "contain exactly tools {string} within {int} seconds")
+    public void mcpToolsListShouldContainExactly(String context, String version, String accessToken, String csvTools,
+                                                  int timeoutSeconds) throws Exception {
+        String mcpUrl = buildMcpUrl(context, version);
+        String token = TestContext.resolve(accessToken).toString();
+        Set<String> expected = Arrays.stream(csvTools.split(",")).map(String::trim).collect(Collectors.toSet());
+        HttpClient client = newClient();
+        AtomicReference<String> lastError = new AtomicReference<>();
+        AtomicInteger lastStatus = new AtomicInteger(-1);
+        long startedMillis = System.currentTimeMillis();
+        Set<String> actual = Utils.retryUntil(timeoutSeconds * 1000L, () -> {
+            try {
+                HttpResponse<String> initResp = post(client, mcpUrl, token, null, INIT);
+                lastStatus.set(initResp.statusCode());
+                String sessionId = initResp.headers().firstValue("mcp-session-id").orElse(null);
+                if (initResp.statusCode() != 200 || !sseOrJson(initResp.body()).contains("serverInfo")) {
+                    lastError.set("init status=" + initResp.statusCode() + " body=" + initResp.body());
+                    return null;
+                }
+                post(client, mcpUrl, token, sessionId, INITIALIZED);
+                HttpResponse<String> listResp = post(client, mcpUrl, token, sessionId, TOOLS_LIST);
+                lastStatus.set(listResp.statusCode());
+                String listBody = sseOrJson(listResp.body());
+                if (listResp.statusCode() != 200 || listBody.isBlank()) {
+                    lastError.set("tools/list status=" + listResp.statusCode() + " body=" + listBody);
+                    return null;
+                }
+                Set<String> names = new HashSet<>(toolNames(listBody));
+                if (expected.equals(names)) {
+                    return names;
+                }
+                lastError.set("tools/list names=" + names + ", expected exactly=" + expected);
+                return null;
+            } catch (IOException | JSONException transientDuringPropagation) {
+                lastError.set(transientDuringPropagation.getMessage());
+                return null;
+            }
+        }, result -> true);
+        if (actual == null) {
+            Assert.fail("Gateway tools/list did not converge to exactly " + expected + " within " + timeoutSeconds
+                    + " seconds; last: " + lastError.get()
+                    + authRejectionDetail(mcpUrl, accessToken, token, lastStatus.get(), lastError.get(),
+                            startedMillis));
+        }
+    }
+
+    @Then("the MCP tools list at gateway context {string} version {string} using access token {string} should "
+            + "advertise tool {string} with exact description {string} and input schema within {int} seconds:")
+    public void mcpToolsListShouldAdvertiseExactTool(String context, String version, String accessToken,
+                                                      String toolName, String expectedDescription,
+                                                      int timeoutSeconds, DocString expectedSchemaDoc)
+            throws Exception {
+        String mcpUrl = buildMcpUrl(context, version);
+        String token = TestContext.resolve(accessToken).toString();
+        JSONObject expectedSchema = new JSONObject(expectedSchemaDoc.getContent());
+        HttpClient client = newClient();
+        AtomicReference<String> lastError = new AtomicReference<>();
+        AtomicInteger lastStatus = new AtomicInteger(-1);
+        long startedMillis = System.currentTimeMillis();
+        JSONObject convergedTool = Utils.retryUntil(timeoutSeconds * 1000L, () -> {
+            try {
+                HttpResponse<String> initResp = post(client, mcpUrl, token, null, INIT);
+                lastStatus.set(initResp.statusCode());
+                String sessionId = initResp.headers().firstValue("mcp-session-id").orElse(null);
+                if (initResp.statusCode() != 200 || !sseOrJson(initResp.body()).contains("serverInfo")) {
+                    lastError.set("init status=" + initResp.statusCode() + " body=" + initResp.body());
+                    return null;
+                }
+                post(client, mcpUrl, token, sessionId, INITIALIZED);
+                HttpResponse<String> listResp = post(client, mcpUrl, token, sessionId, TOOLS_LIST);
+                lastStatus.set(listResp.statusCode());
+                String listBody = sseOrJson(listResp.body());
+                if (listResp.statusCode() != 200 || listBody.isBlank()) {
+                    lastError.set("tools/list status=" + listResp.statusCode() + " body=" + listBody);
+                    return null;
+                }
+                JSONObject result = new JSONObject(listBody).optJSONObject("result");
+                JSONArray tools = result == null ? null : result.optJSONArray("tools");
+                if (tools == null) {
+                    lastError.set("tools/list has no result.tools array: " + listBody);
+                    return null;
+                }
+                for (int i = 0; i < tools.length(); i++) {
+                    JSONObject tool = tools.getJSONObject(i);
+                    if (!toolName.equals(tool.optString("name"))) {
+                        continue;
+                    }
+                    JSONObject schema = tool.optJSONObject("inputSchema");
+                    if (!expectedDescription.equals(tool.optString("description")) || schema == null) {
+                        lastError.set("tool metadata has not converged for " + toolName + ": " + tool);
+                        return null;
+                    }
+                    try {
+                        JSONAssert.assertEquals(expectedSchema.toString(), schema.toString(), JSONCompareMode.STRICT);
+                    } catch (AssertionError staleRevision) {
+                        lastError.set("inputSchema has not converged for " + toolName + ": " + schema);
+                        return null;
+                    }
+                    return tool;
+                }
+                lastError.set("tools/list did not advertise " + toolName + ": " + listBody);
+                return null;
+            } catch (IOException | JSONException transientDuringPropagation) {
+                lastError.set(transientDuringPropagation.getMessage());
+                return null;
+            }
+        }, result -> true);
+        if (convergedTool == null) {
+            Assert.fail("Gateway tools/list did not advertise " + toolName + " with the exact description/schema "
+                    + "within " + timeoutSeconds + " seconds; last: " + lastError.get()
+                    + authRejectionDetail(mcpUrl, accessToken, token, lastStatus.get(), lastError.get(),
+                            startedMillis));
+        }
+    }
+
     private List<String> toolNames(String listBody) {
         List<String> names = new ArrayList<>();
         // Null-safe for the same reason: callers run this inside a retry, so an error response must yield an

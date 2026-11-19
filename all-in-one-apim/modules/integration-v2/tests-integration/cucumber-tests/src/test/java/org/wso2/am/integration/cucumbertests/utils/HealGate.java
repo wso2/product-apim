@@ -67,7 +67,12 @@ public final class HealGate {
         Verdict check() throws Exception;
     }
 
-    /** Reconciles stale state and re-fires the action; {@link Fatal} aborts the gate. */
+    /**
+     * Reconciles stale state and re-fires the action; {@link Fatal} aborts the gate. Any non-fatal verdict just
+     * hands control back to the next probe window — a {@link Ready} here does NOT complete the gate, and several
+     * callers return one as a neutral "nothing to report". A heal that discovers the gate is already settled
+     * must therefore say so through its own probe (e.g. a flag the probe reads), not through this return value.
+     */
     @FunctionalInterface
     public interface Heal {
         Verdict reconcileAndRetrigger(int attempt) throws Exception;

@@ -87,6 +87,12 @@ public class Constants {
     // Product distribution deployment.toml (the base shipped inside the image), relative to the
     // cucumber-tests module dir. The basic toml above is merged onto this as an add/override overlay.
     public static final String DISTRIBUTION_TOML_PATH = "../../../distribution/product/src/main/conf/deployment.toml";
+    // Template overlays (J2TemplateOverlay): every file under this directory overlays the product distribution
+    // template at the same relative path under DISTRIBUTION_TEMPLATES_PATH, and the merged template is copied to
+    // the same relative path under CONTAINER_TEMPLATES_PATH before boot. Both paths are relative to the
+    // cucumber-tests module dir.
+    public static final String DEFAULT_TEMPLATE_OVERLAYS_PATH = "src/test/resources/artifacts/configFiles/basic/templates";
+    public static final String DISTRIBUTION_TEMPLATES_PATH = "../../../distribution/product/src/main/resources/conf/templates";
     public static final String MIGRATION_TOML_PATH = "src/test/resources/artifacts/configFiles/basic/migration/deployment.toml";
     public static final String ENCRYPTION_TOML_PATH = "src/test/resources/artifacts/configFiles/basic/encryption/deployment.toml";
 
@@ -119,6 +125,7 @@ public class Constants {
 
     public static final String APIM_CONTAINER_USER_HOME = "/home/wso2carbon";
     public static final String DEPLOYMENT_TOML_PATH = "/repository/conf/deployment.toml";
+    public static final String CONTAINER_TEMPLATES_PATH = "/repository/resources/conf/templates";
 
     public static final String DEFAULT_APIM_API_DEPLOYER = "api/am/publisher/v4/";
     public static final String DEFAULT_DEVPORTAL = "api/am/devportal/v3/";

@@ -12,7 +12,7 @@ Feature: Admin Throttling Policy Export / Import
   Legacy threw a SkipException for the custom cases in tenant mode — that guard is exactly WHY it skipped, so the
   refusal is a real unported negative rather than a non-item. The advanced/application/subscription exports are
   NOT guarded, which is why legacy ran those in both tenant modes; they stay positive in both.
-  The final re-imported (same-named, unique) policy is left to the block's container teardown.
+  A policy created by an import is registered for teardown like any created policy.
 
   @cap:admin @feat:throttling-policies @type:regression @legacy:ThrottlePolicyExportImportTestCase
   Scenario Outline: Export and re-import a subscription throttling policy as <actor>
@@ -86,7 +86,7 @@ Feature: Admin Throttling Policy Export / Import
   Scenario Outline: Export and re-import an advanced throttling policy as <actor>
     Given The system is ready
     And I have valid access tokens as "<actor>"
-    When I create an advanced throttling policy "eiAdv${UNIQUE:Pol}" allowing 1000 requests per minute
+    When I create an advanced throttling policy "eiAdv${UNIQUE:Pol}" allowing 1000 requests per minute with a header conditional group
     Then The response status code should be 201
     When I export the "advanced" throttling policy named "advThrottlePolicyName" as "eiAdvExport"
     Then The response status code should be 200
@@ -100,12 +100,24 @@ Feature: Admin Throttling Policy Export / Import
     And The value of response field "data.defaultLimit.requestCount.requestCount" should be "1000"
     And The value of response field "data.defaultLimit.requestCount.timeUnit" should be "min"
     And The value of response field "data.defaultLimit.requestCount.unitTime" should be "1"
-    And The response array field "data.conditionalGroups" should have exactly 0 entries
-    And The response field "data.conditionalGroups[*].description" should be exactly the list ""
+    And The response array field "data.conditionalGroups" should have exactly 1 entries
+    And The response field "data.conditionalGroups[*].description" should be exactly the list "gold-header group"
+    And The response field "data.conditionalGroups[0].conditions[*].type" should be exactly the list "HEADERCONDITION"
+    And The value of response field "data.conditionalGroups[0].conditions[0].headerCondition.headerName" should be "X-Tier"
+    And The value of response field "data.conditionalGroups[0].conditions[0].headerCondition.headerValue" should be "gold"
+    And The value of response field "data.conditionalGroups[0].limit.requestCount.requestCount" should be "1000"
     When I import the throttling policy from "eiAdvExport" with overwrite "false"
     Then The response status code should be 409
     When I import the throttling policy from "eiAdvExport" with overwrite "true"
     Then The response status code should be 200
+    When I retrieve the "advanced" throttling policy with id "advThrottlePolicyId"
+    Then The response status code should be 200
+    And The response array field "conditionalGroups" should have exactly 1 entries
+    And The response field "conditionalGroups[*].description" should be exactly the list "gold-header group"
+    And The response field "conditionalGroups[0].conditions[*].type" should be exactly the list "HEADERCONDITION"
+    And The value of response field "conditionalGroups[0].conditions[0].headerCondition.headerName" should be "X-Tier"
+    And The value of response field "conditionalGroups[0].conditions[0].headerCondition.headerValue" should be "gold"
+    And The value of response field "conditionalGroups[0].limit.requestCount.requestCount" should be "1000"
     When I delete the "advanced" throttling policy with id "advThrottlePolicyId"
     Then The response status code should be 200
     When I import the throttling policy from "eiAdvExport" with overwrite "false"

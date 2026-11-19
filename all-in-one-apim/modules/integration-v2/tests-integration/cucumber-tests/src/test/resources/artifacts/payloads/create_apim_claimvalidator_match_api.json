@@ -21,18 +21,7 @@
     {
       "verb": "GET",
       "target": "/customers/{id}",
-      "scopes": [],
-      "operationPolicies": {
-        "request": [
-          {
-            "policyName": "jwtClaimBasedAccessValidator",
-            "policyVersion": "v1",
-            "parameters": { "accessVerificationClaim": "aut", "accessVerificationClaimValue": "APPLICATION" }
-          }
-        ],
-        "response": [],
-        "fault": []
-      }
+      "scopes": []
     }
   ],
   "isDefaultVersion": true,

@@ -31,6 +31,7 @@ Feature: Admin Organization Visibility (B2B)
     And The system is ready and I have valid devportal access token as "suborg2dev<suffix>"
     And The system is ready and I have valid publisher access tokens as "orgpub1<suffix>"
     And I have created an api from "artifacts/payloads/create_apim_test_api.json" as "orgApiId" and deployed it
+    And the "apis" resource "orgApiId" should be live on the gateway, redeploying if propagation is lost
     When I publish the "apis" resource with id "orgApiId"
     Then The lifecycle status of API "orgApiId" should be "Published"
 
@@ -186,6 +187,7 @@ Feature: Admin Organization Visibility (B2B)
     And The system is ready and I have valid devportal access token as "pol1dev<suffix>"
     And The system is ready and I have valid publisher access tokens as "polpub1<suffix>"
     And I have created an api from "artifacts/payloads/create_apim_test_api.json" as "polApiId" and deployed it
+    And the "apis" resource "polApiId" should be live on the gateway, redeploying if propagation is lost
     When I publish the "apis" resource with id "polApiId"
     Then The lifecycle status of API "polApiId" should be "Published"
     When I act as "polpub1<suffix>"

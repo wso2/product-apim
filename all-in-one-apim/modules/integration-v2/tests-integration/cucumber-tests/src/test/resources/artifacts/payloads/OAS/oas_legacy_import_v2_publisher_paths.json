@@ -1,0 +1,34 @@
+{
+  "paths": {
+    "/pets": {
+      "get": {
+        "parameters": [],
+        "responses": {"200": {"description": "OK"}},
+        "security": [{"default": ["SwaggerPetstore_imp_v2"]}],
+        "x-auth-type": "Application & Application User",
+        "x-throttling-tier": "10KPerMin",
+        "x-wso2-application-security": {"security-types": ["oauth2"], "optional": false}
+      }
+    },
+    "/pets/{petId}": {
+      "get": {
+        "parameters": [{"name": "petId", "in": "path", "required": true, "type": "string"}],
+        "responses": {"200": {"description": "OK"}},
+        "security": [{"default": []}],
+        "x-auth-type": "Application & Application User",
+        "x-throttling-tier": "10KPerMin",
+        "x-wso2-application-security": {"security-types": ["oauth2"], "optional": false}
+      }
+    },
+    "/oldpets": {
+      "delete": {
+        "parameters": [],
+        "responses": {"200": {"description": "OK"}},
+        "security": [{"default": ["SwaggerPetstore_imp_v2"]}],
+        "x-auth-type": "Application & Application User",
+        "x-throttling-tier": "10KPerMin",
+        "x-wso2-application-security": {"security-types": ["oauth2"], "optional": false}
+      }
+    }
+  }
+}

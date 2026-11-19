@@ -1,0 +1,350 @@
+/*
+ *  Copyright (c) 2026, WSO2 LLC. (http://www.wso2.org) All Rights Reserved.
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *  http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *
+ */
+
+package org.wso2.am.testcontainers;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.wait.strategy.Wait;
+import org.testcontainers.images.builder.Transferable;
+import org.testcontainers.utility.MountableFile;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.time.Duration;
+
+/**
+ * WSO2 Identity Server 7.x container used as a third-party (external) Key Manager / federated IdP for APIM in
+ * the integration-v2 lane. A PER-BLOCK {@link GenericContainer} modelled on {@link DynamicApimContainer}: one
+ * instance per IS-booting block, configured here but joined to the block's OWN private docker network under the
+ * {@code wso2is} alias BY THE CALLER, so APIM reaches it at {@code https://wso2is:9443/...} — the host baked
+ * into the KM registration payload and the IS OAuth issuer — with no possibility of the alias colliding with a
+ * concurrent block's IS.
+ *
+ * <p>The network and alias are deliberately NOT set here (mirroring {@link DynamicApimContainer}):
+ * {@code BlockLifecycleListener} owns network assignment. This class was previously a per-overlay JVM singleton
+ * pinned to one shared network under the fixed {@code wso2is} alias, which made two distinct IS overlays unable
+ * to coexist in a JVM and forced such blocks into separate suites; per-block networks remove that limitation,
+ * and each block stops its own IS at teardown.
+ *
+ * <p>IS must RESOLVE {@code wso2am} for its reverse notification channel, which is why it is per-block rather
+ * than a shared multi-homed container like {@link NodeAppServer} — see
+ * {@link ContainerNetwork#BACKEND_HOME_NETWORK}.
+ *
+ * <p>Before start it injects these fixtures over the image defaults:
+ * <ul>
+ *   <li>a {@code deployment.toml} produced by deep-merging the small overlay {@code is7/deployment-overlay.toml}
+ *       (only the documented key-manager additions: {@code hostname = "wso2is"}, the {@code wso2is.p12} TLS
+ *       keystore, and the oauth/scim/role_mgt/revocation config) onto the IS image's OWN default
+ *       {@code deployment.toml} (extracted at build time to {@code target/is7/is-default-deployment.toml}).
+ *       This keeps IS on its distribution defaults across versions - same base+overlay pattern the APIM
+ *       container uses - instead of restating a full file;</li>
+ *   <li>a fixed TLS keystore {@code wso2is.p12} (CN=wso2is + SAN dns:wso2is) so IS presents a cert valid for
+ *       the {@code wso2is} hostname that APIM trusts (APIM's truststore is augmented with its public cert —
+ *       see {@code DynamicApimContainer#withExternalKmTrust});</li>
+ *   <li>the {@code wso2is.notification.event.handlers} jar into {@code repository/components/dropins/}, whose
+ *       class the deployment.toml's token-revocation {@code event_listener} references.</li>
+ * </ul>
+ *
+ * <p>IS 7.3.0 is multi-arch (native {@code linux/arm64} and {@code linux/amd64}), so it boots natively on both
+ * Apple-silicon dev machines and amd64 CI - typically well under a minute. The version is driven by the
+ * {@code is.server.version} system property (default {@value #DEFAULT_IS_VERSION}), which also derives the
+ * in-container {@code IS_HOME}; the image can be overridden wholesale via {@code is.docker.image.name}.
+ */
+public class DynamicISContainer extends GenericContainer<DynamicISContainer> {
+
+    private static final Log logger = LogFactory.getLog(DynamicISContainer.class);
+    private static final Duration DEFAULT_STARTUP_TIMEOUT = Duration.ofMinutes(4);
+    private CpuLimit cpuLimit;
+    private Long memoryLimitBytes;
+    private Long memoryAndSwapLimitBytes;
+
+    /** Network alias APIM and the KM registration payload use to reach IS on the block's private network. */
+    public static final String NETWORK_ALIAS = "wso2is";
+    /** IS management HTTPS port (token, JWKS, DCR, SCIM, admin REST). */
+    public static final int HTTPS_PORT = 9443;
+
+    /** Default IS version; overridable via {@code -Dis.server.version} (kept in sync with the pom property). */
+    private static final String DEFAULT_IS_VERSION = "7.3.0";
+    private static final String IS_VERSION = System.getProperty("is.server.version", DEFAULT_IS_VERSION);
+    private static final String DEFAULT_IMAGE = "wso2/wso2is:" + IS_VERSION;
+    private static final String IS_HOME = "/home/wso2carbon/wso2is-" + IS_VERSION;
+    private static final String CONTAINER_TOML_PATH = IS_HOME + "/repository/conf/deployment.toml";
+    private static final String DEPLOYMENT_OVERLAY_RESOURCE = "is7/deployment-overlay.toml";
+    private static final String CONTAINER_TLS_KEYSTORE_PATH =
+            IS_HOME + "/repository/resources/security/wso2is.p12";
+    private static final String CONTAINER_DROPINS_DIR = IS_HOME + "/repository/components/dropins/";
+    private static final String NOTIFICATION_JAR_NAME = "wso2is.notification.event.handlers-2.1.3.jar";
+    private static final String CONTAINER_TRUSTSTORE_PATH =
+            IS_HOME + "/repository/resources/security/client-truststore.p12";
+    /**
+     * Server JVM heap, matching {@link DynamicApimContainer#SERVER_HEAP_OPTS}. IS's {@code wso2server.sh} uses
+     * {@code JVM_MEM_OPTS} in place of its own {@code -Xms256m -Xmx1024m} default.
+     */
+    static final String SERVER_HEAP_OPTS = "-Xms1g -Xmx1536m";
+
+    /** The {@code [server] hostname} IS advertises: the host of every URL it emits, its OAuth issuer included. */
+    private final String hostname;
+    /** The HTTPS port IS listens on inside the container: {@link #HTTPS_PORT} plus the {@code [server] offset}. */
+    private final int httpsPort;
+
+    /**
+     * @param blockLabel          the owning block's label — log prefix and diagnostics only; instances are NOT
+     *                            cached by it (one container per IS-booting block)
+     * @param extraOverlayContent additional IS deployment toml text appended AFTER the built-in
+     *                            {@link #DEPLOYMENT_OVERLAY_RESOURCE} (additive, mirroring the APIM
+     *                            {@code tomlExtraOverlayPath} semantics), or {@code null} for none
+     */
+    public DynamicISContainer(String blockLabel, String extraOverlayContent) {
+        this(blockLabel, extraOverlayContent, NETWORK_ALIAS, 0);
+    }
+
+    /**
+     * As {@link #DynamicISContainer(String, String)}, with the hostname IS advertises and its port offset chosen
+     * by the caller.
+     *
+     * <p>The default advertises the {@code wso2is} network alias, so a browser holds IS cookies under a different
+     * host from APIM's {@code localhost}. Advertising {@code localhost} with a non-zero offset instead reproduces
+     * the stock single-machine deployment, where both servers run on {@code localhost} on different ports:
+     * cookies are scoped by host and not by port, so the two servers then share one cookie namespace. IS stays
+     * reachable server-to-server as {@code wso2is}, on the offset port.
+     *
+     * @param hostname   the {@code [server] hostname} IS advertises in every URL it emits
+     * @param portOffset the {@code [server] offset}; IS listens on {@link #HTTPS_PORT} plus this
+     */
+    public DynamicISContainer(String blockLabel, String extraOverlayContent, String hostname, int portOffset) {
+
+        super(System.getProperty("is.docker.image.name", DEFAULT_IMAGE));
+        logger.info("Initializing DynamicISContainer (WSO2 IS " + IS_VERSION + ", block='" + blockLabel
+                + "', hostname='" + hostname + "', offset=" + portOffset + ")...");
+        if (portOffset < 0) {
+            throw new IllegalArgumentException("IS port offset must not be negative: " + portOffset);
+        }
+        this.hostname = hostname;
+        this.httpsPort = HTTPS_PORT + portOffset;
+        withCreateContainerCmdModifier(cmd -> {
+            if (cpuLimit != null) {
+                cpuLimit.applyTo(cmd);
+            }
+            if (memoryLimitBytes != null) {
+                cmd.getHostConfig().withMemory(memoryLimitBytes).withMemorySwap(memoryAndSwapLimitBytes);
+            }
+        });
+
+        String deploymentToml = buildDeploymentToml(extraOverlayContent, hostname, portOffset);
+        withExposedPorts(httpsPort);
+        // NOTE: the docker network and the wso2is alias are assigned by the CALLER (BlockLifecycleListener), so
+        // each block's IS is reachable as 'wso2is' on that block's private network only — mirroring
+        // DynamicApimContainer. This is what lets distinct IS overlays coexist in one JVM.
+        // deployment.toml = IS image default (extracted at build time) + is7/deployment-overlay.toml
+        // (hostname=wso2is, TLS keystore, oauth/scim/role_mgt/revocation config) - see buildDeploymentToml.
+        withCopyToContainer(Transferable.of(deploymentToml), CONTAINER_TOML_PATH);
+        // Fixed TLS keystore whose cert (CN=wso2is, SAN dns:wso2is) APIM trusts.
+        withCopyToContainer(MountableFile.forClasspathResource("is7/wso2is.p12"), CONTAINER_TLS_KEYSTORE_PATH);
+        // Notification handler jar referenced by the revocation event_listener in deployment.toml.
+        withCopyToContainer(MountableFile.forHostPath(notificationJarPath()),
+                CONTAINER_DROPINS_DIR + NOTIFICATION_JAR_NAME);
+        // Truststore augmented with APIM's wso2am cert, so IS trusts https://wso2am:9443 for the reverse
+        // (token-revocation notification) channel — see build-augmented-is-truststore in the pom. IS's
+        // outbound EventSender does STRICT hostname verification by default; APIM presents a cert whose
+        // SAN includes 'wso2am' (see DynamicApimContainer#withExternalKmTrust + the is7km toml overlay),
+        // so verification passes without the -Dhttpclient.hostnameVerifier=AllowAll workaround.
+        withCopyToContainer(MountableFile.forHostPath(augmentedTruststorePath()), CONTAINER_TRUSTSTORE_PATH);
+        withEnv("JVM_MEM_OPTS", SERVER_HEAP_OPTS);
+        withLogConsumer(new JclLogConsumer(logger));
+        // IS 7.3.0 is multi-arch and boots natively (well under a minute); allow margin for CI/load.
+        waitingFor(Wait.forListeningPort().withStartupTimeout(DEFAULT_STARTUP_TIMEOUT));
+    }
+
+    /**
+     * Caps the container at {@code limit} CPUs (Docker {@code --cpus}, applied as {@code HostConfig.NanoCpus} on
+     * container creation). Without this call the container is uncapped. Must be called before {@link #start()}.
+     */
+    public DynamicISContainer withCpuLimit(CpuLimit limit) {
+        this.cpuLimit = limit;
+        return this;
+    }
+
+    /** Caps the container's memory and disables swap beyond that limit. Must be called before {@link #start()}. */
+    public DynamicISContainer withMemoryLimit(long limitBytes) {
+        return withMemoryLimit(limitBytes, limitBytes);
+    }
+
+    /** Caps memory and allows the supplied bounded combined memory-plus-swap limit. Must be called before start. */
+    public DynamicISContainer withMemoryLimit(long limitBytes, long memoryAndSwapLimitBytes) {
+        if (limitBytes <= 0) {
+            throw new IllegalArgumentException("IS container memory limit must be positive");
+        }
+        if (memoryAndSwapLimitBytes < limitBytes) {
+            throw new IllegalArgumentException("IS container memory-plus-swap limit must be at least its memory limit");
+        }
+        this.memoryLimitBytes = limitBytes;
+        this.memoryAndSwapLimitBytes = memoryAndSwapLimitBytes;
+        logger.info("External Identity Server memory cap: " + (limitBytes / (1024 * 1024)) + " MiB, swap allowance: "
+                + ((memoryAndSwapLimitBytes - limitBytes) / (1024 * 1024)) + " MiB");
+        return this;
+    }
+
+    /** Overrides the port-listening startup timeout. The default applies unless a topology selects another value. */
+    public DynamicISContainer withStartupTimeout(Duration timeout) {
+        if (timeout == null || timeout.isZero() || timeout.isNegative()) {
+            throw new IllegalArgumentException("IS container startup timeout must be positive");
+        }
+        waitingFor(Wait.forListeningPort().withStartupTimeout(timeout));
+        logger.info("External Identity Server port startup timeout: " + timeout);
+        return this;
+    }
+
+    /** Host-mapped IS management HTTPS base URL (valid after start), e.g. {@code https://localhost:32771/}. */
+    public String getBaseHttpsUrl() {
+        return String.format("https://%s:%d/", getHost(), getMappedPort(httpsPort));
+    }
+
+    /** The HTTPS port IS listens on inside the container ({@link #HTTPS_PORT} plus the configured offset). */
+    public int getHttpsPort() {
+        return httpsPort;
+    }
+
+    /** Server-to-server base URL on the block network, e.g. {@code https://wso2is:9443/}: back-channel calls. */
+    public String getInternalBaseUrl() {
+        return "https://" + NETWORK_ALIAS + ":" + httpsPort + "/";
+    }
+
+    /**
+     * The base URL IS advertises, e.g. {@code https://wso2is:9443/} or {@code https://localhost:9444/}: the
+     * authority of every page, redirect and cookie a browser receives from IS.
+     */
+    public String getAdvertisedBaseUrl() {
+        return "https://" + hostname + ":" + httpsPort + "/";
+    }
+
+    /**
+     * Builds the IS {@code deployment.toml} = IS image default (with {@code [server] hostname} rewritten to the
+     * advertised hostname, and the port offset added beside it) + the built-in {@link #DEPLOYMENT_OVERLAY_RESOURCE}
+     * + optionally a block-specific EXTRA overlay appended after it ({@code isTomlExtraOverlayPath}) - additive
+     * layering mirroring the APIM {@code tomlExtraOverlayPath} semantics, since any networked IS still needs the
+     * default overlay's hostname/keystore/oauth config.
+     */
+    private static String buildDeploymentToml(String extraOverlayContent, String hostname, int portOffset) {
+        File base = new File(defaultTomlPath());
+        if (!base.isFile()) {
+            throw new IllegalStateException("IS default deployment.toml not found at '" + base + "'. It is "
+                    + "extracted from the IS image by the testcontainers pre-integration-test exec "
+                    + "(extract-is-default-toml); run the build so it is staged, or set -Dis.default.toml.path "
+                    + "to its location.");
+        }
+        try {
+            String baseToml = java.nio.file.Files.readString(base.toPath());
+            // Override the single default key we change: [server] hostname = "localhost" -> the advertised
+            // hostname (by default the network alias, so the OAuth issuer and endpoints resolve to
+            // https://wso2is:9443 on the shared network). A port offset is added to the same [server] table.
+            // Done in place (not via the overlay) to avoid a duplicate [server] table when the overlay is appended.
+            java.util.regex.Matcher hostLine = java.util.regex.Pattern
+                    .compile("(?m)^(\\s*hostname\\s*=\\s*).*$").matcher(baseToml);
+            if (!hostLine.find()) {
+                throw new IllegalStateException("Could not find a [server] hostname entry to override in the IS "
+                        + "default deployment.toml at " + base);
+            }
+            String serverKeys = hostLine.group(1) + "\"" + hostname + "\""
+                    + (portOffset == 0 ? "" : System.lineSeparator() + "offset = " + portOffset);
+            String withHost = baseToml.substring(0, hostLine.start()) + serverKeys
+                    + baseToml.substring(hostLine.end());
+            StringBuilder toml = new StringBuilder(withHost)
+                    .append(System.lineSeparator()).append(System.lineSeparator())
+                    .append("# --- integration-v2 IS deployment overlay (appended) ---")
+                    .append(System.lineSeparator())
+                    .append(defaultOverlayContent());
+            if (extraOverlayContent != null && !extraOverlayContent.isBlank()) {
+                toml.append(System.lineSeparator()).append(System.lineSeparator())
+                        .append("# --- block-specific IS extra overlay (appended) ---")
+                        .append(System.lineSeparator())
+                        .append(extraOverlayContent);
+            }
+            return toml.toString();
+        } catch (IOException e) {
+            throw new IllegalStateException("Failed to build IS deployment.toml from " + base, e);
+        }
+    }
+
+    /** Reads the built-in default external-key-manager overlay from the classpath. */
+    private static String defaultOverlayContent() throws IOException {
+        try (InputStream overlay = DynamicISContainer.class.getClassLoader()
+                .getResourceAsStream(DEPLOYMENT_OVERLAY_RESOURCE)) {
+            if (overlay == null) {
+                throw new IllegalStateException("IS deployment overlay resource not found on the classpath: "
+                        + DEPLOYMENT_OVERLAY_RESOURCE);
+            }
+            return new String(overlay.readAllBytes(), java.nio.charset.StandardCharsets.UTF_8);
+        }
+    }
+
+    /**
+     * Absolute path of the IS image's default deployment.toml, extracted to the testcontainers module's
+     * {@code target/is7/} at build time by {@code extract-is-default-toml}. Overridable via
+     * {@code -Dis.default.toml.path}.
+     */
+    private static String defaultTomlPath() {
+        String configured = System.getProperty("is.default.toml.path");
+        return (configured != null && !configured.isBlank())
+                ? configured
+                : System.getProperty("module.dir", ".") + "/target/is7/is-default-deployment.toml";
+    }
+
+    /**
+     * Absolute path of the notification-handler jar the Maven {@code copy-is-notification-jar} execution copies
+     * under the testcontainers module's {@code target/} at build time. Overridable via
+     * {@code -Dis.notification.jar.path} for callers that stage it elsewhere. Fails fast with a clear message
+     * if the jar is absent, rather than letting the container start without the class the event_listener needs.
+     */
+    private static String notificationJarPath() {
+        String configured = System.getProperty("is.notification.jar.path");
+        String path = (configured != null && !configured.isBlank())
+                ? configured
+                : System.getProperty("module.dir", ".") + "/target/is7/" + NOTIFICATION_JAR_NAME;
+        File jar = new File(path);
+        if (!jar.isFile()) {
+            throw new IllegalStateException("IS notification handler jar not found at '" + path
+                    + "'. It is copied by the testcontainers pre-integration-test execution "
+                    + "(copy-is-notification-jar); run the build so the jar is staged, or set "
+                    + "-Dis.notification.jar.path to its location.");
+        }
+        return jar.getAbsolutePath();
+    }
+
+    /**
+     * Absolute path of the augmented IS client-truststore (IS base truststore + APIM's cert) built by the
+     * testcontainers {@code build-augmented-is-truststore} exec. Overridable via {@code -Dis.truststore.path}.
+     * Fails fast if absent — without APIM's cert IS cannot POST revocation notifications to APIM over HTTPS.
+     */
+    private static String augmentedTruststorePath() {
+        String configured = System.getProperty("is.truststore.path");
+        String path = (configured != null && !configured.isBlank())
+                ? configured
+                : System.getProperty("module.dir", ".") + "/target/is7/is-client-truststore.p12";
+        File ts = new File(path);
+        if (!ts.isFile()) {
+            throw new IllegalStateException("Augmented IS client-truststore not found at '" + path
+                    + "'. It is built by the testcontainers pre-integration-test exec "
+                    + "(build-augmented-is-truststore); run the build so it is staged, or set "
+                    + "-Dis.truststore.path to its location.");
+        }
+        return ts.getAbsolutePath();
+    }
+
+}

@@ -18,6 +18,7 @@
 package org.wso2.am.integration.cucumbertests.utils.clients;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.axiom.attachments.Attachments;
 import org.apache.http.Header;
 import org.apache.http.HttpHeaders;
 import org.apache.http.HttpResponse;
@@ -31,6 +32,7 @@ import org.apache.http.client.methods.HttpOptions;
 import org.apache.http.client.methods.HttpPatch;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
+import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.client.methods.RequestBuilder;
 import org.apache.http.config.Registry;
@@ -42,6 +44,7 @@ import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.conn.ssl.TrustAllStrategy;
 import org.apache.http.entity.EntityTemplate;
 import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.DefaultHttpRequestRetryHandler;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.ssl.SSLContexts;
@@ -68,6 +71,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.regex.Pattern;
 import java.util.zip.GZIPOutputStream;
 
 public class SimpleHTTPClient {
@@ -75,16 +86,32 @@ public class SimpleHTTPClient {
     private static final Log logger = LogFactory.getLog(SimpleHTTPClient.class);
     private final CloseableHttpClient client;
 
-    /**
-     * The management REST API (publisher/admin/devportal) surfaces a transient server-side failure as this
-     * generic error — HTTP 5xx with body {@code {"code":900967,"message":"General Error","description":"Server
-     * Error Occurred",...}}. Under the concurrent-boot load of the parallel-block lane this occasionally hits an
-     * otherwise-valid mutate (e.g. an API create returning 500/900967), so every request below retries ONLY on
-     * this exact signature. See {@link #withGeneralErrorRetry}.
-     */
+    /** Management error envelope retried only for GET, HEAD and OPTIONS. Mutations can commit partially. */
     private static final int GENERAL_ERROR_CODE = 900967;
     private static final int GENERAL_ERROR_RETRIES = 3;
     private static final long GENERAL_ERROR_RETRY_WAIT_MS = 2000L;
+
+    private static final RequestConfig DEFAULT_REQUEST_CONFIG = RequestConfig.custom()
+            .setRedirectsEnabled(false) // Disable redirects
+            .build();
+
+    /** Read-stall bound applied to every request this thread sends inside {@link #withSocketTimeout}. */
+    private static final ThreadLocal<Integer> SCOPED_SOCKET_TIMEOUT = new ThreadLocal<>();
+    private static final ThreadLocal<RequestDeadline> SCOPED_REQUEST_DEADLINE = new ThreadLocal<>();
+    private static final ScheduledThreadPoolExecutor DEADLINE_ABORTS = new ScheduledThreadPoolExecutor(1, task -> {
+        Thread thread = new Thread(task, "http-request-deadlines");
+        thread.setDaemon(true);
+        return thread;
+    });
+    static {
+        DEADLINE_ABORTS.setRemoveOnCancelPolicy(true);
+    }
+
+    /** Set while this thread runs inside {@link #withoutGeneralErrorRetry}. */
+    private static final ThreadLocal<Boolean> GENERAL_ERROR_RETRY_SUSPENDED = new ThreadLocal<>();
+
+    /** Set while a request's exact network attempt count is part of the assertion. */
+    private static final ThreadLocal<Boolean> AUTOMATIC_RETRY_SUSPENDED = new ThreadLocal<>();
 
     private SimpleHTTPClient()  {
 
@@ -114,13 +141,13 @@ public class SimpleHTTPClient {
             connManager.setMaxTotal(1000);        // total max connections
             connManager.setDefaultMaxPerRoute(100);   // max connections per route
 
-            RequestConfig requestConfig = RequestConfig.custom()
-                    .setRedirectsEnabled(false) // Disable redirects
-                    .build();
-
             this.client = HttpClients.custom()
                     .setConnectionManager(connManager)
-                    .setDefaultRequestConfig(requestConfig)
+                    .setDefaultRequestConfig(DEFAULT_REQUEST_CONFIG)
+                    .setRetryHandler((exception, executionCount, context) ->
+                            !Boolean.TRUE.equals(AUTOMATIC_RETRY_SUSPENDED.get())
+                                    && DefaultHttpRequestRetryHandler.INSTANCE.retryRequest(exception,
+                                    executionCount, context))
                     .evictExpiredConnections()
                     .disableCookieManagement() // Disable sending or storing cookies
                     .build();
@@ -139,6 +166,247 @@ public class SimpleHTTPClient {
         return InstanceHolder.INSTANCE;
     }
 
+    /** A call made inside a {@link #withSocketTimeout} scope. */
+    @FunctionalInterface
+    public interface ScopedCall<T> {
+        T call() throws IOException;
+    }
+
+    /**
+     * Runs {@code call} with every request it sends on this thread bounded by a socket read timeout: a response
+     * that stalls for {@code socketTimeoutMillis} between packets fails the request with a
+     * {@link java.net.SocketTimeoutException}. The bound is per read, not per request, so a slow but progressing
+     * response (a stream) is unaffected. Scopes nest; the innermost bound applies.
+     */
+    public <T> T withSocketTimeout(int socketTimeoutMillis, ScopedCall<T> call) throws IOException {
+        if (socketTimeoutMillis <= 0) {
+            throw new IllegalArgumentException("Socket timeout must be positive");
+        }
+        Integer enclosing = SCOPED_SOCKET_TIMEOUT.get();
+        SCOPED_SOCKET_TIMEOUT.set(socketTimeoutMillis);
+        try {
+            return call.call();
+        } finally {
+            if (enclosing == null) {
+                SCOPED_SOCKET_TIMEOUT.remove();
+            } else {
+                SCOPED_SOCKET_TIMEOUT.set(enclosing);
+            }
+        }
+    }
+
+    /** Bounds an infrastructure operation through connection acquisition, headers and response-body consumption. */
+    public <T> T withRequestDeadline(int timeoutMillis, ScopedCall<T> call) throws IOException {
+        if (timeoutMillis <= 0) {
+            throw new IllegalArgumentException("Request deadline must be positive");
+        }
+        RequestDeadline enclosing = SCOPED_REQUEST_DEADLINE.get();
+        long end = System.nanoTime() + TimeUnit.MILLISECONDS.toNanos(timeoutMillis);
+        RequestDeadline deadline = new RequestDeadline(enclosing == null ? end : Math.min(end, enclosing.end));
+        var cancellation = DEADLINE_ABORTS.schedule(deadline::abort,
+                Math.max(0, deadline.end - System.nanoTime()), TimeUnit.NANOSECONDS);
+        SCOPED_REQUEST_DEADLINE.set(deadline);
+        try {
+            return withSocketTimeout(deadline.remainingMillis(), call);
+        } finally {
+            cancellation.cancel(false);
+            if (enclosing == null) {
+                SCOPED_REQUEST_DEADLINE.remove();
+            } else {
+                SCOPED_REQUEST_DEADLINE.set(enclosing);
+            }
+        }
+    }
+
+    private static final class RequestDeadline {
+        private final long end;
+        private final AtomicReference<HttpRequestBase> request = new AtomicReference<>();
+
+        private RequestDeadline(long end) {
+            this.end = end;
+        }
+
+        private int remainingMillis() throws java.net.SocketTimeoutException {
+            long remaining = end - System.nanoTime();
+            if (remaining <= 0) {
+                abort();
+                throw new java.net.SocketTimeoutException("Infrastructure HTTP request deadline exhausted");
+            }
+            return (int) Math.max(1, TimeUnit.NANOSECONDS.toMillis(remaining));
+        }
+
+        private void bind(HttpUriRequest candidate) throws IOException {
+            if (!(candidate instanceof HttpRequestBase configurable)) {
+                throw new IOException("Infrastructure deadline requires an abortable HTTP request");
+            }
+            request.set(configurable);
+            int remaining = remainingMillis();
+            RequestConfig base = configurable.getConfig() == null ? DEFAULT_REQUEST_CONFIG : configurable.getConfig();
+            configurable.setConfig(RequestConfig.copy(base).setConnectTimeout(remaining)
+                    .setConnectionRequestTimeout(remaining).build());
+        }
+
+        private void abort() {
+            HttpRequestBase active = request.get();
+            if (active != null) {
+                active.abort();
+            }
+        }
+    }
+
+    /**
+     * Runs {@code call} with the transient {@value #GENERAL_ERROR_CODE} retry (see {@link #withGeneralErrorRetry})
+     * switched off for every request it sends on this thread, so each request is sent exactly once. For a step
+     * whose request the product rejects with that same generic 500 envelope by design: retrying a deterministic
+     * rejection only re-sends it. Scopes nest.
+     */
+    public <T> T withoutGeneralErrorRetry(ScopedCall<T> call) throws IOException {
+        Boolean enclosing = GENERAL_ERROR_RETRY_SUSPENDED.get();
+        GENERAL_ERROR_RETRY_SUSPENDED.set(Boolean.TRUE);
+        try {
+            return call.call();
+        } finally {
+            if (enclosing == null) {
+                GENERAL_ERROR_RETRY_SUSPENDED.remove();
+            } else {
+                GENERAL_ERROR_RETRY_SUSPENDED.set(enclosing);
+            }
+        }
+    }
+
+    /**
+     * Runs {@code call} with Apache's automatic I/O retry disabled for requests sent on this thread. This is for
+     * measurements where each client attempt is an observable product event (for example, a gateway burst quota):
+     * a server may process a request and lose its response, so replaying an idempotent GET still changes the
+     * measured request count. Scopes nest and preserve the surrounding thread's retry behavior.
+     */
+    public <T> T withoutAutomaticRetries(ScopedCall<T> call) throws IOException {
+        Boolean enclosing = AUTOMATIC_RETRY_SUSPENDED.get();
+        AUTOMATIC_RETRY_SUSPENDED.set(Boolean.TRUE);
+        try {
+            return call.call();
+        } finally {
+            if (enclosing == null) {
+                AUTOMATIC_RETRY_SUSPENDED.remove();
+            } else {
+                AUTOMATIC_RETRY_SUSPENDED.set(enclosing);
+            }
+        }
+    }
+
+    /**
+     * Executes {@code request} on the shared client, applying the thread's {@link #withSocketTimeout} bound unless
+     * the request already carries its own positive socket timeout (a timeout that is itself under test). A
+     * guarded management request with neither is bounded by {@link #MANAGEMENT_SOCKET_TIMEOUT_MILLIS}, because it
+     * holds the server's management lock while it runs.
+     */
+    private CloseableHttpResponse send(HttpUriRequest request) throws IOException {
+        RequestDeadline deadline = SCOPED_REQUEST_DEADLINE.get();
+        if (deadline != null) {
+            deadline.bind(request);
+        }
+        Integer scoped = SCOPED_SOCKET_TIMEOUT.get();
+        if (scoped != null) {
+            applySocketTimeoutIfUnset(request, scoped);
+        }
+        Lock managementLock = managementLockFor(request);
+        if (managementLock == null) {
+            return client.execute(request);
+        }
+        applySocketTimeoutIfUnset(request, MANAGEMENT_SOCKET_TIMEOUT_MILLIS);
+        acquire(managementLock, request);
+        try {
+            return client.execute(request);
+        } finally {
+            managementLock.unlock();
+        }
+    }
+
+    private static final Pattern PUBLISHER_API = Pattern.compile("(?:/t/[^/]+)?/api/am/publisher/v\\d+(?:/.*)?");
+
+    /** Entry points that create, update or delete OAuth service providers, including scenario cleanup. */
+    private static final Pattern SERVICE_PROVIDER_API = Pattern.compile("(?:/t/[^/]+)?(?:"
+            + "/api/am/(?:devportal|admin)/v\\d+/applications(?:/.*)?"
+            + "|/client-registration/v\\d+(?:\\.\\d+)?/register(?:/.*)?"
+            + "|/api/identity/oauth2/dcr/v\\d+(?:\\.\\d+)?/register(?:/.*)?"
+            + "|/services/(?:IdentityApplicationManagementService|OAuthAdminService)(?:/.*)?"
+            + "|/api/server/v1/applications(?:/.*)?)");
+
+    private static final long MANAGEMENT_LOCK_LOG_MS = 1000L;
+    private static final int MANAGEMENT_SOCKET_TIMEOUT_MILLIS = (int) Constants.RUNTIME_PROPAGATION_TIMEOUT;
+    private static final long MANAGEMENT_LOCK_WAIT_MILLIS = Constants.RUNTIME_PROPAGATION_TIMEOUT;
+    private static final Map<String, ReadWriteLock> MANAGEMENT_LOCKS = new ConcurrentHashMap<>();
+
+    /**
+     * Orders management requests on each server. Publisher writes race on registry collections and cached
+     * artifacts. OAuth service-provider updates replace SP_METADATA with DELETE followed by a batch of INSERTs;
+     * concurrent updates of distinct providers can deadlock on the unique index's duplicate-check gap locks,
+     * including at READ COMMITTED. Application key generation commits a mapping before DCR, so replay is unsafe.
+     *
+     * <p>Use one server lock across REST registration, application management and SOAP provisioning/cleanup.
+     * A lock per application or tenant cannot protect shared index gaps. GET, HEAD and OPTIONS share the read
+     * side; other methods, including SOAP POSTs, take the write side. Gateway invocations and token requests
+     * remain outside this guard. Each topology has a separate server address for each isolated block.</p>
+     */
+    static Lock managementLockFor(HttpUriRequest request) {
+        java.net.URI uri = request.getURI();
+        String path = uri.getPath();
+        if (path == null || !(PUBLISHER_API.matcher(path).matches()
+                || SERVICE_PROVIDER_API.matcher(path).matches())) {
+            return null;
+        }
+        int port = uri.getPort() >= 0 ? uri.getPort() : ("https".equalsIgnoreCase(uri.getScheme()) ? 443 : 80);
+        String server = uri.getScheme().toLowerCase(Locale.ROOT) + "://"
+                + uri.getHost().toLowerCase(Locale.ROOT) + ":" + port;
+        ReadWriteLock lock = MANAGEMENT_LOCKS.computeIfAbsent(server, key -> new ReentrantReadWriteLock(true));
+        return isReadMethod(request.getMethod()) ? lock.readLock() : lock.writeLock();
+    }
+
+    private static boolean isReadMethod(String method) {
+        return HttpGet.METHOD_NAME.equals(method) || HttpHead.METHOD_NAME.equals(method)
+                || HttpOptions.METHOD_NAME.equals(method);
+    }
+
+    /** Sets {@code socketTimeoutMillis} on {@code request} unless it already carries a positive socket timeout. */
+    private static void applySocketTimeoutIfUnset(HttpUriRequest request, int socketTimeoutMillis) {
+        if (!(request instanceof HttpRequestBase)) {
+            return;
+        }
+        HttpRequestBase configurable = (HttpRequestBase) request;
+        RequestConfig base = configurable.getConfig() != null ? configurable.getConfig() : DEFAULT_REQUEST_CONFIG;
+        if (base.getSocketTimeout() <= 0) {
+            configurable.setConfig(RequestConfig.copy(base).setSocketTimeout(socketTimeoutMillis).build());
+        }
+    }
+
+    private static void acquire(Lock lock, HttpUriRequest request) throws IOException {
+        if (lock.tryLock()) {
+            return;
+        }
+        long waitStart = System.currentTimeMillis();
+        boolean acquired;
+        try {
+            RequestDeadline deadline = SCOPED_REQUEST_DEADLINE.get();
+            long waitMillis = deadline == null ? MANAGEMENT_LOCK_WAIT_MILLIS
+                    : Math.min(MANAGEMENT_LOCK_WAIT_MILLIS, deadline.remainingMillis());
+            acquired = lock.tryLock(waitMillis, TimeUnit.MILLISECONDS);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new InterruptedIOException("Interrupted while waiting for the management lock for "
+                    + request.getMethod() + " " + request.getURI().getPath());
+        }
+        long waited = System.currentTimeMillis() - waitStart;
+        if (!acquired) {
+            throw new IOException("management-lock: " + request.getMethod() + " " + request.getURI().getPath()
+                    + " could not acquire the management lock within " + waited
+                    + "ms; another management request on the same server is still running");
+        }
+        if (waited >= MANAGEMENT_LOCK_LOG_MS) {
+            logger.info("management-lock: " + request.getMethod() + " " + request.getURI().getPath()
+                    + " waited " + waited + "ms for an overlapping management request on the same server");
+        }
+    }
+
     /** A deferred HTTP call (build request -> execute -> construct response), rebuilt fresh on each retry. */
     @FunctionalInterface
     private interface HttpCall {
@@ -146,16 +414,18 @@ public class SimpleHTTPClient {
     }
 
     /**
-     * Runs {@code call} and retries it — up to {@value #GENERAL_ERROR_RETRIES} attempts,
-     * {@value #GENERAL_ERROR_RETRY_WAIT_MS} ms apart — ONLY when the response is the management API's transient
-     * "General Error" (see {@link #GENERAL_ERROR_CODE}). Retrying that removes the load-induced flake WITHOUT
-     * masking a real result: any other outcome — a 2xx, a deterministic 4xx, or even a DIFFERENT 5xx such as the
-     * descriptive {@code "already exists"} / {@code "validation failure"} 500s some tests deliberately assert —
-     * is NOT a 900967, so it returns on the first attempt. {@code call} rebuilds its request each attempt, so a
-     * request entity (POST/PUT body, multipart) is re-sent cleanly rather than being read from a consumed stream.
+     * Retries the generic management error only for reads. A failed mutation may have committed state before
+     * returning 500 (key generation reserves its key mapping before registering the OAuth client). Return that
+     * first failure intact instead of replaying the mutation and replacing it with an unrelated conflict.
+     * A revision create that collides with the governance scheduler's export of the same API fails with
+     * 500 "Error while adding new API Revision", not this error code, so a mutation retry here would not cover it;
+     * the revision steps' wait for a 201 does.
      */
-    private org.wso2.carbon.automation.test.utils.http.client.HttpResponse withGeneralErrorRetry(HttpCall call)
-            throws IOException {
+    private org.wso2.carbon.automation.test.utils.http.client.HttpResponse withGeneralErrorRetry(
+            String method, HttpCall call) throws IOException {
+        if (!isReadMethod(method) || Boolean.TRUE.equals(GENERAL_ERROR_RETRY_SUSPENDED.get())) {
+            return call.invoke();
+        }
         org.wso2.carbon.automation.test.utils.http.client.HttpResponse response = null;
         for (int attempt = 1; attempt <= GENERAL_ERROR_RETRIES; attempt++) {
             response = call.invoke();
@@ -218,10 +488,47 @@ public class SimpleHTTPClient {
     public org.wso2.carbon.automation.test.utils.http.client.HttpResponse doGet(String url, Map<String, String> headers)
             throws IOException {
 
-        return withGeneralErrorRetry(() -> {
+        return withGeneralErrorRetry(HttpGet.METHOD_NAME, () -> {
             HttpGet request = new HttpGet(url);
             setHeaders(headers, request);
-            try (CloseableHttpResponse response = client.execute(request)) {
+            try (CloseableHttpResponse response = send(request)) {
+                return constructResponse(response);
+            }
+        });
+    }
+
+    /**
+     * GET with a per-request response timeout, used only when the timeout itself is the assertion target. It does
+     * not retry: retrying a deliberate timeout could send a second request and make the result meaningless.
+     */
+    public org.wso2.carbon.automation.test.utils.http.client.HttpResponse doGetWithSocketTimeout(
+            String url, Map<String, String> headers, int socketTimeoutMillis) throws IOException {
+
+        if (socketTimeoutMillis <= 0) {
+            throw new IllegalArgumentException("Socket timeout must be positive");
+        }
+        HttpGet request = new HttpGet(url);
+        request.setConfig(RequestConfig.custom()
+                .setRedirectsEnabled(false)
+                .setSocketTimeout(socketTimeoutMillis)
+                .build());
+        setHeaders(headers, request);
+        try (CloseableHttpResponse response = send(request)) {
+            return constructResponse(response);
+        }
+    }
+
+    /** GET variant that preserves additional repeated headers and their caller-specified order. */
+    public org.wso2.carbon.automation.test.utils.http.client.HttpResponse doGet(String url,
+            Map<String, String> headers, List<Header> additionalHeaders) throws IOException {
+
+        return withGeneralErrorRetry(HttpGet.METHOD_NAME, () -> {
+            HttpGet request = new HttpGet(url);
+            setHeaders(headers, request);
+            if (additionalHeaders != null) {
+                additionalHeaders.forEach(request::addHeader);
+            }
+            try (CloseableHttpResponse response = send(request)) {
                 return constructResponse(response);
             }
         });
@@ -245,9 +552,10 @@ public class SimpleHTTPClient {
         // level, not per step. Only a 5xx whose body carries code 900967 + "General Error" is retried; any other
         // outcome (2xx, a deterministic 4xx, a different 5xx) returns on the first attempt.
         DownloadResult result = null;
-        for (int attempt = 1; attempt <= GENERAL_ERROR_RETRIES; attempt++) {
+        int attempts = Boolean.TRUE.equals(GENERAL_ERROR_RETRY_SUSPENDED.get()) ? 1 : GENERAL_ERROR_RETRIES;
+        for (int attempt = 1; attempt <= attempts; attempt++) {
             result = doGetToFileOnce(url, headers, suffix);
-            if (attempt == GENERAL_ERROR_RETRIES || !isTransientGeneralError(result)) {
+            if (attempt == attempts || !isTransientGeneralError(result)) {
                 break;
             }
             logger.warn("Transient " + GENERAL_ERROR_CODE + " General Error on download attempt " + attempt + "/"
@@ -265,7 +573,7 @@ public class SimpleHTTPClient {
     private DownloadResult doGetToFileOnce(String url, Map<String, String> headers, String suffix) throws IOException {
         HttpGet request = new HttpGet(url);
         setHeaders(headers, request);
-        try (CloseableHttpResponse response = client.execute(request)) {
+        try (CloseableHttpResponse response = send(request)) {
             int code = response.getStatusLine().getStatusCode();
             org.apache.http.Header ct = response.getFirstHeader("Content-Type");
             org.apache.http.Header cd = response.getFirstHeader("Content-Disposition");
@@ -341,10 +649,10 @@ public class SimpleHTTPClient {
     public org.wso2.carbon.automation.test.utils.http.client.HttpResponse doHead(String url, Map<String, String> headers)
             throws IOException {
 
-        return withGeneralErrorRetry(() -> {
+        return withGeneralErrorRetry(HttpHead.METHOD_NAME, () -> {
             HttpHead request = new HttpHead(url);
             setHeaders(headers, request);
-            try (CloseableHttpResponse response = client.execute(request)) {
+            try (CloseableHttpResponse response = send(request)) {
                 return constructResponse(response);
             }
         });
@@ -363,10 +671,10 @@ public class SimpleHTTPClient {
     public org.wso2.carbon.automation.test.utils.http.client.HttpResponse doOptions(String url,
             Map<String, String> headers) throws IOException {
 
-        return withGeneralErrorRetry(() -> {
+        return withGeneralErrorRetry(HttpOptions.METHOD_NAME, () -> {
             HttpOptions request = new HttpOptions(url);
             setHeaders(headers, request);
-            try (CloseableHttpResponse response = client.execute(request)) {
+            try (CloseableHttpResponse response = send(request)) {
                 return constructResponse(response);
             }
         });
@@ -393,7 +701,7 @@ public class SimpleHTTPClient {
         HttpGet request = new HttpGet(url);
         request.setConfig(RequestConfig.custom().setNormalizeUri(false).build());
         setHeaders(headers, request);
-        try (CloseableHttpResponse response = client.execute(request)) {
+        try (CloseableHttpResponse response = send(request)) {
             return constructResponse(response);
         }
     }
@@ -427,7 +735,7 @@ public class SimpleHTTPClient {
 
         HttpUriRequest request = RequestBuilder.create(method.toUpperCase(Locale.ROOT)).setUri(url).build();
         setHeaders(headers, request);
-        try (CloseableHttpResponse response = client.execute(request)) {
+        try (CloseableHttpResponse response = send(request)) {
             List<String> values = new ArrayList<>();
             for (Header header : response.getHeaders(headerName)) {
                 values.add(header.getValue());
@@ -560,10 +868,10 @@ public class SimpleHTTPClient {
     public org.wso2.carbon.automation.test.utils.http.client.HttpResponse doDelete(
             String url, final Map<String, String> headers) throws IOException {
 
-        return withGeneralErrorRetry(() -> {
+        return withGeneralErrorRetry(HttpDelete.METHOD_NAME, () -> {
             HttpDelete request = new HttpDelete(url);
             setHeaders(headers, request);
-            try (CloseableHttpResponse response = client.execute(request)) {
+            try (CloseableHttpResponse response = send(request)) {
                 return constructResponse(response);
             }
         });
@@ -583,7 +891,14 @@ public class SimpleHTTPClient {
             String url, final Map<String, String> headers, final String payload, String contentType)
             throws IOException {
 
-        return withGeneralErrorRetry(() -> {
+        return doPost(url, headers, payload, contentType, false);
+    }
+
+    private org.wso2.carbon.automation.test.utils.http.client.HttpResponse doPost(
+            String url, Map<String, String> headers, String payload, String contentType, boolean soapResponse)
+            throws IOException {
+
+        return withGeneralErrorRetry(HttpPost.METHOD_NAME, () -> {
             HttpPost request = new HttpPost(url);
             setHeaders(headers, request);
             boolean zip = headers != null && "gzip".equals(headers.get(HttpHeaders.CONTENT_ENCODING));
@@ -593,8 +908,8 @@ public class SimpleHTTPClient {
                 request.setEntity(ent);
             }
 
-            try (CloseableHttpResponse response = client.execute(request)) {
-                return constructResponse(response);
+            try (CloseableHttpResponse response = send(request)) {
+                return constructResponse(response, soapResponse);
             }
         });
     }
@@ -613,7 +928,7 @@ public class SimpleHTTPClient {
             String url, final Map<String, String> headers, final Map<String, File> files,
             final Map<String, String> formFields) throws IOException {
 
-        return withGeneralErrorRetry(() -> {
+        return withGeneralErrorRetry(HttpPost.METHOD_NAME, () -> {
             HttpPost request = new HttpPost(url);
 
             setHeaders(headers, request);
@@ -630,10 +945,12 @@ public class SimpleHTTPClient {
                     File file = fileEntry.getValue();
                     if (file != null) {
                         String fileName = file.getName();
+                        ContentType fileContentType = fileName.toLowerCase(Locale.ROOT).endsWith(".zip")
+                                ? ContentType.create("application/zip") : ContentType.APPLICATION_OCTET_STREAM;
                         builder.addBinaryBody(
                                 fileEntry.getKey(),
                                 file,
-                                ContentType.APPLICATION_OCTET_STREAM,
+                                fileContentType,
                                 fileName
                         );
                     }
@@ -651,7 +968,7 @@ public class SimpleHTTPClient {
             HttpEntity multipartEntity = builder.build();
             request.setEntity(multipartEntity);
 
-            try (CloseableHttpResponse response = client.execute(request)) {
+            try (CloseableHttpResponse response = send(request)) {
                 return constructResponse(response);
             }
         });
@@ -667,8 +984,8 @@ public class SimpleHTTPClient {
             String url, final Map<String, String> headers, final Map<String, File> files,
             final Map<String, String> textFields, final Map<String, String> jsonFields) throws IOException {
 
-        return withGeneralErrorRetry(() -> sendMultipartWithJsonFields(new HttpPost(url), headers, files, textFields,
-                jsonFields));
+        return withGeneralErrorRetry(HttpPost.METHOD_NAME, () -> sendMultipartWithJsonFields(
+                new HttpPost(url), headers, files, textFields, jsonFields));
     }
 
     /**
@@ -680,8 +997,8 @@ public class SimpleHTTPClient {
             String url, final Map<String, String> headers, final Map<String, File> files,
             final Map<String, String> textFields, final Map<String, String> jsonFields) throws IOException {
 
-        return withGeneralErrorRetry(() -> sendMultipartWithJsonFields(new HttpPut(url), headers, files, textFields,
-                jsonFields));
+        return withGeneralErrorRetry(HttpPut.METHOD_NAME, () -> sendMultipartWithJsonFields(
+                new HttpPut(url), headers, files, textFields, jsonFields));
     }
 
     /**
@@ -723,7 +1040,7 @@ public class SimpleHTTPClient {
         }
 
         request.setEntity(builder.build());
-        try (CloseableHttpResponse response = client.execute(request)) {
+        try (CloseableHttpResponse response = send(request)) {
             return constructResponse(response);
         }
     }
@@ -742,7 +1059,7 @@ public class SimpleHTTPClient {
             String url, final Map<String, String> headers, final String payload, String contentType)
             throws IOException {
 
-        return withGeneralErrorRetry(() -> {
+        return withGeneralErrorRetry(HttpPut.METHOD_NAME, () -> {
             HttpPut request = new HttpPut(url);
             setHeaders(headers, request);
             final boolean zip = headers != null && "gzip".equals(headers.get(HttpHeaders.CONTENT_ENCODING));
@@ -752,7 +1069,7 @@ public class SimpleHTTPClient {
                 request.setEntity(ent);
             }
 
-            try (CloseableHttpResponse response = client.execute(request)) {
+            try (CloseableHttpResponse response = send(request)) {
                 return constructResponse(response);
             }
         });
@@ -772,7 +1089,7 @@ public class SimpleHTTPClient {
             String url, final Map<String, String> headers, final Map<String, File> files,
             final Map<String, String> formFields) throws IOException {
 
-        return withGeneralErrorRetry(() -> {
+        return withGeneralErrorRetry(HttpPut.METHOD_NAME, () -> {
             HttpPut request = new HttpPut(url);
 
             setHeaders(headers, request);
@@ -810,7 +1127,7 @@ public class SimpleHTTPClient {
             HttpEntity multipartEntity = builder.build();
             request.setEntity(multipartEntity);
 
-            try (CloseableHttpResponse response = client.execute(request)) {
+            try (CloseableHttpResponse response = send(request)) {
                 return constructResponse(response);
             }
         });
@@ -829,7 +1146,7 @@ public class SimpleHTTPClient {
     public org.wso2.carbon.automation.test.utils.http.client.HttpResponse doPatch(String url, final Map<String, String> headers, final String payload, String contentType)
             throws IOException {
 
-        return withGeneralErrorRetry(() -> {
+        return withGeneralErrorRetry(HttpPatch.METHOD_NAME, () -> {
             HttpPatch request = new HttpPatch(url);
             setHeaders(headers, request);
             final boolean zip = headers != null && "gzip".equals(headers.get(HttpHeaders.CONTENT_ENCODING));
@@ -839,7 +1156,7 @@ public class SimpleHTTPClient {
                 request.setEntity(ent);
             }
 
-            try (CloseableHttpResponse response = client.execute(request)) {
+            try (CloseableHttpResponse response = send(request)) {
                 return constructResponse(response);
             }
         });
@@ -855,8 +1172,7 @@ public class SimpleHTTPClient {
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Basic " + encodedAuth);
         headers.put("SOAPAction", soapAction);
 
-        return this.doPost(url, headers, payload,
-                Constants.CONTENT_TYPES.TEXT_XML);
+        return this.doPost(url, headers, payload, Constants.CONTENT_TYPES.TEXT_XML, true);
     }
 
     /**
@@ -919,8 +1235,14 @@ public class SimpleHTTPClient {
     private static org.wso2.carbon.automation.test.utils.http.client.HttpResponse constructResponse(
             HttpResponse response) throws IOException {
 
+        return constructResponse(response, false);
+    }
+
+    static org.wso2.carbon.automation.test.utils.http.client.HttpResponse constructResponse(
+            HttpResponse response, boolean soapResponse) throws IOException {
+
         int code = response.getStatusLine().getStatusCode();
-        String body = responseEntityBodyToString(response);
+        String body = soapResponse ? soapResponseEntityBodyToString(response) : responseEntityBodyToString(response);
         Header[] headers = response.getAllHeaders();
         Map<String, String> heads = new HashMap<>();
         for (Header header : headers) {
@@ -930,6 +1252,29 @@ public class SimpleHTTPClient {
                 new org.wso2.carbon.automation.test.utils.http.client.HttpResponse(body, code, heads);
         constructed.setResponseMessage(response.getStatusLine().getReasonPhrase());
         return constructed;
+    }
+
+    /**
+     * Registry admin services force MTOM even for metadata-only replies. Decode the MIME root part using its
+     * Content-Type/boundary/start identifier before XML consumers inspect it. Ordinary HTTP callers retain their
+     * raw body; SOAP status, reason and headers are preserved by constructResponse.
+     */
+    private static String soapResponseEntityBodyToString(HttpResponse response) throws IOException {
+        Header header = response.getFirstHeader(HttpHeaders.CONTENT_TYPE);
+        if (response.getEntity() == null || header == null
+                || !"multipart/related".equalsIgnoreCase(ContentType.parse(header.getValue()).getMimeType())) {
+            return responseEntityBodyToString(response);
+        }
+        try (InputStream content = response.getEntity().getContent()) {
+            Attachments attachments = new Attachments(content, header.getValue());
+            ContentType rootType = ContentType.parse(attachments.getSOAPPartContentType());
+            try (InputStream soap = attachments.getSOAPPartInputStream()) {
+                return IOUtils.toString(soap, rootType.getCharset() == null
+                        ? StandardCharsets.UTF_8 : rootType.getCharset());
+            }
+        } catch (RuntimeException e) {
+            throw new IOException("Could not decode multipart SOAP response", e);
+        }
     }
 
     /**

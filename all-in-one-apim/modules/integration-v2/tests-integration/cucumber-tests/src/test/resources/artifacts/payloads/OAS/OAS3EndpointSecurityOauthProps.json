@@ -20,7 +20,7 @@
         "enabled": true,
         "type": "OAUTH",
         "grantType": "CLIENT_CREDENTIALS",
-        "tokenUrl": "https://localhost:9443/oauth2/token",
+        "tokenUrl": "{{backendOAuthTokenUrl}}",
         "clientId": "oasImportProdClientId0001",
         "clientSecret": "oasImportProdClientSecret0001",
         "customParameters": {}
@@ -29,7 +29,7 @@
         "enabled": true,
         "type": "OAUTH",
         "grantType": "CLIENT_CREDENTIALS",
-        "tokenUrl": "https://localhost:9443/oauth2/token",
+        "tokenUrl": "{{backendOAuthTokenUrl}}",
         "clientId": "oasImportSandClientId0002",
         "clientSecret": "oasImportSandClientSecret0002",
         "customParameters": {}

@@ -22,12 +22,15 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.testcontainers.containers.Container.ExecResult;
 import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.Network;
 import org.testcontainers.containers.wait.strategy.Wait;
 
 import java.time.Duration;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
- * JVM-wide singleton Squid HTTP proxy container used by WS/HTTP proxy profile integration tests.
+ * Per-block Squid HTTP proxy container used by WS/HTTP proxy profile integration tests.
  *
  * <p>Two Squid instances run inside one container:
  * <ul>
@@ -36,14 +39,13 @@ import java.time.Duration;
  *       {@code Proxy-Authorization: Basic testproxyuser:testproxypass}.</li>
  * </ul>
  *
- * <p>Both instances join {@link ContainerNetwork#SHARED_NETWORK} under the alias {@code squid-proxy},
- * so the APIM container (on the same network) can reach them at {@code squid-proxy:3128} and
- * {@code squid-proxy:3129} without any host networking. The TOML overlay for proxy-profile tests
- * uses {@code proxy_host = "squid-proxy"} with the appropriate port.
+ * <p>The container starts on the owning block's private network under the alias {@code squid-proxy}, so the APIM
+ * container can reach {@code squid-proxy:3128} and {@code squid-proxy:3129} without host networking. The TOML
+ * overlay for proxy-profile tests uses {@code proxy_host = "squid-proxy"} with the appropriate port.
  *
- * <p>CONNECT tunnel counts are asserted by grepping the per-instance Squid access logs via
- * {@link #getAnonConnectCount()} and {@link #getAuthConnectCount()}. Call {@link #clearLogs()}
- * between scenarios to reset the counts.
+ * <p>CONNECT tunnel counts use the union of completed Squid access-log entries and live proxy sockets,
+ * deduplicated by the client source port. This includes tunnels that remain open and avoids double-counting a
+ * CONNECT present in both observations. Call {@link #clearLogs()} between scenarios to establish the baseline.
  */
 public class SquidProxyServer {
 
@@ -61,27 +63,57 @@ public class SquidProxyServer {
     /** Proxy password baked into the image's htpasswd file. */
     public static final String PROXY_PASSWORD = "testproxypass";
 
-    private final GenericContainer<?> container;
+    /** Both Squid instances together use a few percent of one core at peak (measured), so half a CPU is ample. */
+    public static final CpuLimit CPU_LIMIT = CpuLimit.of(0.5);
+    public static final long DISTRIBUTED_MEMORY_LIMIT_BYTES = 50L * 1024 * 1024;
 
-    private SquidProxyServer() {
-        logger.info("Initializing SquidProxyServer...");
+    private final GenericContainer<?> container;
+    private final String blockLabel;
+    private Set<String> anonBaselinePorts = Set.of();
+    private Set<String> authBaselinePorts = Set.of();
+
+    public SquidProxyServer(String blockLabel, Network network) {
+        this(blockLabel, network, null);
+    }
+
+    public SquidProxyServer(String blockLabel, Network network, Long memoryLimitBytes) {
+        this(blockLabel, network, memoryLimitBytes, memoryLimitBytes);
+    }
+
+    public SquidProxyServer(String blockLabel, Network network, Long memoryLimitBytes, Long memoryAndSwapLimitBytes) {
+        if (memoryLimitBytes != null
+                && (memoryAndSwapLimitBytes == null || memoryAndSwapLimitBytes < memoryLimitBytes)) {
+            throw new IllegalArgumentException("Squid memory-plus-swap limit must be at least its memory limit");
+        }
+        this.blockLabel = blockLabel;
+        logger.info("Initializing SquidProxyServer for block '" + blockLabel + "'...");
         container = new GenericContainer<>(System.getProperty("squid.docker.image.name", "squid-proxy:latest"))
                 .withExposedPorts(ANON_PORT, AUTH_PORT)
-                .withNetwork(ContainerNetwork.SHARED_NETWORK)
+                .withNetwork(network)
                 .withNetworkAliases("squid-proxy")
+                .withCreateContainerCmdModifier(cmd -> {
+                    CPU_LIMIT.applyTo(cmd);
+                    if (memoryLimitBytes != null) {
+                        cmd.getHostConfig().withMemory(memoryLimitBytes)
+                                .withMemorySwap(memoryAndSwapLimitBytes);
+                    }
+                })
                 .waitingFor(Wait.forListeningPort().withStartupTimeout(Duration.ofMinutes(2)));
 
         container.withLogConsumer(new JclLogConsumer(logger));
+    }
+
+    public void start() {
         container.start();
-        logger.info("SquidProxyServer started — anon port " + ANON_PORT + ", auth port " + AUTH_PORT);
+        logger.info("SquidProxyServer for block '" + blockLabel + "' started — anon port " + ANON_PORT
+                + ", auth port " + AUTH_PORT + ", " + CPU_LIMIT);
     }
 
-    private static class InstanceHolder {
-        private static final SquidProxyServer instance = new SquidProxyServer();
-    }
-
-    public static SquidProxyServer getInstance() {
-        return InstanceHolder.instance;
+    public void stop() {
+        if (container.isRunning()) {
+            container.stop();
+            logger.info("SquidProxyServer for block '" + blockLabel + "' stopped");
+        }
     }
 
     /**
@@ -95,11 +127,7 @@ public class SquidProxyServer {
         // grep -c exits with status 1 when it finds zero matches — the || echo 0 fallback then appends a
         // second "0" line, making stdout "0\n0" and breaking Integer.parseInt. Using grep | wc -l instead:
         // wc -l always exits 0 and always emits exactly one number, even for an absent or empty log file.
-        ExecResult result = container.execInContainer(
-                "sh", "-c",
-                "grep ' CONNECT ' /var/log/squid/anon-access.log 2>/dev/null | wc -l"
-        );
-        return Integer.parseInt(result.getStdout().trim());
+        return connectPorts("/var/log/squid/anon-access.log", ANON_PORT, anonBaselinePorts).size();
     }
 
     /**
@@ -107,11 +135,7 @@ public class SquidProxyServer {
      * Uses the same method-field grep as {@link #getAnonConnectCount()}.
      */
     public int getAuthConnectCount() throws Exception {
-        ExecResult result = container.execInContainer(
-                "sh", "-c",
-                "grep ' CONNECT ' /var/log/squid/auth-access.log 2>/dev/null | wc -l"
-        );
-        return Integer.parseInt(result.getStdout().trim());
+        return connectPorts("/var/log/squid/auth-access.log", AUTH_PORT, authBaselinePorts).size();
     }
 
     /**
@@ -119,9 +143,43 @@ public class SquidProxyServer {
      * Should be called from a {@code @Before} hook or the first step of each proxy scenario.
      */
     public void clearLogs() throws Exception {
+        // Squid writes a CONNECT access-log record only after the tunnel ends. Some tenant WebSocket paths
+        // leave the gateway-to-backend tunnel open after the client close handshake, so snapshot in-flight
+        // tunnels before truncating and include only the post-clear delta in exact request counts.
+        anonBaselinePorts = activeClientPorts(ANON_PORT);
+        authBaselinePorts = activeClientPorts(AUTH_PORT);
         container.execInContainer(
                 "sh", "-c",
                 "truncate -s 0 /var/log/squid/anon-access.log /var/log/squid/auth-access.log 2>/dev/null || true"
         );
+    }
+
+    private Set<String> connectPorts(String logPath, int port, Set<String> baselinePorts) throws Exception {
+        Set<String> sourcePorts = new HashSet<>(activeClientPorts(port));
+        ExecResult log = container.execInContainer("sh", "-c", "cat " + logPath + " 2>/dev/null || true");
+        for (String line : log.getStdout().split("\\R")) {
+            String[] fields = line.trim().split("\\s+");
+            // wsproxy logformat: timestamp, client address, client source port, result/status, method, URL.
+            if (fields.length >= 5 && "CONNECT".equals(fields[4])) {
+                sourcePorts.add(fields[2]);
+            }
+        }
+        sourcePorts.removeAll(baselinePorts);
+        return sourcePorts;
+    }
+
+    private Set<String> activeClientPorts(int port) throws Exception {
+        ExecResult result = container.execInContainer("sh", "-c",
+                "netstat -tn 2>/dev/null | awk '$1 ~ /^tcp/ && $4 ~ /:" + port
+                        + "$/ && $6 != \"TIME_WAIT\" && $6 != \"LISTEN\" "
+                        + "{ split($5, peer, \":\"); print peer[length(peer)] }'");
+        Set<String> ports = new HashSet<>();
+        for (String line : result.getStdout().split("\\R")) {
+            String value = line.trim();
+            if (!value.isEmpty() && value.matches("\\d+")) {
+                ports.add(value);
+            }
+        }
+        return ports;
     }
 }

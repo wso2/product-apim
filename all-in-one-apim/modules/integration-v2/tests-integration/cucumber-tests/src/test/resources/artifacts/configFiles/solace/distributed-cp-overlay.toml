@@ -1,0 +1,5 @@
+# CP configuration for the Solace block. The block starts the broker and solaceshim before APIM.
+# The outbound WebSocket no-match profile belongs to Gateway.
+[apim.solace_config]
+apim_api_endpoint = "http://solaceshim:8081"
+token = "integration-v2-solace-token"

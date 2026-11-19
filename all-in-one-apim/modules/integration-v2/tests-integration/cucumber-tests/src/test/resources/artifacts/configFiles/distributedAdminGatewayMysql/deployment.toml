@@ -1,0 +1,7 @@
+# Admin distributed-topology probe: the Gateway's APIM database must use the
+# same MySQL datasource and Connector/J driver as its shared database.
+[database.apim_db]
+type = "mysql"
+username = "wso2carbon"
+password = "wso2carbon"
+driver = "com.mysql.cj.jdbc.Driver"

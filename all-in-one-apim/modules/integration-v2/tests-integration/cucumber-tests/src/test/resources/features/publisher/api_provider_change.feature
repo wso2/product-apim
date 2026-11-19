@@ -8,10 +8,10 @@ Feature: Publisher API Provider Change
   DIFFERENT tenant is rejected. Covers the REST, SOAP, SOAP-to-REST and GraphQL API types. Ports the
   publisher-plane assertions of ChangeApiProviderTestCase; the post-change GATEWAY invocation legs live in
   gateway/provider_change_invocation (§11 — the publisher features assert only the publisher plane). Runs as the
-  tenant admin in both tenants; the target provider is a second creator/publisher user provisioned inline. Torn
-  down by the cleanup hook.
+  tenant admin in both tenants; the target provider is either a creator/publisher provisioned inline or the
+  framework-seeded SECONDARY.COM publisher actor for that tenant. Torn down by the cleanup hook.
 
-  @cap:publisher @feat:api-lifecycle @type:regression @dep:admin @legacy:ChangeApiProviderTestCase
+  @cap:publisher @feat:api-lifecycle @type:regression @dep:admin @legacy:ChangeApiProviderTestCase @legacy:ChangeApiProviderSecondaryUserStoreTestCase
   Scenario Outline: Changing an API's provider re-owns it and retains its metadata in <tenant>
     Given The system is ready
     And I have valid access tokens as "admin<suffix>"
@@ -41,13 +41,13 @@ Feature: Publisher API Provider Change
     And The value of response field "isDefaultVersion" should be "true"
 
     # Change the provider to the second user.
-    When I change the provider of API "cpApiId" to "apiNewProvider<suffix>"
+    When I change the provider of API "cpApiId" to "<providerActor>"
     Then The response status code should be 200
 
     # The API is re-owned by the new provider and its metadata is retained.
     When I retrieve the "apis" resource with id "cpApiId"
     Then The response status code should be 200
-    And The provider of API "cpApiId" should match actor "apiNewProvider<suffix>"
+    And The provider of API "cpApiId" should match actor "<providerActor>"
     And The response should contain "{{cpApiName}}"
     And The response should contain "Provider change retention marker"
     And The response should contain "nodebackend:3001/jaxrs_basic/services/customers/customerservice"
@@ -63,9 +63,11 @@ Feature: Publisher API Provider Change
     And The response should contain "/customers/{id}"
 
     Examples:
-      | tenant       | suffix       |
-      | carbon.super |              |
-      | tenant1.com  | @tenant1.com |
+      | tenant       | suffix       | providerActor                                  |
+      | carbon.super |              | apiNewProvider                                |
+      | carbon.super |              | SECONDARY.COM/publisherUser1                  |
+      | tenant1.com  | @tenant1.com | apiNewProvider@tenant1.com                    |
+      | tenant1.com  | @tenant1.com | SECONDARY.COM/publisherUser1@tenant1.com      |
 
   # The API stays fully MANAGEABLE by its new owner: after the transfer the description, the business information
   # (all four owner fields), the subscription tiers, an existing document and a new comment can all still be
@@ -76,13 +78,13 @@ Feature: Publisher API Provider Change
   # are the same generic publisher update path already covered by publisher/api_config and publisher/definitions,
   # so they are not repeated here. The gateway invocation that legacy performs after the redeploy is in
   # gateway/provider_change_invocation.
-  @cap:publisher @feat:api-lifecycle @rule:post-change-updates @type:regression @dep:admin @legacy:ChangeApiProviderTestCase
+  @cap:publisher @feat:api-lifecycle @rule:post-change-updates @type:regression @dep:admin @legacy:ChangeApiProviderTestCase @legacy:ChangeApiProviderSecondaryUserStoreTestCase
   Scenario Outline: An API remains fully manageable by its new provider in <tenant>
     Given The system is ready
     And I have valid access tokens as "admin<suffix>"
     And I provision user "arcNewProvider" with roles "Internal/creator,Internal/publisher" in tenant "<tenant>"
     # Mint the new provider's publisher tokens up front so the post-transfer steps can run AS them.
-    And The system is ready and I have valid publisher access tokens as "arcNewProvider<suffix>"
+    And The system is ready and I have valid publisher access tokens as "<providerActor>"
     And I act as "admin<suffix>"
     And I have created an api from "artifacts/payloads/create_apim_test_api.json" as "arcApiId" and deployed it
     # Keep the deployed revision's id: it is undeployed and replaced AFTER the provider change.
@@ -108,11 +110,11 @@ Feature: Publisher API Provider Change
     Then The response status code should be 200
 
     # Transfer ownership.
-    When I change the provider of API "arcApiId" to "arcNewProvider<suffix>"
+    When I change the provider of API "arcApiId" to "<providerActor>"
     Then The response status code should be 200
-    And The provider of API "arcApiId" should match actor "arcNewProvider<suffix>"
+    And The provider of API "arcApiId" should match actor "<providerActor>"
     # Everything below is asserted AS THE NEW PROVIDER — that is what "manageable by its new provider" means.
-    When I act as "arcNewProvider<suffix>"
+    When I act as "<providerActor>"
 
     # 1. The description can still be updated -> re-read shows the new value.
     When I retrieve the "apis" resource with id "arcApiId"
@@ -190,15 +192,17 @@ Feature: Publisher API Provider Change
     Then The response status code should be 201
 
     Examples:
-      | tenant       | suffix       |
-      | carbon.super |              |
-      | tenant1.com  | @tenant1.com |
+      | tenant       | suffix       | providerActor                                  |
+      | carbon.super |              | arcNewProvider                                |
+      | carbon.super |              | SECONDARY.COM/publisherUser1                  |
+      | tenant1.com  | @tenant1.com | arcNewProvider@tenant1.com                    |
+      | tenant1.com  | @tenant1.com | SECONDARY.COM/publisherUser1@tenant1.com      |
 
   # SOAP-API provider change: a WSDL-imported SOAP API keeps its TYPE-SPECIFIC state (SOAP type + retrievable WSDL
   # definition) as well as its provider after ownership transfer — the type variant exists precisely to catch
   # WSDL-binding loss on change, which the REST variant cannot represent. A revision taken before the change keeps
   # the ORIGINAL provider. Ports the SOAP variant of ChangeApiProviderTestCase (ChangeSoapApiProvider).
-  @cap:publisher @feat:api-lifecycle @rule:soap @type:regression @dep:admin @legacy:ChangeApiProviderTestCase
+  @cap:publisher @feat:api-lifecycle @rule:soap @type:regression @dep:admin @legacy:ChangeApiProviderTestCase @legacy:ChangeApiProviderSecondaryUserStoreTestCase
   Scenario Outline: Changing a SOAP API's provider retains its WSDL binding in <tenant>
     Given The system is ready
     And I have valid access tokens as "admin<suffix>"
@@ -224,13 +228,13 @@ Feature: Publisher API Provider Change
     And I extract response field "id" and store it as "cpSoapRevision1"
 
     # Change the provider to the second user.
-    When I change the provider of API "cpSoapApiId" to "soapNewProvider<suffix>"
+    When I change the provider of API "cpSoapApiId" to "<providerActor>"
     Then The response status code should be 200
 
     # Re-owned, still SOAP-typed, and the WSDL definition is still retrievable (the WSDL binding survived).
     When I retrieve the "apis" resource with id "cpSoapApiId"
     Then The response status code should be 200
-    And The provider of API "cpSoapApiId" should match actor "soapNewProvider<suffix>"
+    And The provider of API "cpSoapApiId" should match actor "<providerActor>"
     And The value of response field "type" should be "SOAP"
     When I retrieve the WSDL definition of API "cpSoapApiId"
     Then The response status code should be 200
@@ -245,22 +249,24 @@ Feature: Publisher API Provider Change
     Then The response status code should be 200
 
     Examples:
-      | tenant       | suffix       |
-      | carbon.super |              |
-      | tenant1.com  | @tenant1.com |
+      | tenant       | suffix       | providerActor                                  |
+      | carbon.super |              | soapNewProvider                               |
+      | carbon.super |              | SECONDARY.COM/publisherUser1                  |
+      | tenant1.com  | @tenant1.com | soapNewProvider@tenant1.com                   |
+      | tenant1.com  | @tenant1.com | SECONDARY.COM/publisherUser1@tenant1.com      |
 
   # SOAP-to-REST provider change: the generated conversion ("resource policy") SEQUENCES are the type-specific
   # state a provider change could silently lose, so they are compared BYTE-IDENTICALLY before and after — a
   # non-empty check would pass on a regenerated-but-different sequence. They must also remain UPDATABLE by the new
   # owner and readable through the pre-change revision uuid. Ports
   # ChangeApiProviderTestCase#ChangeSoapToRestApiProvider.
-  @cap:publisher @feat:api-lifecycle @rule:soap-to-rest @type:regression @dep:admin @legacy:ChangeApiProviderTestCase
+  @cap:publisher @feat:api-lifecycle @rule:soap-to-rest @type:regression @dep:admin @legacy:ChangeApiProviderTestCase @legacy:ChangeApiProviderSecondaryUserStoreTestCase
   Scenario Outline: Changing a SOAP-to-REST API's provider keeps its sequences byte-identical in <tenant>
     Given The system is ready
     And I have valid access tokens as "admin<suffix>"
     And I provision user "s2rNewProvider" with roles "Internal/creator,Internal/publisher" in tenant "<tenant>"
     # Mint the new provider's publisher tokens up front so the post-transfer steps can run AS them.
-    And The system is ready and I have valid publisher access tokens as "s2rNewProvider<suffix>"
+    And The system is ready and I have valid publisher access tokens as "<providerActor>"
     And I act as "admin<suffix>"
     And I generate a unique value and store it as "cpS2rName"
     And I generate a unique value and store it as "cpS2rCtx"
@@ -285,11 +291,11 @@ Feature: Publisher API Provider Change
     And I extract response field "id" and store it as "cpS2rRevision1"
 
     # Change the provider to the second user.
-    When I change the provider of API "cpS2rApiId" to "s2rNewProvider<suffix>"
+    When I change the provider of API "cpS2rApiId" to "<providerActor>"
     Then The response status code should be 200
-    And The provider of API "cpS2rApiId" should match actor "s2rNewProvider<suffix>"
+    And The provider of API "cpS2rApiId" should match actor "<providerActor>"
     # The sequence updates below run AS THE NEW PROVIDER, matching the claim in the comment.
-    When I act as "s2rNewProvider<suffix>"
+    When I act as "<providerActor>"
 
     # CORE: both sequence directions are byte-identical to the pre-change baseline.
     Then The "in" resource policies of API "cpS2rApiId" for resource "sayHello" verb "post" should be byte-identical to snapshot "cpS2rInBefore"
@@ -315,16 +321,18 @@ Feature: Publisher API Provider Change
     And The response should contain "Updated after provider change"
 
     Examples:
-      | tenant       | suffix       |
-      | carbon.super |              |
-      | tenant1.com  | @tenant1.com |
+      | tenant       | suffix       | providerActor                                  |
+      | carbon.super |              | s2rNewProvider                                |
+      | carbon.super |              | SECONDARY.COM/publisherUser1                  |
+      | tenant1.com  | @tenant1.com | s2rNewProvider@tenant1.com                    |
+      | tenant1.com  | @tenant1.com | SECONDARY.COM/publisherUser1@tenant1.com      |
 
   # GraphQL provider change: the schema definition is the type-specific state, so it (and the generated swagger)
   # must still be retrievable after the transfer, and the pre-change revision must still report the ORIGINAL
   # provider and serve its schema. Ports the publisher-plane half of
   # ChangeApiProviderTestCase#ChangeGraphQLApiProvider (its invocation leg is in
   # gateway/provider_change_invocation).
-  @cap:publisher @feat:api-lifecycle @rule:graphql @type:regression @dep:admin @legacy:ChangeApiProviderTestCase
+  @cap:publisher @feat:api-lifecycle @rule:graphql @type:regression @dep:admin @legacy:ChangeApiProviderTestCase @legacy:ChangeApiProviderSecondaryUserStoreTestCase
   Scenario Outline: Changing a GraphQL API's provider retains its schema in <tenant>
     Given The system is ready
     And I have valid access tokens as "admin<suffix>"
@@ -343,13 +351,13 @@ Feature: Publisher API Provider Change
     And I extract response field "id" and store it as "cpGqlRevision1"
 
     # Change the provider to the second user.
-    When I change the provider of API "cpGqlApiId" to "gqlNewProvider<suffix>"
+    When I change the provider of API "cpGqlApiId" to "<providerActor>"
     Then The response status code should be 200
 
     # Re-owned, still GRAPHQL-typed, and both the schema definition and the swagger survive the transfer.
     When I retrieve the "apis" resource with id "cpGqlApiId"
     Then The response status code should be 200
-    And The provider of API "cpGqlApiId" should match actor "gqlNewProvider<suffix>"
+    And The provider of API "cpGqlApiId" should match actor "<providerActor>"
     And The value of response field "type" should be "GRAPHQL"
     When I retrieve the GraphQL schema of API "cpGqlApiId"
     Then The response status code should be 200
@@ -366,9 +374,11 @@ Feature: Publisher API Provider Change
     Then The response status code should be 200
 
     Examples:
-      | tenant       | suffix       |
-      | carbon.super |              |
-      | tenant1.com  | @tenant1.com |
+      | tenant       | suffix       | providerActor                                  |
+      | carbon.super |              | gqlNewProvider                                |
+      | carbon.super |              | SECONDARY.COM/publisherUser1                  |
+      | tenant1.com  | @tenant1.com | gqlNewProvider@tenant1.com                    |
+      | tenant1.com  | @tenant1.com | SECONDARY.COM/publisherUser1@tenant1.com      |
 
   # A cross-tenant provider change is rejected: changing a super-tenant API's provider to a tenant1.com user (and
   # vice versa) fails with 400 and error 901409 with the literal "Tenant mismatch" description. Ports the
