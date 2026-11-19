@@ -118,10 +118,10 @@ Feature: Publisher Network Access Control - URL-gate entry points under a tenant
   Scenario: A second tenant with no policy is unaffected by the super-tenant allow policy
     Given The system is ready and I have valid publisher access tokens as "publisherUser@tenant1.com"
     And I act as "publisherUser"
-    When I validate the endpoint url "http://evil.attacker.com/endpoint"
+    When I validate the endpoint url "http://example.com/endpoint"
     Then The response status code should be 200
     And The response should contain "could not be resolved"
     When I act as "publisherUser@tenant1.com"
-    And I validate the endpoint url "http://evil.attacker.com/endpoint"
+    And I validate the endpoint url "http://example.com/endpoint"
     Then The response status code should be 200
     And The response should not contain "could not be resolved"
