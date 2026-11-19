@@ -1614,6 +1614,17 @@ public class Utils {
         return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "mcp-servers/generate-from-api";
     }
 
+    /** Publisher REST API — export an MCP server as an archive (GET, returns a zip; {@code format} = YAML|JSON). */
+    public static String getMCPServerExportURL(String baseUrl, String mcpServerId, String format) {
+        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "mcp-servers/export?mcpServerId="
+                + urlEncode(mcpServerId) + "&format=" + urlEncode(format);
+    }
+
+    /** Publisher REST API — import an MCP server archive (POST multipart with the zip as the "file" part). */
+    public static String getMCPServerImportURL(String baseUrl) {
+        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "mcp-servers/import";
+    }
+
     /** Publisher REST API — a single MCP server by id (get/delete). */
     public static String getMCPServerByIdURL(String baseUrl, String mcpServerId) {
         return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "mcp-servers/" + mcpServerId;
