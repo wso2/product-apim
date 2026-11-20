@@ -1,0 +1,12 @@
+{
+  "name": "{{sbApiName}}",
+  "context": "/{{sbContext}}",
+  "version": "1.0.0",
+  "type": "SSE",
+  "policies": ["AsyncUnlimited"],
+  "endpointConfig": {
+    "endpoint_type": "http",
+    "production_endpoints": {"url": "http://nodebackend:3021"},
+    "sandbox_endpoints": {"url": "http://nodebackend:3021"}
+  }
+}

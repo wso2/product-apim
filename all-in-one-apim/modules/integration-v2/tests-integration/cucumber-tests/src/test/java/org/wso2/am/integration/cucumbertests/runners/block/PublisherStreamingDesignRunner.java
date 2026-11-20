@@ -25,7 +25,10 @@ import io.cucumber.testng.CucumberOptions;
  * {@link BaseBlockRunner} for the block boot-failure guard and runner-scoped cleanup safety net.
  */
 @CucumberOptions(
-        features = "src/test/resources/features/publisher/streaming_design.feature",
+        features = {
+                "src/test/resources/features/publisher/streaming_design.feature",
+                "src/test/resources/features/publisher/streaming_scope_bindings.feature"
+        },
         glue = {
                 "org.wso2.am.integration.cucumbertests.stepdefinitions"
         },

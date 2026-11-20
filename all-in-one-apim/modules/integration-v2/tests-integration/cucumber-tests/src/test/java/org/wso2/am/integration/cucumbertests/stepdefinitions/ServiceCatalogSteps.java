@@ -116,12 +116,18 @@ public class ServiceCatalogSteps {
 
     /** Builds the serviceMetadata JSON for a create/update, resolving {@code {{...}}} in name/version/key. */
     private String buildMetadata(String name, String version, String key, String description) {
+        return buildMetadata(name, version, key, description, "OAS3");
+    }
+
+    /** As {@link #buildMetadata(String, String, String, String)} for an explicit {@code definitionType}. */
+    private String buildMetadata(String name, String version, String key, String description,
+                                 String definitionType) {
         JSONObject md = new JSONObject();
         md.put("name", Utils.resolveContextPlaceholders(name));
         md.put("version", Utils.resolveContextPlaceholders(version));
         md.put("serviceKey", Utils.resolveContextPlaceholders(key));
         md.put("serviceUrl", "https://localhost:9443/service");
-        md.put("definitionType", "OAS3");
+        md.put("definitionType", definitionType);
         md.put("securityType", "BASIC");
         md.put("mutualSSLEnabled", false);
         if (description != null) {
@@ -148,24 +154,101 @@ public class ServiceCatalogSteps {
     @When("I create a service catalog entry named {string} version {string} key {string} from definition {string} as {string}")
     public void iCreateService(String name, String version, String key, String definitionResource, String idKey)
             throws IOException {
-        HttpResponse response = createService(buildMetadata(name, version, key, "Catalog entry"), definitionResource);
+        assertServiceCreated(createService(buildMetadata(name, version, key, "Catalog entry"), definitionResource),
+                name, version, key, idKey);
+    }
+
+    /**
+     * As {@link #iCreateService} for an AsyncAPI definition ({@code definitionType=ASYNC_API}). {@code {{...}}}
+     * placeholders in the definition are resolved, so it can carry scenario-unique scope names.
+     */
+    @When("I create an AsyncAPI service catalog entry named {string} version {string} key {string} from definition {string} as {string}")
+    public void iCreateAsyncApiService(String name, String version, String key, String definitionResource,
+                                       String idKey) throws IOException {
+        Map<String, File> files = new HashMap<>();
+        files.put("definitionFile", resolvedDefinitionFile(definitionResource));
+        Map<String, String> jsonFields = new HashMap<>();
+        jsonFields.put("serviceMetadata", buildMetadata(name, version, key, "Catalog entry", "ASYNC_API"));
+        HttpResponse response = Requests.postMultipartWithJsonFields(Utils.getServiceCatalogURL(Utils.getBaseUrl()),
+                serviceCatalogHeaders(), files, new HashMap<>(), jsonFields);
+        assertServiceCreated(response, name, version, key, idKey);
+    }
+
+    /**
+     * Replaces the AsyncAPI definition of a service catalog entry (PUT multipart, {@code definitionType=ASYNC_API}),
+     * resolving {@code {{...}}} in the definition. Non-asserting — the feature asserts the status.
+     */
+    @When("I update the AsyncAPI service catalog entry {string} named {string} version {string} key {string} from definition {string}")
+    public void iUpdateAsyncApiService(String idKey, String name, String version, String key,
+                                       String definitionResource) throws IOException {
+        Map<String, File> files = new HashMap<>();
+        files.put("definitionFile", resolvedDefinitionFile(definitionResource));
+        Map<String, String> jsonFields = new HashMap<>();
+        jsonFields.put("serviceMetadata", buildMetadata(name, version, key, "Catalog entry", "ASYNC_API"));
+        Requests.putMultipartWithJsonFields(
+                Utils.getServiceCatalogByIdURL(Utils.getBaseUrl(), TestContext.resolve(idKey).toString()),
+                serviceCatalogHeaders(), files, new HashMap<>(), jsonFields);
+    }
+
+    /**
+     * Creates an API from a service catalog entry ({@code POST /apis/import-service?serviceKey=}) with the given
+     * name/context (version 1.0.0), as the acting actor's publisher token. Non-asserting on status (the feature
+     * asserts it); on success the API id is stored under {@code apiIdKey} and registered for teardown.
+     */
+    @When("I create an API from service catalog key {string} named {string} with context {string} as {string}")
+    public void iCreateApiFromService(String key, String apiName, String context, String apiIdKey)
+            throws IOException {
+        JSONObject body = new JSONObject()
+                .put("name", Utils.resolveContextPlaceholders(apiName))
+                .put("version", "1.0.0")
+                .put("context", Utils.resolveContextPlaceholders(context));
+        HttpResponse response = Requests.post(
+                Utils.getImportServiceURL(Utils.getBaseUrl(), Utils.resolveContextPlaceholders(key)),
+                Identity.publisherHeaders(), body.toString(), Constants.CONTENT_TYPES.APPLICATION_JSON);
+        ResourceCleanup.registerIfCreated(Constants.CREATED_API_IDS, response, "id");
+        if (response.getResponseCode() >= 200 && response.getResponseCode() < 300) {
+            TestContext.set(Utils.normalizeContextKey(apiIdKey),
+                    Utils.extractValueFromPayload(response.getData(), "id"));
+        }
+    }
+
+    /** Reimports an API's definition from its service catalog entry ({@code PUT /apis/{id}/reimport-service}). */
+    @When("I reimport the service catalog definition of API {string}")
+    public void iReimportServiceOfApi(String apiIdKey) throws IOException {
+        Requests.put(Utils.getReimportServiceURL(Utils.getBaseUrl(), TestContext.resolve(apiIdKey).toString()),
+                Identity.publisherHeaders(), "", Constants.CONTENT_TYPES.APPLICATION_JSON);
+    }
+
+    /** Copies a classpath definition to a temp file with its {@code {{...}}} placeholders resolved. */
+    private File resolvedDefinitionFile(String resourcePath) throws IOException {
+        String suffix = resourcePath.substring(resourcePath.lastIndexOf('.'));
+        File temp = File.createTempFile("svc-catalog-def", suffix);
+        temp.deleteOnExit();
+        Files.write(temp.toPath(), Utils.resolveContextPlaceholders(Utils.readClasspathResource(resourcePath))
+                .getBytes(java.nio.charset.StandardCharsets.UTF_8));
+        return temp;
+    }
+
+    /** Asserts a service create returned the created DTO, stores its id under {@code idKey} and registers it. */
+    private void assertServiceCreated(HttpResponse response, String name, String version, String key, String idKey) {
         // Pinned to the product's actual 200; the contract declares 201 (wso2/api-manager#5195).
         // Change to 201 once that is fixed.
         Assert.assertNotNull(response, "Service catalog create returned no HTTP response");
         Assert.assertEquals(response.getResponseCode(), 200, response.getData());
         Assert.assertNotNull(response.getData(), "Service catalog create returned no DTO body");
         JSONObject createdService = new JSONObject(response.getData());
+        Object id = createdService.opt("id");
+        Assert.assertNotNull(id, "Service catalog create DTO has no id");
+        Assert.assertFalse(String.valueOf(id).isBlank(), "Service catalog create DTO has an empty id");
+        // Registered before the field assertions, so a created service is cleaned up even if one of them fails.
+        ResourceCleanup.register(ResourceCleanup.CREATED_SERVICE_CATALOG_IDS, id);
         Assert.assertEquals(createdService.optString("name"), Utils.resolveContextPlaceholders(name),
                 "Created service name mismatch");
         Assert.assertEquals(createdService.optString("version"), Utils.resolveContextPlaceholders(version),
                 "Created service version mismatch");
         Assert.assertEquals(createdService.optString("serviceKey"), Utils.resolveContextPlaceholders(key),
                 "Created service key mismatch");
-        Object id = createdService.opt("id");
-        Assert.assertNotNull(id, "Service catalog create DTO has no id");
-        Assert.assertFalse(String.valueOf(id).isBlank(), "Service catalog create DTO has an empty id");
         TestContext.set(idKey, id);
-        ResourceCleanup.register(ResourceCleanup.CREATED_SERVICE_CATALOG_IDS, id);
     }
 
     /**

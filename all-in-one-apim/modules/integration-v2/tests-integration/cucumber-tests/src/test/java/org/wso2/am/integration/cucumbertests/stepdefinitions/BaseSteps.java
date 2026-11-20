@@ -1425,6 +1425,8 @@ public class BaseSteps {
     @Then("The response array field {string} should have exactly {int} entries")
     public void theResponseArrayFieldShouldHaveExactly(String fieldName, int expectedCount) throws IOException {
 
+        // {{contextKey}} placeholders in the path are resolved, as in its sibling "should be exactly the list".
+        fieldName = Utils.resolveContextPlaceholders(fieldName);
         HttpResponse response = (HttpResponse) TestContext.get("httpResponse");
         Assert.assertTrue(response != null && response.getResponseCode() >= 200 && response.getResponseCode() < 300
                         && response.getData() != null && !response.getData().isBlank(),

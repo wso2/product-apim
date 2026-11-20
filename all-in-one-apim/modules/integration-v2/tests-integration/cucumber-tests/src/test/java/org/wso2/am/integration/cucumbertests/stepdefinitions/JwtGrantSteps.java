@@ -202,6 +202,8 @@ public class JwtGrantSteps {
     @When("I create a new shared scope as {string} bound to role {string}")
     public void iCreateSharedScopeBoundToRole(String scopeName, String role) throws Exception {
         String uniqueName = Names.unique(scopeName);
+        // The generated name is stored under the base name, so a definition fixture can reference {{<scopeName>}}.
+        TestContext.set(Utils.normalizeContextKey(scopeName), uniqueName);
         JSONObject payload = new JSONObject()
                 .put("name", uniqueName)
                 .put("displayName", uniqueName)

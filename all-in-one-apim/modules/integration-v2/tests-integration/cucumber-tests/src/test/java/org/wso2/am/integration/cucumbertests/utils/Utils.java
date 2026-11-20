@@ -1879,6 +1879,41 @@ public class Utils {
         return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "apis/import-asyncapi";
     }
 
+    /** Publisher REST API — an API's AsyncAPI definition (GET to read, multipart PUT {@code file} to replace). */
+    public static String getAsyncApiDefinitionURL(String baseUrl, String apiId) {
+        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "apis/" + apiId + "/asyncapi";
+    }
+
+    /** Publisher REST API — create an API from a service catalog entry (POST, JSON body). */
+    public static String getImportServiceURL(String baseUrl, String serviceKey) {
+        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "apis/import-service?serviceKey="
+                + URLEncoder.encode(serviceKey, StandardCharsets.UTF_8);
+    }
+
+    /** Publisher REST API — reimport an API's definition from its service catalog entry (PUT, no body). */
+    public static String getReimportServiceURL(String baseUrl, String apiId) {
+        return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "apis/" + apiId + "/reimport-service";
+    }
+
+    /**
+     * Publisher REST API — import an API project archive, optionally overwriting the existing API. The importing user
+     * becomes the provider ({@code preserveProvider=false}), so one project works for any actor and tenant.
+     */
+    public static String getApiArchiveImportURL(String baseUrl, boolean overwrite) {
+        return getApiArchiveImportURL(baseUrl) + "?overwrite=" + overwrite + "&preserveProvider=false";
+    }
+
+    /**
+     * Resident key manager scope endpoint ({@code GET /api/identity/oauth2/v1.0/scopes/name/{name}}), tenant-qualified
+     * with {@code /t/<domain>} for a non-super tenant. Returns the scope as REGISTERED in the key manager, i.e. the
+     * role bindings the token endpoint enforces.
+     */
+    public static String getKeyManagerScopeURL(String baseUrl, String tenantDomain, String scopeName) {
+        String tenantPrefix = Constants.SUPER_TENANT_DOMAIN.equals(tenantDomain) ? "" : "t/" + tenantDomain + "/";
+        return baseUrl + tenantPrefix + "api/identity/oauth2/v1.0/scopes/name/"
+                + URLEncoder.encode(scopeName, StandardCharsets.UTF_8);
+    }
+
     /** Publisher REST API — AsyncAPI definition validation (multipart file / url). */
     public static String getValidateAsyncApiURL(String baseUrl) {
         return baseUrl + Constants.DEFAULT_APIM_API_DEPLOYER + "apis/validate-asyncapi";
