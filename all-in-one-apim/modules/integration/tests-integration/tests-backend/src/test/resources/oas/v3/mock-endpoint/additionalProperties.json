@@ -1,0 +1,31 @@
+{
+  "name": "MockPetStore",
+  "context": "/mockpetstore",
+  "version": "1.0.0",
+  "provider": "admin",
+  "type": "HTTP",
+  "transport": [
+    "http",
+    "https"
+  ],
+  "policies": [
+    "Unlimited"
+  ],
+  "apiThrottlingPolicy": "Unlimited",
+  "securityScheme": [
+    "oauth2",
+    "oauth_basic_auth_mandatory"
+  ],
+  "visibility": "PUBLIC",
+  "subscriptionAvailability": "ALL_TENANTS",
+  "endpointImplementationType": "INLINE",
+  "endpointConfig": {
+    "endpoint_type": "http",
+    "production_endpoints": {
+      "url": "https://localhost:9443/publisher-new/apis/create/openapi"
+    },
+    "sandbox_endpoints": {
+      "url": "https://localhost:9443/publisher-new/apis/create/openapi"
+    }
+  }
+}
