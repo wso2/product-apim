@@ -26,7 +26,7 @@ WSO2 API Manager is based on the revolutionary WSO2 Carbon [Middleware a' la car
 framework. All the major features have been developed as reusable Carbon
 components.
 
-To learn more about WSO2 API Manager please visit http://wso2.com/products/api-manager.
+To learn more about WSO2 API Manager please visit https://wso2.com/api-management/.
 
 Key Features
 =============
@@ -191,7 +191,7 @@ WSO2 Inc. offers a variety of development and production support
 programs, ranging from Web-based support up through normal business
 hours, to premium 24x7 phone support.
 
-For additional support information please refer to http://wso2.com/support
+For additional support information please refer to https://wso2.com/support/
 
 For more information on WSO2 API Manager please visit https://wso2.com/api-management/
 
@@ -200,7 +200,6 @@ Known Issues of WSO2 API Manager
 
 All known issues of WSO2 API Manager are filed at:
 
-* https://wso2.org/jira/issues/?filter=14454 
 * https://github.com/wso2/product-apim/issues
 * https://github.com/wso2/api-manager/issues
 
