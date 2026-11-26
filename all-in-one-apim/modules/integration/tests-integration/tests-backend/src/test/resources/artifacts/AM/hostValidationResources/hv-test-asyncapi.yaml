@@ -1,0 +1,10 @@
+asyncapi: "2.0.0"
+info:
+  title: TestWebSocket
+  version: "1.0.0"
+channels:
+  /test:
+    subscribe:
+      message:
+        payload:
+          type: string
