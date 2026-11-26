@@ -200,7 +200,6 @@ Known Issues of WSO2 API Manager
 
 All known issues of WSO2 API Manager are filed at:
 
-* https://wso2.org/jira/issues/?filter=14454 
 * https://github.com/wso2/product-apim/issues
 * https://github.com/wso2/api-manager/issues
 
