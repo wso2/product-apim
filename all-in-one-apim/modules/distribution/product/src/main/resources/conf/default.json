@@ -183,6 +183,7 @@
   "synapse_properties.'synapse.main.xml.location'": "repository/resources/apim-synapse-config/main.xml",
   "synapse_properties.'synapse.fault.xml.location'": "repository/resources/apim-synapse-config/fault.xml",
   "synapse_properties.'synapse.registry.xml.location'": "repository/resources/apim-synapse-config/registry.xml",
+  "synapse_properties.'synapse.script.mediator.allowed.languages'": "js,rhinoJs",
   "synapse_properties.'synapse.script.mediator.default.engine'": "rhinoJs",
   "synapse_properties.'limit_java_class_access_in_scripts.enable'": true,
   "synapse_properties.'limit_java_class_access_in_scripts.list_type'": "ALLOW_LIST",
