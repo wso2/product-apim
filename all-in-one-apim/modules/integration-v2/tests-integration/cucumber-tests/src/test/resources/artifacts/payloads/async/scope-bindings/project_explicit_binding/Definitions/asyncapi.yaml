@@ -1,0 +1,23 @@
+asyncapi: 2.0.0
+info:
+  title: SseScopeBindings
+  version: 1.0.0
+channels:
+  /notifications:
+    subscribe:
+      x-scopes:
+        - '{{sbScope}}'
+      message:
+        payload:
+          type: string
+components:
+  securitySchemes:
+    oauth2:
+      type: oauth2
+      flows:
+        implicit:
+          authorizationUrl: https://localhost:9443/oauth2/authorize
+          scopes:
+            '{{sbScope}}': scope under test
+          x-scopes-bindings:
+            '{{sbScope}}': Internal/creator
