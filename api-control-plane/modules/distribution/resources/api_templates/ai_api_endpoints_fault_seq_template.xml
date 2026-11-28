@@ -1,0 +1,53 @@
+<!--
+ ~ Copyright (c) 2026, WSO2 LLC (http://www.wso2.org) All Rights Reserved.
+ ~
+ ~ WSO2 LLC licenses this file to you under the Apache License,
+ ~ Version 2.0 (the "License"); you may not use this file except
+ ~ in compliance with the License.
+ ~ You may obtain a copy of the License at
+ ~
+ ~    http://www.apache.org/licenses/LICENSE-2.0
+ ~
+ ~ Unless required by applicable law or agreed to in writing,
+ ~ software distributed under the License is distributed on an
+ ~ "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ ~ KIND, either express or implied.  See the License for the
+ ~ specific language governing permissions and limitations
+ ~ under the License.
+ -->
+        #####################  Define the macros ######################
+
+        #macro ( print_string_if_exist $field $default)
+        #if($field && "$field" !="")
+        "$field"
+        #else
+        "$default"
+        #end
+        #end
+
+<!-- Runs on a timeout/connection error; wired via the endpoints sequence's onError attribute. -->
+<sequence xmlns="http://ws.apache.org/ns/synapse" name="${endpointKey}_EndpointsFaultSeq${deploymentStage}">
+    <log level="custom" category="DEBUG">
+        <property name="message" value="Fault-path failover sequence invoked"/>
+        <property name="errorCode" expression="get-property('ERROR_CODE')"/>
+        <property name="retryCount" expression="get-property('default','retryCount')"/>
+    </log>
+    <class name="org.wso2.carbon.apimgt.gateway.mediators.AIAPIMediator">
+        <property name="llmProviderId" expression="get-property('default','llmProviderId')" type="STRING"/>
+        <property name="direction" value="FAULT" type="STRING"/>
+    </class>
+    <log level="custom" category="DEBUG">
+        <property name="message" value="Fault-path failover action"/>
+        <property name="action" expression="get-property('AI_FAULT_FAILOVER_ACTION')"/>
+    </log>
+    <filter source="get-property('AI_FAULT_FAILOVER_ACTION')" regex="RETRY">
+        <then>
+            <!-- Re-enter the loop; a fault clears the resume state. -->
+            <sequence key="${endpointKey}_EndpointsSeq${deploymentStage}"/>
+        </then>
+        <else>
+            <!-- No failover policy, or fallbacks exhausted: run the normal fault sequence. -->
+            <sequence key=#print_string_if_exist($faultSequence "fault")/>
+        </else>
+    </filter>
+</sequence>

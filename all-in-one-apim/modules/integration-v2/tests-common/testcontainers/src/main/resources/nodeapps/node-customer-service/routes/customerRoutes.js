@@ -353,6 +353,22 @@ router.post('/failover-target/v1/chat/completions', (req, res) => {
   res.status(429).json({ error: 'model endpoint rate-limited (failover target)' });
 });
 
+// Replies only after 60 s, far past the 5 s policy timeout, to simulate a hang. It does reply in the end, so
+// the sockets that repeated polling opens are closed instead of piling up on the shared node backend.
+router.post('/fault-failover-target-timeout/v1/chat/completions', (req, res) => {
+  console.log('----fault-failover-target-timeout route hit → hanging for 60 s');
+  const timer = setTimeout(() => res.status(504).end(), 60000);
+  // res 'close' fires when the response ends or the client disconnects. (req 'close' fires as soon as the body is read
+  // on Node 16+, which would cancel the timer straight away.)
+  res.on('close', () => clearTimeout(timer));
+});
+
+// Destroys the connection before replying, to simulate a connection reset.
+router.post('/fault-failover-target-reset/v1/chat/completions', (req, res) => {
+  console.log('----fault-failover-target-reset route hit → resetting connection');
+  req.socket.destroy();
+});
+
 // --- Mock Gemini generateContent endpoint (GeminiAPIUnlimitedTierDisabledTestCase) ---
 // An AIAPI bound to the SHIPPED "Gemini" 1.1.0 provider is imported from that provider's own OpenAPI
 // definition, whose resource template is /v1beta/models/{model}:generateContent. Its backend points at

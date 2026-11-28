@@ -85,6 +85,9 @@
         #else
         #set( $ep_key = "${endpointKey}_API${deploymentStage}Endpoint")
         #end
+        #if( $faultFailoverEnabled )
+        <property name="LLM_CALL_SENT" value="true" scope="default"/>
+        #end
 <call>
 <endpoint xmlns="http://ws.apache.org/ns/synapse" key="$ep_key"/>
 </call>
@@ -103,7 +106,13 @@
 <sequence key="fault"/>
         #end
 
-<sequence xmlns="http://ws.apache.org/ns/synapse" name="${endpointKey}_EndpointsSeq${deploymentStage}">
+<!-- onError wires in the fault sequence for timeouts/connection errors. Set only when faultFailoverEnabled
+     is true; otherwise identical to the original template. -->
+<sequence xmlns="http://ws.apache.org/ns/synapse" name="${endpointKey}_EndpointsSeq${deploymentStage}"
+          #if( $faultFailoverEnabled )
+          onError="${endpointKey}_EndpointsFaultSeq${deploymentStage}"
+          #end
+>
 #if( $defaultEndpoint )
 <filter xpath="$ctx:retryCount > $retryCount">
     <then>
@@ -111,6 +120,9 @@
     </then>
     <else>
         <property name="retryCount" expression="get-property('default','retryCount') + 1" scope="default"/>
+        #if( $faultFailoverEnabled )
+        <property name="LLM_CALL_SENT" value="false" scope="default"/>
+        #end
         <switch source="get-property('TARGET_ENDPOINT')">
             #foreach( $endpoint in $!endpoints )
             <case regex="$endpoint.endpointUuid">
